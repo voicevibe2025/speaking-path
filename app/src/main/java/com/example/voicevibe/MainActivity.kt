@@ -3,45 +3,57 @@ package com.example.voicevibe
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.voicevibe.ui.theme.VoiceVibeTheme
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.rememberNavController
+import com.example.voicevibe.presentation.navigation.VoiceVibeNavHost
+import com.example.voicevibe.presentation.theme.VoiceVibeTheme
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Inject
 
+/**
+ * Main activity of the VoiceVibe app
+ */
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    
+    @Inject
+    lateinit var splashScreenStateFlow: MutableStateFlow<Boolean>
+    
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Install splash screen
+        val splashScreen = installSplashScreen()
+        
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        
+        // Keep splash screen visible while loading
+        splashScreen.setKeepOnScreenCondition {
+            splashScreenStateFlow.value
+        }
+        
         setContent {
             VoiceVibeTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                VoiceVibeApp()
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    VoiceVibeTheme {
-        Greeting("Android")
+fun VoiceVibeApp() {
+    val navController = rememberNavController()
+    
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        VoiceVibeNavHost(navController = navController)
     }
 }

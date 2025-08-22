@@ -34,6 +34,16 @@ sealed class Screen(val route: String) {
         fun createRoute(moduleId: String) = "module/$moduleId"
     }
 
+    // Learning Paths Routes
+    object LearningPathsRoute : Screen("learning_paths")
+    object LearningPathDetail : Screen("learning_path/{pathId}") {
+        fun createRoute(pathId: String) = "learning_path/$pathId"
+    }
+    object DetailedLessonDetail : Screen("lesson/{pathId}/{moduleId}/{lessonId}") {
+        fun createRoute(pathId: String, moduleId: String, lessonId: String) = 
+            "lesson/$pathId/$moduleId/$lessonId"
+    }
+
     // Cultural scenarios
     object CulturalScenarios : Screen("cultural_scenarios")
     object ScenarioDetail : Screen("scenario/{scenarioId}") {

@@ -1,10 +1,16 @@
 package com.example.voicevibe.data.repository
 
 import com.example.voicevibe.data.remote.api.GamificationApiService
+import com.example.voicevibe.data.remote.api.UserApiService
 import com.example.voicevibe.domain.model.GamificationStats
 import com.example.voicevibe.domain.model.Badge
 import com.example.voicevibe.domain.model.Achievement
 import com.example.voicevibe.domain.model.Resource
+import com.example.voicevibe.domain.model.AchievementStats
+import com.example.voicevibe.domain.model.CompetitionStats
+import com.example.voicevibe.domain.model.LeaderboardData
+import com.example.voicevibe.domain.model.LeaderboardFilter
+import com.example.voicevibe.domain.model.LeaderboardType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -15,7 +21,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class GamificationRepository @Inject constructor(
-    private val apiService: GamificationApiService
+    private val apiService: GamificationApiService,
+    private val userApiService: UserApiService
 ) {
 
     /**
@@ -26,7 +33,9 @@ class GamificationRepository @Inject constructor(
         try {
             val response = apiService.getUserStats()
             if (response.isSuccessful) {
-                emit(Resource.Success(response.body()))
+                response.body()?.let { body ->
+                    emit(Resource.Success(body))
+                } ?: emit(Resource.Error("Failed to load stats: empty body"))
             } else {
                 emit(Resource.Error("Failed to load stats"))
             }
@@ -43,7 +52,9 @@ class GamificationRepository @Inject constructor(
         try {
             val response = apiService.getUserBadges()
             if (response.isSuccessful) {
-                emit(Resource.Success(response.body()))
+                response.body()?.let { body ->
+                    emit(Resource.Success(body))
+                } ?: emit(Resource.Error("Failed to load badges: empty body"))
             } else {
                 emit(Resource.Error("Failed to load badges"))
             }
@@ -55,34 +66,44 @@ class GamificationRepository @Inject constructor(
     /**
      * Get user's achievements
      */
-    fun getUserAchievements(): Flow<Resource<List<Achievement>>> = flow {
-        emit(Resource.Loading())
-        try {
+    suspend fun getUserAchievements(): Resource<List<Achievement>> {
+        return try {
             val response = apiService.getUserAchievements()
             if (response.isSuccessful) {
-                emit(Resource.Success(response.body()))
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error("Failed to load achievements: empty body")
             } else {
-                emit(Resource.Error("Failed to load achievements"))
+                Resource.Error("Failed to load achievements")
             }
         } catch (e: Exception) {
-            emit(Resource.Error(e.message ?: "Unknown error occurred"))
+            Resource.Error(e.message ?: "Unknown error occurred")
         }
     }
 
     /**
      * Get leaderboard data
      */
-    fun getLeaderboard(timeFrame: String = "weekly"): Flow<Resource<List<LeaderboardEntry>>> = flow {
-        emit(Resource.Loading())
-        try {
-            val response = apiService.getLeaderboard(timeFrame)
+    suspend fun getLeaderboard(
+        type: LeaderboardType,
+        filter: LeaderboardFilter,
+        countryCode: String? = null
+    ): Resource<LeaderboardData> {
+        return try {
+            val response = apiService.getLeaderboard(
+                type = type.name.lowercase(),
+                filter = filter.name.lowercase(),
+                countryCode = countryCode
+            )
             if (response.isSuccessful) {
-                emit(Resource.Success(response.body()))
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error("Failed to load leaderboard: empty body")
             } else {
-                emit(Resource.Error("Failed to load leaderboard"))
+                Resource.Error("Failed to load leaderboard")
             }
         } catch (e: Exception) {
-            emit(Resource.Error(e.message ?: "Unknown error occurred"))
+            Resource.Error(e.message ?: "Unknown error occurred")
         }
     }
 
@@ -93,7 +114,9 @@ class GamificationRepository @Inject constructor(
         return try {
             val response = apiService.claimDailyReward()
             if (response.isSuccessful) {
-                Resource.Success(response.body())
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error("Failed to claim reward: empty body")
             } else {
                 Resource.Error("Failed to claim reward")
             }
@@ -109,9 +132,79 @@ class GamificationRepository @Inject constructor(
         return try {
             val response = apiService.updateStreak()
             if (response.isSuccessful) {
-                Resource.Success(response.body())
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error("Failed to update streak: empty body")
             } else {
                 Resource.Error("Failed to update streak")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Get achievement stats
+     */
+    suspend fun getAchievementStats(): Resource<AchievementStats> {
+        return try {
+            val response = apiService.getAchievementStats()
+            if (response.isSuccessful) {
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error("Failed to load achievement stats: empty body")
+            } else {
+                Resource.Error("Failed to load achievement stats")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Claim achievement reward
+     */
+    suspend fun claimAchievementReward(achievementId: String): Resource<Unit> {
+        return try {
+            val response = apiService.claimAchievementReward(achievementId)
+            if (response.isSuccessful) {
+                Resource.Success(Unit)
+            } else {
+                Resource.Error("Failed to claim achievement reward")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Get competition stats
+     */
+    suspend fun getCompetitionStats(): Resource<CompetitionStats> {
+        return try {
+            val response = apiService.getCompetitionStats()
+            if (response.isSuccessful) {
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error("Failed to load competition stats: empty body")
+            } else {
+                Resource.Error("Failed to load competition stats")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Follow a user
+     */
+    suspend fun followUser(userId: String): Resource<Unit> {
+        return try {
+            val response = userApiService.followUser(userId)
+            if (response.isSuccessful) {
+                Resource.Success(Unit)
+            } else {
+                Resource.Error("Failed to follow user")
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unknown error occurred")

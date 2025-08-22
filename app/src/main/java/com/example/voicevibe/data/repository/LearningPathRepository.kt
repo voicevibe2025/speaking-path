@@ -24,7 +24,9 @@ class LearningPathRepository @Inject constructor(
         try {
             val response = apiService.getUserLearningPaths()
             if (response.isSuccessful) {
-                emit(Resource.Success(response.body()))
+                response.body()?.let { body ->
+                    emit(Resource.Success(body))
+                } ?: emit(Resource.Error("Failed to load learning paths: empty body"))
             } else {
                 emit(Resource.Error("Failed to load learning paths"))
             }
@@ -41,7 +43,9 @@ class LearningPathRepository @Inject constructor(
         try {
             val response = apiService.getLearningPath(pathId)
             if (response.isSuccessful) {
-                emit(Resource.Success(response.body()))
+                response.body()?.let { body ->
+                    emit(Resource.Success(body))
+                } ?: emit(Resource.Error("Failed to load learning path: empty body"))
             } else {
                 emit(Resource.Error("Failed to load learning path"))
             }
@@ -58,7 +62,9 @@ class LearningPathRepository @Inject constructor(
         try {
             val response = apiService.getAllLearningPaths()
             if (response.isSuccessful) {
-                emit(Resource.Success(response.body()))
+                response.body()?.let { body ->
+                    emit(Resource.Success(body))
+                } ?: emit(Resource.Error("Failed to load learning paths: empty body"))
             } else {
                 emit(Resource.Error("Failed to load learning paths"))
             }
@@ -74,7 +80,9 @@ class LearningPathRepository @Inject constructor(
         return try {
             val response = apiService.startLearningPath(pathId)
             if (response.isSuccessful) {
-                Resource.Success(response.body())
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error("Failed to start learning path: empty body")
             } else {
                 Resource.Error("Failed to start learning path")
             }
@@ -98,7 +106,9 @@ class LearningPathRepository @Inject constructor(
             )
             val response = apiService.updateProgress(pathId, request)
             if (response.isSuccessful) {
-                Resource.Success(response.body())
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error("Failed to update progress: empty body")
             } else {
                 Resource.Error("Failed to update progress")
             }

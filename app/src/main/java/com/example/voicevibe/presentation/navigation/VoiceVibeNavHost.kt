@@ -13,8 +13,8 @@ import com.example.voicevibe.presentation.screens.auth.login.LoginScreen
 import com.example.voicevibe.presentation.screens.auth.register.RegisterScreen
 import com.example.voicevibe.presentation.screens.auth.splash.SplashScreen
 import com.example.voicevibe.presentation.screens.auth.onboarding.OnboardingScreen
-import com.example.voicevibe.presentation.screens.auth.forgot.ForgotPasswordScreen
-import com.example.voicevibe.presentation.screens.main.MainScreen
+import com.example.voicevibe.presentation.screens.auth.forgotpassword.ForgotPasswordScreen
+import com.example.voicevibe.presentation.screens.main.home.HomeScreen
 
 /**
  * Main navigation host for the VoiceVibe app
@@ -95,32 +95,70 @@ fun VoiceVibeNavHost(
         // Forgot Password Screen
         composable(route = Screen.ForgotPassword.route) {
             ForgotPasswordScreen(
-                onNavigateBack = {
-                    navController.popBackStack()
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             )
         }
 
         // Main App Screen (with bottom navigation)
         composable(route = Screen.Home.route) {
-            MainScreen()
+            HomeScreen(
+                onNavigateToPractice = { navController.navigate(Screen.Practice.route) },
+                onNavigateToLearningPaths = { navController.navigate(Screen.LearningPaths.route) },
+                onNavigateToAchievements = { navController.navigate(Screen.Achievements.route) },
+                onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
+                onNavigateToLearningPath = { _ -> navController.navigate(Screen.LearningPaths.route) }
+            )
         }
 
         // Other main screens handled by bottom navigation
         composable(route = Screen.Practice.route) {
-            MainScreen()
+            HomeScreen(
+                onNavigateToPractice = { navController.navigate(Screen.Practice.route) },
+                onNavigateToLearningPaths = { navController.navigate(Screen.LearningPaths.route) },
+                onNavigateToAchievements = { navController.navigate(Screen.Achievements.route) },
+                onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
+                onNavigateToLearningPath = { _ -> navController.navigate(Screen.LearningPaths.route) }
+            )
         }
 
         composable(route = Screen.LearningPaths.route) {
-            MainScreen()
+            HomeScreen(
+                onNavigateToPractice = { navController.navigate(Screen.Practice.route) },
+                onNavigateToLearningPaths = { navController.navigate(Screen.LearningPaths.route) },
+                onNavigateToAchievements = { navController.navigate(Screen.Achievements.route) },
+                onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
+                onNavigateToLearningPath = { _ -> navController.navigate(Screen.LearningPaths.route) }
+            )
         }
 
         composable(route = Screen.Achievements.route) {
-            MainScreen()
+            HomeScreen(
+                onNavigateToPractice = { navController.navigate(Screen.Practice.route) },
+                onNavigateToLearningPaths = { navController.navigate(Screen.LearningPaths.route) },
+                onNavigateToAchievements = { navController.navigate(Screen.Achievements.route) },
+                onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
+                onNavigateToLearningPath = { _ -> navController.navigate(Screen.LearningPaths.route) }
+            )
         }
 
         composable(route = Screen.Profile.route) {
-            MainScreen()
+            HomeScreen(
+                onNavigateToPractice = { navController.navigate(Screen.Practice.route) },
+                onNavigateToLearningPaths = { navController.navigate(Screen.LearningPaths.route) },
+                onNavigateToAchievements = { navController.navigate(Screen.Achievements.route) },
+                onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
+                onNavigateToLearningPath = { _ -> navController.navigate(Screen.LearningPaths.route) }
+            )
         }
 
         // Session Practice Screen

@@ -40,7 +40,7 @@ fun OnboardingScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val tokenManager by remember { mutableStateOf(TokenManager(context.dataStore)) }
+    val tokenManager = remember { TokenManager(context.applicationContext) }
     
     val pages = listOf(
         OnboardingPage(

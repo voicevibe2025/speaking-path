@@ -1,5 +1,6 @@
 package com.example.voicevibe.di
 
+import com.example.voicevibe.BuildConfig
 import com.example.voicevibe.data.remote.api.*
 import com.example.voicevibe.data.remote.interceptor.AuthInterceptor
 import com.example.voicevibe.utils.Constants
@@ -73,36 +74,45 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideUserApi(retrofit: Retrofit): UserApi =
-        retrofit.create(UserApi::class.java)
+    fun provideUserApi(retrofit: Retrofit): UserApiService =
+        retrofit.create(UserApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideLearningApi(retrofit: Retrofit): LearningApi =
-        retrofit.create(LearningApi::class.java)
+    fun provideLearningApi(retrofit: Retrofit): LearningPathApiService =
+        retrofit.create(LearningPathApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideSessionApi(retrofit: Retrofit): SessionApi =
-        retrofit.create(SessionApi::class.java)
+    fun provideSpeakingPracticeApi(retrofit: Retrofit): SpeakingPracticeApiService =
+        retrofit.create(SpeakingPracticeApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideEvaluationApi(retrofit: Retrofit): EvaluationApi =
-        retrofit.create(EvaluationApi::class.java)
+    fun provideGamificationApi(retrofit: Retrofit): GamificationApiService =
+        retrofit.create(GamificationApiService::class.java)
 
-    @Provides
-    @Singleton
-    fun provideGamificationApi(retrofit: Retrofit): GamificationApi =
-        retrofit.create(GamificationApi::class.java)
+    // The following API is not defined in the codebase; keeping commented to avoid unresolved reference.
+    // @Provides
+    // @Singleton
+    // fun provideSessionApi(retrofit: Retrofit): SessionApi =
+    //         retrofit.create(SessionApi::class.java)
 
-    @Provides
-    @Singleton
-    fun provideCulturalApi(retrofit: Retrofit): CulturalApi =
-        retrofit.create(CulturalApi::class.java)
+    // The following API is not defined in the codebase; keeping commented to avoid unresolved reference.
+    // @Provides
+    // @Singleton
+    // fun provideEvaluationApi(retrofit: Retrofit): EvaluationApi =
+    //         retrofit.create(EvaluationApi::class.java)
 
-    @Provides
-    @Singleton
-    fun provideAnalyticsApi(retrofit: Retrofit): AnalyticsApi =
-        retrofit.create(AnalyticsApi::class.java)
+    // The following API is not defined in the codebase; keeping commented to avoid unresolved reference.
+    // @Provides
+    // @Singleton
+    // fun provideCulturalApi(retrofit: Retrofit): CulturalApi =
+    //         retrofit.create(CulturalApi::class.java)
+
+    // The following API is not defined in the codebase; keeping commented to avoid unresolved reference.
+    // @Provides
+    // @Singleton
+    // fun provideAnalyticsApi(retrofit: Retrofit): AnalyticsApi =
+    //         retrofit.create(AnalyticsApi::class.java)
 }

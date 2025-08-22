@@ -28,7 +28,9 @@ class SpeakingPracticeRepository @Inject constructor(
         try {
             val response = apiService.getRandomPrompt()
             if (response.isSuccessful) {
-                emit(Resource.Success(response.body()))
+                response.body()?.let { body ->
+                    emit(Resource.Success(body))
+                } ?: emit(Resource.Error("Failed to load practice prompt: empty body"))
             } else {
                 emit(Resource.Error("Failed to load practice prompt"))
             }
@@ -73,7 +75,9 @@ class SpeakingPracticeRepository @Inject constructor(
 
             val response = apiService.submitRecording(promptId, audioPart)
             if (response.isSuccessful) {
-                emit(Resource.Success(response.body()))
+                response.body()?.let { body ->
+                    emit(Resource.Success(body))
+                } ?: emit(Resource.Error("Failed to submit recording: empty body"))
             } else {
                 emit(Resource.Error("Failed to submit recording"))
             }
@@ -89,7 +93,9 @@ class SpeakingPracticeRepository @Inject constructor(
         return try {
             val response = apiService.getSession(sessionId)
             if (response.isSuccessful) {
-                Resource.Success(response.body())
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error("Failed to load session: empty body")
             } else {
                 Resource.Error("Failed to load session")
             }
@@ -125,7 +131,9 @@ class SpeakingPracticeRepository @Inject constructor(
         return try {
             val response = apiService.getEvaluation(sessionId)
             if (response.isSuccessful) {
-                Resource.Success(response.body())
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error("Failed to load evaluation: empty body")
             } else {
                 Resource.Error("Failed to load evaluation")
             }
@@ -158,7 +166,9 @@ class SpeakingPracticeRepository @Inject constructor(
         try {
             val response = apiService.getPracticeStats()
             if (response.isSuccessful) {
-                emit(Resource.Success(response.body()))
+                response.body()?.let { body ->
+                    emit(Resource.Success(body))
+                } ?: emit(Resource.Error("Failed to load statistics: empty body"))
             } else {
                 emit(Resource.Error("Failed to load statistics"))
             }

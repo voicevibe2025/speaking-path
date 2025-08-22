@@ -40,6 +40,9 @@ fun EvaluationResultScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // Cache nullable fields to avoid smart-cast on delegated properties
+    val errorMessage = uiState.error
+    val evaluation = uiState.evaluation
 
     // Handle events
     LaunchedEffect(Unit) {
@@ -92,14 +95,14 @@ fun EvaluationResultScreen(
                     CircularProgressIndicator()
                 }
             }
-            uiState.error != null -> {
+            errorMessage != null -> {
                 ErrorContent(
-                    error = uiState.error,
+                    error = errorMessage,
                     onRetry = viewModel::retryLoading,
                     modifier = Modifier.padding(paddingValues)
                 )
             }
-            uiState.evaluation != null -> {
+            evaluation != null -> {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -110,33 +113,33 @@ fun EvaluationResultScreen(
                     // Overall Score Card
                     item {
                         OverallScoreCard(
-                            score = uiState.evaluation.overallScore,
-                            level = getOverallLevel(uiState.evaluation.overallScore)
+                            score = evaluation.overallScore,
+                            level = getOverallLevel(evaluation.overallScore)
                         )
                     }
 
                     // Quick Stats
                     item {
-                        QuickStatsRow(evaluation = uiState.evaluation)
+                        QuickStatsRow(evaluation = evaluation)
                     }
 
                     // Detailed Scores
                     item {
-                        DetailedScoresCard(evaluation = uiState.evaluation)
+                        DetailedScoresCard(evaluation = evaluation)
                     }
 
                     // Feedback Section
                     item {
                         FeedbackCard(
-                            feedback = uiState.evaluation.feedback,
-                            suggestions = uiState.evaluation.suggestions
+                            feedback = evaluation.feedback,
+                            suggestions = evaluation.suggestions
                         )
                     }
 
                     // Phonetic Errors
-                    if (uiState.evaluation.phoneticErrors.isNotEmpty()) {
+                    if (evaluation.phoneticErrors.isNotEmpty()) {
                         item {
-                            PhoneticErrorsCard(errors = uiState.evaluation.phoneticErrors)
+                            PhoneticErrorsCard(errors = evaluation.phoneticErrors)
                         }
                     }
 
@@ -687,7 +690,7 @@ private fun findStrongestArea(evaluation: SpeakingEvaluation): Pair<String, Floa
         "Grammar" to evaluation.grammar.score,
         "Coherence" to evaluation.coherence.score
     )
-    return areas.maxByOrNull { it.second } ?: ("", 0f)
+    return areas.maxByOrNull { it.second } ?: (" " to 0f)
 }
 
 private fun findWeakestArea(evaluation: SpeakingEvaluation): Pair<String, Float> {
@@ -698,5 +701,5 @@ private fun findWeakestArea(evaluation: SpeakingEvaluation): Pair<String, Float>
         "Grammar" to evaluation.grammar.score,
         "Coherence" to evaluation.coherence.score
     )
-    return areas.minByOrNull { it.second } ?: ("", 0f)
+    return areas.minByOrNull { it.second } ?: (" " to 0f)
 }

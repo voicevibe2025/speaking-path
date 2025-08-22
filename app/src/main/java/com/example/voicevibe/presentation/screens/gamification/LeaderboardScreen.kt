@@ -33,6 +33,7 @@ import coil.compose.AsyncImage
 import com.example.voicevibe.R
 import com.example.voicevibe.domain.model.*
 import com.example.voicevibe.presentation.components.LoadingScreen
+import com.example.voicevibe.presentation.components.ErrorScreen
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
 
@@ -108,7 +109,7 @@ fun LeaderboardScreen(
                 )
             )
         },
-        snackbarHost = { SnackbarHostState(snackbarHostState) },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = viewModel::scrollToCurrentUser,

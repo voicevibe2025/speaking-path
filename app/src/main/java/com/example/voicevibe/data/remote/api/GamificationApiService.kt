@@ -1,10 +1,12 @@
 package com.example.voicevibe.data.remote.api
 
 import com.example.voicevibe.data.repository.DailyReward
-import com.example.voicevibe.data.repository.LeaderboardEntry
 import com.example.voicevibe.domain.model.Achievement
+import com.example.voicevibe.domain.model.AchievementStats
 import com.example.voicevibe.domain.model.Badge
+import com.example.voicevibe.domain.model.CompetitionStats
 import com.example.voicevibe.domain.model.GamificationStats
+import com.example.voicevibe.domain.model.LeaderboardData
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -24,8 +26,24 @@ interface GamificationApiService {
 
     @GET("api/gamification/leaderboard")
     suspend fun getLeaderboard(
-        @Query("timeFrame") timeFrame: String = "weekly"
-    ): Response<List<LeaderboardEntry>>
+        @Query("type") type: String,
+        @Query("filter") filter: String,
+        @Query("countryCode") countryCode: String? = null
+    ): Response<LeaderboardData>
+
+    @GET("api/gamification/leaderboard/friends")
+    suspend fun getFriendsLeaderboard(): Response<List<LeaderboardData>>
+
+    @GET("api/gamification/achievements/stats")
+    suspend fun getAchievementStats(): Response<AchievementStats>
+
+    @POST("api/gamification/achievements/{id}/claim")
+    suspend fun claimAchievementReward(
+        @Path("id") achievementId: String
+    ): Response<Unit>
+
+    @GET("api/gamification/competition/stats")
+    suspend fun getCompetitionStats(): Response<CompetitionStats>
 
     @POST("api/gamification/daily-reward")
     suspend fun claimDailyReward(): Response<DailyReward>
@@ -33,9 +51,7 @@ interface GamificationApiService {
     @POST("api/gamification/streak")
     suspend fun updateStreak(): Response<Int>
 
-    @GET("api/gamification/leaderboard/friends")
-    suspend fun getFriendsLeaderboard(): Response<List<LeaderboardEntry>>
-
+    // Challenge endpoints (kept for future use)
     @GET("api/gamification/challenges")
     suspend fun getChallenges(): Response<List<Challenge>>
 

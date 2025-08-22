@@ -31,8 +31,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTokenManager(dataStore: DataStore<Preferences>): TokenManager {
-        return TokenManager(dataStore)
+    fun provideTokenManager(@ApplicationContext context: Context): TokenManager {
+        return TokenManager(context)
     }
 
     @Provides

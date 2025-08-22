@@ -13,7 +13,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.example.voicevibe.presentation.navigation.VoiceVibeNavHost
-import com.example.voicevibe.presentation.theme.VoiceVibeTheme
+import com.example.voicevibe.ui.theme.VoiceVibeTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject

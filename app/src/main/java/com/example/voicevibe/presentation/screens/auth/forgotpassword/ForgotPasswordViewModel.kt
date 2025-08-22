@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.voicevibe.data.remote.dto.auth.MessageResponse
 
 /**
  * ViewModel for the Forgot Password screen
@@ -37,8 +38,8 @@ class ForgotPasswordViewModel @Inject constructor(
         if (!validateEmail()) return
 
         viewModelScope.launch {
-            authRepository.sendPasswordResetEmail(_uiState.value.email)
-                .collect { resource ->
+            authRepository.requestPasswordReset(_uiState.value.email)
+                .collect { resource: Resource<MessageResponse> ->
                     when (resource) {
                         is Resource.Loading -> {
                             _uiState.update { it.copy(isLoading = true) }

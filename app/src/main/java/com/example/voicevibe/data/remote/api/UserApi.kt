@@ -2,10 +2,12 @@ package com.example.voicevibe.data.remote.api
 
 import com.example.voicevibe.data.remote.dto.auth.UserDto
 import com.example.voicevibe.data.remote.dto.auth.UserProfileDto
+import com.example.voicevibe.data.remote.dto.auth.MessageResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
+import com.google.gson.annotations.SerializedName
 
 /**
  * User API service interface
@@ -70,9 +72,4 @@ data class ChangePasswordRequest(
 data class DeleteAccountRequest(
     val password: String,
     val reason: String? = null
-)
-
-data class MessageResponse(
-    val message: String,
-    val success: Boolean = true
 )

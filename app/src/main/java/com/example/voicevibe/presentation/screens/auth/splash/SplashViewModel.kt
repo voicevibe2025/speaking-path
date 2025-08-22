@@ -37,7 +37,7 @@ class SplashViewModel @Inject constructor(
             delay(1500)
 
             // Check if this is first time launch
-            val hasCompletedOnboarding = tokenManager.hasCompletedOnboarding()
+            val hasCompletedOnboarding = tokenManager.isOnboardingCompletedFlow().first()
 
             if (!hasCompletedOnboarding) {
                 // First time user - show onboarding
@@ -62,22 +62,15 @@ class SplashViewModel @Inject constructor(
     }
 
     private suspend fun verifyToken() {
-        authRepository.verifyToken().collect { resource ->
-            when (resource) {
-                is Resource.Loading -> {
-                    _uiState.update { it.copy(isLoading = true) }
-                }
-                is Resource.Success -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                    _navigationEvent.emit(SplashNavigationEvent.NavigateToHome)
-                    splashScreenStateFlow.value = false
-                }
-                is Resource.Error -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                    // Token invalid or expired - attempt refresh
-                    refreshToken()
-                }
-            }
+        // No explicit verify endpoint available. Treat token as valid and proceed,
+        // or attempt a refresh to confirm validity.
+        val isLoggedIn = tokenManager.isLoggedIn()
+        if (isLoggedIn) {
+            _uiState.update { it.copy(isLoading = false) }
+            _navigationEvent.emit(SplashNavigationEvent.NavigateToHome)
+            splashScreenStateFlow.value = false
+        } else {
+            refreshToken()
         }
     }
 
@@ -91,23 +84,21 @@ class SplashViewModel @Inject constructor(
             return
         }
 
-        authRepository.refreshToken(refreshToken).collect { resource ->
-            when (resource) {
-                is Resource.Loading -> {
-                    _uiState.update { it.copy(isLoading = true) }
-                }
-                is Resource.Success -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                    _navigationEvent.emit(SplashNavigationEvent.NavigateToHome)
-                    splashScreenStateFlow.value = false
-                }
-                is Resource.Error -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                    // Refresh failed - go to login
-                    tokenManager.clearSession()
-                    _navigationEvent.emit(SplashNavigationEvent.NavigateToLogin)
-                    splashScreenStateFlow.value = false
-                }
+        when (val result = authRepository.refreshToken()) {
+            is Resource.Loading -> {
+                _uiState.update { it.copy(isLoading = true) }
+            }
+            is Resource.Success -> {
+                _uiState.update { it.copy(isLoading = false) }
+                _navigationEvent.emit(SplashNavigationEvent.NavigateToHome)
+                splashScreenStateFlow.value = false
+            }
+            is Resource.Error -> {
+                _uiState.update { it.copy(isLoading = false) }
+                // Refresh failed - go to login
+                tokenManager.clearAll()
+                _navigationEvent.emit(SplashNavigationEvent.NavigateToLogin)
+                splashScreenStateFlow.value = false
             }
         }
     }

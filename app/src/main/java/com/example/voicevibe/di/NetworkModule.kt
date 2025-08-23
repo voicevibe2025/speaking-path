@@ -84,6 +84,11 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideLearningApiService(retrofit: Retrofit): LearningApiService =
+        retrofit.create(LearningApiService::class.java)
+
+    @Provides
+    @Singleton
     fun provideSpeakingPracticeApi(retrofit: Retrofit): SpeakingPracticeApiService =
         retrofit.create(SpeakingPracticeApiService::class.java)
 

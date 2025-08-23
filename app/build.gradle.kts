@@ -35,6 +35,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Enable desugaring so java.time works on API < 26
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "17"
@@ -49,6 +51,8 @@ android {
 }
 
 dependencies {
+    // Core library desugaring for java.time on older Android versions
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
     // Core Android & Compose
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

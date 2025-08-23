@@ -57,6 +57,7 @@ security = "1.1.0"
 kotlinxDateTime = "0.7.1"
 kotlinxSerialization = "1.9.0"
 timber = "5.0.1"
+desugarJdkLibs = "2.1.2"
 
 # Testing
 truth = "1.4.2"
@@ -163,6 +164,7 @@ security-crypto = { group = "androidx.security", name = "security-crypto", versi
 
 # Logging
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarJdkLibs" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

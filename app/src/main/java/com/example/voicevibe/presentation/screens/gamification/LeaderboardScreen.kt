@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -119,13 +120,15 @@ fun LeaderboardScreen(
             )
         }
     ) { paddingValues ->
+        val currentError = uiState.error
         when {
             uiState.isLoading -> {
                 LoadingScreen(modifier = Modifier.padding(paddingValues))
             }
-            uiState.error != null -> {
+            currentError != null -> {
+                val errorMessage = currentError
                 ErrorScreen(
-                    message = uiState.error,
+                    message = errorMessage,
                     onRetry = viewModel::refreshLeaderboard,
                     modifier = Modifier.padding(paddingValues)
                 )
@@ -445,7 +448,7 @@ private fun PodiumItem(
     ) {
         Box(contentAlignment = Alignment.Center) {
             AsyncImage(
-                model = entry.avatarUrl ?: R.drawable.avatar_placeholder,
+                model = entry.avatarUrl ?: Icons.Default.Person,
                 contentDescription = "Avatar",
                 modifier = Modifier
                     .size(60.dp)
@@ -553,7 +556,7 @@ private fun LeaderboardEntryCard(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     AsyncImage(
-                        model = entry.avatarUrl ?: R.drawable.avatar_placeholder,
+                        model = entry.avatarUrl ?: Icons.Default.Person,
                         contentDescription = "Avatar",
                         modifier = Modifier
                             .size(40.dp)

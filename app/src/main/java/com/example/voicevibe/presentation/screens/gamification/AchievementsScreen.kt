@@ -94,8 +94,9 @@ fun AchievementsScreen(
                 }
             }
             uiState.error != null -> {
+                val errorMessage = uiState.error ?: "Unknown error occurred"
                 ErrorContent(
-                    error = uiState.error,
+                    error = errorMessage,
                     onRetry = viewModel::retryLoading,
                     modifier = Modifier.padding(paddingValues)
                 )

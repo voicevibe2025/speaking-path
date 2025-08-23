@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.voicevibe.presentation.screens.auth.*
-import com.example.voicevibe.presentation.screens.home.HomeScreen
+import com.example.voicevibe.presentation.screens.main.home.HomeScreen
 import com.example.voicevibe.presentation.screens.practice.PracticeScreen
 import com.example.voicevibe.presentation.screens.practice.SessionPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.SessionResultScreen

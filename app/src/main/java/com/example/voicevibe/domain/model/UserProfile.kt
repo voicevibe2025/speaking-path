@@ -1,6 +1,7 @@
 package com.example.voicevibe.domain.model
 
 import java.time.LocalDateTime
+import com.example.voicevibe.domain.model.DifficultyLevel
 
 /**
  * User profile information
@@ -118,6 +119,7 @@ data class UserActivity(
 
 enum class ActivityType {
     PRACTICE_SESSION,
+    LESSON_COMPLETED,
     ACHIEVEMENT_UNLOCKED,
     LEVEL_UP,
     STREAK_MILESTONE,

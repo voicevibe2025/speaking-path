@@ -37,32 +37,59 @@ class UserProfileViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            val result = if (userId == null) {
-                repository.getCurrentUser()
+            if (userId == null) {
+                // getCurrentUser returns Flow<Resource<UserProfile>>
+                repository.getCurrentUser().collect { result ->
+                    when (result) {
+                        is Resource.Success -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    userProfile = result.data,
+                                    isOwnProfile = true,
+                                    error = null
+                                )
+                            }
+                        }
+                        is Resource.Error -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    error = result.message
+                                )
+                            }
+                        }
+                        is Resource.Loading -> {
+                            _uiState.update { it.copy(isLoading = true) }
+                        }
+                    }
+                }
             } else {
-                repository.getUserById(userId)
-            }
-
-            when (result) {
-                is Resource.Success -> {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            userProfile = result.data,
-                            isOwnProfile = userId == null,
-                            error = null
-                        )
+                // getUserById returns Resource<UserProfile> directly
+                val result = repository.getUserById(userId)
+                when (result) {
+                    is Resource.Success -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                userProfile = result.data,
+                                isOwnProfile = false,
+                                error = null
+                            )
+                        }
+                    }
+                    is Resource.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.message
+                            )
+                        }
+                    }
+                    is Resource.Loading -> {
+                        _uiState.update { it.copy(isLoading = true) }
                     }
                 }
-                is Resource.Error -> {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.message
-                        )
-                    }
-                }
-                else -> {}
             }
         }
     }
@@ -74,7 +101,7 @@ class UserProfileViewModel @Inject constructor(
             when (val result = repository.getUserActivities(targetUserId)) {
                 is Resource.Success -> {
                     _uiState.update {
-                        it.copy(activities = result.data)
+                        it.copy(activities = result.data ?: emptyList())
                     }
                 }
                 else -> {}

@@ -354,6 +354,8 @@ private fun WaveformVisualizer(
             repeatMode = RepeatMode.Reverse
         )
     )
+    val primaryWaveColor = MaterialTheme.colorScheme.primary
+    val placeholderWaveColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
 
     Card(
         modifier = modifier,
@@ -387,13 +389,13 @@ private fun WaveformVisualizer(
 
                 drawPath(
                     path = path,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = primaryWaveColor,
                     style = Stroke(width = 2.dp.toPx())
                 )
             } else {
                 // Draw placeholder line
                 drawLine(
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                    color = placeholderWaveColor,
                     start = Offset(0f, centerY),
                     end = Offset(width, centerY),
                     strokeWidth = 2.dp.toPx()

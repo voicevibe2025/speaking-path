@@ -4,6 +4,9 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -116,7 +119,8 @@ fun LessonDetailScreen(
                     )
                 }
                 uiState.lesson != null -> {
-                    val currentSection = uiState.lesson.sections.getOrNull(uiState.currentSectionIndex)
+                    val lesson = uiState.lesson!!
+                    val currentSection = lesson.sections.getOrNull(uiState.currentSectionIndex)
                     currentSection?.let { section ->
                         AnimatedContent(
                             targetState = section,

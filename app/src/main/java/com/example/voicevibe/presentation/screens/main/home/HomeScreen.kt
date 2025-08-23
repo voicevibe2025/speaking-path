@@ -25,12 +25,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.voicevibe.domain.model.LearningPath
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
-/**
- * Home Dashboard screen composable
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -43,7 +41,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val pullRefreshState = rememberPullToRefreshState()
+    var isRefreshing by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     // Observe events
     LaunchedEffect(Unit) {
@@ -57,11 +56,37 @@ fun HomeScreen(
         }
     }
 
-    PullToRefreshBox(
-        state = pullRefreshState,
-        onRefresh = viewModel::refresh,
+    // Handle refresh
+    fun onRefresh() {
+        coroutineScope.launch {
+            isRefreshing = true
+            viewModel.refresh()
+            isRefreshing = false
+        }
+    }
+
+    Column(
         modifier = Modifier.fillMaxSize()
     ) {
+        // Add refresh button in top app bar for now
+        TopAppBar(
+            title = { Text("Home") },
+            actions = {
+                IconButton(
+                    onClick = { onRefresh() }
+                ) {
+                    if (isRefreshing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                    }
+                }
+            }
+        )
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -72,8 +97,8 @@ fun HomeScreen(
             // Header Section
             item {
                 HeaderSection(
-                    userName = uiState.user?.firstName ?: "Learner",
-                    level = uiState.userProgress?.level ?: 1,
+                    userName = uiState.user?.displayName ?: "Learner",
+                    level = uiState.userProgress?.overallProgress?.currentLevel ?: 1,
                     onProfileClick = onNavigateToProfile
                 )
             }

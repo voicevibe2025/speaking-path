@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -24,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.voicevibe.domain.model.LearningPath
+import com.example.voicevibe.domain.model.LearningModule
+import com.example.voicevibe.domain.model.Lesson
+import com.example.voicevibe.domain.model.PathInstructor
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -140,9 +144,9 @@ fun LearningPathDetailScreen(
                         uiState.learningPath!!.nextLesson?.let { nextLesson ->
                             val moduleId = uiState.learningPath!!.modules
                                 .firstOrNull { module ->
-                                    module.lessons.any { it.id == nextLesson.id }
+                                    module.lessons.any { it.id == nextLesson.lessonId }
                                 }?.id ?: ""
-                            onNavigateToLesson(moduleId, nextLesson.id)
+                            onNavigateToLesson(moduleId, nextLesson.lessonId)
                         }
                     },
                     onLessonClick = { moduleId, lessonId ->
@@ -238,10 +242,7 @@ private fun LearningPathContent(
                 )
             }
             else -> {
-                OverviewTab(
-                    learningPath = learningPath,
-                    instructor = learningPath.instructor
-                )
+                OverviewTab(path = learningPath)
             }
         }
     }
@@ -467,51 +468,8 @@ private fun StatItem(
 }
 
 @Composable
-private fun OverviewTab(
-    learningPath: LearningPath,
-    instructor: Instructor
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            text = learningPath.description,
-            style = MaterialTheme.typography.bodyLarge
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            AsyncImage(
-                model = instructor.avatarUrl,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
-
-            Column {
-                Text(
-                    text = instructor.name,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = instructor.bio,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-        }
-    }
-}
-
-@Composable
 private fun ModulesTab(
-    modules: List<Module>,
+    modules: List<LearningModule>,
     onLessonClick: (moduleId: String, lessonId: String) -> Unit
 ) {
     LazyColumn(
@@ -531,7 +489,7 @@ private fun ModulesTab(
 
 @Composable
 private fun ModuleCard(
-    module: Module,
+    module: LearningModule,
     onLessonClick: (moduleId: String, lessonId: String) -> Unit
 ) {
     Card(

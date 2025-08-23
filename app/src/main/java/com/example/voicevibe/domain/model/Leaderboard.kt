@@ -1,6 +1,7 @@
 package com.example.voicevibe.domain.model
 
 import java.time.LocalDateTime
+import com.example.voicevibe.domain.model.RewardType
 
 /**
  * Leaderboard entry representing a user's position

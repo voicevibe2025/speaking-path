@@ -538,7 +538,6 @@ fun getSortOptionDisplayName(option: PathSortOption): String {
 fun getDifficultyColor(difficulty: DifficultyLevel): Color {
     return when (difficulty) {
         DifficultyLevel.BEGINNER -> Color(0xFF4CAF50)
-        DifficultyLevel.ELEMENTARY -> Color(0xFF8BC34A)
         DifficultyLevel.INTERMEDIATE -> Color(0xFFFFC107)
         DifficultyLevel.UPPER_INTERMEDIATE -> Color(0xFFFF9800)
         DifficultyLevel.ADVANCED -> Color(0xFFFF5722)

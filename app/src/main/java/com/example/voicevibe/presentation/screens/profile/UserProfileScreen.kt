@@ -79,9 +79,10 @@ fun UserProfileScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    if (!uiState.isOwnProfile && uiState.userProfile != null) {
+                    val userProfile = uiState.userProfile
+                    if (!uiState.isOwnProfile && userProfile != null) {
                         Text(
-                            "@${uiState.userProfile.username}",
+                            "@${userProfile.username}",
                             fontWeight = FontWeight.Bold
                         )
                     } else {
@@ -117,26 +118,29 @@ fun UserProfileScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
+        val error = uiState.error
+        val userProfile = uiState.userProfile
+        
         when {
             uiState.isLoading -> {
                 LoadingScreen(modifier = Modifier.padding(paddingValues))
             }
-            uiState.error != null -> {
+            error != null -> {
                 ErrorScreen(
-                    message = uiState.error,
+                    message = error,
                     onRetry = viewModel::refreshProfile,
                     modifier = Modifier.padding(paddingValues)
                 )
             }
-            uiState.userProfile != null -> {
+            userProfile != null -> {
                 ProfileContent(
-                    profile = uiState.userProfile,
+                    profile = userProfile,
                     activities = uiState.activities,
                     selectedTab = uiState.selectedTab,
                     isOwnProfile = uiState.isOwnProfile,
                     onTabSelected = viewModel::selectTab,
                     onFollowClick = {
-                        if (uiState.userProfile.isFollowing) {
+                        if (userProfile.isFollowing) {
                             viewModel.unfollowUser()
                         } else {
                             viewModel.followUser()
@@ -308,17 +312,33 @@ private fun ProfileHeader(
             }
 
             // Avatar
-            AsyncImage(
-                model = profile.avatarUrl ?: R.drawable.avatar_placeholder,
-                contentDescription = "Avatar",
-                modifier = Modifier
-                    .size(100.dp)
-                    .align(Alignment.BottomStart)
-                    .offset(x = 16.dp, y = 50.dp)
-                    .clip(CircleShape)
-                    .border(4.dp, MaterialTheme.colorScheme.surface, CircleShape),
-                contentScale = ContentScale.Crop
-            )
+            if (profile.avatarUrl != null) {
+                AsyncImage(
+                    model = profile.avatarUrl,
+                    contentDescription = "Avatar",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .border(3.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .border(3.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Default Avatar",
+                        modifier = Modifier.size(60.dp),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(60.dp))

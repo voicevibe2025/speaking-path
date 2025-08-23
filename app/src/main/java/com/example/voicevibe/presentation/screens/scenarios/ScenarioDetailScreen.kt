@@ -33,7 +33,7 @@ enum class StepType {
     CONTEXT, DIALOGUE, USER_RESPONSE, CULTURAL_TIP, COMPLETION
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ScenarioDetailScreen(
     scenarioId: String,

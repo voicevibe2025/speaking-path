@@ -20,6 +20,7 @@ data class PracticePrompt(
 enum class DifficultyLevel {
     BEGINNER,
     INTERMEDIATE,
+    UPPER_INTERMEDIATE,
     ADVANCED,
     EXPERT
 }

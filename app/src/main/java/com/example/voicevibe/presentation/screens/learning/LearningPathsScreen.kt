@@ -352,6 +352,7 @@ private fun CategoryChipsRow(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FilterBar(
     selectedDifficulty: DifficultyLevel?,
@@ -458,4 +459,69 @@ private fun FilterBar(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FilterAndSortBar(
+    selectedFilters: PathFilters,
+    sortOption: PathSortOption,
+    onFiltersChanged: (PathFilters) -> Unit,
+    onSortChanged: (PathSortOption) -> Unit
+) {
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun SortDropdown() {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Sort by:",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            var expanded by remember { mutableStateOf(false) }
+
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = it }
+            ) {
+                OutlinedTextField(
+                    value = getSortOptionDisplayName(sortOption),
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .width(200.dp)
+                        .height(48.dp),
+                    textStyle = MaterialTheme.typography.bodySmall
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    PathSortOption.values().forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(getSortOptionDisplayName(option)) },
+                            onClick = {
+                                onSortChanged(option)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    SortDropdown()
 }

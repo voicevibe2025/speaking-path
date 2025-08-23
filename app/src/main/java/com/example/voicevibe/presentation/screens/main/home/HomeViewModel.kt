@@ -6,7 +6,7 @@ import com.example.voicevibe.data.repository.UserRepository
 import com.example.voicevibe.data.repository.LearningPathRepository
 import com.example.voicevibe.data.repository.GamificationRepository
 import com.example.voicevibe.domain.model.Resource
-import com.example.voicevibe.domain.model.User
+import com.example.voicevibe.domain.model.UserProfile
 import com.example.voicevibe.domain.model.LearningPath
 import com.example.voicevibe.domain.model.UserProgress
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -107,9 +107,9 @@ class HomeViewModel @Inject constructor(
                         resource.data?.let { stats ->
                             _uiState.update {
                                 it.copy(
-                                    totalPoints = stats.totalPoints,
-                                    currentStreak = stats.currentStreak,
-                                    badges = stats.recentBadges
+                                    totalPoints = stats.totalXp,
+                                    currentStreak = stats.streakDays,
+                                    badges = emptyList() // Will load badges separately
                                 )
                             }
                         }
@@ -155,7 +155,7 @@ class HomeViewModel @Inject constructor(
  */
 data class HomeUiState(
     val isLoading: Boolean = false,
-    val user: User? = null,
+    val user: UserProfile? = null,
     val userProgress: UserProgress? = null,
     val activeLearningPaths: List<LearningPath> = emptyList(),
     val completedLessons: Int = 0,

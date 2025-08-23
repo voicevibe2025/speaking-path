@@ -79,9 +79,10 @@ class LearningPathDetailViewModel @Inject constructor(
                 repository.enrollInPath(pathId)
 
                 // Reload path to get updated enrollment status
-                val updatedPath = _uiState.value.learningPath?.copy(
+                val currentPath = _uiState.value.learningPath
+                val updatedPath = currentPath?.copy(
                     isEnrolled = true,
-                    enrolledCount = _uiState.value.learningPath.enrolledCount + 1
+                    enrolledCount = currentPath.enrolledCount + 1
                 )
 
                 _uiState.update {
@@ -112,9 +113,10 @@ class LearningPathDetailViewModel @Inject constructor(
                 repository.unenrollFromPath(pathId)
 
                 // Update path enrollment status
-                val updatedPath = _uiState.value.learningPath?.copy(
+                val currentPath = _uiState.value.learningPath
+                val updatedPath = currentPath?.copy(
                     isEnrolled = false,
-                    enrolledCount = (_uiState.value.learningPath.enrolledCount - 1).coerceAtLeast(0),
+                    enrolledCount = (currentPath.enrolledCount - 1).coerceAtLeast(0),
                     progress = 0f,
                     completedLessons = 0,
                     nextLesson = null

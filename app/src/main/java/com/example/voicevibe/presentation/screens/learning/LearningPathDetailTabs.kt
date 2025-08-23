@@ -17,7 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.voicevibe.domain.model.LearningPath
-import com.example.voicevibe.domain.model.Module
+import com.example.voicevibe.domain.model.LearningModule
+import com.example.voicevibe.domain.model.LessonType
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -43,7 +44,7 @@ fun OverviewTab(path: LearningPath) {
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    path.objectives.forEach { objective ->
+                    path.skillsToGain.forEach { skill ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -55,7 +56,7 @@ fun OverviewTab(path: LearningPath) {
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = objective,
+                                text = skill,
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.weight(1f)
                             )
@@ -107,7 +108,7 @@ fun OverviewTab(path: LearningPath) {
 
 @Composable
 fun ModulesTab(
-    modules: List<Module>,
+    modules: List<LearningModule>,
     isEnrolled: Boolean,
     onLessonClick: (moduleId: String, lessonId: String) -> Unit
 ) {
@@ -128,7 +129,7 @@ fun ModulesTab(
 
 @Composable
 private fun ModuleCard(
-    module: Module,
+    module: LearningModule,
     isEnrolled: Boolean,
     onLessonClick: (moduleId: String, lessonId: String) -> Unit
 ) {
@@ -153,12 +154,12 @@ private fun ModuleCard(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "${module.lessons.size} lessons • ${module.estimatedDuration} min",
+                        text = "${module.lessons.size} lessons • ${module.duration} min",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                if (module.isCompleted) {
+                if (module.progress >= 1.0f) {
                     Icon(
                         Icons.Default.CheckCircle,
                         contentDescription = "Completed",
@@ -210,9 +211,9 @@ private fun LessonItem(
         ) {
             Icon(
                 when (lesson.type) {
-                    "video" -> Icons.Default.PlayCircle
-                    "quiz" -> Icons.Default.Quiz
-                    "practice" -> Icons.Default.Mic
+                    LessonType.VIDEO -> Icons.Default.PlayCircle
+                    LessonType.QUIZ -> Icons.Default.Quiz
+                    LessonType.SPEAKING_PRACTICE -> Icons.Default.Mic
                     else -> Icons.Default.Article
                 },
                 contentDescription = null,
@@ -224,7 +225,7 @@ private fun LessonItem(
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "${lesson.estimatedDuration} min • ${lesson.xpReward} XP",
+                    text = "${lesson.duration} min • ${lesson.xpReward} XP",
                     style = MaterialTheme.typography.bodySmall
                 )
             }

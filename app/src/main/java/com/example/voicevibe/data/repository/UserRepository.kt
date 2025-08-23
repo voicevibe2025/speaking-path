@@ -3,6 +3,7 @@ package com.example.voicevibe.data.repository
 import com.example.voicevibe.data.remote.api.UserApiService
 import com.example.voicevibe.domain.model.UserProfile
 import com.example.voicevibe.domain.model.UserProgress
+import com.example.voicevibe.domain.model.UserActivity
 import com.example.voicevibe.domain.model.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -33,6 +34,110 @@ class UserRepository @Inject constructor(
             }
         } catch (e: Exception) {
             emit(Resource.Error<UserProfile>(e.message ?: "Unknown error occurred"))
+        }
+    }
+    
+    /**
+     * Get user by ID
+     */
+    suspend fun getUserById(userId: String): Resource<UserProfile> {
+        return try {
+            val response = apiService.getUserById(userId)
+            if (response.isSuccessful) {
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error<UserProfile>("Failed to load user data: empty body")
+            } else {
+                Resource.Error<UserProfile>("Failed to load user data")
+            }
+        } catch (e: Exception) {
+            Resource.Error<UserProfile>(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Get current user ID
+     */
+    suspend fun getCurrentUserId(): String {
+        // This would typically be stored in preferences or obtained from auth token
+        return "current_user_id" // Mock implementation
+    }
+
+    /**
+     * Get user activities
+     */
+    suspend fun getUserActivities(userId: String): Resource<List<UserActivity>> {
+        // Mock implementation since API doesn't exist yet
+        return try {
+            // Return mock empty list for now
+            Resource.Success(emptyList<UserActivity>())
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Follow a user
+     */
+    suspend fun followUser(userId: String): Resource<Unit> {
+        return try {
+            val response = apiService.followUser(userId)
+            if (response.isSuccessful) {
+                Resource.Success(Unit)
+            } else {
+                Resource.Error("Failed to follow user")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Unfollow a user
+     */
+    suspend fun unfollowUser(userId: String): Resource<Unit> {
+        return try {
+            val response = apiService.unfollowUser(userId)
+            if (response.isSuccessful) {
+                Resource.Success(Unit)
+            } else {
+                Resource.Error("Failed to unfollow user")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Block a user
+     */
+    suspend fun blockUser(userId: String): Resource<Unit> {
+        return try {
+            val response = apiService.blockUser(userId)
+            if (response.isSuccessful) {
+                Resource.Success(Unit)
+            } else {
+                Resource.Error("Failed to block user")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Report a user
+     */
+    suspend fun reportUser(userId: String, reason: String): Resource<Unit> {
+        return try {
+            val reasonMap = mapOf("reason" to reason)
+            val response = apiService.reportUser(userId, reasonMap)
+            if (response.isSuccessful) {
+                Resource.Success(Unit)
+            } else {
+                Resource.Error("Failed to report user")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
         }
     }
     

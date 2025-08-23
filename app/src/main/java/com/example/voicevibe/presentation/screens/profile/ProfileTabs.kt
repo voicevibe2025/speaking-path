@@ -533,6 +533,7 @@ fun getActivityColor(type: ActivityType): Color {
         ActivityType.PRACTICE_SESSION -> Color(0xFF2196F3)
         ActivityType.CHALLENGE_COMPLETED -> Color(0xFFE91E63)
         ActivityType.FRIEND_ADDED -> Color(0xFF00BCD4)
+        ActivityType.BADGE_EARNED -> Color(0xFFFF9800)
     }
 }
 
@@ -545,5 +546,6 @@ fun getActivityIcon(type: ActivityType): ImageVector {
         ActivityType.PRACTICE_SESSION -> Icons.Default.Mic
         ActivityType.CHALLENGE_COMPLETED -> Icons.Default.SportsEsports
         ActivityType.FRIEND_ADDED -> Icons.Default.PersonAdd
+        ActivityType.BADGE_EARNED -> Icons.Default.Stars
     }
 }

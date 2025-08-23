@@ -1,7 +1,8 @@
 package com.example.voicevibe.domain.model
 
 import java.time.LocalDateTime
-
+import com.example.voicevibe.domain.model.DifficultyLevel
+import com.example.voicevibe.domain.model.PracticePrompt
 /**
  * Data class representing a learning path
  */
@@ -111,18 +112,6 @@ data class QuizQuestion(
 )
 
 /**
- * Data class for practice prompts
- */
-data class PracticePrompt(
-    val id: String,
-    val text: String,
-    val difficulty: DifficultyLevel,
-    val targetWords: List<String>,
-    val tips: List<String>,
-    val exampleResponse: String?
-)
-
-/**
  * Data class for lesson resources
  */
 data class LessonResource(
@@ -185,6 +174,21 @@ data class PathNote(
 )
 
 /**
+ * Data class for path reviews
+ */
+data class PathReview(
+    val id: String,
+    val userId: String,
+    val userName: String,
+    val userAvatarUrl: String?,
+    val rating: Float,
+    val comment: String,
+    val createdAt: LocalDateTime,
+    val isVerifiedPurchase: Boolean,
+    val helpfulCount: Int
+)
+
+/**
  * Data class for path recommendations
  */
 data class PathRecommendation(
@@ -232,18 +236,6 @@ enum class PathCategory {
     INTERVIEW_PREP,
     TOEFL_PREP,
     IELTS_PREP
-}
-
-/**
- * Enum for difficulty levels
- */
-enum class DifficultyLevel {
-    BEGINNER,
-    ELEMENTARY,
-    INTERMEDIATE,
-    UPPER_INTERMEDIATE,
-    ADVANCED,
-    EXPERT
 }
 
 /**

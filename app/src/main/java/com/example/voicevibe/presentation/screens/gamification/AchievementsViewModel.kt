@@ -34,12 +34,13 @@ class AchievementsViewModel @Inject constructor(
             // Load user achievements
             when (val result = repository.getUserAchievements()) {
                 is Resource.Success -> {
+                    val achievementsList = result.data ?: emptyList()
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            achievements = result.data,
+                            achievements = achievementsList,
                             filteredAchievements = filterAchievements(
-                                result.data,
+                                achievementsList,
                                 it.selectedCategory,
                                 it.showOnlyUnlocked
                             )

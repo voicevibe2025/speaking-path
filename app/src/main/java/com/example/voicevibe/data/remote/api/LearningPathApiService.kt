@@ -9,34 +9,34 @@ import retrofit2.http.*
  */
 interface LearningPathApiService {
 
-    @GET("api/learning-paths/user")
+    @GET("learning-paths/user")
     suspend fun getUserLearningPaths(): Response<List<LearningPath>>
 
-    @GET("api/learning-paths/{id}")
+    @GET("learning-paths/{id}")
     suspend fun getLearningPath(@Path("id") pathId: String): Response<LearningPath>
 
-    @GET("api/learning-paths")
+    @GET("learning-paths")
     suspend fun getAllLearningPaths(): Response<List<LearningPath>>
 
-    @POST("api/learning-paths/{id}/start")
+    @POST("learning-paths/{id}/start")
     suspend fun startLearningPath(@Path("id") pathId: String): Response<LearningPath>
 
-    @PUT("api/learning-paths/{id}/progress")
+    @PUT("learning-paths/{id}/progress")
     suspend fun updateProgress(
         @Path("id") pathId: String,
         @Body request: Map<String, Any>
     ): Response<LearningPath>
 
-    @GET("api/learning-paths/{id}/lessons")
+    @GET("learning-paths/{id}/lessons")
     suspend fun getLessons(@Path("id") pathId: String): Response<List<Lesson>>
 
-    @GET("api/learning-paths/{pathId}/lessons/{lessonId}")
+    @GET("learning-paths/{pathId}/lessons/{lessonId}")
     suspend fun getLesson(
         @Path("pathId") pathId: String,
         @Path("lessonId") lessonId: String
     ): Response<Lesson>
 
-    @POST("api/learning-paths/{pathId}/lessons/{lessonId}/complete")
+    @POST("learning-paths/{pathId}/lessons/{lessonId}/complete")
     suspend fun completeLesson(
         @Path("pathId") pathId: String,
         @Path("lessonId") lessonId: String

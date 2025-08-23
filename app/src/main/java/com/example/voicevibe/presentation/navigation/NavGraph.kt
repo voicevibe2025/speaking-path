@@ -6,16 +6,19 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.voicevibe.presentation.screens.auth.*
+import com.example.voicevibe.presentation.screens.auth.splash.SplashScreen
+import com.example.voicevibe.presentation.screens.auth.onboarding.OnboardingScreen
+import com.example.voicevibe.presentation.screens.auth.login.LoginScreen
+import com.example.voicevibe.presentation.screens.auth.register.RegisterScreen
+import com.example.voicevibe.presentation.screens.auth.forgotpassword.ForgotPasswordScreen
 import com.example.voicevibe.presentation.screens.main.home.HomeScreen
-import com.example.voicevibe.presentation.screens.practice.PracticeScreen
-import com.example.voicevibe.presentation.screens.practice.SessionPracticeScreen
-import com.example.voicevibe.presentation.screens.practice.SessionResultScreen
+import com.example.voicevibe.presentation.screens.practice.speaking.SpeakingPracticeScreen
+import com.example.voicevibe.presentation.screens.evaluation.EvaluationResultScreen
 import com.example.voicevibe.presentation.screens.learning.LearningPathsScreen
 import com.example.voicevibe.presentation.screens.learning.LearningPathDetailScreen
 import com.example.voicevibe.presentation.screens.learning.LessonDetailScreen
-import com.example.voicevibe.presentation.screens.achievements.AchievementsScreen
-import com.example.voicevibe.presentation.screens.achievements.LeaderboardScreen
+import com.example.voicevibe.presentation.screens.gamification.AchievementsScreen
+import com.example.voicevibe.presentation.screens.gamification.LeaderboardScreen
 import com.example.voicevibe.presentation.screens.profile.ProfileScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsScreen
 import com.example.voicevibe.presentation.screens.scenarios.CulturalScenariosScreen
@@ -106,19 +109,22 @@ fun NavGraph(
                 onNavigateToAchievements = {
                     navController.navigate(Screen.Achievements.route)
                 },
-                onNavigateToCulturalScenarios = {
-                    navController.navigate(Screen.CulturalScenarios.route)
+                onNavigateToLeaderboard = {
+                    navController.navigate(Screen.Leaderboard.route)
                 },
-                onNavigateToAnalytics = {
-                    navController.navigate(Screen.DetailedAnalytics.route)
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route)
+                },
+                onNavigateToLearningPath = { pathId ->
+                    navController.navigate(Screen.LearningPathDetail.createRoute(pathId))
                 }
             )
         }
 
         composable(Screen.Practice.route) {
-            PracticeScreen(
-                onNavigateToSession = { sessionId ->
-                    navController.navigate(Screen.SessionPractice.createRoute(sessionId))
+            SpeakingPracticeScreen(
+                onNavigateToResults = { sessionId ->
+                    navController.navigate(Screen.SessionResult.createRoute(sessionId))
                 },
                 onNavigateBack = {
                     navController.popBackStack()
@@ -126,38 +132,18 @@ fun NavGraph(
             )
         }
 
-        // Practice Flow
-        composable(
-            route = Screen.SessionPractice.route,
-            arguments = listOf(navArgument("sessionId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val sessionId = backStackEntry.arguments?.getString("sessionId") ?: ""
-            SessionPracticeScreen(
-                sessionId = sessionId,
-                onNavigateToResult = {
-                    navController.navigate(Screen.SessionResult.createRoute(sessionId)) {
-                        popUpTo(Screen.Practice.route)
-                    }
-                },
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
+        // Practice Flow - Evaluation Result Screen
         composable(
             route = Screen.SessionResult.route,
             arguments = listOf(navArgument("sessionId") { type = NavType.StringType })
         ) { backStackEntry ->
             val sessionId = backStackEntry.arguments?.getString("sessionId") ?: ""
-            SessionResultScreen(
+            EvaluationResultScreen(
                 sessionId = sessionId,
-                onNavigateHome = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Home.route) { inclusive = true }
-                    }
+                onNavigateBack = {
+                    navController.popBackStack()
                 },
-                onNavigateToPracticeAgain = {
+                onNavigateToPractice = {
                     navController.navigate(Screen.Practice.route) {
                         popUpTo(Screen.Practice.route) { inclusive = true }
                     }
@@ -171,7 +157,13 @@ fun NavGraph(
                 onNavigateToPath = { pathId ->
                     navController.navigate(Screen.LearningPathDetail.createRoute(pathId))
                 },
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToLesson = { moduleId, lessonId ->
+                    // Navigate directly to lesson from the list
+                    navController.navigate(
+                        Screen.DetailedLessonDetail.createRoute("", moduleId, lessonId)
+                    )
+                }
             )
         }
 
@@ -238,6 +230,10 @@ fun NavGraph(
             ScenarioDetailScreen(
                 scenarioId = scenarioId,
                 onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onComplete = {
+                    // Navigate back to scenarios list after completion
                     navController.popBackStack()
                 }
             )

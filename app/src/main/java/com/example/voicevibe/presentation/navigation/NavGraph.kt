@@ -42,6 +42,11 @@ fun NavGraph(
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 },
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                },
                 onNavigateToHome = {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
@@ -52,7 +57,7 @@ fun NavGraph(
 
         composable(Screen.Onboarding.route) {
             OnboardingScreen(
-                onNavigateToLogin = {
+                onComplete = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Onboarding.route) { inclusive = true }
                     }
@@ -78,13 +83,13 @@ fun NavGraph(
 
         composable(Screen.Register.route) {
             RegisterScreen(
+                onNavigateToLogin = {
+                    navController.popBackStack()
+                },
                 onNavigateToHome = {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Register.route) { inclusive = true }
                     }
-                },
-                onNavigateToLogin = {
-                    navController.popBackStack()
                 }
             )
         }
@@ -92,6 +97,9 @@ fun NavGraph(
         composable(Screen.ForgotPassword.route) {
             ForgotPasswordScreen(
                 onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToLogin = {
                     navController.popBackStack()
                 }
             )
@@ -139,7 +147,6 @@ fun NavGraph(
         ) { backStackEntry ->
             val sessionId = backStackEntry.arguments?.getString("sessionId") ?: ""
             EvaluationResultScreen(
-                sessionId = sessionId,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
@@ -251,9 +258,6 @@ fun NavGraph(
         // Achievements & Gamification
         composable(Screen.Achievements.route) {
             AchievementsScreen(
-                onNavigateToLeaderboard = {
-                    navController.navigate(Screen.Leaderboard.route)
-                },
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -262,6 +266,9 @@ fun NavGraph(
 
         composable(Screen.Leaderboard.route) {
             LeaderboardScreen(
+                onNavigateToProfile = { userId ->
+                    navController.navigate(Screen.Profile.route)
+                },
                 onNavigateBack = {
                     navController.popBackStack()
                 }

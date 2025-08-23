@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ErrorOutline
 
 @Composable
 fun ErrorScreen(
@@ -24,7 +25,7 @@ fun ErrorScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            Icons.Default.ErrorOutline,
+            Icons.Filled.ErrorOutline,
             contentDescription = "Error",
             modifier = Modifier.size(64.dp),
             tint = MaterialTheme.colorScheme.error

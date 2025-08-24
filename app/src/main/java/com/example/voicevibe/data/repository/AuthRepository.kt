@@ -27,6 +27,7 @@ class AuthRepository @Inject constructor(
     fun register(
         email: String,
         password: String,
+        passwordConfirm: String,
         firstName: String,
         lastName: String,
         nativeLanguage: String = "Indonesian",
@@ -39,6 +40,7 @@ class AuthRepository @Inject constructor(
             val request = RegisterRequest(
                 email = email,
                 password = password,
+                passwordConfirm = passwordConfirm,
                 firstName = firstName,
                 lastName = lastName,
                 nativeLanguage = nativeLanguage,

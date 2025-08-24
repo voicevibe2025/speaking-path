@@ -58,7 +58,8 @@ class RegisterViewModel @Inject constructor(
                 firstName = _uiState.value.firstName,
                 lastName = _uiState.value.lastName,
                 email = _uiState.value.email,
-                password = _uiState.value.password
+                password = _uiState.value.password,
+                passwordConfirm = _uiState.value.confirmPassword
             ).collect { resource ->
                 when (resource) {
                     is Resource.Loading -> {

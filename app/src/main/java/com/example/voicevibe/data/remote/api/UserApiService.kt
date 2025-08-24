@@ -10,54 +10,54 @@ import retrofit2.http.*
  */
 interface UserApiService {
     
-    @GET("api/users/me")
+    @GET("users/me")
     suspend fun getCurrentUser(): Response<UserProfile>
     
-    @PUT("api/users/me")
+    @PUT("users/me")
     suspend fun updateProfile(@Body user: UserProfile): Response<UserProfile>
     
-    @GET("api/users/progress")
+    @GET("users/progress")
     suspend fun getUserProgress(): Response<UserProgress>
     
-    @POST("api/users/profile-picture")
+    @POST("users/profile-picture")
     suspend fun uploadProfilePicture(@Body imageData: ByteArray): Response<Map<String, String>>
     
-    @PATCH("api/users/preferences")
+    @PATCH("users/preferences")
     suspend fun updatePreferences(@Body preferences: Map<String, Any>): Response<UserProfile>
     
-    @DELETE("api/users/me")
+    @DELETE("users/me")
     suspend fun deleteAccount(): Response<Unit>
     
-    @GET("api/users/{id}")
+    @GET("users/{id}")
     suspend fun getUserById(@Path("id") userId: String): Response<UserProfile>
     
-    @GET("api/users/search")
+    @GET("users/search")
     suspend fun searchUsers(@Query("query") query: String): Response<List<UserProfile>>
     
-    @POST("api/users/follow/{id}")
+    @POST("users/follow/{id}")
     suspend fun followUser(@Path("id") userId: String): Response<Unit>
     
-    @DELETE("api/users/follow/{id}")
+    @DELETE("users/follow/{id}")
     suspend fun unfollowUser(@Path("id") userId: String): Response<Unit>
     
-    @GET("api/users/followers")
+    @GET("users/followers")
     suspend fun getFollowers(): Response<List<UserProfile>>
     
-    @GET("api/users/following")
+    @GET("users/following")
     suspend fun getFollowing(): Response<List<UserProfile>>
     
-    @POST("api/users/report/{id}")
+    @POST("users/report/{id}")
     suspend fun reportUser(
         @Path("id") userId: String,
         @Body reason: Map<String, String>
     ): Response<Unit>
     
-    @POST("api/users/block/{id}")
+    @POST("users/block/{id}")
     suspend fun blockUser(@Path("id") userId: String): Response<Unit>
     
-    @DELETE("api/users/block/{id}")
+    @DELETE("users/block/{id}")
     suspend fun unblockUser(@Path("id") userId: String): Response<Unit>
     
-    @GET("api/users/blocked")
+    @GET("users/blocked")
     suspend fun getBlockedUsers(): Response<List<UserProfile>>
 }

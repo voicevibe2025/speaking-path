@@ -14,20 +14,20 @@ import retrofit2.http.*
  */
 interface SpeakingPracticeApiService {
 
-    @GET("api/practice/prompts/random")
+    @GET("practice/prompts/random")
     suspend fun getRandomPrompt(): Response<PracticePrompt>
 
-    @GET("api/practice/prompts/category/{category}")
+    @GET("practice/prompts/category/{category}")
     suspend fun getPromptsByCategory(
         @Path("category") category: String
     ): Response<List<PracticePrompt>>
 
-    @GET("api/practice/prompts/{id}")
+    @GET("practice/prompts/{id}")
     suspend fun getPromptById(
         @Path("id") promptId: String
     ): Response<PracticePrompt>
 
-    @GET("api/practice/prompts")
+    @GET("practice/prompts")
     suspend fun getAllPrompts(
         @Query("difficulty") difficulty: String? = null,
         @Query("limit") limit: Int = 20,
@@ -35,52 +35,52 @@ interface SpeakingPracticeApiService {
     ): Response<List<PracticePrompt>>
 
     @Multipart
-    @POST("api/practice/sessions/submit/{promptId}")
+    @POST("practice/sessions/submit/{promptId}")
     suspend fun submitRecording(
         @Path("promptId") promptId: String,
         @Part audio: MultipartBody.Part
     ): Response<SubmissionResult>
 
-    @GET("api/practice/sessions/{id}")
+    @GET("practice/sessions/{id}")
     suspend fun getSession(
         @Path("id") sessionId: String
     ): Response<SpeakingSession>
 
-    @GET("api/practice/sessions")
+    @GET("practice/sessions")
     suspend fun getUserSessions(
         @Query("limit") limit: Int = 20,
         @Query("offset") offset: Int = 0
     ): Response<List<SpeakingSession>>
 
-    @GET("api/practice/sessions/{id}/evaluation")
+    @GET("practice/sessions/{id}/evaluation")
     suspend fun getEvaluation(
         @Path("id") sessionId: String
     ): Response<SpeakingEvaluation>
 
-    @DELETE("api/practice/sessions/{id}")
+    @DELETE("practice/sessions/{id}")
     suspend fun deleteSession(
         @Path("id") sessionId: String
     ): Response<Unit>
 
-    @GET("api/practice/statistics")
+    @GET("practice/statistics")
     suspend fun getPracticeStats(): Response<PracticeStatistics>
 
-    @POST("api/practice/sessions/{id}/retry")
+    @POST("practice/sessions/{id}/retry")
     suspend fun retryEvaluation(
         @Path("id") sessionId: String
     ): Response<SpeakingEvaluation>
 
-    @GET("api/practice/sessions/history")
+    @GET("practice/sessions/history")
     suspend fun getSessionHistory(
         @Query("startDate") startDate: String? = null,
         @Query("endDate") endDate: String? = null,
         @Query("limit") limit: Int = 50
     ): Response<List<SpeakingSession>>
 
-    @GET("api/practice/progress")
+    @GET("practice/progress")
     suspend fun getPracticeProgress(): Response<PracticeProgress>
 
-    @POST("api/practice/feedback/{sessionId}")
+    @POST("practice/feedback/{sessionId}")
     suspend fun submitFeedback(
         @Path("sessionId") sessionId: String,
         @Body feedback: UserFeedback

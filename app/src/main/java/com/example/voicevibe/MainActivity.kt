@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
-import com.example.voicevibe.presentation.navigation.VoiceVibeNavHost
+import com.example.voicevibe.presentation.navigation.NavGraph
 import com.example.voicevibe.ui.theme.VoiceVibeTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,6 +54,6 @@ fun VoiceVibeApp() {
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        VoiceVibeNavHost(navController = navController)
+        NavGraph(navController = navController)
     }
 }

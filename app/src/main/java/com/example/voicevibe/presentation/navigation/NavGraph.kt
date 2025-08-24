@@ -1,11 +1,14 @@
 package com.example.voicevibe.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch
 import com.example.voicevibe.presentation.screens.auth.splash.SplashScreen
 import com.example.voicevibe.presentation.screens.auth.onboarding.OnboardingScreen
 import com.example.voicevibe.presentation.screens.auth.login.LoginScreen
@@ -21,6 +24,7 @@ import com.example.voicevibe.presentation.screens.gamification.AchievementsScree
 import com.example.voicevibe.presentation.screens.gamification.LeaderboardScreen
 import com.example.voicevibe.presentation.screens.profile.ProfileScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsScreen
+import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
 import com.example.voicevibe.presentation.screens.scenarios.CulturalScenariosScreen
 import com.example.voicevibe.presentation.screens.scenarios.ScenarioDetailScreen
 import com.example.voicevibe.presentation.screens.analytics.AnalyticsDashboardScreen
@@ -291,6 +295,8 @@ fun NavGraph(
         }
 
         composable(Screen.Settings.route) {
+            val settingsViewModel: SettingsViewModel = hiltViewModel()
+            val scope = rememberCoroutineScope()
             SettingsScreen(
                 onNavigateBack = {
                     navController.popBackStack()
@@ -308,8 +314,11 @@ fun NavGraph(
                     navController.navigate(Screen.About.route)
                 },
                 onLogout = {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(0) { inclusive = true }
+                    scope.launch {
+                        settingsViewModel.logout()
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
                     }
                 }
             )

@@ -15,50 +15,50 @@ import retrofit2.http.*
  */
 interface GamificationApiService {
 
-    @GET("api/gamification/stats")
+    @GET("gamification/stats")
     suspend fun getUserStats(): Response<GamificationStats>
 
-    @GET("api/gamification/badges")
+    @GET("gamification/badges")
     suspend fun getUserBadges(): Response<List<Badge>>
 
-    @GET("api/gamification/achievements")
+    @GET("gamification/achievements")
     suspend fun getUserAchievements(): Response<List<Achievement>>
 
-    @GET("api/gamification/leaderboard")
+    @GET("gamification/leaderboard")
     suspend fun getLeaderboard(
         @Query("type") type: String,
         @Query("filter") filter: String,
         @Query("countryCode") countryCode: String? = null
     ): Response<LeaderboardData>
 
-    @GET("api/gamification/leaderboard/friends")
+    @GET("gamification/leaderboard/friends")
     suspend fun getFriendsLeaderboard(): Response<List<LeaderboardData>>
 
-    @GET("api/gamification/achievements/stats")
+    @GET("gamification/achievements/stats")
     suspend fun getAchievementStats(): Response<AchievementStats>
 
-    @POST("api/gamification/achievements/{id}/claim")
+    @POST("gamification/achievements/{id}/claim")
     suspend fun claimAchievementReward(
         @Path("id") achievementId: String
     ): Response<Unit>
 
-    @GET("api/gamification/competition/stats")
+    @GET("gamification/competition/stats")
     suspend fun getCompetitionStats(): Response<CompetitionStats>
 
-    @POST("api/gamification/daily-reward")
+    @POST("gamification/daily-reward")
     suspend fun claimDailyReward(): Response<DailyReward>
 
-    @POST("api/gamification/streak")
+    @POST("gamification/streak")
     suspend fun updateStreak(): Response<Int>
 
     // Challenge endpoints (kept for future use)
-    @GET("api/gamification/challenges")
+    @GET("gamification/challenges")
     suspend fun getChallenges(): Response<List<Challenge>>
 
-    @POST("api/gamification/challenges/{id}/join")
+    @POST("gamification/challenges/{id}/join")
     suspend fun joinChallenge(@Path("id") challengeId: String): Response<Challenge>
 
-    @POST("api/gamification/challenges/{id}/complete")
+    @POST("gamification/challenges/{id}/complete")
     suspend fun completeChallenge(
         @Path("id") challengeId: String,
         @Body result: Map<String, Any>

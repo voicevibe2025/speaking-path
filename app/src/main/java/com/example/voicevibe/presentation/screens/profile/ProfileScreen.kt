@@ -45,6 +45,7 @@ fun ProfileScreen(
     val lessonsCompleted by viewModel.lessonsCompleted
     val recordingsCount by viewModel.recordingsCount
     val avgScore by viewModel.avgScore
+    val recentAchievements by viewModel.recentAchievements
 
     Column(
         modifier = Modifier
@@ -113,7 +114,10 @@ fun ProfileScreen(
                         avgScore = avgScore
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    RecentAchievements(onNavigateToAchievements)
+                    RecentAchievements(
+                        achievements = recentAchievements,
+                        onNavigateToAchievements = onNavigateToAchievements
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                     LearningPreferences()
                 }
@@ -357,7 +361,10 @@ fun StatCard(
 }
 
 @Composable
-fun RecentAchievements(onNavigateToAchievements: () -> Unit) {
+fun RecentAchievements(
+    achievements: List<com.example.voicevibe.data.model.Achievement>,
+    onNavigateToAchievements: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp)
@@ -384,26 +391,51 @@ fun RecentAchievements(onNavigateToAchievements: () -> Unit) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Achievement items
-            AchievementItem(
-                icon = Icons.Default.EmojiEvents,
-                title = "Master Speaker",
-                description = "Completed 50 speaking sessions",
-                color = Color(0xFFFFD700)
-            )
-            AchievementItem(
-                icon = Icons.Default.Speed,
-                title = "Speed Learner",
-                description = "Finished 5 lessons in one day",
-                color = Color(0xFF00CED1)
-            )
-            AchievementItem(
-                icon = Icons.Default.TrendingUp,
-                title = "Consistent Performer",
-                description = "Maintained 90% accuracy for a week",
-                color = Color(0xFF32CD32)
-            )
+            // Display real achievements or placeholder message
+            if (achievements.isNotEmpty()) {
+                achievements.forEach { achievement ->
+                    AchievementItem(
+                        icon = getIconForCategory(achievement.badge.category),
+                        title = achievement.badge.name,
+                        description = achievement.badge.description,
+                        color = parseColor(achievement.badge.patternColor)
+                    )
+                }
+            } else {
+                // Placeholder when no achievements
+                Text(
+                    text = "No recent achievements yet. Keep practicing to earn your first badge!",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
+            }
         }
+    }
+}
+
+// Helper function to get icon based on achievement category
+fun getIconForCategory(category: String): ImageVector {
+    return when (category.lowercase()) {
+        "pronunciation" -> Icons.Default.RecordVoiceOver
+        "grammar" -> Icons.Default.School
+        "fluency" -> Icons.Default.Speed
+        "vocabulary" -> Icons.Default.MenuBook
+        "cultural" -> Icons.Default.Public
+        "streak" -> Icons.Default.LocalFireDepartment
+        "collaboration" -> Icons.Default.Group
+        "special" -> Icons.Default.EmojiEvents
+        else -> Icons.Default.Star
+    }
+}
+
+// Helper function to parse color from hex string
+fun parseColor(hexColor: String): Color {
+    return try {
+        Color(android.graphics.Color.parseColor(hexColor))
+    } catch (e: Exception) {
+        // Fallback to a default color if parsing fails
+        Color(0xFFFFD700) // Gold
     }
 }
 

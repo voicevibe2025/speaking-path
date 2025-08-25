@@ -41,6 +41,10 @@ class ProfileViewModel @Inject constructor(
     private val _avgScore = mutableStateOf(0f)
     val avgScore: State<Float> = _avgScore
 
+    // Recent Achievements state
+    private val _recentAchievements = mutableStateOf<List<com.example.voicevibe.data.model.Achievement>>(emptyList())
+    val recentAchievements: State<List<com.example.voicevibe.data.model.Achievement>> = _recentAchievements
+
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
@@ -71,6 +75,9 @@ class ProfileViewModel @Inject constructor(
                 _lessonsCompleted.value = userProfile.lessonsCompleted ?: 0
                 _recordingsCount.value = userProfile.recordingsCount ?: 0
                 _avgScore.value = userProfile.avgScore ?: 0f
+
+                // Update Recent Achievements
+                _recentAchievements.value = userProfile.recentAchievements ?: emptyList()
 
             } catch (e: IOException) {
                 _errorMessage.value = "Network error. Please check your connection."

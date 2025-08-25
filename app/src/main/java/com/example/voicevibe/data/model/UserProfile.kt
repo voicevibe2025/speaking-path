@@ -26,5 +26,7 @@ data class UserProfile(
     @SerializedName("recordings_count")
     val recordingsCount: Int?,
     @SerializedName("avg_score")
-    val avgScore: Float?
+    val avgScore: Float?,
+    @SerializedName("recent_achievements")
+    val recentAchievements: List<Achievement>?
 )

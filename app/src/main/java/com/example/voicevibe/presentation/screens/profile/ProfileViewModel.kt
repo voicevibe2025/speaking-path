@@ -71,6 +71,16 @@ class ProfileViewModel @Inject constructor(
     private val _pronunciationScore = mutableStateOf(0f)
     val pronunciationScore: State<Float> = _pronunciationScore
 
+    // Monthly Progress state
+    private val _monthlyDaysActive = mutableStateOf(0)
+    val monthlyDaysActive: State<Int> = _monthlyDaysActive
+
+    private val _monthlyXpEarned = mutableStateOf(0)
+    val monthlyXpEarned: State<Int> = _monthlyXpEarned
+
+    private val _monthlyLessonsCompleted = mutableStateOf(0)
+    val monthlyLessonsCompleted: State<Int> = _monthlyLessonsCompleted
+
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
@@ -116,6 +126,11 @@ class ProfileViewModel @Inject constructor(
                 _grammarScore.value = (userProfile.grammarScore ?: 0f) / 100f
                 _vocabularyScore.value = (userProfile.vocabularyScore ?: 0f) / 100f
                 _pronunciationScore.value = (userProfile.pronunciationScore ?: 0f) / 100f
+
+                // Update Monthly Progress
+                _monthlyDaysActive.value = userProfile.monthlyDaysActive ?: 0
+                _monthlyXpEarned.value = userProfile.monthlyXpEarned ?: 0
+                _monthlyLessonsCompleted.value = userProfile.monthlyLessonsCompleted ?: 0
 
             } catch (e: IOException) {
                 _errorMessage.value = "Network error. Please check your connection."

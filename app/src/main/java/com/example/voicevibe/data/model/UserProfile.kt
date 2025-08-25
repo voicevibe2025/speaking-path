@@ -44,5 +44,11 @@ data class UserProfile(
     @SerializedName("vocabulary_score")
     val vocabularyScore: Float?,
     @SerializedName("pronunciation_score")
-    val pronunciationScore: Float?
+    val pronunciationScore: Float?,
+    @SerializedName("monthly_days_active")
+    val monthlyDaysActive: Int?,
+    @SerializedName("monthly_xp_earned")
+    val monthlyXpEarned: Int?,
+    @SerializedName("monthly_lessons_completed")
+    val monthlyLessonsCompleted: Int?
 )

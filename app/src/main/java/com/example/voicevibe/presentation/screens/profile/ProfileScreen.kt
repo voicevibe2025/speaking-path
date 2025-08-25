@@ -59,6 +59,11 @@ fun ProfileScreen(
     val vocabularyScore by viewModel.vocabularyScore
     val pronunciationScore by viewModel.pronunciationScore
 
+    // Monthly Progress data
+    val monthlyDaysActive by viewModel.monthlyDaysActive
+    val monthlyXpEarned by viewModel.monthlyXpEarned
+    val monthlyLessonsCompleted by viewModel.monthlyLessonsCompleted
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -143,7 +148,10 @@ fun ProfileScreen(
                     listeningScore = listeningScore,
                     grammarScore = grammarScore,
                     vocabularyScore = vocabularyScore,
-                    pronunciationScore = pronunciationScore
+                    pronunciationScore = pronunciationScore,
+                    monthlyDaysActive = monthlyDaysActive,
+                    monthlyXpEarned = monthlyXpEarned,
+                    monthlyLessonsCompleted = monthlyLessonsCompleted
                 )
                 2 -> ActivityTab()
             }
@@ -563,7 +571,10 @@ fun ProgressTab(
     listeningScore: Float,
     grammarScore: Float,
     vocabularyScore: Float,
-    pronunciationScore: Float
+    pronunciationScore: Float,
+    monthlyDaysActive: Int,
+    monthlyXpEarned: Int,
+    monthlyLessonsCompleted: Int
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -579,7 +590,11 @@ fun ProgressTab(
         )
 
         // Monthly Progress
-        MonthlyProgressCard()
+        MonthlyProgressCard(
+            daysActive = monthlyDaysActive,
+            xpEarned = monthlyXpEarned,
+            lessonsCompleted = monthlyLessonsCompleted
+        )
     }
 }
 
@@ -652,7 +667,11 @@ fun SkillProgressItem(skill: String, progress: Float, color: Color) {
 }
 
 @Composable
-fun MonthlyProgressCard() {
+fun MonthlyProgressCard(
+    daysActive: Int,
+    xpEarned: Int,
+    lessonsCompleted: Int
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp)
@@ -674,12 +693,17 @@ fun MonthlyProgressCard() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                MonthStatItem("Days Active", "22", Icons.Default.CalendarToday)
-                MonthStatItem("XP Earned", "1,250", Icons.Default.Star)
-                MonthStatItem("Lessons", "38", Icons.Default.School)
+                MonthStatItem("Days Active", daysActive.toString(), Icons.Default.CalendarToday)
+                MonthStatItem("XP Earned", formatNumber(xpEarned), Icons.Default.Star)
+                MonthStatItem("Lessons", lessonsCompleted.toString(), Icons.Default.School)
             }
         }
     }
+}
+
+// Helper function to format numbers with commas
+private fun formatNumber(number: Int): String {
+    return java.text.NumberFormat.getNumberInstance().format(number)
 }
 
 @Composable

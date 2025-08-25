@@ -55,6 +55,22 @@ class ProfileViewModel @Inject constructor(
     private val _targetLanguage = mutableStateOf("English")
     val targetLanguage: State<String> = _targetLanguage
 
+    // Skill Progress state
+    private val _speakingScore = mutableStateOf(0f)
+    val speakingScore: State<Float> = _speakingScore
+
+    private val _listeningScore = mutableStateOf(0f)
+    val listeningScore: State<Float> = _listeningScore
+
+    private val _grammarScore = mutableStateOf(0f)
+    val grammarScore: State<Float> = _grammarScore
+
+    private val _vocabularyScore = mutableStateOf(0f)
+    val vocabularyScore: State<Float> = _vocabularyScore
+
+    private val _pronunciationScore = mutableStateOf(0f)
+    val pronunciationScore: State<Float> = _pronunciationScore
+
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
@@ -93,6 +109,13 @@ class ProfileViewModel @Inject constructor(
                 _dailyPracticeGoal.value = userProfile.dailyPracticeGoal ?: 15
                 _learningGoal.value = formatLearningGoal(userProfile.learningGoal)
                 _targetLanguage.value = formatTargetLanguage(userProfile.targetLanguage)
+
+                // Update Skill Progress (convert from 0-100 to 0.0-1.0 for progress bars)
+                _speakingScore.value = (userProfile.speakingScore ?: 0f) / 100f
+                _listeningScore.value = (userProfile.listeningScore ?: 0f) / 100f
+                _grammarScore.value = (userProfile.grammarScore ?: 0f) / 100f
+                _vocabularyScore.value = (userProfile.vocabularyScore ?: 0f) / 100f
+                _pronunciationScore.value = (userProfile.pronunciationScore ?: 0f) / 100f
 
             } catch (e: IOException) {
                 _errorMessage.value = "Network error. Please check your connection."

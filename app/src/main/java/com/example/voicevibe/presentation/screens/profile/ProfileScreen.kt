@@ -52,6 +52,13 @@ fun ProfileScreen(
     val learningGoal by viewModel.learningGoal
     val targetLanguage by viewModel.targetLanguage
 
+    // Skill Progress data
+    val speakingScore by viewModel.speakingScore
+    val listeningScore by viewModel.listeningScore
+    val grammarScore by viewModel.grammarScore
+    val vocabularyScore by viewModel.vocabularyScore
+    val pronunciationScore by viewModel.pronunciationScore
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -131,7 +138,13 @@ fun ProfileScreen(
                         language = targetLanguage
                     )
                 }
-                1 -> ProgressTab()
+                1 -> ProgressTab(
+                    speakingScore = speakingScore,
+                    listeningScore = listeningScore,
+                    grammarScore = grammarScore,
+                    vocabularyScore = vocabularyScore,
+                    pronunciationScore = pronunciationScore
+                )
                 2 -> ActivityTab()
             }
         }
@@ -545,13 +558,25 @@ fun PreferenceChip(text: String, icon: ImageVector) {
 }
 
 @Composable
-fun ProgressTab() {
+fun ProgressTab(
+    speakingScore: Float,
+    listeningScore: Float,
+    grammarScore: Float,
+    vocabularyScore: Float,
+    pronunciationScore: Float
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Skills Progress
-        SkillsProgressCard()
+        SkillsProgressCard(
+            speakingScore = speakingScore,
+            listeningScore = listeningScore,
+            grammarScore = grammarScore,
+            vocabularyScore = vocabularyScore,
+            pronunciationScore = pronunciationScore
+        )
 
         // Monthly Progress
         MonthlyProgressCard()
@@ -559,7 +584,13 @@ fun ProgressTab() {
 }
 
 @Composable
-fun SkillsProgressCard() {
+fun SkillsProgressCard(
+    speakingScore: Float,
+    listeningScore: Float,
+    grammarScore: Float,
+    vocabularyScore: Float,
+    pronunciationScore: Float
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp)
@@ -577,11 +608,11 @@ fun SkillsProgressCard() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            SkillProgressItem("Speaking", 0.85f, MaterialTheme.colorScheme.primary)
-            SkillProgressItem("Listening", 0.72f, MaterialTheme.colorScheme.secondary)
-            SkillProgressItem("Grammar", 0.90f, MaterialTheme.colorScheme.tertiary)
-            SkillProgressItem("Vocabulary", 0.68f, MaterialTheme.colorScheme.error)
-            SkillProgressItem("Pronunciation", 0.78f, Color(0xFF4CAF50))
+            SkillProgressItem("Speaking", speakingScore, MaterialTheme.colorScheme.primary)
+            SkillProgressItem("Listening", listeningScore, MaterialTheme.colorScheme.secondary)
+            SkillProgressItem("Grammar", grammarScore, MaterialTheme.colorScheme.tertiary)
+            SkillProgressItem("Vocabulary", vocabularyScore, MaterialTheme.colorScheme.error)
+            SkillProgressItem("Pronunciation", pronunciationScore, Color(0xFF4CAF50))
         }
     }
 }

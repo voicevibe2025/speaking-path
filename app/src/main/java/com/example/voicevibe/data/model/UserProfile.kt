@@ -34,5 +34,15 @@ data class UserProfile(
     @SerializedName("learning_goal")
     val learningGoal: String?,
     @SerializedName("target_language")
-    val targetLanguage: String?
+    val targetLanguage: String?,
+    @SerializedName("speaking_score")
+    val speakingScore: Float?,
+    @SerializedName("listening_score")
+    val listeningScore: Float?,
+    @SerializedName("grammar_score")
+    val grammarScore: Float?,
+    @SerializedName("vocabulary_score")
+    val vocabularyScore: Float?,
+    @SerializedName("pronunciation_score")
+    val pronunciationScore: Float?
 )

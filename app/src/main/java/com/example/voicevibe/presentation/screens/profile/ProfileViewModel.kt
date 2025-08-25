@@ -28,6 +28,19 @@ class ProfileViewModel @Inject constructor(
     private val _streak = mutableStateOf(0)
     val streak: State<Int> = _streak
 
+    // Quick Stats state
+    private val _practiceHours = mutableStateOf(0f)
+    val practiceHours: State<Float> = _practiceHours
+
+    private val _lessonsCompleted = mutableStateOf(0)
+    val lessonsCompleted: State<Int> = _lessonsCompleted
+
+    private val _recordingsCount = mutableStateOf(0)
+    val recordingsCount: State<Int> = _recordingsCount
+
+    private val _avgScore = mutableStateOf(0f)
+    val avgScore: State<Float> = _avgScore
+
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
@@ -52,6 +65,13 @@ class ProfileViewModel @Inject constructor(
                 _proficiency.value = userProfile.currentProficiency?.replaceFirstChar { it.titlecase() } ?: "N/A"
                 _xp.value = userProfile.experiencePoints ?: 0
                 _streak.value = userProfile.streakDays ?: 0
+
+                // Update Quick Stats
+                _practiceHours.value = userProfile.totalPracticeHours ?: 0f
+                _lessonsCompleted.value = userProfile.lessonsCompleted ?: 0
+                _recordingsCount.value = userProfile.recordingsCount ?: 0
+                _avgScore.value = userProfile.avgScore ?: 0f
+
             } catch (e: IOException) {
                 _errorMessage.value = "Network error. Please check your connection."
             } catch (e: HttpException) {

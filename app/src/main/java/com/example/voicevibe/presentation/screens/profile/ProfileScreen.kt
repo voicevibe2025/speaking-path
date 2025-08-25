@@ -41,6 +41,10 @@ fun ProfileScreen(
     val proficiency by viewModel.proficiency
     val xp by viewModel.xp
     val streak by viewModel.streak
+    val practiceHours by viewModel.practiceHours
+    val lessonsCompleted by viewModel.lessonsCompleted
+    val recordingsCount by viewModel.recordingsCount
+    val avgScore by viewModel.avgScore
 
     Column(
         modifier = Modifier
@@ -101,7 +105,18 @@ fun ProfileScreen(
 
             // Tab Content
             when (selectedTab) {
-                0 -> OverviewTab(onNavigateToAchievements)
+                0 -> {
+                    QuickStatsGrid(
+                        practiceHours = practiceHours,
+                        lessonsCompleted = lessonsCompleted,
+                        recordingsCount = recordingsCount,
+                        avgScore = avgScore
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    RecentAchievements(onNavigateToAchievements)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    LearningPreferences()
+                }
                 1 -> ProgressTab()
                 2 -> ActivityTab()
             }
@@ -231,24 +246,12 @@ fun ProfileHeader(
 }
 
 @Composable
-fun OverviewTab(onNavigateToAchievements: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Quick Stats
-        QuickStatsGrid()
-
-        // Recent Achievements
-        RecentAchievements(onNavigateToAchievements)
-
-        // Learning Preferences
-        LearningPreferences()
-    }
-}
-
-@Composable
-fun QuickStatsGrid() {
+fun QuickStatsGrid(
+    practiceHours: Float,
+    lessonsCompleted: Int,
+    recordingsCount: Int,
+    avgScore: Float
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp)
@@ -272,14 +275,14 @@ fun QuickStatsGrid() {
             ) {
                 StatCard(
                     icon = Icons.Default.Schedule,
-                    value = "125",
+                    value = practiceHours.toInt().toString(),
                     label = "Hours",
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.primary
                 )
                 StatCard(
                     icon = Icons.Default.Assignment,
-                    value = "45",
+                    value = lessonsCompleted.toString(),
                     label = "Lessons",
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.secondary
@@ -294,14 +297,14 @@ fun QuickStatsGrid() {
             ) {
                 StatCard(
                     icon = Icons.Default.Mic,
-                    value = "892",
+                    value = recordingsCount.toString(),
                     label = "Recordings",
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.tertiary
                 )
                 StatCard(
                     icon = Icons.Default.Star,
-                    value = "4.8",
+                    value = String.format("%.1f", avgScore),
                     label = "Avg Score",
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.error

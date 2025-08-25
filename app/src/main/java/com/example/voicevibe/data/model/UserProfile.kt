@@ -18,5 +18,13 @@ data class UserProfile(
     @SerializedName("experience_points")
     val experiencePoints: Int?,
     @SerializedName("streak_days")
-    val streakDays: Int?
+    val streakDays: Int?,
+    @SerializedName("total_practice_hours")
+    val totalPracticeHours: Float?,
+    @SerializedName("lessons_completed")
+    val lessonsCompleted: Int?,
+    @SerializedName("recordings_count")
+    val recordingsCount: Int?,
+    @SerializedName("avg_score")
+    val avgScore: Float?
 )

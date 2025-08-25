@@ -25,16 +25,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToAchievements: () -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Progress", "Activity")
+    val userName by viewModel.userName
 
     Column(
         modifier = Modifier
@@ -67,7 +70,7 @@ fun ProfileScreen(
         ) {
             // Profile Header
             ProfileHeader(
-                userName = "John Doe",
+                userName = userName,
                 userLevel = "Advanced",
                 userXP = 4850,
                 nextLevelXP = 5000,

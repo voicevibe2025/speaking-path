@@ -28,5 +28,11 @@ data class UserProfile(
     @SerializedName("avg_score")
     val avgScore: Float?,
     @SerializedName("recent_achievements")
-    val recentAchievements: List<Achievement>?
+    val recentAchievements: List<Achievement>?,
+    @SerializedName("daily_practice_goal")
+    val dailyPracticeGoal: Int?,
+    @SerializedName("learning_goal")
+    val learningGoal: String?,
+    @SerializedName("target_language")
+    val targetLanguage: String?
 )

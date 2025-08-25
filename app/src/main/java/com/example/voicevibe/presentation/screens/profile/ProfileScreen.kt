@@ -47,6 +47,11 @@ fun ProfileScreen(
     val avgScore by viewModel.avgScore
     val recentAchievements by viewModel.recentAchievements
 
+    // Learning Preferences data
+    val dailyPracticeGoal by viewModel.dailyPracticeGoal
+    val learningGoal by viewModel.learningGoal
+    val targetLanguage by viewModel.targetLanguage
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -119,7 +124,12 @@ fun ProfileScreen(
                         onNavigateToAchievements = onNavigateToAchievements
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    LearningPreferences()
+                    LearningPreferences(
+                        dailyGoal = dailyPracticeGoal,
+                        focus = learningGoal,
+                        difficulty = proficiency,
+                        language = targetLanguage
+                    )
                 }
                 1 -> ProgressTab()
                 2 -> ActivityTab()
@@ -484,7 +494,12 @@ fun AchievementItem(
 }
 
 @Composable
-fun LearningPreferences() {
+fun LearningPreferences(
+    dailyGoal: Int,
+    focus: String,
+    difficulty: String,
+    language: String
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp)
@@ -502,10 +517,10 @@ fun LearningPreferences() {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            PreferenceChip("Daily Goal: 30 min", Icons.Default.Timer)
-            PreferenceChip("Focus: Business English", Icons.Default.Business)
-            PreferenceChip("Difficulty: Intermediate", Icons.Default.Speed)
-            PreferenceChip("Accent: American", Icons.Default.Language)
+            PreferenceChip("Daily Goal: $dailyGoal min", Icons.Default.Timer)
+            PreferenceChip("Focus: $focus", Icons.Default.Business)
+            PreferenceChip("Difficulty: $difficulty", Icons.Default.Speed)
+            PreferenceChip("Language: $language", Icons.Default.Language)
         }
     }
 }

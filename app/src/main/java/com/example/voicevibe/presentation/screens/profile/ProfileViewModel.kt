@@ -45,6 +45,16 @@ class ProfileViewModel @Inject constructor(
     private val _recentAchievements = mutableStateOf<List<com.example.voicevibe.data.model.Achievement>>(emptyList())
     val recentAchievements: State<List<com.example.voicevibe.data.model.Achievement>> = _recentAchievements
 
+    // Learning Preferences state
+    private val _dailyPracticeGoal = mutableStateOf(15)
+    val dailyPracticeGoal: State<Int> = _dailyPracticeGoal
+
+    private val _learningGoal = mutableStateOf("Conversational")
+    val learningGoal: State<String> = _learningGoal
+
+    private val _targetLanguage = mutableStateOf("English")
+    val targetLanguage: State<String> = _targetLanguage
+
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
@@ -79,13 +89,39 @@ class ProfileViewModel @Inject constructor(
                 // Update Recent Achievements
                 _recentAchievements.value = userProfile.recentAchievements ?: emptyList()
 
+                // Update Learning Preferences
+                _dailyPracticeGoal.value = userProfile.dailyPracticeGoal ?: 15
+                _learningGoal.value = formatLearningGoal(userProfile.learningGoal)
+                _targetLanguage.value = formatTargetLanguage(userProfile.targetLanguage)
+
             } catch (e: IOException) {
                 _errorMessage.value = "Network error. Please check your connection."
             } catch (e: HttpException) {
-                _errorMessage.value = "Error"
+                _errorMessage.value = "Failed to load profile. Please try again."
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    private fun formatLearningGoal(goal: String?): String {
+        return when (goal?.lowercase()) {
+            "business" -> "Business English"
+            "conversational" -> "Conversational"
+            "academic" -> "Academic English"
+            "travel" -> "Travel English"
+            "professional" -> "Professional English"
+            else -> "General English"
+        }
+    }
+
+    private fun formatTargetLanguage(language: String?): String {
+        return when (language?.lowercase()) {
+            "en", "english" -> "American English"
+            "en-us" -> "American English"
+            "en-gb" -> "British English"
+            "en-au" -> "Australian English"
+            else -> "English"
         }
     }
 }

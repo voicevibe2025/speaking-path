@@ -38,6 +38,9 @@ fun ProfileScreen(
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Progress", "Activity")
     val userName by viewModel.userName
+    val proficiency by viewModel.proficiency
+    val xp by viewModel.xp
+    val streak by viewModel.streak
 
     Column(
         modifier = Modifier
@@ -71,10 +74,10 @@ fun ProfileScreen(
             // Profile Header
             ProfileHeader(
                 userName = userName,
-                userLevel = "Advanced",
-                userXP = 4850,
-                nextLevelXP = 5000,
-                streak = 15
+                level = proficiency,
+                currentXp = xp,
+                nextLevelXp = 5000, // Placeholder
+                streak = streak
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -109,125 +112,120 @@ fun ProfileScreen(
 @Composable
 fun ProfileHeader(
     userName: String,
-    userLevel: String,
-    userXP: Int,
-    nextLevelXP: Int,
+    level: String,
+    currentXp: Int,
+    nextLevelXp: Int,
     streak: Int
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
+        // User Avatar
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Profile Picture
-            Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.secondary
-                            )
+                .size(100.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.secondary
                         )
                     )
-                    .border(3.dp, MaterialTheme.colorScheme.surface, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = userName.split(" ").map { it.first() }.joinToString(""),
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
                 )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // User Name and Level
+                .border(3.dp, MaterialTheme.colorScheme.surface, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
             Text(
-                text = userName,
-                fontSize = 24.sp,
+                text = userName.split(" ").map { it.first() }.joinToString(""),
+                fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = Color.White
             )
+        }
 
-            Text(
-                text = userLevel,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-            )
+        Spacer(modifier = Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+        // User Name
+        Text(
+            text = userName,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
 
-            // XP Progress Bar
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "$userXP XP",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "$nextLevelXP XP",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
+        Spacer(modifier = Modifier.height(4.dp))
 
-                Spacer(modifier = Modifier.height(4.dp))
+        // User Level
+        Text(
+            text = level,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+        )
 
-                LinearProgressIndicator(
-                    progress = userXP.toFloat() / nextLevelXP,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp)),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            }
+        Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Streak Badge
+        // XP Progress Bar
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .background(
-                        MaterialTheme.colorScheme.tertiaryContainer,
-                        RoundedCornerShape(20.dp)
-                    )
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    Icons.Default.LocalFireDepartment,
-                    contentDescription = "Streak",
-                    tint = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "$streak Day Streak",
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                    text = "$currentXp XP",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = "$nextLevelXp XP",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            LinearProgressIndicator(
+                progress = currentXp.toFloat() / nextLevelXp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Streak
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .background(
+                    MaterialTheme.colorScheme.tertiaryContainer,
+                    RoundedCornerShape(20.dp)
+                )
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Icon(
+                Icons.Default.LocalFireDepartment,
+                contentDescription = "Streak",
+                tint = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "$streak Day Streak",
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onTertiaryContainer
+            )
         }
     }
 }

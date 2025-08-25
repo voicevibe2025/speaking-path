@@ -19,6 +19,15 @@ class ProfileViewModel @Inject constructor(
     private val _userName = mutableStateOf("Loading...")
     val userName: State<String> = _userName
 
+    private val _proficiency = mutableStateOf("...")
+    val proficiency: State<String> = _proficiency
+
+    private val _xp = mutableStateOf(0)
+    val xp: State<Int> = _xp
+
+    private val _streak = mutableStateOf(0)
+    val streak: State<Int> = _streak
+
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
@@ -40,6 +49,9 @@ class ProfileViewModel @Inject constructor(
                     userProfile.userName
                 }
                 _userName.value = displayName
+                _proficiency.value = userProfile.currentProficiency?.replaceFirstChar { it.titlecase() } ?: "N/A"
+                _xp.value = userProfile.experiencePoints ?: 0
+                _streak.value = userProfile.streakDays ?: 0
             } catch (e: IOException) {
                 _errorMessage.value = "Network error. Please check your connection."
             } catch (e: HttpException) {

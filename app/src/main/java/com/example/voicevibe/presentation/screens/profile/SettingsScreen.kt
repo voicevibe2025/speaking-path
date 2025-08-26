@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,7 +29,8 @@ fun SettingsScreen(
     onNavigateToNotificationSettings: () -> Unit,
     onNavigateToLanguageSettings: () -> Unit,
     onNavigateToAbout: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    viewModel: SettingsViewModel = viewModel()
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     var darkModeEnabled by remember { mutableStateOf(false) }
@@ -61,7 +63,12 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // User Profile Section
-            UserProfileSection()
+            UserProfileSection(
+                userName = viewModel.userName.value,
+                userEmail = viewModel.userEmail.value,
+                membershipStatus = viewModel.membershipStatus.value,
+                userInitials = viewModel.userInitials.value
+            )
 
             // General Settings
             SettingsSection(title = "General") {
@@ -247,7 +254,12 @@ fun SettingsScreen(
 }
 
 @Composable
-fun UserProfileSection() {
+fun UserProfileSection(
+    userName: String,
+    userEmail: String,
+    membershipStatus: String,
+    userInitials: String
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -270,7 +282,7 @@ fun UserProfileSection() {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "JD",
+                    text = userInitials,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -282,18 +294,18 @@ fun UserProfileSection() {
             // User Info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "John Doe",
+                    text = userName,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = "john.doe@example.com",
+                    text = userEmail,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                 )
                 Text(
-                    text = "Premium Member",
+                    text = membershipStatus,
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium

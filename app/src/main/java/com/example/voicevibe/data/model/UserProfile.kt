@@ -54,5 +54,7 @@ data class UserProfile(
     @SerializedName("monthly_lessons_completed")
     val monthlyLessonsCompleted: Int?,
     @SerializedName("recent_activities")
-    val recentActivities: List<Activity>?
+    val recentActivities: List<Activity>?,
+    @SerializedName("membership_status")
+    val membershipStatus: String?
 )

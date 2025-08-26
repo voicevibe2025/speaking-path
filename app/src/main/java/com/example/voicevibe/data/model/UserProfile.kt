@@ -1,5 +1,7 @@
 package com.example.voicevibe.data.model
 
+import com.example.voicevibe.data.model.Achievement
+import com.example.voicevibe.data.model.Activity
 import com.google.gson.annotations.SerializedName
 
 data class UserProfile(
@@ -50,5 +52,7 @@ data class UserProfile(
     @SerializedName("monthly_xp_earned")
     val monthlyXpEarned: Int?,
     @SerializedName("monthly_lessons_completed")
-    val monthlyLessonsCompleted: Int?
+    val monthlyLessonsCompleted: Int?,
+    @SerializedName("recent_activities")
+    val recentActivities: List<Activity>?
 )

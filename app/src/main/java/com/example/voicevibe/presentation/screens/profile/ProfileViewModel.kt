@@ -45,6 +45,10 @@ class ProfileViewModel @Inject constructor(
     private val _recentAchievements = mutableStateOf<List<com.example.voicevibe.data.model.Achievement>>(emptyList())
     val recentAchievements: State<List<com.example.voicevibe.data.model.Achievement>> = _recentAchievements
 
+    // Recent Activities state
+    private val _recentActivities = mutableStateOf<List<com.example.voicevibe.data.model.Activity>>(emptyList())
+    val recentActivities: State<List<com.example.voicevibe.data.model.Activity>> = _recentActivities
+
     // Learning Preferences state
     private val _dailyPracticeGoal = mutableStateOf(15)
     val dailyPracticeGoal: State<Int> = _dailyPracticeGoal
@@ -114,6 +118,9 @@ class ProfileViewModel @Inject constructor(
 
                 // Update Recent Achievements
                 _recentAchievements.value = userProfile.recentAchievements ?: emptyList()
+
+                // Update Recent Activities
+                _recentActivities.value = userProfile.recentActivities ?: emptyList()
 
                 // Update Learning Preferences
                 _dailyPracticeGoal.value = userProfile.dailyPracticeGoal ?: 15

@@ -15,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -26,6 +25,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.voicevibe.data.model.Achievement
+import com.example.voicevibe.presentation.components.LoadingScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +47,7 @@ fun ProfileScreen(
     val recordingsCount by viewModel.recordingsCount
     val avgScore by viewModel.avgScore
     val recentAchievements by viewModel.recentAchievements
+    val recentActivities by viewModel.recentActivities
 
     // Learning Preferences data
     val dailyPracticeGoal by viewModel.dailyPracticeGoal
@@ -153,7 +155,7 @@ fun ProfileScreen(
                     monthlyXpEarned = monthlyXpEarned,
                     monthlyLessonsCompleted = monthlyLessonsCompleted
                 )
-                2 -> ActivityTab()
+                2 -> ActivityTab(recentActivities = recentActivities)
             }
         }
     }
@@ -265,7 +267,7 @@ fun ProfileHeader(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Icon(
-                Icons.Default.LocalFireDepartment,
+                Icons.Default.Whatshot,
                 contentDescription = "Streak",
                 tint = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.size(20.dp)
@@ -393,7 +395,7 @@ fun StatCard(
 
 @Composable
 fun RecentAchievements(
-    achievements: List<com.example.voicevibe.data.model.Achievement>,
+    achievements: List<Achievement>,
     onNavigateToAchievements: () -> Unit
 ) {
     Card(
@@ -446,27 +448,29 @@ fun RecentAchievements(
 }
 
 // Helper function to get icon based on achievement category
+@Composable
 fun getIconForCategory(category: String): ImageVector {
     return when (category.lowercase()) {
         "pronunciation" -> Icons.Default.RecordVoiceOver
-        "grammar" -> Icons.Default.School
+        "grammar" -> Icons.Default.MenuBook
         "fluency" -> Icons.Default.Speed
-        "vocabulary" -> Icons.Default.MenuBook
+        "vocabulary" -> Icons.Default.Translate
         "cultural" -> Icons.Default.Public
-        "streak" -> Icons.Default.LocalFireDepartment
+        "streak" -> Icons.Default.Whatshot
         "collaboration" -> Icons.Default.Group
-        "special" -> Icons.Default.EmojiEvents
-        else -> Icons.Default.Star
+        "special" -> Icons.Default.Star
+        else -> Icons.Default.EmojiEvents
     }
 }
 
 // Helper function to parse color from hex string
+@Composable
 fun parseColor(hexColor: String): Color {
     return try {
         Color(android.graphics.Color.parseColor(hexColor))
     } catch (e: Exception) {
-        // Fallback to a default color if parsing fails
-        Color(0xFFFFD700) // Gold
+        // Fallback to primary color if parsing fails
+        MaterialTheme.colorScheme.primary
     }
 }
 
@@ -732,18 +736,18 @@ fun MonthStatItem(label: String, value: String, icon: ImageVector) {
 }
 
 @Composable
-fun ActivityTab() {
+fun ActivityTab(recentActivities: List<com.example.voicevibe.data.model.Activity>) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Recent Activity
-        RecentActivityCard()
+        RecentActivityCard(activities = recentActivities)
     }
 }
 
 @Composable
-fun RecentActivityCard() {
+fun RecentActivityCard(activities: List<com.example.voicevibe.data.model.Activity>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp)
@@ -761,37 +765,42 @@ fun RecentActivityCard() {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            ActivityItem(
-                title = "Completed Business Presentation Module",
-                time = "2 hours ago",
-                icon = Icons.Default.CheckCircle,
-                color = Color(0xFF4CAF50)
-            )
-            ActivityItem(
-                title = "Practiced Interview Scenarios",
-                time = "Yesterday",
-                icon = Icons.Default.Mic,
-                color = MaterialTheme.colorScheme.primary
-            )
-            ActivityItem(
-                title = "Earned 'Perfect Week' badge",
-                time = "3 days ago",
-                icon = Icons.Default.EmojiEvents,
-                color = Color(0xFFFFD700)
-            )
-            ActivityItem(
-                title = "Joined weekly leaderboard",
-                time = "5 days ago",
-                icon = Icons.Default.Leaderboard,
-                color = MaterialTheme.colorScheme.secondary
-            )
-            ActivityItem(
-                title = "Started Advanced Grammar path",
-                time = "1 week ago",
-                icon = Icons.Default.School,
-                color = MaterialTheme.colorScheme.tertiary
-            )
+            if (activities.isEmpty()) {
+                // Show placeholder when no activities
+                Text(
+                    text = "No recent activities yet. Start practicing to see your activity here!",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
+            } else {
+                // Display real activities
+                activities.forEach { activity ->
+                    ActivityItem(
+                        title = activity.title,
+                        time = activity.relativeTime,
+                        icon = getIconFromString(activity.icon),
+                        color = parseColor(activity.color)
+                    )
+                }
+            }
         }
+    }
+}
+
+// Helper function to map backend icon strings to Material Icons
+@Composable
+fun getIconFromString(iconName: String): ImageVector {
+    return when (iconName.lowercase()) {
+        "check_circle" -> Icons.Default.CheckCircle
+        "mic" -> Icons.Default.Mic
+        "emoji_events" -> Icons.Default.EmojiEvents
+        "school" -> Icons.Default.School
+        "leaderboard" -> Icons.Default.Leaderboard
+        "star" -> Icons.Default.Star
+        "grade" -> Icons.Default.Grade
+        "workspace_premium" -> Icons.Default.WorkspacePremium
+        else -> Icons.Default.CheckCircle // Default fallback
     }
 }
 

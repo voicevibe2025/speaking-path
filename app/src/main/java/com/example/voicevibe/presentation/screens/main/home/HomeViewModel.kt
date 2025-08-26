@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.repository.UserRepository
 import com.example.voicevibe.data.repository.LearningPathRepository
 import com.example.voicevibe.data.repository.GamificationRepository
+import com.example.voicevibe.data.repository.ProfileRepository
 import com.example.voicevibe.domain.model.Resource
 import com.example.voicevibe.domain.model.UserProfile
 import com.example.voicevibe.domain.model.LearningPath
@@ -12,6 +13,8 @@ import com.example.voicevibe.domain.model.UserProgress
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 import javax.inject.Inject
 
 /**
@@ -21,7 +24,8 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val learningPathRepository: LearningPathRepository,
-    private val gamificationRepository: GamificationRepository
+    private val gamificationRepository: GamificationRepository,
+    private val profileRepository: ProfileRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -31,35 +35,67 @@ class HomeViewModel @Inject constructor(
     val events: SharedFlow<HomeEvent> = _events.asSharedFlow()
 
     init {
-        loadUserData()
+        loadUserProfileData()
         loadDashboardData()
     }
 
-    private fun loadUserData() {
+    private fun loadUserProfileData() {
         viewModelScope.launch {
-            userRepository.getCurrentUser().collect { resource ->
-                when (resource) {
-                    is Resource.Loading -> {
-                        _uiState.update { it.copy(isLoading = true) }
-                    }
-                    is Resource.Success -> {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                user = resource.data
-                            )
-                        }
-                    }
-                    is Resource.Error -> {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                error = resource.message
-                            )
-                        }
-                    }
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                val userProfile = profileRepository.getProfile()
+                
+                // Generate display name
+                val displayName = if (!userProfile.firstName.isNullOrBlank() && !userProfile.lastName.isNullOrBlank()) {
+                    "${userProfile.firstName} ${userProfile.lastName}"
+                } else {
+                    userProfile.userName
+                }
+
+                // Generate user initials
+                val userInitials = generateInitials(displayName)
+
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        userName = displayName,
+                        userLevel = userProfile.currentLevel ?: 1,
+                        userInitials = userInitials,
+                        totalPoints = userProfile.experiencePoints ?: 0,
+                        currentStreak = userProfile.streakDays ?: 0
+                    )
+                }
+            } catch (e: IOException) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Network error. Please check your connection.",
+                        userName = "Network Error",
+                        userLevel = 1,
+                        userInitials = "NE"
+                    )
+                }
+            } catch (e: HttpException) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Failed to load profile. Please try again.",
+                        userName = "Error Loading",
+                        userLevel = 1,
+                        userInitials = "ER"
+                    )
                 }
             }
+        }
+    }
+
+    private fun generateInitials(displayName: String): String {
+        val parts = displayName.split(" ").filter { it.isNotBlank() }
+        return when {
+            parts.size >= 2 -> "${parts[0].first().uppercaseChar()}${parts[1].first().uppercaseChar()}"
+            parts.size == 1 && parts[0].length >= 2 -> "${parts[0][0].uppercaseChar()}${parts[0][1].uppercaseChar()}"
+            parts.size == 1 -> "${parts[0].first().uppercaseChar()}${parts[0].first().uppercaseChar()}"
+            else -> "VV" // VoiceVibe default
         }
     }
 
@@ -99,25 +135,8 @@ class HomeViewModel @Inject constructor(
             }
         }
 
-        viewModelScope.launch {
-            // Load gamification stats
-            gamificationRepository.getUserStats().collect { resource ->
-                when (resource) {
-                    is Resource.Success -> {
-                        resource.data?.let { stats ->
-                            _uiState.update {
-                                it.copy(
-                                    totalPoints = stats.totalXp,
-                                    currentStreak = stats.streakDays,
-                                    badges = emptyList() // Will load badges separately
-                                )
-                            }
-                        }
-                    }
-                    else -> {}
-                }
-            }
-        }
+        // Note: totalPoints and currentStreak are now loaded from ProfileRepository
+        // in loadUserProfileData() method above
     }
 
     fun onStartPractice() {
@@ -145,7 +164,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun refresh() {
-        loadUserData()
+        loadUserProfileData()
         loadDashboardData()
     }
 }
@@ -155,7 +174,9 @@ class HomeViewModel @Inject constructor(
  */
 data class HomeUiState(
     val isLoading: Boolean = false,
-    val user: UserProfile? = null,
+    val userName: String? = null,
+    val userLevel: Int = 1,
+    val userInitials: String? = null,
     val userProgress: UserProgress? = null,
     val activeLearningPaths: List<LearningPath> = emptyList(),
     val completedLessons: Int = 0,

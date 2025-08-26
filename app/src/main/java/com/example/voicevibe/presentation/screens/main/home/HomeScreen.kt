@@ -97,8 +97,9 @@ fun HomeScreen(
             // Header Section
             item {
                 HeaderSection(
-                    userName = uiState.user?.displayName ?: "Learner",
-                    level = uiState.userProgress?.overallProgress?.currentLevel ?: 1,
+                    userName = uiState.userName ?: "Learner",
+                    level = uiState.userLevel,
+                    userInitials = uiState.userInitials ?: "VV",
                     onProfileClick = onNavigateToProfile
                 )
             }
@@ -149,6 +150,7 @@ fun HomeScreen(
 private fun HeaderSection(
     userName: String,
     level: Int,
+    userInitials: String,
     onProfileClick: () -> Unit
 ) {
     Row(
@@ -196,10 +198,11 @@ private fun HeaderSection(
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primary)
         ) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = "Profile",
-                tint = Color.White
+            Text(
+                text = userInitials,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
         }
     }

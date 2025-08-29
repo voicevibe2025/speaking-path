@@ -6,12 +6,12 @@ package com.example.voicevibe.utils
 object Constants {
     // API Configuration
     //const val BASE_URL = "http://10.0.2.2:8000/api/v1/" // For Android emulator
-    const val BASE_URL = "http://192.168.18.136:8000/api/v1/" // For physical device (replace with your IP)
+    const val BASE_URL = "http://192.168.135.136:8000/api/v1/" // For physical device (replace with your IP)
     // const val BASE_URL = "https://api.voicevibe.com/api/v1/" // Production
 
     // WebSocket Configuration
     //const val WS_BASE_URL = "ws://10.0.2.2:8000/ws/" // For Android emulator
-    const val WS_BASE_URL = "ws://192.168.18.136:8000/ws/" // For physical device
+    const val WS_BASE_URL = "ws://192.168.135.136:8000/ws/" // For physical device
     // const val WS_BASE_URL = "wss://api.voicevibe.com/ws/" // Production
 
     // DataStore Keys

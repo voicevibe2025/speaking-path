@@ -204,7 +204,7 @@ fun SpeakingJourneyScreen(
 
     fun speak(text: String) {
         try {
-            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "utt-${'$'}{System.currentTimeMillis()}")
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "utt-${System.currentTimeMillis()}")
         } catch (_: Throwable) { /* ignore for now */ }
     }
 
@@ -242,7 +242,7 @@ fun SpeakingJourneyScreen(
             // Voice info
             if (!preferredVoiceId.isNullOrBlank()) {
                 Text(
-                    text = "TTS voice: ${'$'}preferredVoiceId",
+                    text = "TTS voice: $preferredVoiceId",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -457,12 +457,11 @@ private fun PracticeStageInline(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Practice Prompt",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("Practice Prompt", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = prompt.text, style = MaterialTheme.typography.bodyLarge)
                 }
@@ -472,7 +471,7 @@ private fun PracticeStageInline(
         // Recording status
         if (uiState.recordingState != RecordingState.IDLE) {
             Text(
-                text = "Duration: ${'$'}{uiState.recordingDuration}s",
+                text = "Duration: ${uiState.recordingDuration}s",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -487,7 +486,7 @@ private fun PracticeStageInline(
             when (uiState.recordingState) {
                 RecordingState.IDLE -> {
                     Button(onClick = {
-                        val f = File(context.cacheDir, "journey_rec_${'$'}{System.currentTimeMillis()}.m4a")
+                        val f = File(context.cacheDir, "journey_rec_${System.currentTimeMillis()}.m4a")
                         practiceViewModel.startRecording(f)
                     }) { Text("Start recording") }
                 }

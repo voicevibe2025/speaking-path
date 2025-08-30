@@ -1,10 +1,12 @@
 package com.example.voicevibe.presentation.screens.speakingjourney
 
-// removed unused import: androidx.compose.foundation.background
 import android.speech.tts.TextToSpeech
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import android.util.Log
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-// removed unused import: androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -39,13 +41,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-// removed unused import: androidx.compose.runtime.DisposableEffect
-// removed unused import: androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
-// removed unused import: androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-// removed unused import: androidx.compose.runtime.rememberCoroutineScope
-// removed unused import: androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -60,6 +59,7 @@ import com.example.voicevibe.data.repository.SpeakingJourneyRepository
 import android.Manifest
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.example.voicevibe.presentation.screens.practice.speaking.SpeakingPracticeViewModel
@@ -123,7 +123,8 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                         isLoading = false
                     )
                 },
-                onFailure = {
+                onFailure = { ex ->
+                    Log.e("SpeakingJourney", "Failed to load topics", ex)
                     // Keep minimal fallback to keep UI usable offline
                     val fallback = listOf(
                         Topic(
@@ -142,7 +143,7 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         topics = fallback,
                         isLoading = false,
-                        error = "Unable to load topics. Check your connection or try again."
+                        error = "Unable to load topics. ${ex.message ?: "Check your connection and try again."}"
                     )
                 }
             )
@@ -394,6 +395,7 @@ private fun PracticeStageInline(
     val uiState by practiceViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val audioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
+    val askedOnce = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -423,8 +425,25 @@ private fun PracticeStageInline(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Button(onClick = { audioPermissionState.launchPermissionRequest() }) {
-                        Text("Grant permission")
+                    val permStatus = audioPermissionState.status
+                    val deniedPermanently = askedOnce.value && (permStatus is PermissionStatus.Denied) && !permStatus.shouldShowRationale
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(onClick = {
+                            askedOnce.value = true
+                            audioPermissionState.launchPermissionRequest()
+                        }) {
+                            Text("Grant permission")
+                        }
+                        if (deniedPermanently) {
+                            OutlinedButton(onClick = {
+                                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                    data = Uri.fromParts("package", context.packageName, null)
+                                }
+                                context.startActivity(intent)
+                            }) {
+                                Text("Open settings")
+                            }
+                        }
                     }
                 }
             }

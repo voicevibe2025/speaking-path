@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.repository.AuthRepository
 import com.example.voicevibe.data.repository.ProfileRepository
+import com.example.voicevibe.data.local.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
@@ -15,7 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
     // User profile state for top card
@@ -37,8 +39,16 @@ class SettingsViewModel @Inject constructor(
     private val _errorMessage = mutableStateOf("")
     val errorMessage: State<String> = _errorMessage
 
+    // Feature flags / preferences
+    private val _speakingOnlyEnabled = mutableStateOf(false)
+    val speakingOnlyEnabled: State<Boolean> = _speakingOnlyEnabled
+
+    private val _ttsVoiceId = mutableStateOf<String?>(null)
+    val ttsVoiceId: State<String?> = _ttsVoiceId
+
     init {
         fetchUserProfile()
+        observeSettings()
     }
 
     private fun fetchUserProfile() {
@@ -82,6 +92,21 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    private fun observeSettings() {
+        // Speaking-only feature flag
+        viewModelScope.launch {
+            tokenManager.speakingOnlyFlowEnabledFlow().collect { enabled ->
+                _speakingOnlyEnabled.value = enabled
+            }
+        }
+        // Preferred TTS voice id
+        viewModelScope.launch {
+            tokenManager.ttsVoiceIdFlow().collect { id ->
+                _ttsVoiceId.value = id
+            }
+        }
+    }
+
     private fun generateInitials(displayName: String): String {
         val parts = displayName.split(" ").filter { it.isNotBlank() }
         return when {
@@ -98,5 +123,18 @@ class SettingsViewModel @Inject constructor(
      */
     suspend fun logout() {
         authRepository.logout()
+    }
+
+    // UI actions for settings
+    fun onToggleSpeakingOnly(enabled: Boolean) {
+        viewModelScope.launch {
+            tokenManager.setSpeakingOnlyFlowEnabled(enabled)
+        }
+    }
+
+    fun setPreferredTtsVoice(voiceId: String?) {
+        viewModelScope.launch {
+            tokenManager.setTtsVoiceId(voiceId)
+        }
     }
 }

@@ -38,6 +38,8 @@ class TokenManager @Inject constructor(
     private val userNameKey = stringPreferencesKey(Constants.USER_NAME_KEY)
     private val isLoggedInKey = booleanPreferencesKey(Constants.IS_LOGGED_IN_KEY)
     private val onboardingCompletedKey = booleanPreferencesKey(Constants.ONBOARDING_COMPLETED_KEY)
+    private val speakingOnlyFlowKey = booleanPreferencesKey(Constants.SPEAKING_ONLY_FLOW_KEY)
+    private val ttsVoiceIdKey = stringPreferencesKey(Constants.TTS_VOICE_ID_KEY)
 
     /**
      * Save authentication tokens
@@ -150,6 +152,36 @@ class TokenManager @Inject constructor(
     suspend fun clearAll() {
         dataStore.edit { preferences ->
             preferences.clear()
+        }
+    }
+
+    /**
+     * Speaking-only flow feature flag
+     */
+    fun speakingOnlyFlowEnabledFlow(): Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[speakingOnlyFlowKey] ?: false
+    }
+
+    suspend fun setSpeakingOnlyFlowEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[speakingOnlyFlowKey] = enabled
+        }
+    }
+
+    /**
+     * Preferred TTS voice id (nullable -> default voice)
+     */
+    fun ttsVoiceIdFlow(): Flow<String?> = dataStore.data.map { preferences ->
+        preferences[ttsVoiceIdKey]
+    }
+
+    suspend fun setTtsVoiceId(voiceId: String?) {
+        dataStore.edit { preferences ->
+            if (voiceId == null) {
+                preferences.remove(ttsVoiceIdKey)
+            } else {
+                preferences[ttsVoiceIdKey] = voiceId
+            }
         }
     }
 }

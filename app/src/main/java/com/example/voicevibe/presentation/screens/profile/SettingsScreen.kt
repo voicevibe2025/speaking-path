@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,12 +30,14 @@ fun SettingsScreen(
     onNavigateToLanguageSettings: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onLogout: () -> Unit,
-    viewModel: SettingsViewModel = viewModel()
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     var darkModeEnabled by remember { mutableStateOf(false) }
     var autoPlayEnabled by remember { mutableStateOf(true) }
     var offlineMode by remember { mutableStateOf(false) }
+    var showVoiceDialog by remember { mutableStateOf(false) }
+    var voiceInput by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -94,12 +96,29 @@ fun SettingsScreen(
 
             // Learning Preferences
             SettingsSection(title = "Learning Preferences") {
+                // Feature flag: Speaking-only Journey (beta)
+                SettingsToggleItem(
+                    icon = Icons.Default.Mic,
+                    title = "Speaking-only Journey (beta)",
+                    subtitle = "Enable the new speaking-only flow",
+                    checked = viewModel.speakingOnlyEnabled.value,
+                    onCheckedChange = { viewModel.onToggleSpeakingOnly(it) }
+                )
                 SettingsToggleItem(
                     icon = Icons.Default.PlayArrow,
                     title = "Auto-play Audio",
                     subtitle = "Automatically play audio in lessons",
                     checked = autoPlayEnabled,
                     onCheckedChange = { autoPlayEnabled = it }
+                )
+                SettingsItem(
+                    icon = Icons.Default.Mic,
+                    title = "Preferred TTS Voice",
+                    subtitle = viewModel.ttsVoiceId.value ?: "Default",
+                    onClick = {
+                        voiceInput = viewModel.ttsVoiceId.value ?: ""
+                        showVoiceDialog = true
+                    }
                 )
                 SettingsItem(
                     icon = Icons.Default.Speed,
@@ -246,6 +265,44 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Preferred TTS Voice Dialog
+    if (showVoiceDialog) {
+        AlertDialog(
+            onDismissRequest = { showVoiceDialog = false },
+            title = { Text("Preferred TTS Voice", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text(
+                        text = "Enter an ElevenLabs voice ID. Leave empty to use default.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = voiceInput,
+                        onValueChange = { voiceInput = it },
+                        singleLine = true,
+                        label = { Text("Voice ID") }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.setPreferredTtsVoice(voiceInput.ifBlank { null })
+                        showVoiceDialog = false
+                    }
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showVoiceDialog = false }) {
                     Text("Cancel")
                 }
             }

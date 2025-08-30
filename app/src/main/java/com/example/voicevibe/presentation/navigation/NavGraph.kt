@@ -28,6 +28,7 @@ import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
 import com.example.voicevibe.presentation.screens.scenarios.CulturalScenariosScreen
 import com.example.voicevibe.presentation.screens.scenarios.ScenarioDetailScreen
 import com.example.voicevibe.presentation.screens.analytics.AnalyticsDashboardScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyScreen
 
 @Composable
 fun NavGraph(
@@ -111,12 +112,22 @@ fun NavGraph(
 
         // Main Screens
         composable(Screen.Home.route) {
+            val settingsVM: SettingsViewModel = hiltViewModel()
+            val speakingOnly = settingsVM.speakingOnlyEnabled.value
             HomeScreen(
                 onNavigateToPractice = {
-                    navController.navigate(Screen.Practice.route)
+                    if (speakingOnly) {
+                        navController.navigate(Screen.SpeakingJourney.route)
+                    } else {
+                        navController.navigate(Screen.Practice.route)
+                    }
                 },
                 onNavigateToLearningPaths = {
-                    navController.navigate(Screen.LearningPathsRoute.route)
+                    if (speakingOnly) {
+                        navController.navigate(Screen.SpeakingJourney.route)
+                    } else {
+                        navController.navigate(Screen.LearningPathsRoute.route)
+                    }
                 },
                 onNavigateToAchievements = {
                     navController.navigate(Screen.Achievements.route)
@@ -141,6 +152,13 @@ fun NavGraph(
                 onNavigateBack = {
                     navController.popBackStack()
                 }
+            )
+        }
+
+        // Speaking-only Journey (beta)
+        composable(Screen.SpeakingJourney.route) {
+            SpeakingJourneyScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
@@ -320,7 +338,8 @@ fun NavGraph(
                             popUpTo(0) { inclusive = true }
                         }
                     }
-                }
+                },
+                viewModel = settingsViewModel
             )
         }
     }

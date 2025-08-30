@@ -23,6 +23,8 @@ object Constants {
     const val USER_NAME_KEY = "user_name"
     const val IS_LOGGED_IN_KEY = "is_logged_in"
     const val ONBOARDING_COMPLETED_KEY = "onboarding_completed"
+    const val SPEAKING_ONLY_FLOW_KEY = "speaking_only_flow_enabled"
+    const val TTS_VOICE_ID_KEY = "tts_voice_id"
 
     // Audio Recording
     const val AUDIO_SAMPLE_RATE = 44100

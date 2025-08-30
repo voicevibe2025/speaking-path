@@ -15,6 +15,8 @@ import com.example.voicevibe.presentation.screens.auth.splash.SplashScreen
 import com.example.voicevibe.presentation.screens.auth.onboarding.OnboardingScreen
 import com.example.voicevibe.presentation.screens.auth.forgotpassword.ForgotPasswordScreen
 import com.example.voicevibe.presentation.screens.main.home.HomeScreen
+import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
+import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyScreen
 
 /**
  * Main navigation host for the VoiceVibe app
@@ -106,58 +108,120 @@ fun VoiceVibeNavHost(
 
         // Main App Screen (with bottom navigation)
         composable(route = Screen.Home.route) {
+            val settingsVM: SettingsViewModel = hiltViewModel()
+            val speakingOnly = settingsVM.speakingOnlyEnabled.value
             HomeScreen(
-                onNavigateToPractice = { navController.navigate(Screen.Practice.route) },
-                onNavigateToLearningPaths = { navController.navigate(Screen.LearningPaths.route) },
+                onNavigateToPractice = {
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.Practice.route)
+                },
+                onNavigateToLearningPaths = {
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.LearningPaths.route)
+                },
                 onNavigateToAchievements = { navController.navigate(Screen.Achievements.route) },
                 onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
-                onNavigateToLearningPath = { _ -> navController.navigate(Screen.LearningPaths.route) }
+                onNavigateToLearningPath = { _ ->
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.LearningPaths.route)
+                }
             )
         }
 
         // Other main screens handled by bottom navigation
         composable(route = Screen.Practice.route) {
+            val settingsVM: SettingsViewModel = hiltViewModel()
+            val speakingOnly = settingsVM.speakingOnlyEnabled.value
             HomeScreen(
-                onNavigateToPractice = { navController.navigate(Screen.Practice.route) },
-                onNavigateToLearningPaths = { navController.navigate(Screen.LearningPaths.route) },
+                onNavigateToPractice = {
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.Practice.route)
+                },
+                onNavigateToLearningPaths = {
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.LearningPaths.route)
+                },
                 onNavigateToAchievements = { navController.navigate(Screen.Achievements.route) },
                 onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
-                onNavigateToLearningPath = { _ -> navController.navigate(Screen.LearningPaths.route) }
+                onNavigateToLearningPath = { _ ->
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.LearningPaths.route)
+                }
             )
         }
 
         composable(route = Screen.LearningPaths.route) {
+            val settingsVM: SettingsViewModel = hiltViewModel()
+            val speakingOnly = settingsVM.speakingOnlyEnabled.value
             HomeScreen(
-                onNavigateToPractice = { navController.navigate(Screen.Practice.route) },
-                onNavigateToLearningPaths = { navController.navigate(Screen.LearningPaths.route) },
+                onNavigateToPractice = {
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.Practice.route)
+                },
+                onNavigateToLearningPaths = {
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.LearningPaths.route)
+                },
                 onNavigateToAchievements = { navController.navigate(Screen.Achievements.route) },
                 onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
-                onNavigateToLearningPath = { _ -> navController.navigate(Screen.LearningPaths.route) }
+                onNavigateToLearningPath = { _ ->
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.LearningPaths.route)
+                }
             )
         }
 
         composable(route = Screen.Achievements.route) {
+            val settingsVM: SettingsViewModel = hiltViewModel()
+            val speakingOnly = settingsVM.speakingOnlyEnabled.value
             HomeScreen(
-                onNavigateToPractice = { navController.navigate(Screen.Practice.route) },
-                onNavigateToLearningPaths = { navController.navigate(Screen.LearningPaths.route) },
+                onNavigateToPractice = {
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.Practice.route)
+                },
+                onNavigateToLearningPaths = {
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.LearningPaths.route)
+                },
                 onNavigateToAchievements = { navController.navigate(Screen.Achievements.route) },
                 onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
-                onNavigateToLearningPath = { _ -> navController.navigate(Screen.LearningPaths.route) }
+                onNavigateToLearningPath = { _ ->
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.LearningPaths.route)
+                }
             )
         }
 
         composable(route = Screen.Profile.route) {
+            val settingsVM: SettingsViewModel = hiltViewModel()
+            val speakingOnly = settingsVM.speakingOnlyEnabled.value
             HomeScreen(
-                onNavigateToPractice = { navController.navigate(Screen.Practice.route) },
-                onNavigateToLearningPaths = { navController.navigate(Screen.LearningPaths.route) },
+                onNavigateToPractice = {
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.Practice.route)
+                },
+                onNavigateToLearningPaths = {
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.LearningPaths.route)
+                },
                 onNavigateToAchievements = { navController.navigate(Screen.Achievements.route) },
                 onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
-                onNavigateToLearningPath = { _ -> navController.navigate(Screen.LearningPaths.route) }
+                onNavigateToLearningPath = { _ ->
+                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
+                    else navController.navigate(Screen.LearningPaths.route)
+                }
+            )
+        }
+
+        // Speaking-only Journey (beta)
+        composable(route = Screen.SpeakingJourney.route) {
+            SpeakingJourneyScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

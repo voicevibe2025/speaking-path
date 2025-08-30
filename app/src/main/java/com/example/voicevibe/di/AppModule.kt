@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.voicevibe.data.local.TokenManager
+import com.example.voicevibe.utils.Constants
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,7 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Singleton
 
 // Extension property to get DataStore instance
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "voicevibe_prefs")
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = Constants.PREFERENCES_NAME)
 
 /**
  * App-level dependency injection module

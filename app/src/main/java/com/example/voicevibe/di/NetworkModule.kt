@@ -103,4 +103,9 @@ object NetworkModule {
     fun provideGamificationApi(retrofit: Retrofit): GamificationApiService =
         retrofit.create(GamificationApiService::class.java)
 
+    @Provides
+    @Singleton
+    fun provideSpeakingJourneyApi(retrofit: Retrofit): com.example.voicevibe.data.remote.api.SpeakingJourneyApiService =
+        retrofit.create(com.example.voicevibe.data.remote.api.SpeakingJourneyApiService::class.java)
+
 }

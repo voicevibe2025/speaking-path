@@ -31,6 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -38,13 +39,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
+// removed unused import: androidx.compose.runtime.DisposableEffect
+// removed unused import: androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+// removed unused import: androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+// removed unused import: androidx.compose.runtime.rememberCoroutineScope
+// removed unused import: androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -56,6 +57,14 @@ import java.util.Locale
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import com.example.voicevibe.data.repository.SpeakingJourneyRepository
+import android.Manifest
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.example.voicevibe.presentation.screens.practice.speaking.SpeakingPracticeViewModel
+import com.example.voicevibe.presentation.screens.practice.speaking.RecordingState
+import java.io.File
 
 enum class Stage { MATERIAL, PRACTICE }
 
@@ -84,8 +93,11 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
     )
     val uiState: androidx.compose.runtime.State<SpeakingJourneyUiState> get() = _uiState
 
-    init {
+    init { reloadTopics() }
+
+    fun reloadTopics() {
         viewModelScope.launch {
+            val prevSelectedId = _uiState.value.topics.getOrNull(_uiState.value.selectedTopicIdx)?.id
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             val result = repo.getTopics()
             result.fold(
@@ -99,9 +111,19 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                             completed = dto.completed
                         )
                     } else emptyList()
-                    _uiState.value = _uiState.value.copy(topics = mapped, isLoading = false)
+                    val newIndex = when {
+                        mapped.isEmpty() -> 0
+                        prevSelectedId != null -> mapped.indexOfFirst { it.id == prevSelectedId }
+                            .let { if (it >= 0) it else mapped.indexOfFirst { it.unlocked }.let { idx -> if (idx >= 0) idx else 0 } }
+                        else -> mapped.indexOfFirst { it.unlocked }.let { if (it >= 0) it else 0 }
+                    }
+                    _uiState.value = _uiState.value.copy(
+                        topics = mapped,
+                        selectedTopicIdx = newIndex.coerceIn(0, (mapped.size - 1).coerceAtLeast(0)),
+                        isLoading = false
+                    )
                 },
-                onFailure = { e ->
+                onFailure = {
                     // Keep minimal fallback to keep UI usable offline
                     val fallback = listOf(
                         Topic(
@@ -120,7 +142,7 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         topics = fallback,
                         isLoading = false,
-                        error = e.message ?: "Failed to load topics"
+                        error = "Unable to load topics. Check your connection or try again."
                     )
                 }
             )
@@ -144,15 +166,7 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
         if (current.completed) return
         viewModelScope.launch {
             val res = repo.completeTopic(current.id)
-            if (res.isSuccess) {
-                val updated = s.topics.toMutableList()
-                updated[s.selectedTopicIdx] = current.copy(completed = true)
-                if (s.selectedTopicIdx + 1 < updated.size) {
-                    val next = updated[s.selectedTopicIdx + 1]
-                    if (!next.unlocked) updated[s.selectedTopicIdx + 1] = next.copy(unlocked = true)
-                }
-                _uiState.value = s.copy(topics = updated)
-            }
+            if (res.isSuccess) { reloadTopics() }
         }
     }
 }
@@ -178,7 +192,7 @@ fun SpeakingJourneyScreen(
         ref = created
         created
     }
-    DisposableEffect(tts) {
+    androidx.compose.runtime.DisposableEffect(tts) {
         onDispose {
             try {
                 tts.stop()
@@ -295,11 +309,19 @@ fun SpeakingJourneyScreen(
                 ) { CircularProgressIndicator() }
             }
             ui.error?.let { err ->
-                Text(
-                    text = err,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = err,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Button(onClick = { viewModel.reloadTopics() }) { Text("Retry") }
+                }
             }
 
             // Content
@@ -309,7 +331,7 @@ fun SpeakingJourneyScreen(
                     lines = currentTopic?.material ?: emptyList(),
                     onSpeak = ::speak
                 )
-                Stage.PRACTICE -> PracticeStagePlaceholder()
+                Stage.PRACTICE -> PracticeStageInline()
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -317,7 +339,7 @@ fun SpeakingJourneyScreen(
             // Complete button
             val current = ui.topics.getOrNull(ui.selectedTopicIdx)
             Button(
-                enabled = current != null && !current.completed,
+                enabled = current != null && !current.completed && !ui.isLoading,
                 onClick = { if (current != null) viewModel.markCurrentTopicComplete() }
             ) {
                 Text(if (current?.completed == true) "Completed" else "Mark topic complete")
@@ -364,32 +386,155 @@ private fun MaterialStage(
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-private fun PracticeStagePlaceholder() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+private fun PracticeStageInline(
+    practiceViewModel: SpeakingPracticeViewModel = hiltViewModel()
+) {
+    val uiState by practiceViewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val audioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+        if (!audioPermissionState.status.isGranted) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Microphone permission required",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Enable microphone to record your practice.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Button(onClick = { audioPermissionState.launchPermissionRequest() }) {
+                        Text("Grant permission")
+                    }
+                }
+            }
+            return@Column
+        }
+
+        // Prompt
+        uiState.currentPrompt?.let { prompt ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Practice Prompt",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = prompt.text, style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+        }
+
+        // Recording status
+        if (uiState.recordingState != RecordingState.IDLE) {
             Text(
-                text = "Practice with AI",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Coming soon: speak and get instant feedback from AI.",
-                style = MaterialTheme.typography.bodyMedium,
+                text = "Duration: ${'$'}{uiState.recordingDuration}s",
+                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = { /* TODO: integrate practice session flow */ }, enabled = false) {
-                Text("Start AI Practice")
+        }
+
+        // Controls
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            when (uiState.recordingState) {
+                RecordingState.IDLE -> {
+                    Button(onClick = {
+                        val f = File(context.cacheDir, "journey_rec_${'$'}{System.currentTimeMillis()}.m4a")
+                        practiceViewModel.startRecording(f)
+                    }) { Text("Start recording") }
+                }
+                RecordingState.RECORDING -> {
+                    OutlinedButton(onClick = practiceViewModel::pauseRecording) { Text("Pause") }
+                    Button(onClick = practiceViewModel::stopRecording) { Text("Stop") }
+                }
+                RecordingState.PAUSED -> {
+                    Button(onClick = practiceViewModel::resumeRecording) { Text("Resume") }
+                    Button(onClick = practiceViewModel::stopRecording) { Text("Stop") }
+                }
+                RecordingState.STOPPED -> {
+                    // Post-stop actions shown below
+                }
+            }
+        }
+
+        if (uiState.recordingState == RecordingState.STOPPED) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(onClick = practiceViewModel::retryRecording, modifier = Modifier.weight(1f)) {
+                    Text("Retry")
+                }
+                Button(
+                    onClick = practiceViewModel::submitRecording,
+                    enabled = !uiState.isSubmitting,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    if (uiState.isSubmitting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.height(16.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text("Submit")
+                    }
+                }
+            }
+        }
+
+        // Error
+        uiState.error?.let { err ->
+            Text(
+                text = err,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
+        // Basic feedback summary
+        uiState.submissionResult?.let { result ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("AI Feedback", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text("Score: ${String.format(java.util.Locale.US, "%.1f", result.score)}")
+                    Text(result.feedback)
+                }
             }
         }
     }

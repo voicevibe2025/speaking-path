@@ -1,9 +1,12 @@
 package com.example.voicevibe.data.remote.api
 
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 
 interface SpeakingJourneyApiService {
@@ -19,6 +22,14 @@ interface SpeakingJourneyApiService {
     suspend fun updateLastVisitedTopic(
         @Body request: UpdateLastVisitedTopicRequest
     ): Response<UpdateLastVisitedTopicResponse>
+
+    @Multipart
+    @POST("speaking/topics/{topicId}/phrases/submit")
+    suspend fun submitPhraseRecording(
+        @Path("topicId") topicId: String,
+        @Part("phraseIndex") phraseIndex: Int,
+        @Part audio: MultipartBody.Part
+    ): Response<PhraseSubmissionResultDto>
 }
 
 data class SpeakingTopicsResponse(
@@ -37,12 +48,20 @@ data class UserProfileDto(
     val lastVisitedTopicTitle: String?
 )
 
+data class PhraseProgressDto(
+    val currentPhraseIndex: Int,
+    val completedPhrases: List<Int>,
+    val totalPhrases: Int,
+    val isAllPhrasesCompleted: Boolean
+)
+
 data class SpeakingTopicDto(
     val id: String,
     val title: String,
     val description: String = "",
     val material: List<String>,
     val conversation: List<ConversationTurnDto> = emptyList(),
+    val phraseProgress: PhraseProgressDto? = null,
     val unlocked: Boolean,
     val completed: Boolean
 )
@@ -60,4 +79,13 @@ data class UpdateLastVisitedTopicRequest(
 
 data class UpdateLastVisitedTopicResponse(
     val success: Boolean
+)
+
+data class PhraseSubmissionResultDto(
+    val success: Boolean,
+    val accuracy: Float,
+    val transcription: String,
+    val feedback: String,
+    val nextPhraseIndex: Int?,
+    val topicCompleted: Boolean
 )

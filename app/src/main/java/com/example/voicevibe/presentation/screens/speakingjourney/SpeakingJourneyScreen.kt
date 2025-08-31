@@ -7,6 +7,8 @@ import android.provider.Settings
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,6 +18,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -23,16 +27,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -77,12 +84,20 @@ data class ConversationTurn(
     val text: String
 )
 
+data class PhraseProgress(
+    val currentPhraseIndex: Int,
+    val completedPhrases: List<Int>,
+    val totalPhrases: Int,
+    val isAllPhrasesCompleted: Boolean
+)
+
 data class Topic(
     val id: String,
     val title: String,
     val description: String,
     val material: List<String>,
     val conversation: List<ConversationTurn>,
+    val phraseProgress: PhraseProgress?,
     val unlocked: Boolean,
     val completed: Boolean
 )
@@ -134,6 +149,14 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                             description = dto.description,
                             material = dto.material,
                             conversation = dto.conversation.map { ConversationTurn(it.speaker, it.text) },
+                            phraseProgress = dto.phraseProgress?.let { progress ->
+                                PhraseProgress(
+                                    currentPhraseIndex = progress.currentPhraseIndex,
+                                    completedPhrases = progress.completedPhrases,
+                                    totalPhrases = progress.totalPhrases,
+                                    isAllPhrasesCompleted = progress.isAllPhrasesCompleted
+                                )
+                            },
                             unlocked = dto.unlocked,
                             completed = dto.completed
                         )
@@ -172,6 +195,12 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                                 "Nice to meet you!"
                             ),
                             conversation = emptyList(),
+                            phraseProgress = PhraseProgress(
+                                currentPhraseIndex = 0,
+                                completedPhrases = emptyList(),
+                                totalPhrases = 4,
+                                isAllPhrasesCompleted = false
+                            ),
                             unlocked = true,
                             completed = false
                         )
@@ -398,7 +427,8 @@ fun SpeakingJourneyScreen(
             when (ui.stage) {
                 Stage.MATERIAL -> MaterialStage(
                     description = currentTopic?.description.orEmpty(),
-                    lines = currentTopic?.material ?: emptyList(),
+                    material = currentTopic?.material ?: emptyList(),
+                    phraseProgress = currentTopic?.phraseProgress,
                     conversation = currentTopic?.conversation ?: emptyList(),
                     onSpeak = ::speak
                 )
@@ -422,7 +452,8 @@ fun SpeakingJourneyScreen(
 @Composable
 private fun MaterialStage(
     description: String,
-    lines: List<String>,
+    material: List<String>,
+    phraseProgress: PhraseProgress?,
     conversation: List<ConversationTurn>,
     onSpeak: (String) -> Unit
 ) {
@@ -452,35 +483,15 @@ private fun MaterialStage(
             }
         }
 
-        // Phrases section
-        Text(
-            text = "Key Phrases",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
-        )
-        lines.forEach { sentence ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = sentence,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1f)
-                    )
-                    IconButton(onClick = { onSpeak(sentence) }) {
-                        Icon(Icons.Default.VolumeUp, contentDescription = "Play TTS")
-                    }
-                }
-            }
+        // Interactive Phrase Learning section
+        if (material.isNotEmpty() && phraseProgress != null) {
+            InteractivePhraseSection(
+                material = material,
+                phraseProgress = phraseProgress,
+                onSpeak = onSpeak,
+                onPhraseSelected = { /* TODO: Add phrase navigation */ },
+                onRecordPhrase = { /* TODO: Add recording functionality */ }
+            )
         }
 
         // Conversation section
@@ -512,6 +523,179 @@ private fun MaterialStage(
                     text = combined,
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(12.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun InteractivePhraseSection(
+    material: List<String>,
+    phraseProgress: PhraseProgress,
+    onSpeak: (String) -> Unit,
+    onPhraseSelected: (Int) -> Unit,
+    onRecordPhrase: () -> Unit
+) {
+    Text(
+        text = "Learn Phrases",
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.SemiBold
+    )
+    
+    // Progress indicator
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Text(
+                text = "Progress: ${phraseProgress.completedPhrases.size} of ${phraseProgress.totalPhrases} completed",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            LinearProgressIndicator(
+                progress = phraseProgress.completedPhrases.size.toFloat() / phraseProgress.totalPhrases.coerceAtLeast(1),
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+    
+    // Navigation pills for completed phrases
+    if (phraseProgress.completedPhrases.isNotEmpty()) {
+        Text(
+            text = "Completed Phrases (tap to review):",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(vertical = 8.dp)
+        ) {
+            items(phraseProgress.completedPhrases.sorted()) { phraseIndex ->
+                AssistChip(
+                    onClick = { onPhraseSelected(phraseIndex) },
+                    label = { Text("${phraseIndex + 1}") },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = "Completed",
+                            modifier = Modifier.size(16.dp)
+                        )
+                    },
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                )
+            }
+        }
+    }
+    
+    // Current phrase learning
+    val currentPhraseIndex = phraseProgress.currentPhraseIndex.coerceIn(0, material.size - 1)
+    val currentPhrase = material.getOrNull(currentPhraseIndex)
+    
+    if (currentPhrase != null) {
+        Text(
+            text = "Current Phrase ${currentPhraseIndex + 1} of ${material.size}:",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(top = 16.dp)
+        )
+        
+        // Current phrase card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = currentPhrase,
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.weight(1f),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    IconButton(onClick = { onSpeak(currentPhrase) }) {
+                        Icon(
+                            Icons.Default.VolumeUp,
+                            contentDescription = "Listen to phrase",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Instructions
+                Text(
+                    text = "📝 Record yourself saying this phrase aloud",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Record button
+                Button(
+                    onClick = onRecordPhrase,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(
+                        Icons.Default.Mic,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Record Pronunciation")
+                }
+            }
+        }
+    } else if (phraseProgress.isAllPhrasesCompleted) {
+        // All phrases completed
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = "Completed",
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "🎉 All phrases completed!",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+                Text(
+                    text = "Great job! You can review completed phrases above.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
             }
         }

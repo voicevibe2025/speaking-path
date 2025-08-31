@@ -28,6 +28,8 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -76,6 +78,12 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.example.voicevibe.presentation.screens.practice.speaking.SpeakingPracticeViewModel
 import com.example.voicevibe.presentation.screens.practice.speaking.RecordingState
 import java.io.File
+import android.os.Build
+import android.media.MediaRecorder
+import android.content.Context
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 
 enum class Stage { MATERIAL, PRACTICE }
 
@@ -114,8 +122,21 @@ data class SpeakingJourneyUiState(
     val selectedTopicIdx: Int = 0,
     val stage: Stage = Stage.MATERIAL,
     val showWelcome: Boolean = false,
+    val phraseRecordingState: PhraseRecordingState = PhraseRecordingState.IDLE,
+    val phraseSubmissionResult: PhraseSubmissionResultUi? = null,
     val isLoading: Boolean = false,
     val error: String? = null
+)
+
+enum class PhraseRecordingState { IDLE, RECORDING, PROCESSING }
+
+data class PhraseSubmissionResultUi(
+    val success: Boolean,
+    val accuracy: Float,
+    val transcription: String,
+    val feedback: String,
+    val nextPhraseIndex: Int?,
+    val topicCompleted: Boolean
 )
 
 @dagger.hilt.android.lifecycle.HiltViewModel
@@ -244,6 +265,102 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
             val res = repo.completeTopic(current.id)
             if (res.isSuccess) { reloadTopics() }
         }
+    }
+
+    private var mediaRecorder: MediaRecorder? = null
+    private var phraseAudioFile: File? = null
+
+    fun startPhraseRecording(context: Context) {
+        try {
+            val outFile = File(context.cacheDir, "phrase_rec_${System.currentTimeMillis()}.m4a")
+            phraseAudioFile = outFile
+            val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) MediaRecorder(context) else MediaRecorder()
+            mediaRecorder = mr
+            mr.setAudioSource(MediaRecorder.AudioSource.MIC)
+            mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            mr.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            mr.setAudioEncodingBitRate(128_000)
+            mr.setAudioSamplingRate(44_100)
+            mr.setOutputFile(outFile.absolutePath)
+            mr.prepare(); mr.start()
+            _uiState.value = _uiState.value.copy(phraseRecordingState = PhraseRecordingState.RECORDING, phraseSubmissionResult = null)
+        } catch (t: Throwable) {
+            Log.e("SpeakingJourney", "Failed to start recording", t)
+            _uiState.value = _uiState.value.copy(
+                phraseRecordingState = PhraseRecordingState.IDLE,
+                phraseSubmissionResult = PhraseSubmissionResultUi(false, 0f, "", "Unable to start recording. ${t.message ?: ""}", null, false)
+            )
+            try { mediaRecorder?.release() } catch (_: Throwable) {}
+            mediaRecorder = null
+        }
+    }
+
+    fun stopPhraseRecording() {
+        val s = _uiState.value
+        val currentTopic = s.topics.getOrNull(s.selectedTopicIdx)
+        try { mediaRecorder?.stop() } catch (_: Throwable) {}
+        try { mediaRecorder?.reset() } catch (_: Throwable) {}
+        try { mediaRecorder?.release() } catch (_: Throwable) {}
+        mediaRecorder = null
+        _uiState.value = _uiState.value.copy(phraseRecordingState = PhraseRecordingState.PROCESSING)
+
+        val file = phraseAudioFile
+        if (currentTopic == null || file == null || !file.exists()) {
+            _uiState.value = _uiState.value.copy(
+                phraseRecordingState = PhraseRecordingState.IDLE,
+                phraseSubmissionResult = PhraseSubmissionResultUi(false, 0f, "", "Recording not available.", null, false)
+            )
+            return
+        }
+
+        val phraseIndex = currentTopic.phraseProgress?.currentPhraseIndex ?: 0
+        viewModelScope.launch {
+            try {
+                val part = MultipartBody.Part.createFormData(
+                    name = "audio",
+                    filename = file.name,
+                    body = file.asRequestBody("audio/m4a".toMediaTypeOrNull())
+                )
+                val result = repo.submitPhraseRecording(currentTopic.id, phraseIndex, part)
+                result.fold(
+                    onSuccess = { dto ->
+                        _uiState.value = _uiState.value.copy(
+                            phraseRecordingState = PhraseRecordingState.IDLE,
+                            phraseSubmissionResult = PhraseSubmissionResultUi(
+                                success = dto.success,
+                                accuracy = dto.accuracy,
+                                transcription = dto.transcription,
+                                feedback = dto.feedback,
+                                nextPhraseIndex = dto.nextPhraseIndex,
+                                topicCompleted = dto.topicCompleted
+                            )
+                        )
+                        if (dto.success) reloadTopics()
+                    },
+                    onFailure = { e ->
+                        Log.e("SpeakingJourney", "Submit phrase failed", e)
+                        _uiState.value = _uiState.value.copy(
+                            phraseRecordingState = PhraseRecordingState.IDLE,
+                            phraseSubmissionResult = PhraseSubmissionResultUi(false, 0f, "", "Failed to process recording. ${e.message ?: ""}", null, false)
+                        )
+                    }
+                )
+            } catch (t: Throwable) {
+                Log.e("SpeakingJourney", "Error submitting phrase", t)
+                _uiState.value = _uiState.value.copy(
+                    phraseRecordingState = PhraseRecordingState.IDLE,
+                    phraseSubmissionResult = PhraseSubmissionResultUi(false, 0f, "", "An error occurred. ${t.message ?: ""}", null, false)
+                )
+            }
+        }
+    }
+
+    fun dismissPhraseResult() { _uiState.value = _uiState.value.copy(phraseSubmissionResult = null) }
+
+    override fun onCleared() {
+        super.onCleared()
+        try { mediaRecorder?.release() } catch (_: Throwable) {}
+        mediaRecorder = null
     }
 }
 
@@ -430,7 +547,13 @@ fun SpeakingJourneyScreen(
                     material = currentTopic?.material ?: emptyList(),
                     phraseProgress = currentTopic?.phraseProgress,
                     conversation = currentTopic?.conversation ?: emptyList(),
-                    onSpeak = ::speak
+                    onSpeak = ::speak,
+                    recordingState = ui.phraseRecordingState,
+                    submissionResult = ui.phraseSubmissionResult,
+                    onStartRecording = { viewModel.startPhraseRecording(context) },
+                    onStopRecording = viewModel::stopPhraseRecording,
+                    onDismissResult = viewModel::dismissPhraseResult,
+                    onPhraseSelected = { idx -> currentTopic?.material?.getOrNull(idx)?.let { speak(it) } }
                 )
                 Stage.PRACTICE -> PracticeStageInline()
             }
@@ -449,14 +572,25 @@ fun SpeakingJourneyScreen(
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun MaterialStage(
     description: String,
     material: List<String>,
     phraseProgress: PhraseProgress?,
     conversation: List<ConversationTurn>,
-    onSpeak: (String) -> Unit
+    onSpeak: (String) -> Unit,
+    recordingState: PhraseRecordingState,
+    submissionResult: PhraseSubmissionResultUi?,
+    onStartRecording: () -> Unit,
+    onStopRecording: () -> Unit,
+    onDismissResult: () -> Unit,
+    onPhraseSelected: (Int) -> Unit
 ) {
+    val context = LocalContext.current
+    val audioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
+    val askedOnce = remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -485,13 +619,64 @@ private fun MaterialStage(
 
         // Interactive Phrase Learning section
         if (material.isNotEmpty() && phraseProgress != null) {
-            InteractivePhraseSection(
-                material = material,
-                phraseProgress = phraseProgress,
-                onSpeak = onSpeak,
-                onPhraseSelected = { /* TODO: Add phrase navigation */ },
-                onRecordPhrase = { /* TODO: Add recording functionality */ }
-            )
+            val permStatus = audioPermissionState.status
+            val deniedPermanently = askedOnce.value && (permStatus is PermissionStatus.Denied) && !permStatus.shouldShowRationale
+
+            if (!audioPermissionState.status.isGranted) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Microphone permission required",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Enable microphone to record your pronunciation.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(onClick = {
+                                askedOnce.value = true
+                                audioPermissionState.launchPermissionRequest()
+                            }) {
+                                Text("Grant permission")
+                            }
+                            if (deniedPermanently) {
+                                OutlinedButton(onClick = {
+                                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        data = Uri.fromParts("package", context.packageName, null)
+                                    }
+                                    context.startActivity(intent)
+                                }) {
+                                    Text("Open settings")
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                InteractivePhraseSection(
+                    material = material,
+                    phraseProgress = phraseProgress,
+                    onSpeak = onSpeak,
+                    onPhraseSelected = onPhraseSelected,
+                    recordingState = recordingState,
+                    submissionResult = submissionResult,
+                    onStartRecording = onStartRecording,
+                    onStopRecording = onStopRecording,
+                    onDismissResult = onDismissResult
+                )
+            }
         }
 
         // Conversation section
@@ -535,7 +720,11 @@ private fun InteractivePhraseSection(
     phraseProgress: PhraseProgress,
     onSpeak: (String) -> Unit,
     onPhraseSelected: (Int) -> Unit,
-    onRecordPhrase: () -> Unit
+    recordingState: PhraseRecordingState,
+    submissionResult: PhraseSubmissionResultUi?,
+    onStartRecording: () -> Unit,
+    onStopRecording: () -> Unit,
+    onDismissResult: () -> Unit
 ) {
     Text(
         text = "Learn Phrases",
@@ -564,6 +753,12 @@ private fun InteractivePhraseSection(
                 color = MaterialTheme.colorScheme.primary
             )
         }
+    }
+    
+    // Show last submission result
+    submissionResult?.let { result ->
+        RecordingResultCard(result = result, onDismiss = onDismissResult)
+        Spacer(modifier = Modifier.height(12.dp))
     }
     
     // Navigation pills for completed phrases
@@ -651,21 +846,11 @@ private fun InteractivePhraseSection(
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 // Record button
-                Button(
-                    onClick = onRecordPhrase,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Icon(
-                        Icons.Default.Mic,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Record Pronunciation")
-                }
+                RecordingButton(
+                    recordingState = recordingState,
+                    onStartRecording = onStartRecording,
+                    onStopRecording = onStopRecording
+                )
             }
         }
     } else if (phraseProgress.isAllPhrasesCompleted) {
@@ -696,6 +881,112 @@ private fun InteractivePhraseSection(
                     text = "Great job! You can review completed phrases above.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecordingButton(
+    recordingState: PhraseRecordingState,
+    onStartRecording: () -> Unit,
+    onStopRecording: () -> Unit
+) {
+    val enabled = recordingState != PhraseRecordingState.PROCESSING
+    Button(
+        onClick = {
+            when (recordingState) {
+                PhraseRecordingState.IDLE -> onStartRecording()
+                PhraseRecordingState.RECORDING -> onStopRecording()
+                PhraseRecordingState.PROCESSING -> Unit
+            }
+        },
+        modifier = Modifier.fillMaxWidth(),
+        enabled = enabled,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = when (recordingState) {
+                PhraseRecordingState.RECORDING -> MaterialTheme.colorScheme.error
+                PhraseRecordingState.PROCESSING -> MaterialTheme.colorScheme.surfaceVariant
+                else -> MaterialTheme.colorScheme.primary
+            }
+        )
+    ) {
+        when (recordingState) {
+            PhraseRecordingState.PROCESSING -> {
+                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+            }
+            PhraseRecordingState.RECORDING -> {
+                Icon(Icons.Default.Stop, contentDescription = null, modifier = Modifier.size(20.dp))
+            }
+            else -> {
+                Icon(Icons.Default.Mic, contentDescription = null, modifier = Modifier.size(20.dp))
+            }
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            when (recordingState) {
+                PhraseRecordingState.RECORDING -> "Stop Recording"
+                PhraseRecordingState.PROCESSING -> "Processing..."
+                else -> "Record Pronunciation"
+            }
+        )
+    }
+}
+
+@Composable
+private fun RecordingResultCard(
+    result: PhraseSubmissionResultUi,
+    onDismiss: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (result.success) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Text(
+                    text = if (result.success) "✅ Great job!" else "❌ Try again",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+                )
+                IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Dismiss",
+                        modifier = Modifier.size(16.dp),
+                        tint = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
+            if (result.accuracy > 0) {
+                Text(
+                    text = "Accuracy: ${"%.1f".format(Locale.US, result.accuracy)}%",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+            if (result.transcription.isNotBlank()) {
+                Text(
+                    text = "You said: \"${result.transcription}\"",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            if (result.feedback.isNotBlank()) {
+                Text(
+                    text = result.feedback,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
                 )
             }
         }

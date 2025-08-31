@@ -19,10 +19,17 @@ data class SpeakingTopicsResponse(
     val topics: List<SpeakingTopicDto>
 )
 
+data class ConversationTurnDto(
+    val speaker: String,
+    val text: String
+)
+
 data class SpeakingTopicDto(
     val id: String,
     val title: String,
+    val description: String = "",
     val material: List<String>,
+    val conversation: List<ConversationTurnDto> = emptyList(),
     val unlocked: Boolean,
     val completed: Boolean
 )

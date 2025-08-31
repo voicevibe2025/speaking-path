@@ -68,10 +68,17 @@ import java.io.File
 
 enum class Stage { MATERIAL, PRACTICE }
 
+data class ConversationTurn(
+    val speaker: String,
+    val text: String
+)
+
 data class Topic(
     val id: String,
     val title: String,
+    val description: String,
     val material: List<String>,
+    val conversation: List<ConversationTurn>,
     val unlocked: Boolean,
     val completed: Boolean
 )
@@ -106,7 +113,9 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                         Topic(
                             id = dto.id,
                             title = dto.title,
+                            description = dto.description,
                             material = dto.material,
+                            conversation = dto.conversation.map { ConversationTurn(it.speaker, it.text) },
                             unlocked = dto.unlocked,
                             completed = dto.completed
                         )
@@ -130,12 +139,14 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                         Topic(
                             id = "t1",
                             title = "Self Introduction",
+                            description = "Introduce yourself with simple phrases.",
                             material = listOf(
                                 "Hello! My name is Alex.",
                                 "I am from San Francisco.",
                                 "I work as a software developer.",
                                 "Nice to meet you!"
                             ),
+                            conversation = emptyList(),
                             unlocked = true,
                             completed = false
                         )
@@ -329,7 +340,9 @@ fun SpeakingJourneyScreen(
             val currentTopic = ui.topics.getOrNull(ui.selectedTopicIdx)
             when (ui.stage) {
                 Stage.MATERIAL -> MaterialStage(
+                    description = currentTopic?.description.orEmpty(),
                     lines = currentTopic?.material ?: emptyList(),
+                    conversation = currentTopic?.conversation ?: emptyList(),
                     onSpeak = ::speak
                 )
                 Stage.PRACTICE -> PracticeStageInline()
@@ -351,7 +364,9 @@ fun SpeakingJourneyScreen(
 
 @Composable
 private fun MaterialStage(
+    description: String,
     lines: List<String>,
+    conversation: List<ConversationTurn>,
     onSpeak: (String) -> Unit
 ) {
     Column(
@@ -360,6 +375,32 @@ private fun MaterialStage(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // Description section
+        if (description.isNotBlank()) {
+            Text(
+                text = "Description",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(12.dp)
+                )
+            }
+        }
+
+        // Phrases section
+        Text(
+            text = "Key Phrases",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
         lines.forEach { sentence ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -380,6 +421,39 @@ private fun MaterialStage(
                     )
                     IconButton(onClick = { onSpeak(sentence) }) {
                         Icon(Icons.Default.VolumeUp, contentDescription = "Play TTS")
+                    }
+                }
+            }
+        }
+
+        // Conversation section
+        if (conversation.isNotEmpty()) {
+            Text(
+                text = "Conversation Example",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            conversation.forEach { turn ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "${'$'}{turn.speaker}: ${'$'}{turn.text}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = { onSpeak(turn.text) }) {
+                            Icon(Icons.Default.VolumeUp, contentDescription = "Play TTS")
+                        }
                     }
                 }
             }

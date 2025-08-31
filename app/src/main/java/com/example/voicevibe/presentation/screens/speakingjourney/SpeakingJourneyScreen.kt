@@ -139,6 +139,11 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                     } else emptyList()
                     val newIndex = when {
                         mapped.isEmpty() -> 0
+                        // For returning users, try to select their last visited topic
+                        !userProfile.firstVisit && userProfile.lastVisitedTopicId != null -> {
+                            mapped.indexOfFirst { it.id == userProfile.lastVisitedTopicId }
+                                .let { if (it >= 0) it else mapped.indexOfFirst { it.unlocked }.let { idx -> if (idx >= 0) idx else 0 } }
+                        }
                         prevSelectedId != null -> mapped.indexOfFirst { it.id == prevSelectedId }
                             .let { if (it >= 0) it else mapped.indexOfFirst { it.unlocked }.let { idx -> if (idx >= 0) idx else 0 } }
                         else -> mapped.indexOfFirst { it.unlocked }.let { if (it >= 0) it else 0 }

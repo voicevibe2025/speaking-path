@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,6 +43,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -54,6 +56,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
 import java.util.Locale
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.example.voicevibe.data.repository.SpeakingJourneyRepository
 import android.Manifest
@@ -83,10 +86,18 @@ data class Topic(
     val completed: Boolean
 )
 
+data class UserProfile(
+    val firstVisit: Boolean,
+    val lastVisitedTopicId: String?,
+    val lastVisitedTopicTitle: String?
+)
+
 data class SpeakingJourneyUiState(
     val topics: List<Topic>,
+    val userProfile: UserProfile? = null,
     val selectedTopicIdx: Int = 0,
     val stage: Stage = Stage.MATERIAL,
+    val showWelcome: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null
 )
@@ -108,7 +119,13 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             val result = repo.getTopics()
             result.fold(
-                onSuccess = { dtos ->
+                onSuccess = { response ->
+                    val dtos = response.topics
+                    val userProfile = UserProfile(
+                        firstVisit = response.userProfile.firstVisit,
+                        lastVisitedTopicId = response.userProfile.lastVisitedTopicId,
+                        lastVisitedTopicTitle = response.userProfile.lastVisitedTopicTitle
+                    )
                     val mapped = if (dtos.isNotEmpty()) dtos.map { dto ->
                         Topic(
                             id = dto.id,
@@ -128,7 +145,9 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                     }
                     _uiState.value = _uiState.value.copy(
                         topics = mapped,
+                        userProfile = userProfile,
                         selectedTopicIdx = newIndex.coerceIn(0, (mapped.size - 1).coerceAtLeast(0)),
+                        showWelcome = true,
                         isLoading = false
                     )
                 },
@@ -153,6 +172,7 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                     )
                     _uiState.value = _uiState.value.copy(
                         topics = fallback,
+                        userProfile = UserProfile(true, null, null),
                         isLoading = false,
                         error = "Unable to load topics. ${ex.message ?: "Check your connection and try again."}"
                     )
@@ -164,8 +184,17 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
     fun selectTopic(index: Int) {
         val s = _uiState.value
         if (index in s.topics.indices && s.topics[index].unlocked) {
+            val topic = s.topics[index]
             _uiState.value = s.copy(selectedTopicIdx = index)
+            // Update last visited topic
+            viewModelScope.launch {
+                repo.updateLastVisitedTopic(topic.id)
+            }
         }
+    }
+
+    fun dismissWelcome() {
+        _uiState.value = _uiState.value.copy(showWelcome = false)
     }
 
     fun setStage(stage: Stage) {
@@ -334,6 +363,16 @@ fun SpeakingJourneyScreen(
                     )
                     Button(onClick = { viewModel.reloadTopics() }) { Text("Retry") }
                 }
+            }
+
+            // Show welcome screen if needed
+            if (ui.showWelcome) {
+                WelcomeScreen(
+                    userProfile = ui.userProfile,
+                    currentTopic = ui.topics.getOrNull(ui.selectedTopicIdx),
+                    onDismiss = { viewModel.dismissWelcome() }
+                )
+                return@Column
             }
 
             // Content
@@ -629,5 +668,92 @@ private fun PracticeStageInline(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun WelcomeScreen(
+    userProfile: UserProfile?,
+    currentTopic: Topic?,
+    onDismiss: () -> Unit
+) {
+    // Auto-dismiss after 4 seconds, but user can tap to skip
+    LaunchedEffect(Unit) {
+        delay(4000)
+        onDismiss()
+    }
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)
+            .clickable { onDismiss() },
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (userProfile?.firstVisit == true) {
+            // First-time user welcome
+            Text(
+                text = "Welcome to Speaking Journey",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            currentTopic?.let { topic ->
+                Text(
+                    text = "Lesson ${topic.title.substringBefore(':').takeIf { it.contains("Lesson") } ?: "1"}: ${topic.title}",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "In this lesson, you will learn ${topic.description.lowercase()}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            // Returning user welcome
+            Text(
+                text = "Welcome back!",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            if (!userProfile?.lastVisitedTopicTitle.isNullOrBlank()) {
+                Text(
+                    text = "Last time you were learning about:",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = userProfile?.lastVisitedTopicTitle ?: "",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Want to continue?",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            } else {
+                Text(
+                    text = "Ready to continue your journey?",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            text = "Tap anywhere to continue",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }

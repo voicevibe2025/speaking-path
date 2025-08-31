@@ -47,6 +47,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -300,10 +301,22 @@ fun SpeakingJourneyScreen(
             }
 
             // Topics chips (horizontal)
+            val topicScrollState = rememberScrollState()
+            
+            // Auto-scroll to selected topic
+            LaunchedEffect(ui.selectedTopicIdx) {
+                if (ui.topics.isNotEmpty() && ui.selectedTopicIdx in ui.topics.indices) {
+                    // Calculate approximate position - each chip is roughly 180dp + 8dp spacing
+                    val chipWidth = 188 // 180dp + 8dp spacing
+                    val targetPosition = ui.selectedTopicIdx * chipWidth
+                    topicScrollState.animateScrollTo(targetPosition)
+                }
+            }
+            
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
+                    .horizontalScroll(topicScrollState),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 ui.topics.forEachIndexed { index, topic ->

@@ -699,11 +699,6 @@ private fun InteractivePhraseSection(
         Column(
             modifier = Modifier.padding(12.dp)
         ) {
-            Text(
-                text = "Progress: ${phraseProgress.completedPhrases.size} of ${phraseProgress.totalPhrases} completed",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
-            )
             Spacer(modifier = Modifier.height(8.dp))
             LinearProgressIndicator(
                 progress = phraseProgress.completedPhrases.size.toFloat() / phraseProgress.totalPhrases.coerceAtLeast(1),

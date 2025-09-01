@@ -552,8 +552,7 @@ fun SpeakingJourneyScreen(
                     submissionResult = ui.phraseSubmissionResult,
                     onStartRecording = { viewModel.startPhraseRecording(context) },
                     onStopRecording = viewModel::stopPhraseRecording,
-                    onDismissResult = viewModel::dismissPhraseResult,
-                    onPhraseSelected = { idx -> currentTopic?.material?.getOrNull(idx)?.let { speak(it) } }
+                    onDismissResult = viewModel::dismissPhraseResult
                 )
                 Stage.PRACTICE -> PracticeStageInline()
             }
@@ -584,8 +583,7 @@ private fun MaterialStage(
     submissionResult: PhraseSubmissionResultUi?,
     onStartRecording: () -> Unit,
     onStopRecording: () -> Unit,
-    onDismissResult: () -> Unit,
-    onPhraseSelected: (Int) -> Unit
+    onDismissResult: () -> Unit
 ) {
     val context = LocalContext.current
     val audioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
@@ -621,6 +619,8 @@ private fun MaterialStage(
         if (material.isNotEmpty() && phraseProgress != null) {
             val permStatus = audioPermissionState.status
             val deniedPermanently = askedOnce.value && (permStatus is PermissionStatus.Denied) && !permStatus.shouldShowRationale
+            // Local review state: when set, the Current Phrase card shows the reviewed phrase
+            val reviewPhraseIndex = remember(phraseProgress) { mutableStateOf<Int?>(null) }
 
             if (!audioPermissionState.status.isGranted) {
                 Card(
@@ -669,12 +669,17 @@ private fun MaterialStage(
                     material = material,
                     phraseProgress = phraseProgress,
                     onSpeak = onSpeak,
-                    onPhraseSelected = onPhraseSelected,
+                    onPhraseSelected = { idx ->
+                        reviewPhraseIndex.value = idx
+                        material.getOrNull(idx)?.let { onSpeak(it) }
+                    },
                     recordingState = recordingState,
                     submissionResult = submissionResult,
                     onStartRecording = onStartRecording,
                     onStopRecording = onStopRecording,
-                    onDismissResult = onDismissResult
+                    onDismissResult = onDismissResult,
+                    reviewPhraseIndex = reviewPhraseIndex.value,
+                    onClearReview = { reviewPhraseIndex.value = null }
                 )
             }
         }
@@ -724,7 +729,9 @@ private fun InteractivePhraseSection(
     submissionResult: PhraseSubmissionResultUi?,
     onStartRecording: () -> Unit,
     onStopRecording: () -> Unit,
-    onDismissResult: () -> Unit
+    onDismissResult: () -> Unit,
+    reviewPhraseIndex: Int?,
+    onClearReview: () -> Unit
 ) {
     Text(
         text = "Learn Phrases",
@@ -793,13 +800,15 @@ private fun InteractivePhraseSection(
         }
     }
     
-    // Current phrase learning
-    val currentPhraseIndex = phraseProgress.currentPhraseIndex.coerceIn(0, material.size - 1)
-    val currentPhrase = material.getOrNull(currentPhraseIndex)
+    // Current phrase learning (supports review mode)
+    val baseIndex = phraseProgress.currentPhraseIndex.coerceIn(0, material.size - 1)
+    val effectiveIndex = reviewPhraseIndex?.coerceIn(0, material.size - 1) ?: baseIndex
+    val isReviewMode = reviewPhraseIndex != null
+    val currentPhrase = material.getOrNull(effectiveIndex)
     
     if (currentPhrase != null) {
         Text(
-            text = "Current Phrase ${currentPhraseIndex + 1} of ${material.size}:",
+            text = if (isReviewMode) "Review Phrase ${effectiveIndex + 1} of ${material.size}:" else "Current Phrase ${effectiveIndex + 1} of ${material.size}:",
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(top = 16.dp)
@@ -836,21 +845,34 @@ private fun InteractivePhraseSection(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                // Instructions
-                Text(
-                    text = "📝 Record yourself saying this phrase aloud",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                // Record button
-                RecordingButton(
-                    recordingState = recordingState,
-                    onStartRecording = onStartRecording,
-                    onStopRecording = onStopRecording
-                )
+                if (isReviewMode) {
+                    // Review mode hint + exit
+                    Text(
+                        text = "You are reviewing a completed phrase.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedButton(onClick = onClearReview, modifier = Modifier.fillMaxWidth()) {
+                        Text("Back to current phrase")
+                    }
+                } else {
+                    // Instructions
+                    Text(
+                        text = "📝 Record yourself saying this phrase aloud",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    // Record button
+                    RecordingButton(
+                        recordingState = recordingState,
+                        onStartRecording = onStartRecording,
+                        onStopRecording = onStopRecording
+                    )
+                }
             }
         }
     } else if (phraseProgress.isAllPhrasesCompleted) {

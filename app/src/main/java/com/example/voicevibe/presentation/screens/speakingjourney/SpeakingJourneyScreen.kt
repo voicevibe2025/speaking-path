@@ -429,20 +429,6 @@ fun SpeakingJourneyScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            // Voice info
-            if (!preferredVoiceId.isNullOrBlank()) {
-                Text(
-                    text = "TTS voice: $preferredVoiceId",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                Text(
-                    text = "TTS voice: Default",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
 
             // Topics chips (horizontal)
             val topicScrollState = rememberScrollState()
@@ -491,11 +477,6 @@ fun SpeakingJourneyScreen(
             }
 
             // Stage tabs removed: Practice with AI moved to its own screen.
-            Text(
-                text = "Material",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
 
             if (ui.isLoading) {
                 Row(
@@ -548,12 +529,6 @@ fun SpeakingJourneyScreen(
 
             // Complete button
             val current = ui.topics.getOrNull(ui.selectedTopicIdx)
-            Button(
-                enabled = current != null && !current.completed && !ui.isLoading,
-                onClick = { if (current != null) viewModel.markCurrentTopicComplete() }
-            ) {
-                Text(if (current?.completed == true) "Completed" else "Mark topic complete")
-            }
         }
     }
 }
@@ -584,11 +559,6 @@ private fun MaterialStage(
     ) {
         // Description section
         if (description.isNotBlank()) {
-            Text(
-                text = "Description",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -720,12 +690,6 @@ private fun InteractivePhraseSection(
     reviewPhraseIndex: Int?,
     onClearReview: () -> Unit
 ) {
-    Text(
-        text = "Learn Phrases",
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.SemiBold
-    )
-    
     // Progress indicator
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -757,12 +721,6 @@ private fun InteractivePhraseSection(
     
     // Navigation pills for completed phrases
     if (phraseProgress.completedPhrases.isNotEmpty()) {
-        Text(
-            text = "Completed Phrases (tap to review):",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 8.dp)
-        )
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),

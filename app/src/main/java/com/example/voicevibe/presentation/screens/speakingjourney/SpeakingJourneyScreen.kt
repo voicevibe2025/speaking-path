@@ -148,9 +148,9 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
     )
     val uiState: androidx.compose.runtime.State<SpeakingJourneyUiState> get() = _uiState
 
-    init { reloadTopics() }
+    init { reloadTopics(showWelcomeOnLoad = true) }
 
-    fun reloadTopics() {
+    fun reloadTopics(showWelcomeOnLoad: Boolean = false) {
         viewModelScope.launch {
             val prevSelectedId = _uiState.value.topics.getOrNull(_uiState.value.selectedTopicIdx)?.id
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
@@ -197,7 +197,7 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                         topics = mapped,
                         userProfile = userProfile,
                         selectedTopicIdx = newIndex.coerceIn(0, (mapped.size - 1).coerceAtLeast(0)),
-                        showWelcome = true,
+                        showWelcome = showWelcomeOnLoad,
                         isLoading = false
                     )
                 },

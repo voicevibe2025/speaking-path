@@ -800,51 +800,6 @@ private fun InteractivePhraseSection(
     reviewPhraseIndex: Int?,
     onClearReview: () -> Unit
 ) {
-    // Progress indicator
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-    ) {
-        Box(
-            modifier = Modifier
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary,
-                            MaterialTheme.colorScheme.tertiary
-                        )
-                    )
-                )
-                .padding(12.dp)
-        ) {
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Lesson Progress",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "${phraseProgress.completedPhrases.size}/${phraseProgress.totalPhrases}",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = Color.White
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                LinearProgressIndicator(
-                    progress = phraseProgress.completedPhrases.size.toFloat() / phraseProgress.totalPhrases.coerceAtLeast(1),
-                    modifier = Modifier.fillMaxWidth(),
-                    color = Color.White
-                )
-            }
-        }
-    }
-
     // Show last submission result
     submissionResult?.let { result ->
         RecordingResultCard(result = result, onDismiss = onDismissResult)

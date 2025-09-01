@@ -1162,7 +1162,7 @@ private fun TopicQuestRow(
             Card(
                 modifier = Modifier
                     .width(180.dp)
-                    .height(120.dp)
+                    .height(84.dp)
                     .scale(scale)
                     .clip(RoundedCornerShape(16.dp))
                     .clickable(enabled = topic.unlocked) { onSelect(index) },
@@ -1172,7 +1172,7 @@ private fun TopicQuestRow(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(gradient)
-                        .padding(12.dp)
+                        .padding(8.dp)
                 ) {
                     Column(
                         modifier = Modifier.fillMaxSize(),

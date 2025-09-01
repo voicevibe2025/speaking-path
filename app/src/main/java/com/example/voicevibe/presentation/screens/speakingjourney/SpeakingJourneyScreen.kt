@@ -95,6 +95,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import android.media.MediaPlayer
 
 enum class Stage { MATERIAL, PRACTICE }
 
@@ -136,7 +137,8 @@ data class SpeakingJourneyUiState(
     val phraseRecordingState: PhraseRecordingState = PhraseRecordingState.IDLE,
     val phraseSubmissionResult: PhraseSubmissionResultUi? = null,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val currentTopicTranscripts: List<PhraseTranscriptEntry> = emptyList()
 )
 
 enum class PhraseRecordingState { IDLE, RECORDING, PROCESSING }
@@ -148,6 +150,14 @@ data class PhraseSubmissionResultUi(
     val feedback: String,
     val nextPhraseIndex: Int?,
     val topicCompleted: Boolean
+)
+
+data class PhraseTranscriptEntry(
+    val index: Int,
+    val text: String,
+    val audioPath: String,
+    val accuracy: Float,
+    val timestamp: Long
 )
 
 @dagger.hilt.android.lifecycle.HiltViewModel
@@ -252,7 +262,7 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
         val s = _uiState.value
         if (index in s.topics.indices && s.topics[index].unlocked) {
             val topic = s.topics[index]
-            _uiState.value = s.copy(selectedTopicIdx = index)
+            _uiState.value = s.copy(selectedTopicIdx = index, currentTopicTranscripts = emptyList())
             // Update last visited topic
             viewModelScope.launch {
                 repo.updateLastVisitedTopic(topic.id)
@@ -279,6 +289,7 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
     }
 
     private var mediaRecorder: MediaRecorder? = null
+    private var mediaPlayer: MediaPlayer? = null
     private var phraseAudioFile: File? = null
 
     fun startPhraseRecording(context: Context) {
@@ -335,6 +346,14 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                 val result = repo.submitPhraseRecording(currentTopic.id, phraseIndex, part)
                 result.fold(
                     onSuccess = { dto ->
+                        val newEntry = PhraseTranscriptEntry(
+                            index = phraseIndex,
+                            text = dto.transcription,
+                            audioPath = file.absolutePath,
+                            accuracy = dto.accuracy,
+                            timestamp = System.currentTimeMillis()
+                        )
+                        val updatedTranscripts = _uiState.value.currentTopicTranscripts.filterNot { it.index == phraseIndex } + newEntry
                         _uiState.value = _uiState.value.copy(
                             phraseRecordingState = PhraseRecordingState.IDLE,
                             phraseSubmissionResult = PhraseSubmissionResultUi(
@@ -344,7 +363,8 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                                 feedback = dto.feedback,
                                 nextPhraseIndex = dto.nextPhraseIndex,
                                 topicCompleted = dto.topicCompleted
-                            )
+                            ),
+                            currentTopicTranscripts = updatedTranscripts.sortedBy { it.index }
                         )
                         if (dto.success) reloadTopics()
                     },
@@ -368,10 +388,30 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
 
     fun dismissPhraseResult() { _uiState.value = _uiState.value.copy(phraseSubmissionResult = null) }
 
+    fun playUserRecording(path: String) {
+        try { mediaPlayer?.release() } catch (_: Throwable) {}
+        try {
+            val mp = MediaPlayer().apply {
+                setDataSource(path)
+                setOnCompletionListener {
+                    try { it.release() } catch (_: Throwable) {}
+                    if (mediaPlayer === it) mediaPlayer = null
+                }
+                prepare()
+                start()
+            }
+            mediaPlayer = mp
+        } catch (t: Throwable) {
+            Log.e("SpeakingJourney", "Failed to play recording", t)
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         try { mediaRecorder?.release() } catch (_: Throwable) {}
         mediaRecorder = null
+        try { mediaPlayer?.release() } catch (_: Throwable) {}
+        mediaPlayer = null
     }
 }
 
@@ -540,7 +580,9 @@ fun SpeakingJourneyScreen(
                     submissionResult = ui.phraseSubmissionResult,
                     onStartRecording = { viewModel.startPhraseRecording(context) },
                     onStopRecording = viewModel::stopPhraseRecording,
-                    onDismissResult = viewModel::dismissPhraseResult
+                    onDismissResult = viewModel::dismissPhraseResult,
+                    transcripts = ui.currentTopicTranscripts,
+                    onPlayTranscript = { path -> viewModel.playUserRecording(path) }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -641,7 +683,9 @@ private fun MaterialStage(
     submissionResult: PhraseSubmissionResultUi?,
     onStartRecording: () -> Unit,
     onStopRecording: () -> Unit,
-    onDismissResult: () -> Unit
+    onDismissResult: () -> Unit,
+    transcripts: List<PhraseTranscriptEntry>,
+    onPlayTranscript: (String) -> Unit
 ) {
     val context = LocalContext.current
     val audioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
@@ -718,7 +762,9 @@ private fun MaterialStage(
                     onStopRecording = onStopRecording,
                     onDismissResult = onDismissResult,
                     reviewPhraseIndex = reviewPhraseIndex.value,
-                    onClearReview = { reviewPhraseIndex.value = null }
+                    onClearReview = { reviewPhraseIndex.value = null },
+                    transcripts = transcripts,
+                    onPlayTranscript = onPlayTranscript
                 )
             }
         }
@@ -770,7 +816,9 @@ private fun InteractivePhraseSection(
     onStopRecording: () -> Unit,
     onDismissResult: () -> Unit,
     reviewPhraseIndex: Int?,
-    onClearReview: () -> Unit
+    onClearReview: () -> Unit,
+    transcripts: List<PhraseTranscriptEntry>,
+    onPlayTranscript: (String) -> Unit
 ) {
     // Show last submission result
     submissionResult?.let { result ->
@@ -911,6 +959,14 @@ private fun InteractivePhraseSection(
             }
         }
     }
+
+    // Transcript list below Current Phrase
+    Spacer(modifier = Modifier.height(16.dp))
+    TranscriptPlaybackSection(
+        transcripts = transcripts,
+        material = material,
+        onPlay = { entry -> onPlayTranscript(entry.audioPath) }
+    )
 }
 
 @Composable
@@ -1043,6 +1099,77 @@ private fun RecordingResultCard(
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TranscriptPlaybackSection(
+    transcripts: List<PhraseTranscriptEntry>,
+    material: List<String>,
+    onPlay: (PhraseTranscriptEntry) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Your Transcript",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+        if (transcripts.isEmpty()) {
+            Text(
+                text = "No recordings yet. Record to see your transcript.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        } else {
+            transcripts.sortedBy { it.index }.forEach { entry ->
+                val isWeak = entry.accuracy < 85f
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                        .clickable { onPlay(entry) },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isWeak) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Phrase ${entry.index + 1}: ${material.getOrNull(entry.index) ?: ""}",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            IconButton(onClick = { onPlay(entry) }) {
+                                Icon(Icons.Default.VolumeUp, contentDescription = "Play recording")
+                            }
+                        }
+                        Text(
+                            text = "\"${entry.text}\"",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (isWeak) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (entry.accuracy > 0f) {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            LinearProgressIndicator(
+                                progress = (entry.accuracy / 100f).coerceIn(0f, 1f),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Accuracy: ${"%.1f".format(Locale.US, entry.accuracy)}%",
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                    }
+                }
             }
         }
     }

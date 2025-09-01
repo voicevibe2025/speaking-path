@@ -29,6 +29,7 @@ import com.example.voicevibe.presentation.screens.scenarios.CulturalScenariosScr
 import com.example.voicevibe.presentation.screens.scenarios.ScenarioDetailScreen
 import com.example.voicevibe.presentation.screens.analytics.AnalyticsDashboardScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyScreen
+import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
 
 @Composable
 fun NavGraph(
@@ -122,6 +123,9 @@ fun NavGraph(
                         navController.navigate(Screen.Practice.route)
                     }
                 },
+                onNavigateToPracticeAI = {
+                    navController.navigate(Screen.PracticeWithAI.route)
+                },
                 onNavigateToLearningPaths = {
                     if (speakingOnly) {
                         navController.navigate(Screen.SpeakingJourney.route)
@@ -159,6 +163,16 @@ fun NavGraph(
         composable(Screen.SpeakingJourney.route) {
             SpeakingJourneyScreen(
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Practice with AI standalone
+        composable(Screen.PracticeWithAI.route) {
+            PracticeWithAIScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResults = { sessionId ->
+                    navController.navigate(Screen.SessionResult.createRoute(sessionId))
+                }
             )
         }
 

@@ -33,6 +33,7 @@ import java.util.Locale
 @Composable
 fun HomeScreen(
     onNavigateToPractice: () -> Unit,
+    onNavigateToPracticeAI: () -> Unit,
     onNavigateToLearningPaths: () -> Unit,
     onNavigateToAchievements: () -> Unit,
     onNavigateToLeaderboard: () -> Unit,
@@ -118,6 +119,7 @@ fun HomeScreen(
             item {
                 QuickActionsSection(
                     onStartPractice = viewModel::onStartPractice,
+                    onPracticeWithAI = onNavigateToPracticeAI,
                     onViewPaths = viewModel::onViewAllPaths,
                     onViewLeaderboard = onNavigateToLeaderboard
                 )
@@ -303,6 +305,7 @@ private fun StatCard(
 @Composable
 private fun QuickActionsSection(
     onStartPractice: () -> Unit,
+    onPracticeWithAI: () -> Unit,
     onViewPaths: () -> Unit,
     onViewLeaderboard: () -> Unit
 ) {
@@ -351,6 +354,44 @@ private fun QuickActionsSection(
                     imageVector = Icons.Default.Mic,
                     contentDescription = null,
                     tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Quick action - Practice with AI
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onPracticeWithAI() },
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Practice with AI",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Speak and get instant feedback",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                    )
+                }
+
+                Icon(
+                    imageVector = Icons.Default.Mic,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(32.dp)
                 )
             }

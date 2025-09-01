@@ -163,7 +163,12 @@ class SpeakingPracticeViewModel @Inject constructor(
                                 submissionResult = resource.data
                             )
                         }
-                        _events.emit(SpeakingPracticeEvent.NavigateToResults(resource.data?.sessionId ?: ""))
+                        val id = resource.data?.sessionId
+                        if (!id.isNullOrBlank()) {
+                            _events.emit(SpeakingPracticeEvent.NavigateToResults(id))
+                        } else {
+                            _uiState.update { it.copy(error = "Missing session id from submission") }
+                        }
                     }
                     is Resource.Error -> {
                         _uiState.update {

@@ -17,6 +17,7 @@ import com.example.voicevibe.presentation.screens.auth.forgotpassword.ForgotPass
 import com.example.voicevibe.presentation.screens.main.home.HomeScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyScreen
+import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
 
 /**
  * Main navigation host for the VoiceVibe app
@@ -115,6 +116,7 @@ fun VoiceVibeNavHost(
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.Practice.route)
                 },
+                onNavigateToPracticeAI = { navController.navigate(Screen.PracticeWithAI.route) },
                 onNavigateToLearningPaths = {
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
@@ -138,6 +140,7 @@ fun VoiceVibeNavHost(
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.Practice.route)
                 },
+                onNavigateToPracticeAI = { navController.navigate(Screen.PracticeWithAI.route) },
                 onNavigateToLearningPaths = {
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
@@ -160,6 +163,7 @@ fun VoiceVibeNavHost(
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.Practice.route)
                 },
+                onNavigateToPracticeAI = { navController.navigate(Screen.PracticeWithAI.route) },
                 onNavigateToLearningPaths = {
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
@@ -182,6 +186,7 @@ fun VoiceVibeNavHost(
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.Practice.route)
                 },
+                onNavigateToPracticeAI = { navController.navigate(Screen.PracticeWithAI.route) },
                 onNavigateToLearningPaths = {
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
@@ -204,6 +209,7 @@ fun VoiceVibeNavHost(
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.Practice.route)
                 },
+                onNavigateToPracticeAI = { navController.navigate(Screen.PracticeWithAI.route) },
                 onNavigateToLearningPaths = {
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
@@ -222,6 +228,16 @@ fun VoiceVibeNavHost(
         composable(route = Screen.SpeakingJourney.route) {
             SpeakingJourneyScreen(
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Practice with AI standalone
+        composable(route = Screen.PracticeWithAI.route) {
+            PracticeWithAIScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResults = { sessionId ->
+                    navController.navigate(Screen.SessionResult.createRoute(sessionId))
+                }
             )
         }
 

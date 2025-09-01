@@ -19,6 +19,8 @@ sealed class Screen(val route: String) {
     object Profile : Screen("profile")
     // Speaking-only flow (beta)
     object SpeakingJourney : Screen("speaking_journey")
+    // Practice with AI standalone screen
+    object PracticeWithAI : Screen("practice_with_ai")
 
     // Practice flow
     object SessionPractice : Screen("session_practice/{sessionId}") {

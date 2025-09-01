@@ -45,8 +45,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -492,20 +490,12 @@ fun SpeakingJourneyScreen(
                 }
             }
 
-            // Stage tabs
-            val tabIndex = if (ui.stage == Stage.MATERIAL) 0 else 1
-            TabRow(selectedTabIndex = tabIndex) {
-                Tab(
-                    selected = tabIndex == 0,
-                    onClick = { viewModel.setStage(Stage.MATERIAL) },
-                    text = { Text("Material") }
-                )
-                Tab(
-                    selected = tabIndex == 1,
-                    onClick = { viewModel.setStage(Stage.PRACTICE) },
-                    text = { Text("Practice with AI") }
-                )
-            }
+            // Stage tabs removed: Practice with AI moved to its own screen.
+            Text(
+                text = "Material",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
 
             if (ui.isLoading) {
                 Row(
@@ -539,23 +529,20 @@ fun SpeakingJourneyScreen(
                 return@Column
             }
 
-            // Content
+            // Content (Material only)
             val currentTopic = ui.topics.getOrNull(ui.selectedTopicIdx)
-            when (ui.stage) {
-                Stage.MATERIAL -> MaterialStage(
-                    description = currentTopic?.description.orEmpty(),
-                    material = currentTopic?.material ?: emptyList(),
-                    phraseProgress = currentTopic?.phraseProgress,
-                    conversation = currentTopic?.conversation ?: emptyList(),
-                    onSpeak = ::speak,
-                    recordingState = ui.phraseRecordingState,
-                    submissionResult = ui.phraseSubmissionResult,
-                    onStartRecording = { viewModel.startPhraseRecording(context) },
-                    onStopRecording = viewModel::stopPhraseRecording,
-                    onDismissResult = viewModel::dismissPhraseResult
-                )
-                Stage.PRACTICE -> PracticeStageInline()
-            }
+            MaterialStage(
+                description = currentTopic?.description.orEmpty(),
+                material = currentTopic?.material ?: emptyList(),
+                phraseProgress = currentTopic?.phraseProgress,
+                conversation = currentTopic?.conversation ?: emptyList(),
+                onSpeak = ::speak,
+                recordingState = ui.phraseRecordingState,
+                submissionResult = ui.phraseSubmissionResult,
+                onStartRecording = { viewModel.startPhraseRecording(context) },
+                onStopRecording = viewModel::stopPhraseRecording,
+                onDismissResult = viewModel::dismissPhraseResult
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -571,7 +558,7 @@ fun SpeakingJourneyScreen(
     }
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 private fun MaterialStage(
     description: String,
@@ -1010,177 +997,6 @@ private fun RecordingResultCard(
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
                 )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-private fun PracticeStageInline(
-    practiceViewModel: SpeakingPracticeViewModel = hiltViewModel()
-) {
-    val uiState by practiceViewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val audioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
-    val askedOnce = remember { mutableStateOf(false) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        if (!audioPermissionState.status.isGranted) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Microphone permission required",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Enable microphone to record your practice.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    val permStatus = audioPermissionState.status
-                    val deniedPermanently = askedOnce.value && (permStatus is PermissionStatus.Denied) && !permStatus.shouldShowRationale
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(onClick = {
-                            askedOnce.value = true
-                            audioPermissionState.launchPermissionRequest()
-                        }) {
-                            Text("Grant permission")
-                        }
-                        if (deniedPermanently) {
-                            OutlinedButton(onClick = {
-                                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                    data = Uri.fromParts("package", context.packageName, null)
-                                }
-                                context.startActivity(intent)
-                            }) {
-                                Text("Open settings")
-                            }
-                        }
-                    }
-                }
-            }
-            return@Column
-        }
-
-        // Prompt
-        uiState.currentPrompt?.let { prompt ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text("Practice Prompt", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = prompt.text, style = MaterialTheme.typography.bodyLarge)
-                }
-            }
-        }
-
-        // Recording status
-        if (uiState.recordingState != RecordingState.IDLE) {
-            Text(
-                text = "Duration: ${uiState.recordingDuration}s",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        // Controls
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            when (uiState.recordingState) {
-                RecordingState.IDLE -> {
-                    Button(onClick = {
-                        val f = File(context.cacheDir, "journey_rec_${System.currentTimeMillis()}.m4a")
-                        practiceViewModel.startRecording(f)
-                    }) { Text("Start recording") }
-                }
-                RecordingState.RECORDING -> {
-                    OutlinedButton(onClick = practiceViewModel::pauseRecording) { Text("Pause") }
-                    Button(onClick = practiceViewModel::stopRecording) { Text("Stop") }
-                }
-                RecordingState.PAUSED -> {
-                    Button(onClick = practiceViewModel::resumeRecording) { Text("Resume") }
-                    Button(onClick = practiceViewModel::stopRecording) { Text("Stop") }
-                }
-                RecordingState.STOPPED -> {
-                    // Post-stop actions shown below
-                }
-            }
-        }
-
-        if (uiState.recordingState == RecordingState.STOPPED) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OutlinedButton(onClick = practiceViewModel::retryRecording, modifier = Modifier.weight(1f)) {
-                    Text("Retry")
-                }
-                Button(
-                    onClick = practiceViewModel::submitRecording,
-                    enabled = !uiState.isSubmitting,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    if (uiState.isSubmitting) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.height(16.dp),
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text("Submit")
-                    }
-                }
-            }
-        }
-
-        // Error
-        uiState.error?.let { err ->
-            Text(
-                text = err,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-
-        // Basic feedback summary
-        uiState.submissionResult?.let { result ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text("AI Feedback", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text("Score: ${String.format(java.util.Locale.US, "%.1f", result.score)}")
-                    Text(result.feedback)
-                }
             }
         }
     }

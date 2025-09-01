@@ -653,35 +653,7 @@ private fun MaterialStage(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Description section
-        if (description.isNotBlank()) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.secondary,
-                                    MaterialTheme.colorScheme.primary
-                                )
-                            )
-                        )
-                        .padding(12.dp)
-                ) {
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White
-                    )
-                }
-            }
-        }
-
+        // Topic description removed intentionally to keep focus on core actions.
         // Interactive Phrase Learning section
         if (material.isNotEmpty() && phraseProgress != null) {
             val permStatus = audioPermissionState.status

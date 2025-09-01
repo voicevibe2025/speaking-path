@@ -31,6 +31,11 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
@@ -82,6 +87,14 @@ import android.content.Context
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 
 enum class Stage { MATERIAL, PRACTICE }
 
@@ -406,129 +419,212 @@ fun SpeakingJourneyScreen(
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Speaking Journey", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.surfaceVariant,
+                        MaterialTheme.colorScheme.background
+                    )
                 )
             )
-        }
-    ) { innerPadding: PaddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.Start
-        ) {
-
-            // Topics chips (horizontal)
-            val topicScrollState = rememberScrollState()
-            
-            // Auto-scroll to selected topic
-            LaunchedEffect(ui.selectedTopicIdx) {
-                if (ui.topics.isNotEmpty() && ui.selectedTopicIdx in ui.topics.indices) {
-                    // Calculate approximate position - each chip is roughly 180dp + 8dp spacing
-                    val chipWidth = 188 // 180dp + 8dp spacing
-                    val targetPosition = ui.selectedTopicIdx * chipWidth
-                    topicScrollState.animateScrollTo(targetPosition)
-                }
-            }
-            
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(topicScrollState),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ui.topics.forEachIndexed { index, topic ->
-                    val selected = index == ui.selectedTopicIdx
-                    AssistChip(
-                        onClick = { if (topic.unlocked) viewModel.selectTopic(index) },
-                        enabled = topic.unlocked,
-                        label = { Text(topic.title) },
-                        leadingIcon = {
-                            when {
-                                topic.completed -> Icon(
-                                    imageVector = Icons.Default.CheckCircle,
+    ) {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.secondary
+                                )
+                            )
+                        )
+                ) {
+                    TopAppBar(
+                        title = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.EmojiEvents,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
+                                    tint = Color.White
                                 )
-                                !topic.unlocked -> Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = null
-                                )
+                                Text("Speaking Quest", fontWeight = FontWeight.Bold)
                             }
                         },
-                        colors = AssistChipDefaults.assistChipColors(
-                            containerColor = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface,
-                            labelColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        navigationIcon = {
+                            IconButton(onClick = onNavigateBack) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent,
+                            titleContentColor = Color.White,
+                            navigationIconContentColor = Color.White,
+                            actionIconContentColor = Color.White
                         )
                     )
                 }
             }
+        ) { innerPadding: PaddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+                val headerTopic = ui.topics.getOrNull(ui.selectedTopicIdx)
+                GamifiedHeader(currentTopic = headerTopic, phraseProgress = headerTopic?.phraseProgress)
+                Spacer(modifier = Modifier.height(4.dp))
 
-            // Stage tabs removed: Practice with AI moved to its own screen.
+                // Gamified topic selector
+                TopicQuestRow(
+                    topics = ui.topics,
+                    selectedIndex = ui.selectedTopicIdx,
+                    onSelect = { idx -> if (ui.topics.getOrNull(idx)?.unlocked == true) viewModel.selectTopic(idx) }
+                )
 
-            if (ui.isLoading) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) { CircularProgressIndicator() }
+                // Stage tabs removed: Practice with AI moved to its own screen.
+
+                if (ui.isLoading) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) { CircularProgressIndicator() }
+                }
+                ui.error?.let { err ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = err,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Button(onClick = { viewModel.reloadTopics() }) { Text("Retry") }
+                    }
+                }
+
+                // Show welcome screen if needed
+                if (ui.showWelcome) {
+                    WelcomeScreen(
+                        userProfile = ui.userProfile,
+                        currentTopic = ui.topics.getOrNull(ui.selectedTopicIdx),
+                        onDismiss = { viewModel.dismissWelcome() }
+                    )
+                    return@Column
+                }
+
+                // Content (Material only)
+                val currentTopic = ui.topics.getOrNull(ui.selectedTopicIdx)
+                MaterialStage(
+                    description = currentTopic?.description.orEmpty(),
+                    material = currentTopic?.material ?: emptyList(),
+                    phraseProgress = currentTopic?.phraseProgress,
+                    conversation = currentTopic?.conversation ?: emptyList(),
+                    onSpeak = ::speak,
+                    recordingState = ui.phraseRecordingState,
+                    submissionResult = ui.phraseSubmissionResult,
+                    onStartRecording = { viewModel.startPhraseRecording(context) },
+                    onStopRecording = viewModel::stopPhraseRecording,
+                    onDismissResult = viewModel::dismissPhraseResult
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Complete button
+                val current = ui.topics.getOrNull(ui.selectedTopicIdx)
             }
-            ui.error?.let { err ->
+        }
+    }
+}
+
+@Composable
+private fun GamifiedHeader(
+    currentTopic: Topic?,
+    phraseProgress: PhraseProgress?
+) {
+    val completed = phraseProgress?.completedPhrases?.size ?: 0
+    val total = phraseProgress?.totalPhrases ?: (currentTopic?.material?.size ?: 0)
+    val progress = if (total > 0) completed.toFloat() / total else 0f
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.tertiary
+                        )
+                    )
+                )
+                .padding(16.dp)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.EmojiEvents,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                    Text(
+                        text = "Your Speaking Quest",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+                val title = currentTopic?.title ?: "Choose a lesson to begin"
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White.copy(alpha = 0.9f)
+                )
+                LinearProgressIndicator(
+                    progress = progress,
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color.White
+                )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = err,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.weight(1f)
+                        text = "Progress",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color.White.copy(alpha = 0.9f)
                     )
-                    Button(onClick = { viewModel.reloadTopics() }) { Text("Retry") }
+                    Text(
+                        text = "$completed/$total phrases",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
                 }
             }
-
-            // Show welcome screen if needed
-            if (ui.showWelcome) {
-                WelcomeScreen(
-                    userProfile = ui.userProfile,
-                    currentTopic = ui.topics.getOrNull(ui.selectedTopicIdx),
-                    onDismiss = { viewModel.dismissWelcome() }
-                )
-                return@Column
-            }
-
-            // Content (Material only)
-            val currentTopic = ui.topics.getOrNull(ui.selectedTopicIdx)
-            MaterialStage(
-                description = currentTopic?.description.orEmpty(),
-                material = currentTopic?.material ?: emptyList(),
-                phraseProgress = currentTopic?.phraseProgress,
-                conversation = currentTopic?.conversation ?: emptyList(),
-                onSpeak = ::speak,
-                recordingState = ui.phraseRecordingState,
-                submissionResult = ui.phraseSubmissionResult,
-                onStartRecording = { viewModel.startPhraseRecording(context) },
-                onStopRecording = viewModel::stopPhraseRecording,
-                onDismissResult = viewModel::dismissPhraseResult
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Complete button
-            val current = ui.topics.getOrNull(ui.selectedTopicIdx)
         }
     }
 }
@@ -562,13 +658,27 @@ private fun MaterialStage(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
             ) {
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(12.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.secondary,
+                                    MaterialTheme.colorScheme.primary
+                                )
+                            )
+                        )
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White
+                    )
+                }
             }
         }
 
@@ -693,21 +803,48 @@ private fun InteractivePhraseSection(
     // Progress indicator
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp)
+        Box(
+            modifier = Modifier
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.tertiary
+                        )
+                    )
+                )
+                .padding(12.dp)
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
-            LinearProgressIndicator(
-                progress = phraseProgress.completedPhrases.size.toFloat() / phraseProgress.totalPhrases.coerceAtLeast(1),
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.primary
-            )
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Lesson Progress",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = Color.White
+                    )
+                    Text(
+                        text = "${phraseProgress.completedPhrases.size}/${phraseProgress.totalPhrases}",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = Color.White
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                LinearProgressIndicator(
+                    progress = phraseProgress.completedPhrases.size.toFloat() / phraseProgress.totalPhrases.coerceAtLeast(1),
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color.White
+                )
+            }
         }
     }
-    
+
     // Show last submission result
     submissionResult?.let { result ->
         RecordingResultCard(result = result, onDismiss = onDismissResult)
@@ -856,6 +993,15 @@ private fun RecordingButton(
     onStopRecording: () -> Unit
 ) {
     val enabled = recordingState != PhraseRecordingState.PROCESSING
+    val scaleFactor = if (recordingState == PhraseRecordingState.RECORDING) {
+        val infinite = rememberInfiniteTransition()
+        val p by infinite.animateFloat(
+            initialValue = 1f,
+            targetValue = 1.05f,
+            animationSpec = infiniteRepeatable(animation = tween(700), repeatMode = RepeatMode.Reverse)
+        )
+        p
+    } else 1f
     Button(
         onClick = {
             when (recordingState) {
@@ -864,7 +1010,9 @@ private fun RecordingButton(
                 PhraseRecordingState.PROCESSING -> Unit
             }
         },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .scale(scaleFactor),
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
             containerColor = when (recordingState) {
@@ -914,22 +1062,40 @@ private fun RecordingResultCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                Text(
-                    text = if (result.success) "✅ Great job!" else "❌ Try again",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
-                )
+                val onColor = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = if (result.success) Icons.Outlined.EmojiEvents else Icons.Default.Mic,
+                        contentDescription = null,
+                        tint = onColor
+                    )
+                    Text(
+                        text = if (result.success) "✅ Great job!" else "❌ Try again",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = onColor
+                    )
+                }
                 IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
                     Icon(
                         Icons.Default.Close,
                         contentDescription = "Dismiss",
                         modifier = Modifier.size(16.dp),
-                        tint = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+                        tint = onColor
                     )
                 }
             }
             if (result.accuracy > 0) {
+                Spacer(modifier = Modifier.height(8.dp))
+                LinearProgressIndicator(
+                    progress = (result.accuracy / 100f).coerceIn(0f, 1f),
+                    modifier = Modifier.fillMaxWidth(),
+                    color = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+                )
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = "Accuracy: ${"%.1f".format(Locale.US, result.accuracy)}%",
                     style = MaterialTheme.typography.bodyMedium,
@@ -1039,5 +1205,83 @@ private fun WelcomeScreen(
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+@Composable
+private fun TopicQuestRow(
+    topics: List<Topic>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit
+) {
+    if (topics.isEmpty()) return
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp)
+    ) {
+        items(topics.size) { index ->
+            val topic = topics[index]
+            val selected = index == selectedIndex
+            val isLocked = !topic.unlocked
+            val isCompleted = topic.completed
+            val scale by animateFloatAsState(targetValue = if (selected) 1.05f else 1f, animationSpec = tween(250))
+
+            val gradient = when {
+                isCompleted -> Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary))
+                isLocked -> Brush.verticalGradient(listOf(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.surface))
+                else -> Brush.verticalGradient(listOf(MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.primary))
+            }
+
+            Card(
+                modifier = Modifier
+                    .width(180.dp)
+                    .height(120.dp)
+                    .scale(scale)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable(enabled = topic.unlocked) { onSelect(index) },
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(gradient)
+                        .padding(12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Top,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            if (isCompleted) {
+                                Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.White)
+                            } else if (isLocked) {
+                                Icon(Icons.Default.Lock, contentDescription = null, tint = Color.White)
+                            } else {
+                                Spacer(modifier = Modifier.size(24.dp))
+                            }
+                        }
+                        Text(
+                            text = topic.title,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = Color.White,
+                            maxLines = 2
+                        )
+                        val phrases = topic.phraseProgress?.totalPhrases ?: topic.material.size
+                        val completed = topic.phraseProgress?.completedPhrases?.size ?: 0
+                        if (phrases > 0) {
+                            LinearProgressIndicator(
+                                progress = completed.toFloat() / phrases,
+                                modifier = Modifier.fillMaxWidth(),
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -96,6 +96,7 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import android.media.MediaPlayer
+import org.json.JSONObject
 
 enum class Stage { MATERIAL, PRACTICE }
 
@@ -262,7 +263,7 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
         val s = _uiState.value
         if (index in s.topics.indices && s.topics[index].unlocked) {
             val topic = s.topics[index]
-            _uiState.value = s.copy(selectedTopicIdx = index, currentTopicTranscripts = emptyList())
+            _uiState.value = s.copy(selectedTopicIdx = index)
             // Update last visited topic
             viewModelScope.launch {
                 repo.updateLastVisitedTopic(topic.id)
@@ -294,7 +295,18 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
 
     fun startPhraseRecording(context: Context) {
         try {
-            val outFile = File(context.cacheDir, "phrase_rec_${System.currentTimeMillis()}.m4a")
+            val s = _uiState.value
+            val currentTopic = s.topics.getOrNull(s.selectedTopicIdx)
+            if (currentTopic == null) {
+                _uiState.value = _uiState.value.copy(
+                    phraseRecordingState = PhraseRecordingState.IDLE,
+                    phraseSubmissionResult = PhraseSubmissionResultUi(false, 0f, "", "No topic selected.", null, false)
+                )
+                return
+            }
+            val phraseIndex = currentTopic.phraseProgress?.currentPhraseIndex ?: 0
+            val dir = File(context.filesDir, "voicevibe/recordings/${currentTopic.id}").apply { mkdirs() }
+            val outFile = File(dir, "phrase_${phraseIndex}.m4a")
             phraseAudioFile = outFile
             val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) MediaRecorder(context) else MediaRecorder()
             mediaRecorder = mr
@@ -317,7 +329,7 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
         }
     }
 
-    fun stopPhraseRecording() {
+    fun stopPhraseRecording(context: Context) {
         val s = _uiState.value
         val currentTopic = s.topics.getOrNull(s.selectedTopicIdx)
         try { mediaRecorder?.stop() } catch (_: Throwable) {}
@@ -366,6 +378,7 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
                             ),
                             currentTopicTranscripts = updatedTranscripts.sortedBy { it.index }
                         )
+                        saveTranscriptEntryToDisk(context, currentTopic.id, newEntry)
                         if (dto.success) reloadTopics()
                     },
                     onFailure = { e ->
@@ -413,6 +426,63 @@ class SpeakingJourneyViewModel @javax.inject.Inject constructor(
         try { mediaPlayer?.release() } catch (_: Throwable) {}
         mediaPlayer = null
     }
+
+    // Load transcripts for the currently selected topic from local storage
+    fun loadTranscriptsForCurrentTopic(context: Context) {
+        try {
+            val s = _uiState.value
+            val topic = s.topics.getOrNull(s.selectedTopicIdx) ?: run {
+                _uiState.value = s.copy(currentTopicTranscripts = emptyList())
+                return
+            }
+            val dir = File(context.filesDir, "voicevibe/transcripts")
+            val file = File(dir, "${topic.id}.json")
+            if (!file.exists()) {
+                _uiState.value = s.copy(currentTopicTranscripts = emptyList())
+                return
+            }
+            val root = JSONObject(file.readText())
+            val entries = root.optJSONObject("entries") ?: JSONObject()
+            val list = mutableListOf<PhraseTranscriptEntry>()
+            val keys = entries.keys()
+            while (keys.hasNext()) {
+                val k = keys.next()
+                val o = entries.getJSONObject(k)
+                val idx = o.optInt("index")
+                val text = o.optString("text")
+                val path = o.optString("audioPath")
+                val acc = o.optDouble("accuracy", 0.0).toFloat()
+                val ts = o.optLong("timestamp", 0L)
+                if (File(path).exists()) {
+                    list.add(PhraseTranscriptEntry(idx, text, path, acc, ts))
+                }
+            }
+            _uiState.value = s.copy(currentTopicTranscripts = list.sortedBy { it.index })
+        } catch (t: Throwable) {
+            Log.e("SpeakingJourney", "Failed to load transcripts", t)
+        }
+    }
+
+    // Persist/update a transcript entry for a topic to local JSON
+    private fun saveTranscriptEntryToDisk(context: Context, topicId: String, entry: PhraseTranscriptEntry) {
+        try {
+            val dir = File(context.filesDir, "voicevibe/transcripts").apply { mkdirs() }
+            val file = File(dir, "$topicId.json")
+            val root = if (file.exists()) JSONObject(file.readText()) else JSONObject()
+            val entries = if (root.has("entries")) root.getJSONObject("entries") else JSONObject().also { root.put("entries", it) }
+            val obj = JSONObject().apply {
+                put("index", entry.index)
+                put("text", entry.text)
+                put("audioPath", entry.audioPath)
+                put("accuracy", entry.accuracy.toDouble())
+                put("timestamp", entry.timestamp)
+            }
+            entries.put(entry.index.toString(), obj)
+            file.writeText(root.toString())
+        } catch (t: Throwable) {
+            Log.e("SpeakingJourney", "Failed to persist transcript", t)
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -458,6 +528,9 @@ fun SpeakingJourneyScreen(
     // ViewModel state
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
+    LaunchedEffect(ui.selectedTopicIdx, ui.topics) {
+        viewModel.loadTranscriptsForCurrentTopic(context)
+    }
 
     Box(
         modifier = Modifier
@@ -579,7 +652,7 @@ fun SpeakingJourneyScreen(
                     recordingState = ui.phraseRecordingState,
                     submissionResult = ui.phraseSubmissionResult,
                     onStartRecording = { viewModel.startPhraseRecording(context) },
-                    onStopRecording = viewModel::stopPhraseRecording,
+                    onStopRecording = { viewModel.stopPhraseRecording(context) },
                     onDismissResult = viewModel::dismissPhraseResult,
                     transcripts = ui.currentTopicTranscripts,
                     onPlayTranscript = { path -> viewModel.playUserRecording(path) }

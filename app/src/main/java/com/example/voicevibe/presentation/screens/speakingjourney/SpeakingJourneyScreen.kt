@@ -82,6 +82,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -333,7 +335,6 @@ fun SpeakingJourneyScreen(
                                     phraseProgress = topic.phraseProgress,
                                     onSpeak = ::speak,
                                     recordingState = ui.phraseRecordingState,
-                                    submissionResult = ui.phraseSubmissionResult,
                                     onStartRecording = { viewModel.startPhraseRecording(context) },
                                     onStopRecording = { viewModel.stopPhraseRecording(context) },
                                     onDismissResult = viewModel::dismissPhraseResult,
@@ -353,6 +354,27 @@ fun SpeakingJourneyScreen(
                         
                         Spacer(modifier = Modifier.height(100.dp))
                     }
+                }
+
+                // Results and feedback modal
+                ui.phraseSubmissionResult?.let { result ->
+                    AlertDialog(
+                        onDismissRequest = viewModel::dismissPhraseResult,
+                        properties = DialogProperties(usePlatformDefaultWidth = false),
+                        content = {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp), // Padding around the card
+                                contentAlignment = Alignment.Center
+                            ) {
+                                AnimatedResultCard(
+                                    result = result,
+                                    onDismiss = viewModel::dismissPhraseResult
+                                )
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -1031,7 +1053,6 @@ private fun HeroPhraseCard(
     phraseProgress: PhraseProgress,
     onSpeak: (String) -> Unit,
     recordingState: PhraseRecordingState,
-    submissionResult: PhraseSubmissionResultUi?,
     onStartRecording: () -> Unit,
     onStopRecording: () -> Unit,
     onDismissResult: () -> Unit,
@@ -1198,11 +1219,6 @@ private fun HeroPhraseCard(
             CompletionCelebrationCard()
         }
         
-        // Results and feedback
-        submissionResult?.let { result ->
-            Spacer(modifier = Modifier.height(16.dp))
-            AnimatedResultCard(result = result, onDismiss = onDismissResult)
-        }
         
         // Transcripts section
         if (transcripts.isNotEmpty()) {

@@ -36,7 +36,7 @@ class SpeakingJourneyViewModel @Inject constructor(
         fetchGamificationProfile()
     }
 
-    fun reloadTopics(showWelcomeOnLoad: Boolean = false) {
+    fun reloadTopics(showWelcomeOnLoad: Boolean = false, onComplete: (() -> Unit)? = null) {
         viewModelScope.launch {
             val prevSelectedId = _uiState.value.topics.getOrNull(_uiState.value.selectedTopicIdx)?.id
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
@@ -85,6 +85,7 @@ class SpeakingJourneyViewModel @Inject constructor(
                         showWelcome = showWelcomeOnLoad,
                         isLoading = false
                     )
+                    onComplete?.invoke()
                 },
                 onFailure = { ex ->
                     Log.e("SpeakingJourney", "Failed to load topics", ex)
@@ -235,9 +236,44 @@ class SpeakingJourneyViewModel @Inject constructor(
                             currentTopicTranscripts = updatedTranscripts.sortedBy { it.index }
                         )
                         saveTranscriptEntryToDisk(context, currentTopic.id, newEntry)
+
                         if (dto.success) {
-                            reloadTopics()
+                            // If topic is completed, we need to check for unlock *after* reload
+                            if (dto.topicCompleted) {
+                                val previousTopics = _uiState.value.topics
+                                val currentTopicIndex = _uiState.value.selectedTopicIdx
+
+                                // Reload topics and then check for unlock
+                                reloadTopics(onComplete = {
+                                    val newTopics = _uiState.value.topics
+                                    val nextTopic = newTopics.getOrNull(currentTopicIndex + 1)
+                                    val previousNextTopic = previousTopics.getOrNull(currentTopicIndex + 1)
+
+                                    if (nextTopic != null && nextTopic.unlocked && previousNextTopic?.unlocked == false) {
+                                        _uiState.value = _uiState.value.copy(
+                                            unlockedTopicInfo = UnlockedTopicInfo(
+                                                title = nextTopic.title,
+                                                description = nextTopic.description,
+                                                xpGained = 100
+                                            )
+                                        )
+                                        // Also update the XP in the other modal if it's showing
+                                        _uiState.value = _uiState.value.copy(
+                                            phraseSubmissionResult = _uiState.value.phraseSubmissionResult?.copy(
+                                                xpAwarded = dto.xpAwarded + 100
+                                            )
+                                        )
+                                    }
+                                })
+                            } else {
+                                reloadTopics() // Just reload without the special check
+                            }
                             fetchGamificationProfile()
+                        } else {
+                            // Update phrase submission result even on failure to show feedback
+                            _uiState.value = _uiState.value.copy(
+                                phraseSubmissionResult = _uiState.value.phraseSubmissionResult?.copy(xpAwarded = dto.xpAwarded)
+                            )
                         }
                     },
                     onFailure = { e ->
@@ -259,6 +295,10 @@ class SpeakingJourneyViewModel @Inject constructor(
     }
 
         fun dismissPhraseResult() { _uiState.value = _uiState.value.copy(phraseSubmissionResult = null) }
+
+        fun dismissUnlockedTopicInfo() {
+            _uiState.value = _uiState.value.copy(unlockedTopicInfo = null)
+        }
 
     private fun fetchGamificationProfile() {
         viewModelScope.launch {

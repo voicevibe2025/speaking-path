@@ -107,6 +107,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.voicevibe.data.repository.GamificationProfile
@@ -158,9 +159,16 @@ data class SpeakingJourneyUiState(
     val showWelcome: Boolean = false,
     val phraseRecordingState: PhraseRecordingState = PhraseRecordingState.IDLE,
     val phraseSubmissionResult: PhraseSubmissionResultUi? = null,
+    val unlockedTopicInfo: UnlockedTopicInfo? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
     val currentTopicTranscripts: List<PhraseTranscriptEntry> = emptyList()
+)
+
+data class UnlockedTopicInfo(
+    val title: String,
+    val description: String,
+    val xpGained: Int
 )
 
 enum class PhraseRecordingState { IDLE, RECORDING, PROCESSING }
@@ -376,9 +384,123 @@ fun SpeakingJourneyScreen(
                         }
                     )
                 }
+
+                // Congratulation screen for unlocking a topic
+                ui.unlockedTopicInfo?.let { unlockedTopicInfo ->
+                    CongratulationScreen(
+                        unlockedTopicInfo = unlockedTopicInfo,
+                        onDismiss = viewModel::dismissUnlockedTopicInfo
+                    )
+                }
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CongratulationScreen(
+    unlockedTopicInfo: UnlockedTopicInfo,
+    onDismiss: () -> Unit
+) {
+    val scale by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "CongratulationScreenScale"
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+        content = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onDismiss
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    modifier = Modifier
+                        .scale(scale)
+                        .fillMaxWidth(0.9f)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF2D2F5B)
+                    ),
+                    elevation = CardDefaults.cardElevation(12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.EmojiEvents,
+                            contentDescription = "Congratulations",
+                            tint = Color(0xFFFFD700),
+                            modifier = Modifier.size(80.dp)
+                        )
+                        Text(
+                            text = "Congratulations!",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = "You've unlocked: ${unlockedTopicInfo.title}",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color.White.copy(alpha = 0.9f),
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = "+${unlockedTopicInfo.xpGained} XP",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF4CAF50),
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "In this topic:",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = unlockedTopicInfo.description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White.copy(alpha = 0.8f),
+                            textAlign = TextAlign.Center,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = onDismiss,
+                            shape = RoundedCornerShape(50),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Text("Continue Journey")
+                        }
+                    }
+                }
+            }
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

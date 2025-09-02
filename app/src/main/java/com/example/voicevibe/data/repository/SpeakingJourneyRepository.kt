@@ -6,6 +6,8 @@ import com.example.voicevibe.data.remote.api.SpeakingTopicsResponse
 import com.example.voicevibe.data.remote.api.UpdateLastVisitedTopicRequest
 import com.example.voicevibe.data.remote.api.UserProfileDto
 import com.example.voicevibe.data.remote.api.PhraseSubmissionResultDto
+import com.example.voicevibe.data.remote.api.UserPhraseRecordingDto
+import com.example.voicevibe.data.remote.api.UserPhraseRecordingsResponseDto
 import okhttp3.MultipartBody
 import javax.inject.Inject
 
@@ -61,6 +63,23 @@ class SpeakingJourneyRepository @Inject constructor(
             val res = api.submitPhraseRecording(topicId, phraseIndex, audioFile)
             if (res.isSuccessful) {
                 Result.success(res.body() ?: throw Exception("Empty response"))
+            } else {
+                Result.failure(Exception("HTTP ${res.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    suspend fun getUserPhraseRecordings(
+        topicId: String,
+        phraseIndex: Int? = null
+    ): Result<List<UserPhraseRecordingDto>> {
+        return try {
+            val res = api.getUserPhraseRecordings(topicId, phraseIndex)
+            if (res.isSuccessful) {
+                val body = res.body()
+                Result.success(body?.recordings ?: emptyList())
             } else {
                 Result.failure(Exception("HTTP ${res.code()}"))
             }

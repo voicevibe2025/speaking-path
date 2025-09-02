@@ -214,10 +214,11 @@ class SpeakingJourneyViewModel @Inject constructor(
                 val result = repo.submitPhraseRecording(currentTopic.id, phraseIndex, part)
                 result.fold(
                     onSuccess = { dto ->
+                        val audioOutPath = dto.audioUrl?.takeIf { it.isNotBlank() } ?: file.absolutePath
                         val newEntry = PhraseTranscriptEntry(
                             index = phraseIndex,
                             text = dto.transcription,
-                            audioPath = file.absolutePath,
+                            audioPath = audioOutPath,
                             accuracy = dto.accuracy,
                             timestamp = System.currentTimeMillis()
                         )
@@ -235,7 +236,8 @@ class SpeakingJourneyViewModel @Inject constructor(
                             ),
                             currentTopicTranscripts = updatedTranscripts.sortedBy { it.index }
                         )
-                        saveTranscriptEntryToDisk(context, currentTopic.id, newEntry)
+                        // Refresh from backend to ensure we display server-side recordings
+                        loadTranscriptsForCurrentTopic(context)
 
                         if (dto.success) {
                             // If topic is completed, we need to check for unlock *after* reload
@@ -331,8 +333,13 @@ class SpeakingJourneyViewModel @Inject constructor(
                     try { it.release() } catch (_: Throwable) {}
                     if (mediaPlayer === it) mediaPlayer = null
                 }
-                prepare()
-                start()
+                if (path.startsWith("http://") || path.startsWith("https://")) {
+                    setOnPreparedListener { it.start() }
+                    prepareAsync()
+                } else {
+                    prepare()
+                    start()
+                }
             }
             mediaPlayer = mp
         } catch (t: Throwable) {
@@ -349,37 +356,44 @@ class SpeakingJourneyViewModel @Inject constructor(
     }
 
     fun loadTranscriptsForCurrentTopic(context: Context) {
-        try {
-            val s = _uiState.value
-            val topic = s.topics.getOrNull(s.selectedTopicIdx) ?: run {
-                _uiState.value = s.copy(currentTopicTranscripts = emptyList())
-                return
+        val s = _uiState.value
+        val topic = s.topics.getOrNull(s.selectedTopicIdx)
+        if (topic == null) {
+            _uiState.value = s.copy(currentTopicTranscripts = emptyList())
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val res = repo.getUserPhraseRecordings(topic.id)
+                res.fold(
+                    onSuccess = { list ->
+                        // Keep only the most recent recording per phrase index
+                        val byPhrase = LinkedHashMap<Int, com.example.voicevibe.data.remote.api.UserPhraseRecordingDto>()
+                        for (rec in list) {
+                            if (!byPhrase.containsKey(rec.phraseIndex)) {
+                                byPhrase[rec.phraseIndex] = rec
+                            }
+                        }
+                        val mapped = byPhrase.values.map { rec ->
+                            PhraseTranscriptEntry(
+                                index = rec.phraseIndex,
+                                text = rec.transcription,
+                                audioPath = rec.audioUrl,
+                                accuracy = rec.accuracy ?: 0f,
+                                timestamp = 0L
+                            )
+                        }.sortedBy { it.index }
+                        _uiState.value = _uiState.value.copy(currentTopicTranscripts = mapped)
+                    },
+                    onFailure = { e ->
+                        Log.e("SpeakingJourney", "Failed to fetch recordings", e)
+                        _uiState.value = _uiState.value.copy(currentTopicTranscripts = emptyList())
+                    }
+                )
+            } catch (t: Throwable) {
+                Log.e("SpeakingJourney", "Error fetching recordings", t)
+                _uiState.value = _uiState.value.copy(currentTopicTranscripts = emptyList())
             }
-            val dir = File(context.filesDir, "voicevibe/transcripts")
-            val file = File(dir, "${topic.id}.json")
-            if (!file.exists()) {
-                _uiState.value = s.copy(currentTopicTranscripts = emptyList())
-                return
-            }
-            val root = JSONObject(file.readText())
-            val entries = root.optJSONObject("entries") ?: JSONObject()
-            val list = mutableListOf<PhraseTranscriptEntry>()
-            val keys = entries.keys()
-            while (keys.hasNext()) {
-                val k = keys.next()
-                val o = entries.getJSONObject(k)
-                val idx = o.optInt("index")
-                val text = o.optString("text")
-                val path = o.optString("audioPath")
-                val acc = o.optDouble("accuracy", 0.0).toFloat()
-                val ts = o.optLong("timestamp", 0L)
-                if (File(path).exists()) {
-                    list.add(PhraseTranscriptEntry(idx, text, path, acc, ts))
-                }
-            }
-            _uiState.value = s.copy(currentTopicTranscripts = list.sortedBy { it.index })
-        } catch (t: Throwable) {
-            Log.e("SpeakingJourney", "Failed to load transcripts", t)
         }
     }
 

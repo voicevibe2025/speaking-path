@@ -8,6 +8,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface SpeakingJourneyApiService {
     @GET("speaking/topics")
@@ -30,6 +31,12 @@ interface SpeakingJourneyApiService {
         @Part("phraseIndex") phraseIndex: Int,
         @Part audio: MultipartBody.Part
     ): Response<PhraseSubmissionResultDto>
+
+    @GET("speaking/topics/{topicId}/recordings")
+    suspend fun getUserPhraseRecordings(
+        @Path("topicId") topicId: String,
+        @Query("phraseIndex") phraseIndex: Int? = null
+    ): Response<UserPhraseRecordingsResponseDto>
 }
 
 data class SpeakingTopicsResponse(
@@ -88,5 +95,21 @@ data class PhraseSubmissionResultDto(
     val feedback: String,
     val nextPhraseIndex: Int?,
     val topicCompleted: Boolean,
-    val xpAwarded: Int = 0
+    val xpAwarded: Int = 0,
+    val recordingId: String? = null,
+    val audioUrl: String? = null
+)
+
+data class UserPhraseRecordingDto(
+    val id: String,
+    val phraseIndex: Int,
+    val audioUrl: String,
+    val transcription: String,
+    val accuracy: Float?,
+    val feedback: String,
+    val createdAt: String
+)
+
+data class UserPhraseRecordingsResponseDto(
+    val recordings: List<UserPhraseRecordingDto>
 )

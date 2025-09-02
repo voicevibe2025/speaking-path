@@ -9,6 +9,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.voicevibe.data.repository.GamificationProfile
+import com.example.voicevibe.data.repository.ProfileRepository
 import com.example.voicevibe.data.repository.SpeakingJourneyRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -21,14 +23,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SpeakingJourneyViewModel @Inject constructor(
-    private val repo: SpeakingJourneyRepository
+    private val repo: SpeakingJourneyRepository,
+    private val profileRepo: ProfileRepository
 ) : ViewModel() {
     private val _uiState = mutableStateOf(
         SpeakingJourneyUiState(topics = emptyList())
     )
     val uiState: State<SpeakingJourneyUiState> get() = _uiState
 
-    init { reloadTopics(showWelcomeOnLoad = true) }
+    init {
+        reloadTopics(showWelcomeOnLoad = true)
+        fetchGamificationProfile()
+    }
 
     fun reloadTopics(showWelcomeOnLoad: Boolean = false) {
         viewModelScope.launch {
@@ -223,12 +229,16 @@ class SpeakingJourneyViewModel @Inject constructor(
                                 transcription = dto.transcription,
                                 feedback = dto.feedback,
                                 nextPhraseIndex = dto.nextPhraseIndex,
-                                topicCompleted = dto.topicCompleted
+                                topicCompleted = dto.topicCompleted,
+                                xpAwarded = dto.xpAwarded
                             ),
                             currentTopicTranscripts = updatedTranscripts.sortedBy { it.index }
                         )
                         saveTranscriptEntryToDisk(context, currentTopic.id, newEntry)
-                        if (dto.success) reloadTopics()
+                        if (dto.success) {
+                            reloadTopics()
+                            fetchGamificationProfile()
+                        }
                     },
                     onFailure = { e ->
                         Log.e("SpeakingJourney", "Submit phrase failed", e)
@@ -248,7 +258,24 @@ class SpeakingJourneyViewModel @Inject constructor(
         }
     }
 
-    fun dismissPhraseResult() { _uiState.value = _uiState.value.copy(phraseSubmissionResult = null) }
+        fun dismissPhraseResult() { _uiState.value = _uiState.value.copy(phraseSubmissionResult = null) }
+
+    private fun fetchGamificationProfile() {
+        viewModelScope.launch {
+            try {
+                val profile = profileRepo.getProfile()
+                val xp = profile.experiencePoints ?: 0
+                val level = xp / 500 + 1 // Consistent with mock logic
+                val streak = profile.streakDays ?: 0
+                _uiState.value = _uiState.value.copy(
+                    gamificationProfile = GamificationProfile(level, xp, streak)
+                )
+            } catch (e: Exception) {
+                Log.e("SpeakingJourneyViewModel", "Failed to fetch gamification profile", e)
+                // Keep existing or default data on failure
+            }
+        }
+    }
 
     fun playUserRecording(path: String) {
         try { mediaPlayer?.release() } catch (_: Throwable) {}

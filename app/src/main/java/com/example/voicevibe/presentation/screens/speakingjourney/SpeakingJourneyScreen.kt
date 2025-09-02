@@ -107,6 +107,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.voicevibe.data.repository.GamificationProfile
 import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
@@ -149,6 +150,7 @@ data class UserProfile(
 data class SpeakingJourneyUiState(
     val topics: List<Topic>,
     val userProfile: UserProfile? = null,
+    val gamificationProfile: GamificationProfile? = null,
     val selectedTopicIdx: Int = 0,
     val stage: Stage = Stage.MATERIAL,
     val showWelcome: Boolean = false,
@@ -167,7 +169,8 @@ data class PhraseSubmissionResultUi(
     val transcription: String,
     val feedback: String,
     val nextPhraseIndex: Int?,
-    val topicCompleted: Boolean
+    val topicCompleted: Boolean,
+    val xpAwarded: Int = 0
 )
 
 data class PhraseTranscriptEntry(
@@ -293,10 +296,14 @@ fun SpeakingJourneyScreen(
                         
                         // Progress and stats bar
                         val currentTopic = ui.topics.getOrNull(ui.selectedTopicIdx)
-                        currentTopic?.phraseProgress?.let { pp ->
-                            GamificationStatsBar(
-                                phraseProgress = pp
+                        currentTopic?.let { topic ->
+                            val phraseProgress = topic.phraseProgress ?: PhraseProgress(
+                                currentPhraseIndex = 0,
+                                completedPhrases = emptyList(),
+                                totalPhrases = topic.material.size,
+                                isAllPhrasesCompleted = false
                             )
+                            GamificationStatsBar(ui.gamificationProfile, phraseProgress)
                         }
                         
                         // Loading/Error states
@@ -703,10 +710,16 @@ private fun SelectedTopicDetails(topic: Topic) {
 }
 
 @Composable
-private fun GamificationStatsBar(phraseProgress: PhraseProgress) {
-    val streakDays = remember { (1..7).random() } // Mock streak data
-    val userXP = remember { (phraseProgress.completedPhrases.size * 50) + (100..500).random() }
-    val userLevel = userXP / 500 + 1
+private fun GamificationStatsBar(gamificationProfile: GamificationProfile?, phraseProgress: PhraseProgress) {
+    if (gamificationProfile == null) {
+        // You might want a loading indicator here
+        Row(modifier = Modifier.height(48.dp)) { Spacer(Modifier.fillMaxSize()) }
+        return
+    }
+
+    val streakDays = gamificationProfile.streak
+    val userXP = gamificationProfile.xp
+    val userLevel = gamificationProfile.level
     val levelProgress = (userXP % 500) / 500f
     
     Card(
@@ -816,18 +829,18 @@ private fun GamificationStatsBar(phraseProgress: PhraseProgress) {
                 )
                 StatItem(
                     icon = Icons.Default.Star,
-                    value = "${(phraseProgress.completedPhrases.size * 0.7).toInt()}",
+                    value = "0", // Placeholder, logic for 'perfect' is not defined
                     label = "Perfect"
                 )
                 StatItem(
                     icon = Icons.Default.TrendingUp,
-                    value = "${85 + (0..10).random()}%",
+                    value = "--%", // Placeholder, logic for accuracy is not defined
                     label = "Accuracy"
                 )
             }
             
             // Achievement badges (if any)
-            if (phraseProgress.completedPhrases.size >= 3) {
+            if (phraseProgress.completedPhrases.size >= 1) {
                 Spacer(modifier = Modifier.height(12.dp))
                 AchievementBadges(phraseProgress)
             }
@@ -907,7 +920,7 @@ private fun StatItem(
 private fun AchievementBadges(phraseProgress: PhraseProgress) {
     val achievements = remember(phraseProgress) {
         buildList {
-            if (phraseProgress.completedPhrases.size >= 3) add("First Steps" to Icons.Default.DirectionsWalk)
+            if (phraseProgress.completedPhrases.size >= 1) add("First Steps" to Icons.Default.DirectionsWalk)
             if (phraseProgress.completedPhrases.size >= 5) add("Rising Star" to Icons.Default.Star)
             if (phraseProgress.completedPhrases.size >= 10) add("Master" to Icons.Default.EmojiEvents)
         }
@@ -1799,7 +1812,7 @@ private fun AnimatedResultCard(
             stiffness = Spring.StiffnessLow
         )
     )
-    
+
     val scale by animateFloatAsState(
         targetValue = 1f,
         animationSpec = spring(
@@ -1807,7 +1820,7 @@ private fun AnimatedResultCard(
             stiffness = Spring.StiffnessLow
         )
     )
-    
+
     val isSuccess = result.accuracy >= 85
     val shimmerAlpha by infiniteTransition.animateFloat(
         initialValue = if (isSuccess) 0.5f else 0.3f,
@@ -1815,9 +1828,10 @@ private fun AnimatedResultCard(
         animationSpec = infiniteRepeatable(
             animation = tween(1500),
             repeatMode = RepeatMode.Reverse
-        )
+        ),
+        label = "shimmer"
     )
-    
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -1850,7 +1864,7 @@ private fun AnimatedResultCard(
                         )
                 )
             }
-            
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1864,9 +1878,10 @@ private fun AnimatedResultCard(
                     animationSpec = infiniteRepeatable(
                         animation = tween(500),
                         repeatMode = RepeatMode.Reverse
-                    )
+                    ),
+                    label = "iconRotation"
                 )
-                
+
                 Icon(
                     imageVector = if (isSuccess) Icons.Default.CheckCircle else Icons.Default.Warning,
                     contentDescription = null,
@@ -1879,23 +1894,31 @@ private fun AnimatedResultCard(
                         MaterialTheme.colorScheme.error
                     }
                 )
-                
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 // Title
-                Text(
-                    text = if (isSuccess) "Excellent!" else "Keep Practicing!",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isSuccess) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onErrorContainer
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = if (result.success) "Phrase Passed!" else "Try Again",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (result.success) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
+                    )
+                    if (result.success && result.xpAwarded > 0) {
+                        Text(
+                            text = "+${result.xpAwarded} XP",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFFFC107) // Amber color for XP
+                        )
                     }
-                )
-                
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 // Accuracy Score with animation
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -1921,7 +1944,7 @@ private fun AnimatedResultCard(
                         }
                     )
                 }
-                
+
                 // XP Earned (if success)
                 if (isSuccess) {
                     Spacer(modifier = Modifier.height(12.dp))
@@ -1949,7 +1972,7 @@ private fun AnimatedResultCard(
                         }
                     }
                 }
-                
+
                 // Transcript
                 if (result.transcription.isNotBlank()) {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -1976,7 +1999,7 @@ private fun AnimatedResultCard(
                         }
                     }
                 }
-                
+
                 // Feedback
                 if (result.feedback.isNotBlank()) {
                     Spacer(modifier = Modifier.height(12.dp))
@@ -1991,9 +2014,9 @@ private fun AnimatedResultCard(
                         }
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 // Dismiss button
                 Button(
                     onClick = onDismiss,

@@ -87,5 +87,6 @@ data class PhraseSubmissionResultDto(
     val transcription: String,
     val feedback: String,
     val nextPhraseIndex: Int?,
-    val topicCompleted: Boolean
+    val topicCompleted: Boolean,
+    val xpAwarded: Int = 0
 )

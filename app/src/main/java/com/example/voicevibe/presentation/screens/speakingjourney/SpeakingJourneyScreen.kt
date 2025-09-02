@@ -168,7 +168,8 @@ data class SpeakingJourneyUiState(
 data class UnlockedTopicInfo(
     val title: String,
     val description: String,
-    val xpGained: Int
+    val xpGained: Int,
+    val topicIndex: Int
 )
 
 enum class PhraseRecordingState { IDLE, RECORDING, PROCESSING }

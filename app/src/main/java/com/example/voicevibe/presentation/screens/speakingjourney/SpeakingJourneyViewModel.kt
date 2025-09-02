@@ -254,7 +254,8 @@ class SpeakingJourneyViewModel @Inject constructor(
                                             unlockedTopicInfo = UnlockedTopicInfo(
                                                 title = nextTopic.title,
                                                 description = nextTopic.description,
-                                                xpGained = 100
+                                                xpGained = 100,
+                                                topicIndex = currentTopicIndex + 1
                                             )
                                         )
                                         // Also update the XP in the other modal if it's showing
@@ -297,7 +298,11 @@ class SpeakingJourneyViewModel @Inject constructor(
         fun dismissPhraseResult() { _uiState.value = _uiState.value.copy(phraseSubmissionResult = null) }
 
         fun dismissUnlockedTopicInfo() {
+            val unlockedInfo = _uiState.value.unlockedTopicInfo
             _uiState.value = _uiState.value.copy(unlockedTopicInfo = null)
+            if (unlockedInfo != null) {
+                selectTopic(unlockedInfo.topicIndex)
+            }
         }
 
     private fun fetchGamificationProfile() {

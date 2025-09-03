@@ -118,6 +118,12 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
 import java.util.Locale
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.example.voicevibe.R
+import android.content.Context
+import androidx.annotation.DrawableRes
 
 enum class Stage { MATERIAL, PRACTICE }
 
@@ -447,92 +453,83 @@ fun CongratulationScreen(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-        content = {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = onDismiss
-                    ),
-                contentAlignment = Alignment.Center
+        confirmButton = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
             ) {
-                Card(
-                    modifier = Modifier
-                        .scale(scale)
-                        .fillMaxWidth(0.9f)
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF2D2F5B)
-                    ),
-                    elevation = CardDefaults.cardElevation(12.dp)
+                Button(
+                    onClick = onDismiss,
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.EmojiEvents,
-                            contentDescription = "Congratulations",
-                            tint = Color(0xFFFFD700),
-                            modifier = Modifier.size(80.dp)
-                        )
-                        Text(
-                            text = "Congratulations!",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "You've unlocked: ${unlockedTopicInfo.title}",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = Color.White.copy(alpha = 0.9f),
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "+${unlockedTopicInfo.xpGained} XP",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF4CAF50),
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "In this topic:",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = unlockedTopicInfo.description,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.8f),
-                            textAlign = TextAlign.Center,
-                            maxLines = 3,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = onDismiss,
-                            shape = RoundedCornerShape(50),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Text("Continue Journey")
-                        }
-                    }
+                    Text("Continue Journey")
                 }
             }
-        }
+        },
+        title = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.EmojiEvents,
+                    contentDescription = "Congratulations",
+                    tint = Color(0xFFFFD700),
+                    modifier = Modifier.size(80.dp)
+                )
+                Text(
+                    text = "Congratulations!",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
+            }
+        },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "You've unlocked: ${unlockedTopicInfo.title}",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.White.copy(alpha = 0.9f),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "+${unlockedTopicInfo.xpGained} XP",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF4CAF50),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "In this topic:",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = unlockedTopicInfo.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.8f),
+                    textAlign = TextAlign.Center,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        },
+        shape = RoundedCornerShape(24.dp),
+        containerColor = Color(0xFF2D2F5B),
+        titleContentColor = Color.White,
+        textContentColor = Color.White.copy(alpha = 0.8f)
     )
 }
 
@@ -568,6 +565,14 @@ private fun MinimalTopBar(
             actionIconContentColor = Color.White
         )
     )
+}
+
+@DrawableRes
+private fun getTopicDrawableId(context: Context, topicTitle: String): Int {
+    val resourceName = topicTitle.lowercase(Locale.ROOT).replace(" ", "_").replace("-", "_")
+    val resourceId = context.resources.getIdentifier(resourceName, "drawable", context.packageName)
+    // A fallback drawable should be created with this name to avoid crashes
+    return if (resourceId != 0) resourceId else R.drawable.ic_launcher_background
 }
 
 @Composable
@@ -624,168 +629,127 @@ private fun ModernTopicCard(
 ) {
     val scale by animateFloatAsState(
         targetValue = if (isSelected) 1.05f else 1f,
-        animationSpec = tween(200)
+        animationSpec = tween(200),
+        label = "ModernTopicCardScale"
     )
-    
+
     val borderWidth by animateDpAsState(
         targetValue = if (isSelected) 3.dp else 0.dp,
-        animationSpec = tween(200)
+        animationSpec = tween(200),
+        label = "ModernTopicCardBorder"
     )
-    
-    val topicIcons = remember {
-        listOf(
-            Icons.Default.School,
-            Icons.Default.Work,
-            Icons.Default.Restaurant,
-            Icons.Default.DirectionsBus,
-            Icons.Default.ShoppingCart,
-            Icons.Default.HealthAndSafety,
-            Icons.Default.SportsSoccer,
-            Icons.Default.MusicNote
-        )
+
+    val context = LocalContext.current
+    val imageResId = remember(topic.title) {
+        getTopicDrawableId(context, topic.title)
     }
-    
-    val topicColors = remember {
-        listOf(
-            Color(0xFF6C63FF),
-            Color(0xFFFF6B6B),
-            Color(0xFF4ECDC4),
-            Color(0xFFFFBE0B),
-            Color(0xFFFB5607),
-            Color(0xFF3A86FF),
-            Color(0xFF8338EC),
-            Color(0xFFFF006E)
-        )
-    }
-    
+
     Card(
         modifier = Modifier
             .width(140.dp)
-            .height(160.dp)
+            .height(180.dp) // Increased height for better image visibility
             .scale(scale)
-            .clickable { onClick() },
+            .clickable { if (topic.unlocked) onClick() },
         shape = RoundedCornerShape(16.dp),
         border = if (isSelected) {
             BorderStroke(borderWidth, MaterialTheme.colorScheme.primary)
         } else null,
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surface
-            }
-        ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 8.dp else 2.dp
+            defaultElevation = if (isSelected) 8.dp else 4.dp
         )
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = if (isSelected) {
-                            listOf(
-                                topicColors[index % topicColors.size].copy(alpha = 0.2f),
-                                MaterialTheme.colorScheme.primaryContainer
-                            )
-                        } else {
-                            listOf(
-                                topicColors[index % topicColors.size].copy(alpha = 0.1f),
-                                MaterialTheme.colorScheme.surface
-                            )
-                        }
-                    )
-                )
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
         ) {
-            Column(
+            // Background Image
+            Image(
+                painter = painterResource(id = imageResId),
+                contentDescription = topic.title,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+
+            // Scrim for text readability
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.7f),
+                                Color.Black.copy(alpha = 0.9f)
+                            ),
+                            startY = 300f
+                        )
+                    )
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
                     .padding(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Topic Icon
-                Surface(
-                    shape = CircleShape,
-                    color = topicColors[index % topicColors.size].copy(alpha = 0.2f),
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Icon(
-                            imageVector = topicIcons[index % topicIcons.size],
-                            contentDescription = null,
-                            tint = topicColors[index % topicColors.size],
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
-                
                 // Topic Title
                 Text(
                     text = topic.title,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    color = if (isSelected) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    }
+                    color = Color.White
                 )
-                
+
                 // Progress indicator
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    val completedCount = topic.phraseProgress?.completedPhrases?.size ?: 0
-                    val progress = completedCount.toFloat() / topic.material.size.coerceAtLeast(1)
-                    
-                    CircularProgressIndicator(
+                val completedCount = topic.phraseProgress?.completedPhrases?.size ?: 0
+                val progress = completedCount.toFloat() / topic.material.size.coerceAtLeast(1)
+
+                if (topic.unlocked) {
+                    LinearProgressIndicator(
                         progress = progress.coerceIn(0f, 1f),
-                        modifier = Modifier.size(32.dp),
-                        strokeWidth = 3.dp,
-                        color = if (progress >= 1f) {
-                            Color(0xFF4CAF50)
-                        } else {
-                            topicColors[index % topicColors.size]
-                        }
+                        modifier = Modifier
+                            .height(6.dp)
+                            .fillMaxWidth(0.8f)
+                            .clip(RoundedCornerShape(3.dp)),
+                        color = if (progress >= 1f) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary,
+                        trackColor = Color.White.copy(alpha = 0.3f)
                     )
-                    
-                    Text(
-                        text = "${(progress * 100).toInt()}%",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isSelected) {
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        }
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Locked",
+                        tint = Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.size(24.dp)
                     )
                 }
-                
-                // Selected indicator
-                if (isSelected) {
-                    Box(
+            }
+
+            // Completion checkmark
+            if (topic.completed) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
+                    contentAlignment = Alignment.TopEnd
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Completed",
+                        tint = Color(0xFF4CAF50),
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(2.dp)
-                            .background(
-                                MaterialTheme.colorScheme.primary,
-                                RoundedCornerShape(1.dp)
-                            )
+                            .size(24.dp)
+                            .background(Color.White, CircleShape)
                     )
                 }
             }
         }
     }
 }
+
 
 @Composable
 private fun SelectedTopicDetails(topic: Topic) {

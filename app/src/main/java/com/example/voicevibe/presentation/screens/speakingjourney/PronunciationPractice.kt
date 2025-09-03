@@ -40,7 +40,9 @@ import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -266,19 +268,29 @@ fun PronunciationPracticeScreen(
                 )
             }
 
-            // Phrase-level congratulation card (top-level overlay, not for last phrase)
+            // Phrase-level feedback overlay (not for last phrase)
             if (ui.phraseSubmissionResult != null && 
-                ui.phraseSubmissionResult!!.success && 
                 topic?.phraseProgress?.let { progress -> 
                     progress.currentPhraseIndex < progress.totalPhrases - 1 
                 } == true
             ) {
-                PhrasePassCongratulationOverlay(
-                    result = ui.phraseSubmissionResult!!,
-                    phraseNumber = (topic.phraseProgress?.currentPhraseIndex ?: 0) + 1,
-                    totalPhrases = topic.phraseProgress?.totalPhrases ?: 1,
-                    onDismiss = { viewModel.dismissPhraseResult() }
-                )
+                if (ui.phraseSubmissionResult!!.success) {
+                    // Success overlay
+                    PhrasePassCongratulationOverlay(
+                        result = ui.phraseSubmissionResult!!,
+                        phraseNumber = (topic.phraseProgress?.currentPhraseIndex ?: 0) + 1,
+                        totalPhrases = topic.phraseProgress?.totalPhrases ?: 1,
+                        onDismiss = { viewModel.dismissPhraseResult() }
+                    )
+                } else {
+                    // Try again overlay
+                    PhraseTryAgainOverlay(
+                        result = ui.phraseSubmissionResult!!,
+                        phraseNumber = (topic.phraseProgress?.currentPhraseIndex ?: 0) + 1,
+                        totalPhrases = topic.phraseProgress?.totalPhrases ?: 1,
+                        onDismiss = { viewModel.dismissPhraseResult() }
+                    )
+                }
             }
             
             // Congratulation screen for unlocking a topic (ensure it shows while in practice too)
@@ -1100,6 +1112,272 @@ fun PhrasePassCongratulationOverlay(
                             textAlign = TextAlign.Center,
                             fontWeight = FontWeight.Medium
                         )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PhraseTryAgainOverlay(
+    result: PhraseSubmissionResultUi,
+    phraseNumber: Int,
+    totalPhrases: Int,
+    onDismiss: () -> Unit
+) {
+    var showContent by remember { mutableStateOf(false) }
+    
+    // Start animation after a brief delay
+    LaunchedEffect(Unit) {
+        delay(200)
+        showContent = true
+    }
+    
+    // Auto-dismiss after 4 seconds (a bit longer than success to read feedback)
+    LaunchedEffect(Unit) {
+        delay(4000)
+        onDismiss()
+    }
+    
+    // Encouraging gradient background
+    val encouragementGradient = Brush.radialGradient(
+        colors = listOf(
+            Color(0xFF2196F3).copy(alpha = 0.3f), // Blue
+            Color(0xFF9C27B0).copy(alpha = 0.2f), // Purple
+            Color.Transparent
+        ),
+        radius = 800f
+    )
+    
+    // Get motivational message based on accuracy
+    val (title, message) = when {
+        result.accuracy >= 0.7f -> "Almost there!" to "You're so close! Just a little more practice."
+        result.accuracy >= 0.5f -> "Good effort!" to "Keep practicing, you're making progress!"
+        result.accuracy >= 0.3f -> "Don't give up!" to "Every attempt makes you better. Try again!"
+        else -> "Keep trying!" to "Practice makes perfect. You've got this!"
+    }
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.6f)),
+        contentAlignment = Alignment.Center
+    ) {
+        AnimatedVisibility(
+            visible = showContent,
+            enter = scaleIn(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            ) + fadeIn(animationSpec = tween(500)),
+            exit = scaleOut() + fadeOut()
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .shadow(24.dp, RoundedCornerShape(28.dp)),
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(encouragementGradient)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Retry icon with gentle bounce animation
+                        var bounceState by remember { mutableStateOf(false) }
+                        val bounceScale by animateFloatAsState(
+                            targetValue = if (bounceState) 1.1f else 1.0f,
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessMedium
+                            )
+                        )
+                        
+                        LaunchedEffect(Unit) {
+                            while (true) {
+                                bounceState = !bounceState
+                                delay(1500)
+                            }
+                        }
+                        
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .scale(bounceScale)
+                                .clip(CircleShape)
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(
+                                            Color(0xFF2196F3), // Blue
+                                            Color(0xFF1976D2)  // Darker blue
+                                        )
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.TrendingUp,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(20.dp))
+                        
+                        // Encouraging title
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                            textAlign = TextAlign.Center
+                        )
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // Accuracy feedback card
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+                            ),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(20.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "Your pronunciation accuracy",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                
+                                Spacer(modifier = Modifier.height(12.dp))
+                                
+                                // Large accuracy display
+                                Text(
+                                    text = "${(result.accuracy * 100).toInt()}%",
+                                    style = MaterialTheme.typography.displaySmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
+                                // Progress bar
+                                LinearProgressIndicator(
+                                    progress = result.accuracy,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(8.dp)
+                                        .clip(RoundedCornerShape(4.dp)),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                )
+                                
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
+                                Text(
+                                    text = "You need 80% to pass",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // What they said (if available)
+                        if (result.transcription.isNotEmpty()) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                ),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp)
+                                ) {
+                                    Text(
+                                        text = "What you said:",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    Text(
+                                        text = "\"${result.transcription}\"",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontStyle = FontStyle.Italic
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                        
+                        // Try again button
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Card(
+                                shape = RoundedCornerShape(20.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Try Again",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

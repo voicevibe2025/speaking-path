@@ -393,7 +393,8 @@ fun TopicConversationScreen(
                                                             color = if (isSpeakerA) 
                                                                     MaterialTheme.colorScheme.onSurfaceVariant 
                                                                   else 
-                                                                    Color.White
+                                                                    Color.White,
+                                                            modifier = Modifier.weight(1f, fill = false)
                                                         )
                                                         
                                                         Spacer(modifier = Modifier.width(8.dp))

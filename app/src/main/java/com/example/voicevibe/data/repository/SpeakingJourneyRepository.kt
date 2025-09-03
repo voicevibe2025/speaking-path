@@ -8,6 +8,8 @@ import com.example.voicevibe.data.remote.api.UserProfileDto
 import com.example.voicevibe.data.remote.api.PhraseSubmissionResultDto
 import com.example.voicevibe.data.remote.api.UserPhraseRecordingDto
 import com.example.voicevibe.data.remote.api.UserPhraseRecordingsResponseDto
+import com.example.voicevibe.data.remote.api.GenerateTtsRequestDto
+import com.example.voicevibe.data.remote.api.GenerateTtsResponseDto
 import okhttp3.MultipartBody
 import javax.inject.Inject
 
@@ -80,6 +82,20 @@ class SpeakingJourneyRepository @Inject constructor(
             if (res.isSuccessful) {
                 val body = res.body()
                 Result.success(body?.recordings ?: emptyList())
+            } else {
+                Result.failure(Exception("HTTP ${res.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    suspend fun generateTts(text: String, voiceName: String? = null): Result<GenerateTtsResponseDto> {
+        return try {
+            val res = api.generateTts(GenerateTtsRequestDto(text = text, voiceName = voiceName))
+            if (res.isSuccessful) {
+                val body = res.body() ?: return Result.failure(Exception("Empty response"))
+                Result.success(body)
             } else {
                 Result.failure(Exception("HTTP ${res.code()}"))
             }

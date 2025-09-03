@@ -1,6 +1,5 @@
 package com.example.voicevibe.presentation.screens.speakingjourney
 
-import android.speech.tts.TextToSpeech
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -67,7 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationTurn
-import java.util.Locale
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,54 +76,73 @@ fun TopicConversationScreen(
 ) {
     val context = LocalContext.current
     var currentlyPlayingId by remember { mutableStateOf<String?>(null) }
-
-    // Local TTS setup
-    val tts = remember(context) {
-        TextToSpeech(context, null)
-    }
-
-    DisposableEffect(tts) {
-        tts.language = Locale.US
-        val listener = object : android.speech.tts.UtteranceProgressListener() {
-            override fun onStart(utteranceId: String?) {
-                currentlyPlayingId = utteranceId
-            }
-
-            override fun onDone(utteranceId: String?) {
-                if (currentlyPlayingId == utteranceId) {
-                    currentlyPlayingId = null
-                }
-            }
-
-            @Deprecated("deprecated")
-            override fun onError(utteranceId: String?) {
-                if (currentlyPlayingId == utteranceId) {
-                    currentlyPlayingId = null
-                }
-            }
-        }
-        tts.setOnUtteranceProgressListener(listener)
-
-        onDispose {
-            tts.stop()
-            tts.shutdown()
-        }
-    }
-
-    fun speak(text: String, id: String) {
-        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, id)
-    }
-
-        fun playAll(conversation: List<ConversationTurn>) {
-        conversation.forEachIndexed { index, turn ->
-            val queueMode = if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
-            tts.speak(turn.text, queueMode, null, turn.text) // Use text as ID
-        }
-    }
+    // Playback sequencing state
+    var isPlayingAll by remember { mutableStateOf(false) }
+    var playAllIndex by remember { mutableStateOf(-1) }
 
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
     val topic = ui.topics.firstOrNull { it.id == topicId }
+    
+    // Backend TTS helpers
+    fun playTurn(text: String) {
+        val id = text
+        viewModel.speakWithBackendTts(
+            text = text,
+            onStart = { currentlyPlayingId = id },
+            onDone = {
+                if (!isPlayingAll) {
+                    currentlyPlayingId = null
+                }
+            },
+            onError = {
+                isPlayingAll = false
+                playAllIndex = -1
+                currentlyPlayingId = null
+            }
+        )
+    }
+
+    fun playAll(conversation: List<ConversationTurn>) {
+        if (conversation.isEmpty()) return
+        if (isPlayingAll || currentlyPlayingId != null) return
+        isPlayingAll = true
+        playAllIndex = 0
+
+        fun playNext(i: Int) {
+            if (!isPlayingAll) return
+            if (i >= conversation.size) {
+                isPlayingAll = false
+                playAllIndex = -1
+                currentlyPlayingId = null
+                return
+            }
+            val turn = conversation[i]
+            val id = turn.text
+            viewModel.speakWithBackendTts(
+                text = turn.text,
+                onStart = { currentlyPlayingId = id },
+                onDone = { playNext(i + 1) },
+                onError = {
+                    isPlayingAll = false
+                    playAllIndex = -1
+                    currentlyPlayingId = null
+                }
+            )
+        }
+
+        playNext(0)
+    }
+
+    // Stop playback when leaving the screen and reset UI state
+    DisposableEffect(Unit) {
+        onDispose {
+            isPlayingAll = false
+            playAllIndex = -1
+            currentlyPlayingId = null
+            viewModel.stopPlayback()
+        }
+    }
     
     // State for animated entry of messages
     var showMessages by remember { mutableStateOf(false) }
@@ -160,7 +178,13 @@ fun TopicConversationScreen(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = onNavigateBack,
+                        onClick = {
+                            isPlayingAll = false
+                            playAllIndex = -1
+                            currentlyPlayingId = null
+                            viewModel.stopPlayback()
+                            onNavigateBack()
+                        },
                         modifier = Modifier
                             .padding(8.dp)
                             .clip(CircleShape)
@@ -390,7 +414,7 @@ fun TopicConversationScreen(
 
                                                     // Play button for this message
                                                     IconButton(
-                                                        onClick = { speak(turn.text, turn.text) },
+                                                        onClick = { playTurn(turn.text) },
                                                         modifier = Modifier
                                                             .size(32.dp)
                                                             .clip(CircleShape)

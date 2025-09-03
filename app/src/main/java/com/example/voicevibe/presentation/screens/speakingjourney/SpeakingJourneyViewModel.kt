@@ -313,22 +313,7 @@ class SpeakingJourneyViewModel @Inject constructor(
             }
         }
 
-    private fun fetchGamificationProfile() {
-        viewModelScope.launch {
-            try {
-                val profile = profileRepo.getProfile()
-                val xp = profile.experiencePoints ?: 0
-                val level = xp / 500 + 1 // Consistent with mock logic
-                val streak = profile.streakDays ?: 0
-                _uiState.value = _uiState.value.copy(
-                    gamificationProfile = GamificationProfile(level, xp, streak)
-                )
-            } catch (e: Exception) {
-                Log.e("SpeakingJourneyViewModel", "Failed to fetch gamification profile", e)
-                // Keep existing or default data on failure
-            }
-        }
-    }
+    
 
     fun playUserRecording(path: String) {
         try { mediaPlayer?.release() } catch (_: Throwable) {}
@@ -350,6 +335,81 @@ class SpeakingJourneyViewModel @Inject constructor(
             mediaPlayer = mp
         } catch (t: Throwable) {
             Log.e("SpeakingJourney", "Failed to play recording", t)
+        }
+    }
+
+    fun speakWithBackendTts(
+        text: String,
+        voiceName: String? = null,
+        onStart: (() -> Unit)? = null,
+        onDone: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            try {
+                val result = repo.generateTts(text, voiceName)
+                result.fold(
+                    onSuccess = { dto ->
+                        val url = dto.audioUrl
+                        try { mediaPlayer?.release() } catch (_: Throwable) {}
+                        try {
+                            val mp = MediaPlayer().apply {
+                                setDataSource(url)
+                                setOnPreparedListener {
+                                    it.start()
+                                    onStart?.invoke()
+                                }
+                                setOnCompletionListener {
+                                    try { it.release() } catch (_: Throwable) {}
+                                    if (mediaPlayer === it) mediaPlayer = null
+                                    onDone?.invoke()
+                                }
+                                setOnErrorListener { player, what, extra ->
+                                    try { player.release() } catch (_: Throwable) {}
+                                    if (mediaPlayer === player) mediaPlayer = null
+                                    onError?.invoke("Playback error ($what/$extra)")
+                                    true
+                                }
+                            }
+                            mediaPlayer = mp
+                            mp.prepareAsync()
+                        } catch (t: Throwable) {
+                            Log.e("SpeakingJourney", "Failed to play TTS", t)
+                            onError?.invoke("Unable to play audio: ${t.message ?: "unknown"}")
+                        }
+                    },
+                    onFailure = { e ->
+                        Log.e("SpeakingJourney", "TTS generation failed", e)
+                        onError?.invoke(e.message ?: "TTS generation failed")
+                    }
+                )
+            } catch (t: Throwable) {
+                Log.e("SpeakingJourney", "Error during TTS request", t)
+                onError?.invoke(t.message ?: "Unexpected error")
+            }
+        }
+    }
+
+    fun stopPlayback() {
+        try { mediaPlayer?.stop() } catch (_: Throwable) {}
+        try { mediaPlayer?.release() } catch (_: Throwable) {}
+        mediaPlayer = null
+    }
+
+    private fun fetchGamificationProfile() {
+        viewModelScope.launch {
+            try {
+                val profile = profileRepo.getProfile()
+                val xp = profile.experiencePoints ?: 0
+                val level = xp / 500 + 1 // Consistent with mock logic
+                val streak = profile.streakDays ?: 0
+                _uiState.value = _uiState.value.copy(
+                    gamificationProfile = GamificationProfile(level, xp, streak)
+                )
+            } catch (e: Exception) {
+                Log.e("SpeakingJourneyViewModel", "Failed to fetch gamification profile", e)
+                // Keep existing or default data on failure
+            }
         }
     }
 

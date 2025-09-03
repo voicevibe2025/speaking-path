@@ -38,16 +38,21 @@ android {
         // Enable desugaring so java.time works on API < 26
         isCoreLibraryDesugaringEnabled = true
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
     buildFeatures {
         compose = true
         buildConfig = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
+
+    buildTypes.forEach {
+        it.buildConfigField("String", "GEMINI_API_KEY", "\"${System.getenv("GOOGLE_API_KEY")}\"")
     }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -147,6 +152,9 @@ dependencies {
 
     // Timber
     implementation(libs.timber)
+
+    // Gemini
+    implementation(libs.gemini.generativeai)
 
     // Testing
     testImplementation(libs.junit)

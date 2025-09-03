@@ -37,6 +37,11 @@ interface SpeakingJourneyApiService {
         @Path("topicId") topicId: String,
         @Query("phraseIndex") phraseIndex: Int? = null
     ): Response<UserPhraseRecordingsResponseDto>
+
+    @POST("speaking/tts/generate")
+    suspend fun generateTts(
+        @Body request: GenerateTtsRequestDto
+    ): Response<GenerateTtsResponseDto>
 }
 
 data class SpeakingTopicsResponse(
@@ -112,4 +117,15 @@ data class UserPhraseRecordingDto(
 
 data class UserPhraseRecordingsResponseDto(
     val recordings: List<UserPhraseRecordingDto>
+)
+
+data class GenerateTtsRequestDto(
+    val text: String,
+    val voiceName: String? = null
+)
+
+data class GenerateTtsResponseDto(
+    val audioUrl: String,
+    val sampleRate: Int,
+    val voiceName: String?
 )

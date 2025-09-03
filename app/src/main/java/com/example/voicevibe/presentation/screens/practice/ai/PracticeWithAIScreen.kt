@@ -1,10 +1,8 @@
 package com.example.voicevibe.presentation.screens.practice.ai
 
-import android.Manifest
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -12,40 +10,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionStatus
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
-import com.example.voicevibe.presentation.screens.practice.speaking.SpeakingPracticeViewModel
-import com.example.voicevibe.presentation.screens.practice.speaking.RecordingState
-import com.example.voicevibe.presentation.screens.practice.speaking.SpeakingPracticeEvent
-import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PracticeWithAIScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToResults: (String) -> Unit,
-    practiceViewModel: SpeakingPracticeViewModel = hiltViewModel()
+    onNavigateToResults: (String) -> Unit = { _ -> },
+    viewModel: PracticeWithAIViewModel = hiltViewModel()
 ) {
-    val uiState by practiceViewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val audioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
-    val askedOnce = remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        practiceViewModel.events.collect { event ->
-            when (event) {
-                is SpeakingPracticeEvent.NavigateToResults -> onNavigateToResults(event.sessionId)
-                else -> {}
-            }
-        }
-    }
+    var showPracticeSelection by remember { mutableStateOf(true) }
+    var showComingSoon by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -59,165 +37,137 @@ fun PracticeWithAIScreen(
             )
         }
     ) { innerPadding ->
-        Column(
+        Box(modifier = Modifier.padding(innerPadding)) {
+            when {
+                showPracticeSelection -> {
+                    PracticeSelectionScreen(
+                        onTopicPracticeSelected = {
+                            showPracticeSelection = false
+                            showComingSoon = true
+                        },
+                        onFreePracticeSelected = {
+                            showPracticeSelection = false
+                            showComingSoon = false
+                        }
+                    )
+                }
+                showComingSoon -> {
+                    ComingSoonScreen()
+                }
+                else -> {
+                    ChatScreen(viewModel = viewModel)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PracticeSelectionScreen(
+    onTopicPracticeSelected: () -> Unit,
+    onFreePracticeSelected: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(onClick = onTopicPracticeSelected, modifier = Modifier.fillMaxWidth()) {
+            Text("Topic Practice")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onFreePracticeSelected, modifier = Modifier.fillMaxWidth()) {
+            Text("Free Practice")
+        }
+    }
+}
+
+@Composable
+fun ComingSoonScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("Coming Soon!", style = MaterialTheme.typography.headlineMedium)
+    }
+}
+
+@Composable
+fun ChatScreen(viewModel: PracticeWithAIViewModel) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var messageText by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+                .weight(1f)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            reverseLayout = true
         ) {
-            if (!audioPermissionState.status.isGranted) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "Microphone permission required",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "Enable microphone to record your practice.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        val permStatus = audioPermissionState.status
-                        val deniedPermanently = askedOnce.value && (permStatus is PermissionStatus.Denied) && !permStatus.shouldShowRationale
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Button(onClick = {
-                                askedOnce.value = true
-                                audioPermissionState.launchPermissionRequest()
-                            }) {
-                                Text("Grant permission")
-                            }
-                            if (deniedPermanently) {
-                                OutlinedButton(onClick = {
-                                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                        data = Uri.fromParts("package", context.packageName, null)
-                                    }
-                                    context.startActivity(intent)
-                                }) {
-                                    Text("Open settings")
-                                }
-                            }
-                        }
-                    }
-                }
-                return@Column
+            items(uiState.messages.reversed()) { message ->
+                ChatMessageItem(message)
             }
+        }
 
-            // Prompt
-            uiState.currentPrompt?.let { prompt ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text("Practice Prompt", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = prompt.text, style = MaterialTheme.typography.bodyLarge)
-                    }
-                }
-            }
-
-            // Recording status
-            if (uiState.recordingState != RecordingState.IDLE) {
-                Text(
-                    text = "Duration: ${uiState.recordingDuration}s",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            // Controls
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = messageText,
+                onValueChange = { messageText = it },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Type a message") }
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(
+                onClick = {
+                    viewModel.sendMessage(messageText)
+                    messageText = ""
+                },
+                enabled = !uiState.isLoading && messageText.isNotBlank()
             ) {
-                when (uiState.recordingState) {
-                    RecordingState.IDLE -> {
-                        Button(onClick = {
-                            val f = File(context.cacheDir, "journey_rec_${System.currentTimeMillis()}.m4a")
-                            practiceViewModel.startRecording(f)
-                        }) { Text("Start recording") }
-                    }
-                    RecordingState.RECORDING -> {
-                        OutlinedButton(onClick = practiceViewModel::pauseRecording) { Text("Pause") }
-                        Button(onClick = practiceViewModel::stopRecording) { Text("Stop") }
-                    }
-                    RecordingState.PAUSED -> {
-                        Button(onClick = practiceViewModel::resumeRecording) { Text("Resume") }
-                        Button(onClick = practiceViewModel::stopRecording) { Text("Stop") }
-                    }
-                    RecordingState.STOPPED -> {
-                        // Post-stop actions shown below
-                    }
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                } else {
+                    Text("Send")
                 }
             }
+        }
 
-            if (uiState.recordingState == RecordingState.STOPPED) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedButton(onClick = practiceViewModel::retryRecording, modifier = Modifier.weight(1f)) {
-                        Text("Retry")
-                    }
-                    Button(
-                        onClick = practiceViewModel::submitRecording,
-                        enabled = !uiState.isSubmitting,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        if (uiState.isSubmitting) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.height(16.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text("Submit")
-                        }
-                    }
-                }
-            }
+        uiState.error?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        }
+    }
+}
 
-            // Error
-            uiState.error?.let { err ->
-                Text(
-                    text = err,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-
-            // Basic feedback summary
-            uiState.submissionResult?.let { result ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text("AI Feedback", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text("Score: ${String.format(java.util.Locale.US, "%.1f", result.score)}")
-                        Text(result.feedback)
-                    }
-                }
-            }
+@Composable
+fun ChatMessageItem(message: ChatMessage) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalAlignment = if (message.isFromUser) Alignment.End else Alignment.Start
+    ) {
+        Card(
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (message.isFromUser) MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Text(
+                text = message.text,
+                modifier = Modifier.padding(12.dp)
+            )
         }
     }
 }

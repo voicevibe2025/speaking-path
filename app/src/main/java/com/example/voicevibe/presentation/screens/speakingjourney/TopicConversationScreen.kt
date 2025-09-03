@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -81,7 +83,7 @@ fun TopicConversationScreen(
                 title = { Text(text = topic?.title ?: "Conversation", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -129,7 +131,7 @@ fun TopicConversationScreen(
                     )
                 }
                 else -> {
-                    val combined = topic.conversation.joinToString("\n") { "${it.speaker}: ${it.text}" }
+                    val combined = topic.conversation.joinToString("\n") { it.text }
 
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -151,7 +153,7 @@ fun TopicConversationScreen(
                             )
                             IconButton(onClick = { speak(combined) }) {
                                 Icon(
-                                    imageVector = Icons.Filled.VolumeUp,
+                                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                     contentDescription = "Play conversation",
                                     tint = Color.White
                                 )
@@ -178,21 +180,25 @@ fun TopicConversationScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = turn.speaker,
-                                            style = MaterialTheme.typography.labelLarge,
-                                            fontWeight = FontWeight.SemiBold
+                                    Row(
+                                        modifier = Modifier.weight(1f),
+                                        verticalAlignment = Alignment.Top
+                                    ) {
+                                        val isSpeakerA = turn.speaker.equals("A", ignoreCase = true)
+                                        Icon(
+                                            imageVector = if (isSpeakerA) Icons.Filled.Person else Icons.Filled.Face,
+                                            contentDescription = if (isSpeakerA) "Speaker A" else "Speaker B",
+                                            tint = if (isSpeakerA) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
+                                            modifier = Modifier.padding(end = 12.dp)
                                         )
-                                        Spacer(modifier = Modifier.height(4.dp))
                                         Text(
                                             text = turn.text,
                                             style = MaterialTheme.typography.bodyMedium
                                         )
                                     }
-                                    IconButton(onClick = { speak("${turn.speaker}: ${turn.text}") }) {
+                                    IconButton(onClick = { speak(turn.text) }) {
                                         Icon(
-                                            imageVector = Icons.Filled.VolumeUp,
+                                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                             contentDescription = "Speak",
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                                         )

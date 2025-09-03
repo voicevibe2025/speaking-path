@@ -42,7 +42,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DirectionsBus
@@ -60,7 +60,7 @@ import androidx.compose.material.icons.filled.SportsSoccer
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.TrendingUp
-import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material.icons.outlined.EmojiEvents
@@ -385,7 +385,7 @@ fun SpeakingJourneyScreen(
                                             )
                                         }
                                         Icon(
-                                            imageVector = Icons.Default.VolumeUp,
+                                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                             contentDescription = "Open conversation"
                                         )
                                     }
@@ -558,7 +558,7 @@ private fun MinimalTopBar(
         },
         navigationIcon = {
             IconButton(onClick = onNavigateBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -1453,7 +1453,7 @@ private fun AnimatedPlayButton(
         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
     ) {
         Icon(
-            imageVector = Icons.Default.VolumeUp,
+            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
             contentDescription = "Play phrase",
             modifier = Modifier.size(28.dp)
         )
@@ -1600,7 +1600,7 @@ private fun ModernConversationCard(
                     modifier = Modifier.weight(1f)
                 )
                 IconButton(onClick = { onSpeak(combined) }) {
-                    Icon(Icons.Default.VolumeUp, contentDescription = "Play conversation")
+                    Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = "Play conversation")
                 }
             }
             Text(
@@ -1668,7 +1668,7 @@ private fun TranscriptPlaybackSection(
                                 playingIndex = entry.index
                                 onPlay(entry)
                             }) {
-                                Icon(Icons.Default.VolumeUp, contentDescription = "Play recording")
+                                Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = "Play recording")
                             }
                         }
                         Text(
@@ -2421,7 +2421,7 @@ private fun ModernTranscriptSection(
                                 fontWeight = FontWeight.SemiBold
                             )
                             IconButton(onClick = { onPlay(entry) }) {
-                                Icon(Icons.Default.VolumeUp, contentDescription = "Play recording")
+                                Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = "Play recording")
                             }
                         }
                         Text(

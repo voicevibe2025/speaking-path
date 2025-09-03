@@ -172,6 +172,7 @@ fun NavGraph(
         // Speaking-only Journey (beta)
         composable(Screen.SpeakingJourney.route) {
             SpeakingJourneyScreen(
+                onNavigateBack = { navController.popBackStack() },
                 onNavigateToConversation = { topicId ->
                     navController.navigate(Screen.TopicConversation.createRoute(topicId))
                 },

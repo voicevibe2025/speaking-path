@@ -324,134 +324,118 @@ fun TopicConversationScreen(
                                 ) {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = if (isSpeakerA) Arrangement.Start else Arrangement.End
+                                        horizontalArrangement = if (isSpeakerA) Arrangement.Start else Arrangement.End,
+                                        verticalAlignment = Alignment.Top
                                     ) {
-                                        if (!isSpeakerA) {
-                                            Spacer(modifier = Modifier.weight(0.15f))
-                                        }
-                                        
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(0.85f)
-                                                .padding(vertical = 2.dp)
-                                        ) {
-                                            // Chat bubble with avatar
-                                            Row(
-                                                verticalAlignment = Alignment.Top,
-                                                horizontalArrangement = if (isSpeakerA) Arrangement.Start else Arrangement.End,
-                                                modifier = Modifier.fillMaxWidth()
+                                        if (isSpeakerA) {
+                                            // Avatar for Speaker A
+                                            Box(
+                                                modifier = Modifier
+                                                    .padding(end = 8.dp)
+                                                    .size(40.dp)
+                                                    .background(
+                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                                        CircleShape
+                                                    )
+                                                    .padding(4.dp)
                                             ) {
-                                                if (isSpeakerA) {
-                                                    // Avatar for Speaker A
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .padding(end = 8.dp)
-                                                            .size(40.dp)
-                                                            .background(
-                                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                                                CircleShape
-                                                            )
-                                                            .padding(4.dp)
-                                                    ) {
-                                                        Image(
-                                                            painter = painterResource(id = R.drawable.ic_male_head),
-                                                            contentDescription = "Speaker A",
-                                                            contentScale = ContentScale.Crop,
-                                                            modifier = Modifier
-                                                                .size(32.dp)
-                                                                .clip(CircleShape)
-                                                        )
-                                                    }
-                                                }
-                                                
-                                                // Chat bubble
-                                                Card(
-                                                    shape = RoundedCornerShape(
-                                                        topStart = if (isSpeakerA) 4.dp else 16.dp,
-                                                        topEnd = if (isSpeakerA) 16.dp else 4.dp,
-                                                        bottomStart = 16.dp,
-                                                        bottomEnd = 16.dp
-                                                    ),
-                                                    colors = CardDefaults.cardColors(
-                                                        containerColor = if (isSpeakerA) 
-                                                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
-                                                        else 
-                                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                                                    ),
-                                                    elevation = CardDefaults.cardElevation(defaultElevation = if (isPlaying) 8.dp else 2.dp),
+                                                Image(
+                                                    painter = painterResource(id = R.drawable.ic_male_head),
+                                                    contentDescription = "Speaker A",
+                                                    contentScale = ContentScale.Crop,
                                                     modifier = Modifier
-                                                        .padding(bottom = 4.dp)
-                                                        .scale(scale)
+                                                        .size(32.dp)
+                                                        .clip(CircleShape)
+                                                )
+                                            }
+                                        }
+
+                                        // Chat Bubble
+                                        Row(
+                                            modifier = Modifier.weight(1f, fill = false)
+                                        ) {
+                                            Card(
+                                                shape = RoundedCornerShape(
+                                                    topStart = if (isSpeakerA) 4.dp else 16.dp,
+                                                    topEnd = if (isSpeakerA) 16.dp else 4.dp,
+                                                    bottomStart = 16.dp,
+                                                    bottomEnd = 16.dp
+                                                ),
+                                                colors = CardDefaults.cardColors(
+                                                    containerColor = if (isSpeakerA)
+                                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
+                                                    else
+                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                                                ),
+                                                elevation = CardDefaults.cardElevation(defaultElevation = if (isPlaying) 8.dp else 2.dp),
+                                                modifier = Modifier
+                                                    .padding(bottom = 4.dp)
+                                                    .scale(scale)
+                                            ) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
                                                 ) {
-                                                    Row(
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                        modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
-                                                    ) {
-                                                        Text(
-                                                            text = turn.text,
-                                                            style = MaterialTheme.typography.bodyMedium,
-                                                            color = if (isSpeakerA) 
-                                                                    MaterialTheme.colorScheme.onSurfaceVariant 
-                                                                  else 
-                                                                    Color.White,
-                                                            modifier = Modifier.weight(1f, fill = false)
-                                                        )
-                                                        
-                                                        Spacer(modifier = Modifier.width(8.dp))
-                                                        
-                                                        // Play button for this message
-                                                        IconButton(
-                                                            onClick = { speak(turn.text, turn.text) },
-                                                            modifier = Modifier
-                                                                .size(32.dp)
-                                                                .clip(CircleShape)
-                                                                .background(
-                                                                    if (isSpeakerA)
-                                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                                                                    else
-                                                                        Color.White.copy(alpha = 0.15f)
-                                                                )
-                                                        ) {
-                                                            Icon(
-                                                                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                                                contentDescription = "Play",
-                                                                tint = if (isSpeakerA) 
-                                                                        MaterialTheme.colorScheme.primary
-                                                                      else 
-                                                                        Color.White,
-                                                                modifier = Modifier.size(16.dp)
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                                
-                                                if (!isSpeakerA) {
-                                                    // Avatar for Speaker B
-                                                    Box(
+                                                    Text(
+                                                        text = turn.text,
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        color = if (isSpeakerA)
+                                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                                        else
+                                                            Color.White,
+                                                        modifier = Modifier.weight(1f, fill = false)
+                                                    )
+
+                                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                                    // Play button for this message
+                                                    IconButton(
+                                                        onClick = { speak(turn.text, turn.text) },
                                                         modifier = Modifier
-                                                            .padding(start = 8.dp)
-                                                            .size(40.dp)
+                                                            .size(32.dp)
+                                                            .clip(CircleShape)
                                                             .background(
-                                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                                                CircleShape
+                                                                if (isSpeakerA)
+                                                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                                                                else
+                                                                    Color.White.copy(alpha = 0.15f)
                                                             )
-                                                            .padding(4.dp)
                                                     ) {
-                                                        Image(
-                                                            painter = painterResource(id = R.drawable.ic_female_head),
-                                                            contentDescription = "Speaker B",
-                                                            contentScale = ContentScale.Crop,
-                                                            modifier = Modifier
-                                                                .size(32.dp)
-                                                                .clip(CircleShape)
+                                                        Icon(
+                                                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                                            contentDescription = "Play",
+                                                            tint = if (isSpeakerA)
+                                                                MaterialTheme.colorScheme.primary
+                                                            else
+                                                                Color.White,
+                                                            modifier = Modifier.size(16.dp)
                                                         )
                                                     }
                                                 }
                                             }
                                         }
-                                        
-                                        if (isSpeakerA) {
-                                            Spacer(modifier = Modifier.weight(0.15f))
+
+                                        if (!isSpeakerA) {
+                                            // Avatar for Speaker B
+                                            Box(
+                                                modifier = Modifier
+                                                    .padding(start = 8.dp)
+                                                    .size(40.dp)
+                                                    .background(
+                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                                        CircleShape
+                                                    )
+                                                    .padding(4.dp)
+                                            ) {
+                                                Image(
+                                                    painter = painterResource(id = R.drawable.ic_female_head),
+                                                    contentDescription = "Speaker B",
+                                                    contentScale = ContentScale.Crop,
+                                                    modifier = Modifier
+                                                        .size(32.dp)
+                                                        .clip(CircleShape)
+                                                )
+                                            }
                                         }
                                     }
                                 }

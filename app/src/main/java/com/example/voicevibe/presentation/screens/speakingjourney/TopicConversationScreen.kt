@@ -53,6 +53,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -65,6 +66,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
+import com.example.voicevibe.presentation.screens.speakingjourney.ConversationTurn
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,28 +76,50 @@ fun TopicConversationScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
-    
-    // Local TTS setup (matches SpeakingJourneyScreen approach)
+    var currentlyPlayingId by remember { mutableStateOf<String?>(null) }
+
+    // Local TTS setup
     val tts = remember(context) {
-        var ref: TextToSpeech? = null
-        val created = TextToSpeech(context) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                try { ref?.language = Locale.US } catch (_: Throwable) {}
+        TextToSpeech(context, null)
+    }
+
+    DisposableEffect(tts) {
+        tts.language = Locale.US
+        val listener = object : android.speech.tts.UtteranceProgressListener() {
+            override fun onStart(utteranceId: String?) {
+                currentlyPlayingId = utteranceId
+            }
+
+            override fun onDone(utteranceId: String?) {
+                if (currentlyPlayingId == utteranceId) {
+                    currentlyPlayingId = null
+                }
+            }
+
+            @Deprecated("deprecated")
+            override fun onError(utteranceId: String?) {
+                if (currentlyPlayingId == utteranceId) {
+                    currentlyPlayingId = null
+                }
             }
         }
-        ref = created
-        created
-    }
-    DisposableEffect(tts) {
+        tts.setOnUtteranceProgressListener(listener)
+
         onDispose {
-            try {
-                tts.stop()
-                tts.shutdown()
-            } catch (_: Throwable) { }
+            tts.stop()
+            tts.shutdown()
         }
     }
-    fun speak(text: String) {
-        try { tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "utt-${System.currentTimeMillis()}") } catch (_: Throwable) { }
+
+    fun speak(text: String, id: String) {
+        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, id)
+    }
+
+        fun playAll(conversation: List<ConversationTurn>) {
+        conversation.forEachIndexed { index, turn ->
+            val queueMode = if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
+            tts.speak(turn.text, queueMode, null, turn.text) // Use text as ID
+        }
     }
 
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
@@ -160,10 +184,7 @@ fun TopicConversationScreen(
         floatingActionButton = {
             if (topic?.conversation?.isNotEmpty() == true) {
                 FloatingActionButton(
-                    onClick = {
-                        val combined = topic.conversation.joinToString("\n") { it.text }
-                        speak(combined)
-                    },
+                    onClick = { playAll(topic.conversation) },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = Color.White,
                     modifier = Modifier.shadow(8.dp, RoundedCornerShape(16.dp))
@@ -277,6 +298,12 @@ fun TopicConversationScreen(
                         ) {
                             itemsIndexed(topic.conversation) { index, turn ->
                                 val isSpeakerA = turn.speaker.equals("A", ignoreCase = true)
+                                val isPlaying = currentlyPlayingId == turn.text
+
+                                val scale by animateFloatAsState(
+                                    targetValue = if (isPlaying) 1.03f else 1.0f,
+                                    animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing)
+                                )
                                 
                                 // Animated entry for each message
                                 AnimatedVisibility(
@@ -351,8 +378,10 @@ fun TopicConversationScreen(
                                                         else 
                                                             MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                                                     ),
-                                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                                                    modifier = Modifier.padding(bottom = 4.dp)
+                                                    elevation = CardDefaults.cardElevation(defaultElevation = if (isPlaying) 8.dp else 2.dp),
+                                                    modifier = Modifier
+                                                        .padding(bottom = 4.dp)
+                                                        .scale(scale)
                                                 ) {
                                                     Row(
                                                         verticalAlignment = Alignment.CenterVertically,
@@ -371,7 +400,7 @@ fun TopicConversationScreen(
                                                         
                                                         // Play button for this message
                                                         IconButton(
-                                                            onClick = { speak(turn.text) },
+                                                            onClick = { speak(turn.text, turn.text) },
                                                             modifier = Modifier
                                                                 .size(32.dp)
                                                                 .clip(CircleShape)

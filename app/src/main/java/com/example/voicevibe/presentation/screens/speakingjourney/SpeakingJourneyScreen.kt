@@ -43,6 +43,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DirectionsBus
@@ -211,8 +213,9 @@ data class PhraseTranscriptEntry(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun SpeakingJourneyScreen(
-    onNavigateBack: () -> Unit,
-    onNavigateToConversation: (String) -> Unit
+    onNavigateBack: () -> Unit = {},
+    onNavigateToConversation: (String) -> Unit,
+    onNavigateToTopicMaster: (String) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -345,55 +348,116 @@ fun SpeakingJourneyScreen(
                         
                         // Main Hero Content Area
                         currentTopic?.let { topic ->
-                            if (topic.material.isNotEmpty() && topic.phraseProgress != null) {
-                                HeroPhraseCard(
-                                    material = topic.material,
-                                    phraseProgress = topic.phraseProgress,
-                                    onSpeak = ::speak,
-                                    recordingState = ui.phraseRecordingState,
-                                    onStartRecording = { viewModel.startPhraseRecording(context) },
-                                    onStopRecording = { viewModel.stopPhraseRecording(context) },
-                                    onDismissResult = viewModel::dismissPhraseResult,
-                                    transcripts = ui.currentTopicTranscripts,
-                                    onPlayTranscript = { path -> viewModel.playUserRecording(path) }
+                            // Master Topic Button
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+                                    .clickable { onNavigateToTopicMaster(topic.id) },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
                                 )
-                            }
-                            
-                            // Conversation navigation card (opens dedicated screen)
-                            if (topic.conversation.isNotEmpty()) {
-                                Card(
+                            ) {
+                                Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(top = 16.dp)
-                                        .clickable { onNavigateToConversation(topic.id) },
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                                    )
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(16.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                text = "Conversation Example",
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.SemiBold
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Master ${topic.title}",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            text = "Practice pronunciation, fluency, vocabulary and more",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                    Icon(
+                                        imageVector = Icons.Default.ChevronRight,
+                                        contentDescription = "Go to practice",
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            // Topic Details Card
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp)
+                                ) {
+                                    Text(
+                                        text = "About this topic",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    Text(
+                                        text = topic.description,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    if (topic.material.isNotEmpty()) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(top = 8.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Mic,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp),
+                                                tint = MaterialTheme.colorScheme.primary
                                             )
+                                            Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                text = "Open a sample dialogue for this topic",
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                                                text = "${topic.material.size} phrases to practice",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                         }
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                            contentDescription = "Open conversation"
-                                        )
+                                    }
+                                    
+                                    if (topic.conversation.isNotEmpty()) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(top = 8.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp),
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "Includes conversation example",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -1854,83 +1918,6 @@ private fun ModernWelcomeScreen(
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-    }
-}
-
-@Composable
-private fun RecordingResultCard(
-    result: PhraseSubmissionResultUi,
-    onDismiss: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (result.success) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
-        )
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                val onColor = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = if (result.success) Icons.Outlined.EmojiEvents else Icons.Default.Mic,
-                        contentDescription = null,
-                        tint = onColor
-                    )
-                    Text(
-                        text = if (result.success) "✅ Great job!" else "❌ Try again",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = onColor
-                    )
-                }
-                IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "Dismiss",
-                        modifier = Modifier.size(16.dp),
-                        tint = onColor
-                    )
-                }
-            }
-            if (result.accuracy > 0) {
-                Spacer(modifier = Modifier.height(8.dp))
-                LinearProgressIndicator(
-                    progress = (result.accuracy / 100f).coerceIn(0f, 1f),
-                    modifier = Modifier.fillMaxWidth(),
-                    color = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "Accuracy: ${"%.1f".format(Locale.US, result.accuracy)}%",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
-                )
-            }
-            if (result.transcription.isNotBlank()) {
-                Text(
-                    text = "You said: \"${result.transcription}\"",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            if (result.feedback.isNotBlank()) {
-                Text(
-                    text = result.feedback,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (result.success) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
-                )
-            }
-        }
     }
 }
 

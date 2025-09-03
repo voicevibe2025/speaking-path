@@ -9,6 +9,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.RecordVoiceOver
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Hearing
+import androidx.compose.material.icons.filled.FormatQuote
 import com.example.voicevibe.presentation.screens.auth.splash.SplashScreen
 import com.example.voicevibe.presentation.screens.auth.onboarding.OnboardingScreen
 import com.example.voicevibe.presentation.screens.auth.login.LoginScreen
@@ -30,7 +35,11 @@ import com.example.voicevibe.presentation.screens.scenarios.ScenarioDetailScreen
 import com.example.voicevibe.presentation.screens.analytics.AnalyticsDashboardScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.TopicConversationScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.TopicMasterScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.PronunciationPracticeScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.PlaceholderPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
+import com.example.voicevibe.presentation.navigation.Screen
 
 @Composable
 fun NavGraph(
@@ -163,10 +172,92 @@ fun NavGraph(
         // Speaking-only Journey (beta)
         composable(Screen.SpeakingJourney.route) {
             SpeakingJourneyScreen(
-                onNavigateBack = { navController.popBackStack() },
                 onNavigateToConversation = { topicId ->
                     navController.navigate(Screen.TopicConversation.createRoute(topicId))
+                },
+                onNavigateToTopicMaster = { topicId ->
+                    navController.navigate(Screen.TopicMaster.createRoute(topicId))
                 }
+            )
+        }
+
+        composable(
+            route = Screen.TopicMaster.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            TopicMasterScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPronunciationPractice = { navController.navigate(Screen.PronunciationPractice.createRoute(topicId)) },
+                onNavigateToFluencyPractice = { navController.navigate(Screen.FluencyPractice.createRoute(topicId)) },
+                onNavigateToVocabularyPractice = { navController.navigate(Screen.VocabularyPractice.createRoute(topicId)) },
+                onNavigateToListeningPractice = { navController.navigate(Screen.ListeningPractice.createRoute(topicId)) },
+                onNavigateToGrammarPractice = { navController.navigate(Screen.GrammarPractice.createRoute(topicId)) },
+                onNavigateToConversation = { navController.navigate(Screen.TopicConversation.createRoute(topicId)) }
+            )
+        }
+
+        composable(
+            route = Screen.PronunciationPractice.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            PronunciationPracticeScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.FluencyPractice.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            PlaceholderPracticeScreen(
+                topicId = topicId,
+                practiceType = "Fluency",
+                icon = Icons.Default.RecordVoiceOver,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.VocabularyPractice.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            PlaceholderPracticeScreen(
+                topicId = topicId,
+                practiceType = "Vocabulary",
+                icon = Icons.Default.MenuBook,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.ListeningPractice.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            PlaceholderPracticeScreen(
+                topicId = topicId,
+                practiceType = "Listening",
+                icon = Icons.Default.Hearing,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.GrammarPractice.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            PlaceholderPracticeScreen(
+                topicId = topicId,
+                practiceType = "Grammar",
+                icon = Icons.Default.FormatQuote,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

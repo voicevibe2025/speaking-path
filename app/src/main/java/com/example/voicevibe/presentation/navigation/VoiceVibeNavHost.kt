@@ -233,6 +233,9 @@ fun VoiceVibeNavHost(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToConversation = { topicId ->
                     navController.navigate(Screen.TopicConversation.createRoute(topicId))
+                },
+                onNavigateToTopicMaster = { topicId ->
+                    navController.navigate(Screen.TopicMaster.createRoute(topicId))
                 }
             )
         }

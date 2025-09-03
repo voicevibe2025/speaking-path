@@ -19,6 +19,24 @@ sealed class Screen(val route: String) {
     object Profile : Screen("profile")
     // Speaking-only flow (beta)
     object SpeakingJourney : Screen("speaking_journey")
+    object TopicMaster : Screen("topic_master/{topicId}") {
+        fun createRoute(topicId: String) = "topic_master/$topicId"
+    }
+    object PronunciationPractice : Screen("pronunciation_practice/{topicId}") {
+        fun createRoute(topicId: String) = "pronunciation_practice/$topicId"
+    }
+    object FluencyPractice : Screen("fluency_practice/{topicId}") {
+        fun createRoute(topicId: String) = "fluency_practice/$topicId"
+    }
+    object VocabularyPractice : Screen("vocabulary_practice/{topicId}") {
+        fun createRoute(topicId: String) = "vocabulary_practice/$topicId"
+    }
+    object ListeningPractice : Screen("listening_practice/{topicId}") {
+        fun createRoute(topicId: String) = "listening_practice/$topicId"
+    }
+    object GrammarPractice : Screen("grammar_practice/{topicId}") {
+        fun createRoute(topicId: String) = "grammar_practice/$topicId"
+    }
     object TopicConversation : Screen("speaking_conversation/{topicId}") {
         fun createRoute(topicId: String) = "speaking_conversation/$topicId"
     }

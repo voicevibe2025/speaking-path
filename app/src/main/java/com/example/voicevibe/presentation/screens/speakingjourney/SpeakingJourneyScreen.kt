@@ -647,6 +647,13 @@ private fun CompactTopicSelector(
 ) {
     val listState = rememberLazyListState()
     
+    // Ensure the newly selected topic is brought into view (e.g., after unlocking)
+    LaunchedEffect(selectedTopicIdx, topics.size) {
+        if (selectedTopicIdx in topics.indices) {
+            listState.animateScrollToItem(selectedTopicIdx)
+        }
+    }
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()

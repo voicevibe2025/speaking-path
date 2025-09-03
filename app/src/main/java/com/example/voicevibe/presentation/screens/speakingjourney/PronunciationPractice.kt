@@ -266,6 +266,18 @@ fun PronunciationPracticeScreen(
                     onDismiss = { showPermissionRequest = false }
                 )
             }
+
+            // Congratulation screen for unlocking a topic (ensure it shows while in practice too)
+            ui.unlockedTopicInfo?.let { unlockedTopicInfo ->
+                CongratulationScreen(
+                    unlockedTopicInfo = unlockedTopicInfo,
+                    onDismiss = {
+                        viewModel.dismissUnlockedTopicInfo()
+                        viewModel.dismissPhraseResult()
+                        onNavigateBack()
+                    }
+                )
+            }
         }
     }
 }

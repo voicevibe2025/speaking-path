@@ -9,6 +9,8 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,9 +36,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -233,13 +237,8 @@ fun PronunciationPracticeScreen(
                     
                     Spacer(modifier = Modifier.height(24.dp))
                     
-                    // Recording Result Section
-                    if (ui.phraseSubmissionResult != null) {
-                        RecordingResultCard(
-                            result = ui.phraseSubmissionResult!!,
-                            onDismiss = { viewModel.dismissPhraseResult() }
-                        )
-                    } else if (ui.currentTopicTranscripts.isNotEmpty()) {
+                    // Last recording playback (only show when no current result)
+                    if (ui.phraseSubmissionResult == null && ui.currentTopicTranscripts.isNotEmpty()) {
                         val lastIndex = topic?.phraseProgress?.currentPhraseIndex?.minus(1) ?: 0
                         val transcript = ui.currentTopicTranscripts.firstOrNull { it.index == lastIndex }
                         if (transcript != null) {
@@ -267,6 +266,21 @@ fun PronunciationPracticeScreen(
                 )
             }
 
+            // Phrase-level congratulation card (top-level overlay, not for last phrase)
+            if (ui.phraseSubmissionResult != null && 
+                ui.phraseSubmissionResult!!.success && 
+                topic?.phraseProgress?.let { progress -> 
+                    progress.currentPhraseIndex < progress.totalPhrases - 1 
+                } == true
+            ) {
+                PhrasePassCongratulationOverlay(
+                    result = ui.phraseSubmissionResult!!,
+                    phraseNumber = (topic.phraseProgress?.currentPhraseIndex ?: 0) + 1,
+                    totalPhrases = topic.phraseProgress?.totalPhrases ?: 1,
+                    onDismiss = { viewModel.dismissPhraseResult() }
+                )
+            }
+            
             // Congratulation screen for unlocking a topic (ensure it shows while in practice too)
             ui.unlockedTopicInfo?.let { unlockedTopicInfo ->
                 CongratulationScreen(
@@ -841,6 +855,251 @@ fun PermissionRequestCard(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text("Grant Access")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PhrasePassCongratulationOverlay(
+    result: PhraseSubmissionResultUi,
+    phraseNumber: Int,
+    totalPhrases: Int,
+    onDismiss: () -> Unit
+) {
+    var showContent by remember { mutableStateOf(false) }
+    
+    // Start animation after a brief delay
+    LaunchedEffect(Unit) {
+        delay(200)
+        showContent = true
+    }
+    
+    // Auto-dismiss after a few seconds
+    LaunchedEffect(Unit) {
+        delay(3000)
+        onDismiss()
+    }
+    
+    // Animated celebration background
+    val celebrationGradient = Brush.radialGradient(
+        colors = listOf(
+            Color(0xFFFFD700).copy(alpha = 0.3f), // Gold
+            Color(0xFFFF6B35).copy(alpha = 0.2f), // Orange
+            Color.Transparent
+        ),
+        radius = 800f
+    )
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.6f)),
+        contentAlignment = Alignment.Center
+    ) {
+        AnimatedVisibility(
+            visible = showContent,
+            enter = scaleIn(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            ) + fadeIn(animationSpec = tween(500)),
+            exit = scaleOut() + fadeOut()
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .shadow(24.dp, RoundedCornerShape(28.dp)),
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(celebrationGradient)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Trophy icon with pulse animation
+                        var pulseState by remember { mutableStateOf(false) }
+                        val pulseScale by animateFloatAsState(
+                            targetValue = if (pulseState) 1.2f else 1.0f,
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessVeryLow
+                            )
+                        )
+                        
+                        LaunchedEffect(Unit) {
+                            while (true) {
+                                pulseState = !pulseState
+                                delay(1000)
+                            }
+                        }
+                        
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .scale(pulseScale)
+                                .clip(CircleShape)
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(
+                                            Color(0xFFFFD700), // Gold
+                                            Color(0xFFFF8F00)  // Amber
+                                        )
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.EmojiEvents,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(20.dp))
+                        
+                        // Congratulations text
+                        Text(
+                            text = "Excellent!",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(
+                            text = "You nailed that pronunciation!",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                            textAlign = TextAlign.Center
+                        )
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // Progress indicator
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                            ),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "Phrase $phraseNumber of $totalPhrases completed",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
+                                LinearProgressIndicator(
+                                    progress = phraseNumber.toFloat() / totalPhrases.toFloat(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(6.dp)
+                                        .clip(RoundedCornerShape(3.dp)),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // XP and accuracy row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Accuracy badge
+                            Card(
+                                shape = RoundedCornerShape(20.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.tertiary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "${(result.accuracy * 100).toInt()}%",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.tertiary
+                                    )
+                                }
+                            }
+                            
+                            // XP badge
+                            if (result.xpAwarded != null && result.xpAwarded > 0) {
+                                Card(
+                                    shape = RoundedCornerShape(20.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color(0xFFFFD700).copy(alpha = 0.2f)
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Star,
+                                            contentDescription = null,
+                                            tint = Color(0xFFFFD700),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "+${result.xpAwarded} XP",
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFFF8F00)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(20.dp))
+                        
+                        // Keep going message
+                        Text(
+                            text = "Keep going! You're doing great! 🚀",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }

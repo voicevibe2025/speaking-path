@@ -9,6 +9,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.example.voicevibe.presentation.screens.auth.login.LoginScreen
 import com.example.voicevibe.presentation.screens.auth.register.RegisterScreen
 import com.example.voicevibe.presentation.screens.auth.splash.SplashScreen
@@ -17,6 +19,7 @@ import com.example.voicevibe.presentation.screens.auth.forgotpassword.ForgotPass
 import com.example.voicevibe.presentation.screens.main.home.HomeScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.TopicConversationScreen
 import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
 
 /**
@@ -227,6 +230,20 @@ fun VoiceVibeNavHost(
         // Speaking-only Journey (beta)
         composable(route = Screen.SpeakingJourney.route) {
             SpeakingJourneyScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToConversation = { topicId ->
+                    navController.navigate(Screen.TopicConversation.createRoute(topicId))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.TopicConversation.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            TopicConversationScreen(
+                topicId = topicId,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

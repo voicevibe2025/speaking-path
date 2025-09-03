@@ -205,7 +205,8 @@ data class PhraseTranscriptEntry(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun SpeakingJourneyScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToConversation: (String) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -352,12 +353,43 @@ fun SpeakingJourneyScreen(
                                 )
                             }
                             
-                            // Conversation example in a modern card
+                            // Conversation navigation card (opens dedicated screen)
                             if (topic.conversation.isNotEmpty()) {
-                                ModernConversationCard(
-                                    conversation = topic.conversation,
-                                    onSpeak = ::speak
-                                )
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 16.dp)
+                                        .clickable { onNavigateToConversation(topic.id) },
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = "Conversation Example",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                            Text(
+                                                text = "Open a sample dialogue for this topic",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                                            )
+                                        }
+                                        Icon(
+                                            imageVector = Icons.Default.VolumeUp,
+                                            contentDescription = "Open conversation"
+                                        )
+                                    }
+                                }
                             }
                         }
                         

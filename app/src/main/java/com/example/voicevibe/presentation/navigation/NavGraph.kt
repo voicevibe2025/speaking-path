@@ -29,6 +29,7 @@ import com.example.voicevibe.presentation.screens.scenarios.CulturalScenariosScr
 import com.example.voicevibe.presentation.screens.scenarios.ScenarioDetailScreen
 import com.example.voicevibe.presentation.screens.analytics.AnalyticsDashboardScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.TopicConversationScreen
 import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
 
 @Composable
@@ -162,6 +163,20 @@ fun NavGraph(
         // Speaking-only Journey (beta)
         composable(Screen.SpeakingJourney.route) {
             SpeakingJourneyScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToConversation = { topicId ->
+                    navController.navigate(Screen.TopicConversation.createRoute(topicId))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.TopicConversation.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            TopicConversationScreen(
+                topicId = topicId,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

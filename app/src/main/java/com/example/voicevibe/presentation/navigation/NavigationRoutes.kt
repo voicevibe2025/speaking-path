@@ -19,6 +19,9 @@ sealed class Screen(val route: String) {
     object Profile : Screen("profile")
     // Speaking-only flow (beta)
     object SpeakingJourney : Screen("speaking_journey")
+    object TopicConversation : Screen("speaking_conversation/{topicId}") {
+        fun createRoute(topicId: String) = "speaking_conversation/$topicId"
+    }
     // Practice with AI standalone screen
     object PracticeWithAI : Screen("practice_with_ai")
 

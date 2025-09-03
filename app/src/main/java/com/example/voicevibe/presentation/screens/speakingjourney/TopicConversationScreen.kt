@@ -2,6 +2,7 @@ package com.example.voicevibe.presentation.screens.speakingjourney
 
 import android.speech.tts.TextToSpeech
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,11 +12,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.ui.res.painterResource
+import com.example.voicevibe.R
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -185,11 +187,10 @@ fun TopicConversationScreen(
                                         verticalAlignment = Alignment.Top
                                     ) {
                                         val isSpeakerA = turn.speaker.equals("A", ignoreCase = true)
-                                        Icon(
-                                            imageVector = if (isSpeakerA) Icons.Filled.Person else Icons.Filled.Face,
+                                        Image(
+                                            painter = painterResource(id = if (isSpeakerA) R.drawable.ic_male_head else R.drawable.ic_female_head),
                                             contentDescription = if (isSpeakerA) "Speaker A" else "Speaker B",
-                                            tint = if (isSpeakerA) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
-                                            modifier = Modifier.padding(end = 12.dp)
+                                            modifier = Modifier.padding(end = 12.dp).size(24.dp)
                                         )
                                         Text(
                                             text = turn.text,

@@ -19,6 +19,11 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import org.json.JSONObject
 import java.io.File
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 import javax.inject.Inject
 
 @HiltViewModel
@@ -220,6 +225,7 @@ class SpeakingJourneyViewModel @Inject constructor(
                             text = dto.transcription,
                             audioPath = audioOutPath,
                             accuracy = dto.accuracy,
+                            feedback = dto.feedback,
                             timestamp = System.currentTimeMillis()
                         )
                         val updatedTranscripts = _uiState.value.currentTopicTranscripts.filterNot { it.index == phraseIndex } + newEntry
@@ -367,22 +373,23 @@ class SpeakingJourneyViewModel @Inject constructor(
                 val res = repo.getUserPhraseRecordings(topic.id)
                 res.fold(
                     onSuccess = { list ->
-                        // Keep only the most recent recording per phrase index
-                        val byPhrase = LinkedHashMap<Int, com.example.voicevibe.data.remote.api.UserPhraseRecordingDto>()
-                        for (rec in list) {
-                            if (!byPhrase.containsKey(rec.phraseIndex)) {
-                                byPhrase[rec.phraseIndex] = rec
+                        // Deduplicate by phraseIndex, keeping the most recent by createdAt
+                        val latestByPhrase = list
+                            .groupBy { it.phraseIndex }
+                            .mapValues { (_, recs) ->
+                                recs.maxByOrNull { r -> parseCreatedAtToEpoch(r.createdAt) ?: Long.MIN_VALUE }!!
                             }
-                        }
-                        val mapped = byPhrase.values.map { rec ->
+                        val mapped = latestByPhrase.values.map { rec ->
+                            val ts = parseCreatedAtToEpoch(rec.createdAt) ?: 0L
                             PhraseTranscriptEntry(
                                 index = rec.phraseIndex,
                                 text = rec.transcription,
                                 audioPath = rec.audioUrl,
                                 accuracy = rec.accuracy ?: 0f,
-                                timestamp = 0L
+                                feedback = rec.feedback,
+                                timestamp = ts
                             )
-                        }.sortedBy { it.index }
+                        }.sortedByDescending { it.timestamp }
                         _uiState.value = _uiState.value.copy(currentTopicTranscripts = mapped)
                     },
                     onFailure = { e ->
@@ -397,6 +404,47 @@ class SpeakingJourneyViewModel @Inject constructor(
         }
     }
 
+    private fun parseCreatedAtToEpoch(createdAt: String?): Long? {
+        if (createdAt.isNullOrBlank()) return null
+        // First, try to normalize fractional seconds to milliseconds (3 digits)
+        val normalized = try {
+            val tIndex = createdAt.indexOf('T')
+            val dotIndex = createdAt.indexOf('.', startIndex = if (tIndex >= 0) tIndex else 0)
+            if (dotIndex >= 0) {
+                // Find end of fraction (before timezone indicator 'Z' or offset)
+                val tzStart = createdAt.indexOfAny(charArrayOf('Z', '+', '-'), startIndex = dotIndex)
+                val endIndex = if (tzStart >= 0) tzStart else createdAt.length
+                val fraction = createdAt.substring(dotIndex + 1, endIndex)
+                val milli = when {
+                    fraction.length >= 3 -> fraction.substring(0, 3)
+                    else -> fraction.padEnd(3, '0')
+                }
+                val prefix = createdAt.substring(0, dotIndex)
+                val suffix = if (tzStart >= 0) createdAt.substring(tzStart) else "Z"
+                "$prefix.$milli$suffix"
+            } else createdAt
+        } catch (_: Throwable) { createdAt }
+
+        // Try multiple ISO8601 patterns
+        val patterns = listOf(
+            "yyyy-MM-dd'T'HH:mm:ss.SSSX",
+            "yyyy-MM-dd'T'HH:mm:ssX",
+            "yyyy-MM-dd HH:mm:ss",
+        )
+        for (p in patterns) {
+            try {
+                val sdf = SimpleDateFormat(p, Locale.US).apply {
+                    timeZone = TimeZone.getTimeZone("UTC")
+                }
+                val d: Date? = sdf.parse(normalized)
+                if (d != null) return d.time
+            } catch (_: ParseException) {
+            } catch (_: IllegalArgumentException) {
+            }
+        }
+        return null
+    }
+
     private fun saveTranscriptEntryToDisk(context: Context, topicId: String, entry: PhraseTranscriptEntry) {
         try {
             val dir = File(context.filesDir, "voicevibe/transcripts").apply { mkdirs() }
@@ -408,6 +456,7 @@ class SpeakingJourneyViewModel @Inject constructor(
                 put("text", entry.text)
                 put("audioPath", entry.audioPath)
                 put("accuracy", entry.accuracy.toDouble())
+                put("feedback", entry.feedback ?: "")
                 put("timestamp", entry.timestamp)
             }
             entries.put(entry.index.toString(), obj)

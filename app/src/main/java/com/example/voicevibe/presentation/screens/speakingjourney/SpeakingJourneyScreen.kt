@@ -200,6 +200,7 @@ data class PhraseTranscriptEntry(
     val text: String,
     val audioPath: String,
     val accuracy: Float,
+    val feedback: String?,
     val timestamp: Long
 )
 

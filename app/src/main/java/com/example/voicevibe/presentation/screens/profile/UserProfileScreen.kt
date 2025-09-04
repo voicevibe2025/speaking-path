@@ -82,7 +82,7 @@ fun UserProfileScreen(
                     val userProfile = uiState.userProfile
                     if (!uiState.isOwnProfile && userProfile != null) {
                         Text(
-                            "@${userProfile.username}",
+                            userProfile.displayName,
                             fontWeight = FontWeight.Bold
                         )
                     } else {
@@ -287,7 +287,7 @@ private fun ProfileHeader(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(150.dp)
+                .height(200.dp)
         ) {
             if (profile.coverImageUrl != null) {
                 AsyncImage(
@@ -311,149 +311,127 @@ private fun ProfileHeader(
                 )
             }
 
-            // Avatar
-            if (profile.avatarUrl != null) {
-                AsyncImage(
-                    model = profile.avatarUrl,
-                    contentDescription = "Avatar",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .border(3.dp, MaterialTheme.colorScheme.primary, CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .border(3.dp, MaterialTheme.colorScheme.primary, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Default Avatar",
-                        modifier = Modifier.size(60.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+            // Centered Avatar at bottom of cover
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .offset(y = 50.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (profile.avatarUrl != null) {
+                    AsyncImage(
+                        model = profile.avatarUrl,
+                        contentDescription = "Avatar",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .border(4.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                        contentScale = ContentScale.Crop
                     )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .border(4.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Default Avatar",
+                            modifier = Modifier.size(60.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(60.dp))
+        Spacer(modifier = Modifier.height(70.dp))
 
         // Profile Info
         Column(
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Name and verification badges - centered
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            profile.displayName,
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        if (profile.isVerified) {
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                Icons.Default.Verified,
-                                contentDescription = "Verified",
-                                modifier = Modifier.size(20.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        if (profile.isPremium) {
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                Icons.Default.WorkspacePremium,
-                                contentDescription = "Premium",
-                                modifier = Modifier.size(20.dp),
-                                tint = Color(0xFFFFD700)
-                            )
-                        }
-                    }
-
-                    Text(
-                        "@${profile.username}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                Text(
+                    profile.displayName,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                if (profile.isVerified) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        Icons.Default.Verified,
+                        contentDescription = "Verified",
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
                     )
-
-                    // Level and XP
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = MaterialTheme.colorScheme.primaryContainer
-                        ) {
-                            Text(
-                                "Level ${profile.level}",
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "${profile.xp} XP",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        if (profile.streakDays > 0) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Default.LocalFireDepartment,
-                                    contentDescription = "Streak",
-                                    modifier = Modifier.size(16.dp),
-                                    tint = Color(0xFFFF6B35)
-                                )
-                                Text(
-                                    "${profile.streakDays} days",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color(0xFFFF6B35)
-                                )
-                            }
-                        }
-                    }
                 }
+                if (profile.isPremium) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        Icons.Default.WorkspacePremium,
+                        contentDescription = "Premium",
+                        modifier = Modifier.size(20.dp),
+                        tint = Color(0xFFFFD700)
+                    )
+                }
+            }
 
-                // Action Buttons
-                if (!isOwnProfile) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (profile.isFollowing) {
-                            OutlinedButton(
-                                onClick = onFollowClick,
-                                modifier = Modifier.height(36.dp)
-                            ) {
-                                Text("Following")
-                            }
-                        } else {
-                            Button(
-                                onClick = onFollowClick,
-                                modifier = Modifier.height(36.dp)
-                            ) {
-                                Text("Follow")
-                            }
-                        }
+            Text(
+                "@${profile.username}",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
-                        OutlinedButton(
-                            onClick = onChallengeClick,
-                            modifier = Modifier.height(36.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.SportsEsports,
-                                contentDescription = "Challenge",
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Level and XP - centered
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(vertical = 4.dp)
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(4.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Text(
+                        "Level ${profile.level}",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "${profile.xp} XP",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                if (profile.streakDays > 0) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.LocalFireDepartment,
+                            contentDescription = "Streak",
+                            modifier = Modifier.size(16.dp),
+                            tint = Color(0xFFFF6B35)
+                        )
+                        Text(
+                            "${profile.streakDays} days",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFFFF6B35)
+                        )
                     }
                 }
             }

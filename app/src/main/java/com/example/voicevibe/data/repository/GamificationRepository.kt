@@ -91,6 +91,7 @@ class GamificationRepository @Inject constructor(
     ): Resource<LeaderboardData> {
         return try {
             val response = when (type) {
+                LeaderboardType.DAILY -> apiService.getDailyLeaderboard()
                 LeaderboardType.WEEKLY -> apiService.getWeeklyLeaderboard()
                 LeaderboardType.MONTHLY -> apiService.getMonthlyLeaderboard()
                 LeaderboardType.ALL_TIME -> apiService.getAllTimeLeaderboard()
@@ -214,20 +215,6 @@ class GamificationRepository @Inject constructor(
         }
     }
 }
-
-/**
- * Data class for leaderboard entry
- */
-data class LeaderboardEntry(
-    val rank: Int,
-    val userId: String,
-    val username: String,
-    val avatarUrl: String?,
-    val points: Int,
-    val level: Int,
-    val badges: Int,
-    val isCurrentUser: Boolean = false
-)
 
 /**
  * Data class for daily reward

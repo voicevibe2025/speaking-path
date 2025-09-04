@@ -364,6 +364,7 @@ private fun LeaderboardTypeTabs(
     modifier: Modifier = Modifier
 ) {
     val types = listOf(
+        LeaderboardType.DAILY to "Daily",
         LeaderboardType.WEEKLY to "Weekly",
         LeaderboardType.MONTHLY to "Monthly",
         LeaderboardType.ALL_TIME to "All Time",

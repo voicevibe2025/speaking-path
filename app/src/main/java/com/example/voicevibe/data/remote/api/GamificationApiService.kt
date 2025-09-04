@@ -27,6 +27,9 @@ interface GamificationApiService {
     @GET("gamification/leaderboards/weekly")
     suspend fun getWeeklyLeaderboard(): Response<LeaderboardData>
 
+    @GET("gamification/leaderboards/daily")
+    suspend fun getDailyLeaderboard(): Response<LeaderboardData>
+
     @GET("gamification/leaderboards/monthly")
     suspend fun getMonthlyLeaderboard(): Response<LeaderboardData>
 

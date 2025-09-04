@@ -52,6 +52,7 @@ enum class LeaderboardType {
     GLOBAL,
     COUNTRY,
     FRIENDS,
+    DAILY,
     WEEKLY,
     MONTHLY,
     ALL_TIME
@@ -62,6 +63,7 @@ enum class LeaderboardType {
  */
 enum class LeaderboardFilter {
     OVERALL_XP,
+    DAILY_XP,
     WEEKLY_XP,
     MONTHLY_XP,
     STREAK,

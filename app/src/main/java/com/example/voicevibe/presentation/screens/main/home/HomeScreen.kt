@@ -411,7 +411,7 @@ private fun QuickActionsSection(
                     .clickable { onViewPaths() }
             ) {
                 androidx.compose.foundation.Image(
-                    painter = painterResource(id = R.drawable.learning_path),
+                    painter = painterResource(id = R.drawable.learning_path_2),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()

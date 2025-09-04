@@ -277,17 +277,17 @@ fun SpeakingJourneyScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1A1B3A), // Dark purple-blue
-                        Color(0xFF2D2F5B), // Lighter purple-blue
-                        Color(0xFF1A1B3A)  // Back to dark for depth
-                    ),
-                    startY = 0f,
-                    endY = Float.POSITIVE_INFINITY
-                )
+        .background(
+            Brush.verticalGradient(
+                colors = listOf(
+                    Color(0xFF0A1128), // Dark blue
+                    Color(0xFF2D5A5B), // Deep teal
+                    Color(0xFF0A1128)  // Back to dark blue for depth
+                ),
+                startY = 0f,
+                endY = Float.POSITIVE_INFINITY
             )
+        )
     ) {
         // Animated background particles for engagement
         AnimatedBackgroundParticles()

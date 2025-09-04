@@ -34,10 +34,10 @@ interface UserApi {
     ): Response<UserProfileDto>
 
     @Multipart
-    @POST("users/avatar/")
-    suspend fun uploadAvatar(
+    @PATCH("users/profile/")
+    suspend fun updateAvatar(
         @Part avatar: MultipartBody.Part
-    ): Response<Map<String, String>>
+    ): Response<UserProfileDto>
 
     @DELETE("users/avatar/")
     suspend fun deleteAvatar(): Response<Unit>

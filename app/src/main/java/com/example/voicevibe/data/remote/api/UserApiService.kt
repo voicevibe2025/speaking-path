@@ -2,6 +2,7 @@ package com.example.voicevibe.data.remote.api
 
 import com.example.voicevibe.domain.model.UserProfile
 import com.example.voicevibe.domain.model.UserProgress
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -19,8 +20,11 @@ interface UserApiService {
     @GET("users/progress")
     suspend fun getUserProgress(): Response<UserProgress>
     
-    @POST("users/profile-picture")
-    suspend fun uploadProfilePicture(@Body imageData: ByteArray): Response<Map<String, String>>
+    @Multipart
+    @PATCH("users/profile/")
+    suspend fun updateAvatar(
+        @Part avatar: MultipartBody.Part
+    ): Response<UserProfile>
     
     @PATCH("users/preferences")
     suspend fun updatePreferences(@Body preferences: Map<String, Any>): Response<UserProfile>

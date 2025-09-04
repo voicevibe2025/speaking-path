@@ -7,6 +7,11 @@ import com.example.voicevibe.domain.model.UserActivity
 import com.example.voicevibe.domain.model.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -183,15 +188,48 @@ class UserRepository @Inject constructor(
      */
     suspend fun uploadProfilePicture(imageData: ByteArray): Resource<String> {
         return try {
-            val response = apiService.uploadProfilePicture(imageData)
+            val mediaType = "image/*".toMediaTypeOrNull()
+            val requestBody = imageData.toRequestBody(mediaType)
+            val part = MultipartBody.Part.createFormData(
+                name = "avatar",
+                filename = "avatar.jpg",
+                body = requestBody
+            )
+            val response = apiService.updateAvatar(part)
             if (response.isSuccessful) {
-                val url = response.body()?.let { map -> map["url"] } ?: ""
+                val profile = response.body()
+                val url = profile?.avatarUrl ?: ""
                 Resource.Success(url)
             } else {
                 Resource.Error<String>("Failed to upload profile picture")
             }
         } catch (e: Exception) {
             Resource.Error<String>(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Upload avatar image via multipart PATCH users/profile/
+     */
+    suspend fun uploadAvatar(file: File): Resource<UserProfile> {
+        return try {
+            val mediaType = "image/*".toMediaTypeOrNull()
+            val requestBody = file.asRequestBody(mediaType)
+            val part = MultipartBody.Part.createFormData(
+                name = "avatar",
+                filename = file.name,
+                body = requestBody
+            )
+            val response = apiService.updateAvatar(part)
+            if (response.isSuccessful) {
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error<UserProfile>("Failed to upload avatar: empty body")
+            } else {
+                Resource.Error<UserProfile>("Failed to upload avatar")
+            }
+        } catch (e: Exception) {
+            Resource.Error<UserProfile>(e.message ?: "Unknown error occurred")
         }
     }
     

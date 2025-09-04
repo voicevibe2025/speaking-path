@@ -123,7 +123,7 @@ fun PronunciationPracticeScreen(
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             Color(0xFF0A1128), // Dark blue top
-            Color(0xFF1E2761), // Mid blue-purple
+            Color(0xFF2D5A5B), // Deep teal
             Color(0xFF0A1128)  // Dark blue bottom
         )
     )
@@ -1223,7 +1223,7 @@ fun PhraseTryAgainOverlay(
     val encouragementGradient = Brush.radialGradient(
         colors = listOf(
             Color(0xFF2196F3).copy(alpha = 0.3f), // Blue
-            Color(0xFF9C27B0).copy(alpha = 0.2f), // Purple
+            Color(0xFF03DAC5).copy(alpha = 0.2f), // Teal
             Color.Transparent
         ),
         radius = 800f

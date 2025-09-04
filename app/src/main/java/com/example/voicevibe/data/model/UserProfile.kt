@@ -5,7 +5,7 @@ import com.example.voicevibe.data.model.Activity
 import com.google.gson.annotations.SerializedName
 
 data class UserProfile(
-    @SerializedName("user_name")
+    @SerializedName("username")
     val userName: String,
     @SerializedName("user_email")
     val userEmail: String,

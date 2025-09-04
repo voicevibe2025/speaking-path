@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.example.voicevibe.R
 import com.example.voicevibe.domain.model.*
 import com.example.voicevibe.presentation.components.LoadingScreen
@@ -319,30 +320,44 @@ private fun ProfileHeader(
                     .offset(y = 50.dp),
                 contentAlignment = Alignment.Center
             ) {
-                if (profile.avatarUrl != null) {
-                    AsyncImage(
-                        model = profile.avatarUrl,
-                        contentDescription = "Avatar",
-                        modifier = Modifier
-                            .size(120.dp)
-                            .clip(CircleShape)
-                            .border(4.dp, MaterialTheme.colorScheme.surface, CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(120.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer)
-                            .border(4.dp, MaterialTheme.colorScheme.surface, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Default Avatar",
-                            modifier = Modifier.size(60.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                val initials = remember(profile.displayName) { generateInitials(profile.displayName) }
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .border(4.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (!profile.avatarUrl.isNullOrBlank()) {
+                        SubcomposeAsyncImage(
+                            model = profile.avatarUrl,
+                            contentDescription = "Avatar",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                            loading = {
+                                Text(
+                                    text = initials,
+                                    fontSize = 40.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            },
+                            error = {
+                                Text(
+                                    text = initials,
+                                    fontSize = 40.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+                        )
+                    } else {
+                        Text(
+                            text = initials,
+                            fontSize = 40.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                     }
                 }
@@ -579,4 +594,14 @@ private fun ReportUserDialog(
             }
         }
     )
+}
+
+// Helper to generate initials from display name for avatar fallback
+private fun generateInitials(displayName: String): String {
+    val parts = displayName.split(" ").filter { it.isNotBlank() }
+    return when {
+        parts.size >= 2 -> "${parts[0].first().uppercaseChar()}${parts[1].first().uppercaseChar()}"
+        parts.size == 1 -> parts[0].take(2).uppercase()
+        else -> "U"
+    }
 }

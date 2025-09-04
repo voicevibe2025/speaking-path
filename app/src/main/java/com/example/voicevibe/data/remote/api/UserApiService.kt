@@ -1,6 +1,6 @@
 package com.example.voicevibe.data.remote.api
 
-import com.example.voicevibe.domain.model.UserProfile
+import com.example.voicevibe.data.model.UserProfile
 import com.example.voicevibe.domain.model.UserProgress
 import okhttp3.MultipartBody
 import retrofit2.Response

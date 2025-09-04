@@ -17,6 +17,9 @@ sealed class Screen(val route: String) {
     object LearningPaths : Screen("learning_paths")
     object Achievements : Screen("achievements")
     object Profile : Screen("profile")
+    object UserProfile : Screen("profile/{userId}") {
+        fun createRoute(userId: String) = "profile/$userId"
+    }
     // Speaking-only flow (beta)
     object SpeakingJourney : Screen("speaking_journey")
     object TopicMaster : Screen("topic_master/{topicId}") {

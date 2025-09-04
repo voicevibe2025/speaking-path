@@ -29,7 +29,8 @@ import com.example.voicevibe.presentation.screens.gamification.AchievementsScree
 import com.example.voicevibe.presentation.screens.gamification.LeaderboardScreen
 import com.example.voicevibe.presentation.screens.profile.ProfileScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsScreen
-import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
+ import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
+ import com.example.voicevibe.presentation.screens.profile.UserProfileScreen
 import com.example.voicevibe.presentation.screens.scenarios.CulturalScenariosScreen
 import com.example.voicevibe.presentation.screens.scenarios.ScenarioDetailScreen
 import com.example.voicevibe.presentation.screens.analytics.AnalyticsDashboardScreen
@@ -422,7 +423,7 @@ fun NavGraph(
         composable(Screen.Leaderboard.route) {
             LeaderboardScreen(
                 onNavigateToProfile = { userId ->
-                    navController.navigate(Screen.Profile.route)
+                    navController.navigate(Screen.UserProfile.createRoute(userId))
                 },
                 onNavigateBack = {
                     navController.popBackStack()
@@ -431,6 +432,21 @@ fun NavGraph(
         }
 
         // Profile & Settings
+        composable(
+            route = Screen.UserProfile.route,
+            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+        ) {
+            UserProfileScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToEditProfile = { navController.navigate(Screen.Settings.route) },
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
+                onNavigateToAchievements = { _: String ->
+                    navController.navigate(Screen.Achievements.route)
+                },
+                onNavigateToFollowers = { _: String -> },
+                onNavigateToFollowing = { _: String -> }
+            )
+        }
         composable(Screen.Profile.route) {
             ProfileScreen(
                 onNavigateToSettings = {

@@ -60,10 +60,20 @@ class LeaderboardViewModel @Inject constructor(
                             Log.e("LeaderboardVM", "Logging failed: ${t.message}", t)
                         }
                     }
+                    val normalizedData = result.data?.let { data ->
+                        val normalizedEntries = data.entries.map { e ->
+                            e.copy(avatarUrl = e.avatarUrl?.let { u -> normalizeUrl(u) })
+                        }
+                        val normalizedCurrent = data.currentUserEntry?.let { e ->
+                            e.copy(avatarUrl = e.avatarUrl?.let { u -> normalizeUrl(u) })
+                        }
+                        data.copy(entries = normalizedEntries, currentUserEntry = normalizedCurrent)
+                    }
+
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            leaderboardData = result.data,
+                            leaderboardData = normalizedData,
                             error = null
                         )
                     }
@@ -203,6 +213,13 @@ class LeaderboardViewModel @Inject constructor(
             _events.emit(LeaderboardEvent.ScrollToPosition(targetIndex))
         }
     }
+}
+
+private fun normalizeUrl(url: String): String {
+    if (url.startsWith("http://") || url.startsWith("https://")) return url
+    val serverBase = com.example.voicevibe.utils.Constants.BASE_URL.substringBefore("/api/").trimEnd('/')
+    val path = if (url.startsWith("/")) url else "/$url"
+    return serverBase + path
 }
 
 /**

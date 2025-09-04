@@ -40,6 +40,7 @@ import com.example.voicevibe.presentation.screens.speakingjourney.PronunciationP
 import com.example.voicevibe.presentation.screens.speakingjourney.PlaceholderPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
 import com.example.voicevibe.presentation.navigation.Screen
+import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
 
 @Composable
 fun NavGraph(
@@ -124,11 +125,22 @@ fun NavGraph(
         // Main Screens
         composable(Screen.Home.route) {
             val settingsVM: SettingsViewModel = hiltViewModel()
+            val sjVM: SpeakingJourneyViewModel = hiltViewModel()
             val speakingOnly = settingsVM.speakingOnlyEnabled.value
             HomeScreen(
                 onNavigateToPractice = {
                     if (speakingOnly) {
-                        navController.navigate(Screen.SpeakingJourney.route)
+                        val sjState = sjVM.uiState.value
+                        val topicId = sjState.topics.getOrNull(sjState.selectedTopicIdx)?.id
+                            ?: sjState.userProfile?.lastVisitedTopicId
+                            ?: sjState.topics.firstOrNull { it.unlocked }?.id
+                            ?: sjState.topics.firstOrNull()?.id
+                        if (!topicId.isNullOrBlank()) {
+                            navController.navigate(Screen.TopicMaster.createRoute(topicId))
+                        } else {
+                            // Fallback if topics haven't loaded yet
+                            navController.navigate(Screen.SpeakingJourney.route)
+                        }
                     } else {
                         navController.navigate(Screen.Practice.route)
                     }

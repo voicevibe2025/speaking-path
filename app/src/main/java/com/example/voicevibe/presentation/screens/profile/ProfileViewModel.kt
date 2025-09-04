@@ -41,6 +41,13 @@ class ProfileViewModel @Inject constructor(
     private val _avgScore = mutableStateOf(0f)
     val avgScore: State<Float> = _avgScore
 
+    // Avatar and initials state
+    private val _avatarUrl = mutableStateOf<String?>(null)
+    val avatarUrl: State<String?> = _avatarUrl
+
+    private val _userInitials = mutableStateOf("VV")
+    val userInitials: State<String> = _userInitials
+
     // Recent Achievements state
     private val _recentAchievements = mutableStateOf<List<com.example.voicevibe.data.model.Achievement>>(emptyList())
     val recentAchievements: State<List<com.example.voicevibe.data.model.Achievement>> = _recentAchievements
@@ -106,9 +113,13 @@ class ProfileViewModel @Inject constructor(
                     userProfile.userName
                 }
                 _userName.value = displayName
+                _userInitials.value = generateInitials(displayName)
                 _proficiency.value = userProfile.currentProficiency?.replaceFirstChar { it.titlecase() } ?: "N/A"
                 _xp.value = userProfile.experiencePoints ?: 0
                 _streak.value = userProfile.streakDays ?: 0
+
+                // Avatar URL (normalize if relative)
+                _avatarUrl.value = userProfile.avatarUrl?.let { normalizeUrl(it) }
 
                 // Update Quick Stats
                 _practiceHours.value = userProfile.totalPracticeHours ?: 0f
@@ -169,4 +180,22 @@ class ProfileViewModel @Inject constructor(
             else -> "English"
         }
     }
+
+    private fun normalizeUrl(url: String): String {
+        if (url.startsWith("http://") || url.startsWith("https://")) return url
+        val serverBase = com.example.voicevibe.utils.Constants.BASE_URL.substringBefore("/api/").trimEnd('/')
+        val path = if (url.startsWith("/")) url else "/$url"
+        return serverBase + path
+    }
+
+    private fun generateInitials(displayName: String): String {
+        val parts = displayName.split(" ").filter { it.isNotBlank() }
+        return when {
+            parts.size >= 2 -> "${parts[0].first().uppercaseChar()}${parts[1].first().uppercaseChar()}"
+            parts.size == 1 && parts[0].length >= 2 -> "${parts[0][0].uppercaseChar()}${parts[0][1].uppercaseChar()}"
+            parts.size == 1 -> "${parts[0].first().uppercaseChar()}${parts[0].first().uppercaseChar()}"
+            else -> "VV"
+        }
+    }
 }
+

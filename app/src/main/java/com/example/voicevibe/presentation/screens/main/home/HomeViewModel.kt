@@ -45,6 +45,9 @@ class HomeViewModel @Inject constructor(
             try {
                 val userProfile = profileRepository.getProfile()
                 
+                // Normalize avatar URL if relative
+                val avatarUrl = userProfile.avatarUrl?.let { normalizeUrl(it) }
+
                 // Generate display name
                 val displayName = if (!userProfile.firstName.isNullOrBlank() && !userProfile.lastName.isNullOrBlank()) {
                     "${userProfile.firstName} ${userProfile.lastName}"
@@ -61,6 +64,7 @@ class HomeViewModel @Inject constructor(
                         userName = displayName,
                         userLevel = userProfile.currentLevel ?: 1,
                         userInitials = userInitials,
+                        avatarUrl = avatarUrl,
                         totalPoints = userProfile.experiencePoints ?: 0,
                         currentStreak = userProfile.streakDays ?: 0
                     )
@@ -87,6 +91,14 @@ class HomeViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun normalizeUrl(url: String): String {
+        if (url.startsWith("http://") || url.startsWith("https://")) return url
+        // Constants.BASE_URL is like http://host:port/api/v1/
+        val serverBase = com.example.voicevibe.utils.Constants.BASE_URL.substringBefore("/api/").trimEnd('/')
+        val path = if (url.startsWith("/")) url else "/$url"
+        return serverBase + path
     }
 
     private fun generateInitials(displayName: String): String {
@@ -177,6 +189,7 @@ data class HomeUiState(
     val userName: String? = null,
     val userLevel: Int = 1,
     val userInitials: String? = null,
+    val avatarUrl: String? = null,
     val userProgress: UserProgress? = null,
     val activeLearningPaths: List<LearningPath> = emptyList(),
     val completedLessons: Int = 0,

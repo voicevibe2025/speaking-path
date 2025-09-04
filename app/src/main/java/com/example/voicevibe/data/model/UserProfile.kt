@@ -9,6 +9,8 @@ data class UserProfile(
     val userName: String,
     @SerializedName("user_email")
     val userEmail: String,
+    @SerializedName("avatar_url")
+    val avatarUrl: String?,
     @SerializedName("first_name")
     val firstName: String?,
     @SerializedName("last_name")

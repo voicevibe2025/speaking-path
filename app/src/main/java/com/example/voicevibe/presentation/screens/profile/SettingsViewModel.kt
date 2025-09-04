@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.repository.AuthRepository
 import com.example.voicevibe.data.repository.ProfileRepository
+import com.example.voicevibe.data.repository.UserRepository
 import com.example.voicevibe.data.local.TokenManager
+import com.example.voicevibe.domain.model.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
@@ -17,7 +19,8 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val profileRepository: ProfileRepository,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     // User profile state for top card
@@ -32,6 +35,13 @@ class SettingsViewModel @Inject constructor(
 
     private val _userInitials = mutableStateOf("--")
     val userInitials: State<String> = _userInitials
+
+    // Avatar state
+    private val _avatarUrl = mutableStateOf<String?>(null)
+    val avatarUrl: State<String?> = _avatarUrl
+
+    private val _isUploadingAvatar = mutableStateOf(false)
+    val isUploadingAvatar: State<Boolean> = _isUploadingAvatar
 
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
@@ -73,6 +83,9 @@ class SettingsViewModel @Inject constructor(
 
                 // Generate user initials
                 _userInitials.value = generateInitials(displayName)
+
+                // Set avatar URL (normalize if relative)
+                _avatarUrl.value = userProfile.avatarUrl?.let { normalizeUrl(it) }
 
             } catch (e: IOException) {
                 _errorMessage.value = "Network error. Please check your connection."
@@ -117,6 +130,13 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    private fun normalizeUrl(url: String): String {
+        if (url.startsWith("http://") || url.startsWith("https://")) return url
+        val serverBase = com.example.voicevibe.utils.Constants.BASE_URL.substringBefore("/api/").trimEnd('/')
+        val path = if (url.startsWith("/")) url else "/$url"
+        return serverBase + path
+    }
+
     /**
      * Logs out the user by calling the repository. Tokens and session data are
      * cleared in the repository regardless of API response.
@@ -135,6 +155,26 @@ class SettingsViewModel @Inject constructor(
     fun setPreferredTtsVoice(voiceId: String?) {
         viewModelScope.launch {
             tokenManager.setTtsVoiceId(voiceId)
+        }
+    }
+
+    // Avatar upload handler - accepts raw image bytes from UI layer
+    fun uploadAvatar(imageBytes: ByteArray) {
+        viewModelScope.launch {
+            _isUploadingAvatar.value = true
+            _errorMessage.value = ""
+            when (val result = userRepository.uploadProfilePicture(imageBytes)) {
+                is Resource.Success -> {
+                    _avatarUrl.value = result.data
+                }
+                is Resource.Error -> {
+                    _errorMessage.value = result.message ?: "Failed to upload avatar"
+                }
+                is Resource.Loading -> {
+                    // no-op
+                }
+            }
+            _isUploadingAvatar.value = false
         }
     }
 }

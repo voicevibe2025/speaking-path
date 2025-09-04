@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.voicevibe.data.model.Achievement
 import com.example.voicevibe.presentation.components.LoadingScreen
+import coil.compose.SubcomposeAsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +49,8 @@ fun ProfileScreen(
     val avgScore by viewModel.avgScore
     val recentAchievements by viewModel.recentAchievements
     val recentActivities by viewModel.recentActivities
+    val avatarUrl by viewModel.avatarUrl
+    val userInitials by viewModel.userInitials
 
     // Learning Preferences data
     val dailyPracticeGoal by viewModel.dailyPracticeGoal
@@ -101,7 +104,9 @@ fun ProfileScreen(
                 level = proficiency,
                 currentXp = xp,
                 nextLevelXp = 5000, // Placeholder
-                streak = streak
+                streak = streak,
+                avatarUrl = avatarUrl,
+                userInitials = userInitials
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -167,7 +172,9 @@ fun ProfileHeader(
     level: String,
     currentXp: Int,
     nextLevelXp: Int,
-    streak: Int
+    streak: Int,
+    avatarUrl: String?,
+    userInitials: String
 ) {
     Column(
         modifier = Modifier
@@ -191,12 +198,37 @@ fun ProfileHeader(
                 .border(3.dp, MaterialTheme.colorScheme.surface, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = userName.split(" ").map { it.first() }.joinToString(""),
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            if (avatarUrl != null) {
+                SubcomposeAsyncImage(
+                    model = avatarUrl,
+                    contentDescription = "Avatar",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                    loading = {
+                        Text(
+                            text = userInitials,
+                            fontSize = 36.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    },
+                    error = {
+                        Text(
+                            text = userInitials,
+                            fontSize = 36.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                )
+            } else {
+                Text(
+                    text = userInitials,
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))

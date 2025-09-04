@@ -15,10 +15,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import coil.compose.SubcomposeAsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +42,20 @@ fun SettingsScreen(
     var offlineMode by remember { mutableStateOf(false) }
     var showVoiceDialog by remember { mutableStateOf(false) }
     var voiceInput by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                if (bytes != null) {
+                    viewModel.uploadAvatar(bytes)
+                }
+            } catch (_: Exception) { }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -68,7 +87,10 @@ fun SettingsScreen(
                 userName = viewModel.userName.value,
                 userEmail = viewModel.userEmail.value,
                 membershipStatus = viewModel.membershipStatus.value,
-                userInitials = viewModel.userInitials.value
+                userInitials = viewModel.userInitials.value,
+                avatarUrl = viewModel.avatarUrl.value,
+                isUploadingAvatar = viewModel.isUploadingAvatar.value,
+                onChangeAvatar = { imagePickerLauncher.launch("image/*") }
             )
 
             // General Settings
@@ -314,7 +336,10 @@ fun UserProfileSection(
     userName: String,
     userEmail: String,
     membershipStatus: String,
-    userInitials: String
+    userInitials: String,
+    avatarUrl: String?,
+    isUploadingAvatar: Boolean,
+    onChangeAvatar: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -334,15 +359,48 @@ fun UserProfileSection(
                 modifier = Modifier
                     .size(60.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
+                    .background(MaterialTheme.colorScheme.primary)
+                    .clickable { onChangeAvatar() },
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = userInitials,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
+                if (avatarUrl != null) {
+                    SubcomposeAsyncImage(
+                        model = avatarUrl,
+                        contentDescription = "Avatar",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                        loading = {
+                            Text(
+                                text = userInitials,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        },
+                        error = {
+                            Text(
+                                text = userInitials,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    )
+                } else {
+                    Text(
+                        text = userInitials,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+                if (isUploadingAvatar) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -369,10 +427,10 @@ fun UserProfileSection(
             }
 
             // Edit Icon
-            IconButton(onClick = { /* Navigate to edit profile */ }) {
+            IconButton(onClick = { onChangeAvatar() }) {
                 Icon(
                     Icons.Default.Edit,
-                    contentDescription = "Edit Profile",
+                    contentDescription = "Change Avatar",
                     tint = MaterialTheme.colorScheme.primary
                 )
             }

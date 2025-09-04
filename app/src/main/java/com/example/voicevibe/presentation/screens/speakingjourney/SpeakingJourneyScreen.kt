@@ -1840,13 +1840,13 @@ data class Particle(
     val radius: Float = (4..12).random().toFloat(),
     val duration: Int = (15000..25000).random(),
     val color: Color = listOf(
-        Color(0xFF6C63FF),
+        Color(0xFF3A86FF),
         Color(0xFFFF6B6B),
         Color(0xFF4ECDC4),
         Color(0xFFFFD700),
         Color(0xFFFB5607),
         Color(0xFF3A86FF),
-        Color(0xFF8338EC),
+        Color(0xFFFB5607),
         Color(0xFFFF006E)
     ).random(),
     val maxAlpha: Float = (0.3f..0.7f).random()

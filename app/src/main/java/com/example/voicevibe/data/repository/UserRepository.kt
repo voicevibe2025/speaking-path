@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import com.example.voicevibe.utils.Constants
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
@@ -32,7 +33,11 @@ class UserRepository @Inject constructor(
             val response = apiService.getCurrentUser()
             if (response.isSuccessful) {
                 response.body()?.let { body ->
-                    emit(Resource.Success(body))
+                    // Normalize avatar URL if present
+                    val normalized = body.copy(
+                        avatarUrl = body.avatarUrl?.let { normalizeUrl(it) }
+                    )
+                    emit(Resource.Success(normalized))
                 } ?: emit(Resource.Error<UserProfile>("Failed to load user data: empty body"))
             } else {
                 emit(Resource.Error<UserProfile>("Failed to load user data"))
@@ -50,7 +55,10 @@ class UserRepository @Inject constructor(
             val response = apiService.getUserById(userId)
             if (response.isSuccessful) {
                 response.body()?.let { body ->
-                    Resource.Success(body)
+                    val normalized = body.copy(
+                        avatarUrl = body.avatarUrl?.let { normalizeUrl(it) }
+                    )
+                    Resource.Success(normalized)
                 } ?: Resource.Error<UserProfile>("Failed to load user data: empty body")
             } else {
                 Resource.Error<UserProfile>("Failed to load user data")
@@ -154,7 +162,10 @@ class UserRepository @Inject constructor(
             val response = apiService.updateProfile(user)
             if (response.isSuccessful) {
                 response.body()?.let { body ->
-                    Resource.Success(body)
+                    val normalized = body.copy(
+                        avatarUrl = body.avatarUrl?.let { normalizeUrl(it) }
+                    )
+                    Resource.Success(normalized)
                 } ?: Resource.Error<UserProfile>("Failed to update profile: empty body")
             } else {
                 Resource.Error<UserProfile>("Failed to update profile")
@@ -198,14 +209,26 @@ class UserRepository @Inject constructor(
             val response = apiService.updateAvatar(part)
             if (response.isSuccessful) {
                 val profile = response.body()
-                val url = profile?.avatarUrl ?: ""
-                Resource.Success(url)
+                val url = profile?.avatarUrl
+                if (url.isNullOrBlank()) {
+                    Resource.Error<String>("Server did not return an avatar URL")
+                } else {
+                    Resource.Success(normalizeUrl(url))
+                }
             } else {
                 Resource.Error<String>("Failed to upload profile picture")
             }
         } catch (e: Exception) {
             Resource.Error<String>(e.message ?: "Unknown error occurred")
         }
+    }
+
+    private fun normalizeUrl(url: String): String {
+        if (url.startsWith("http://") || url.startsWith("https://")) return url
+        // Convert BASE_URL like http://host:port/api/v1/ -> http://host:port
+        val serverBase = Constants.BASE_URL.substringBefore("/api/").trimEnd('/')
+        val path = if (url.startsWith("/")) url else "/$url"
+        return serverBase + path
     }
 
     /**
@@ -223,7 +246,10 @@ class UserRepository @Inject constructor(
             val response = apiService.updateAvatar(part)
             if (response.isSuccessful) {
                 response.body()?.let { body ->
-                    Resource.Success(body)
+                    val normalized = body.copy(
+                        avatarUrl = body.avatarUrl?.let { normalizeUrl(it) }
+                    )
+                    Resource.Success(normalized)
                 } ?: Resource.Error<UserProfile>("Failed to upload avatar: empty body")
             } else {
                 Resource.Error<UserProfile>("Failed to upload avatar")

@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.example.voicevibe.R
 import com.example.voicevibe.domain.model.*
 import com.example.voicevibe.presentation.components.LoadingScreen
@@ -447,72 +447,64 @@ private fun PodiumItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.clickable { onClick() }
     ) {
-        Box(contentAlignment = Alignment.Center) {
-            if (entry.avatarUrl.isNullOrBlank()) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Avatar",
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .border(3.dp, medalColor, CircleShape),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                AsyncImage(
+        val initials = remember(entry.displayName) { generateInitials(entry.displayName) }
+        Box(
+            modifier = Modifier
+                .size(60.dp)
+                .clip(CircleShape)
+                .border(3.dp, medalColor, CircleShape)
+                .background(MaterialTheme.colorScheme.primary),
+            contentAlignment = Alignment.Center
+        ) {
+            if (!entry.avatarUrl.isNullOrBlank()) {
+                SubcomposeAsyncImage(
                     model = entry.avatarUrl,
                     contentDescription = "Avatar",
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .border(3.dp, medalColor, CircleShape),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                    loading = {
+                        Text(
+                            text = initials,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    },
+                    error = {
+                        Text(
+                            text = initials,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
                 )
-            }
-
-            // Medal badge
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .offset(y = 8.dp),
-                shape = CircleShape,
-                color = medalColor,
-                shadowElevation = 4.dp
-            ) {
+            } else {
                 Text(
-                    text = rank.toString(),
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                    style = MaterialTheme.typography.labelSmall,
+                    text = initials,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // Medal badge
+        Surface(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .offset(y = 8.dp),
+            shape = CircleShape,
+            color = medalColor,
+            shadowElevation = 4.dp
+        ) {
             Text(
-                entry.displayName,
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                text = rank.toString(),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
-            if (entry.isCurrentUser) {
-                Spacer(modifier = Modifier.width(4.dp))
-                Surface(
-                    shape = RoundedCornerShape(4.dp),
-                    color = MaterialTheme.colorScheme.primary
-                ) {
-                    Text(
-                        "YOU",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                    )
-                }
-            }
         }
 
         Text(
@@ -558,6 +550,7 @@ private fun LeaderboardEntryCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
+        val initials = remember(entry.displayName) { generateInitials(entry.displayName) }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -584,23 +577,44 @@ private fun LeaderboardEntryCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (entry.avatarUrl.isNullOrBlank()) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Avatar",
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                        )
-                    } else {
-                        AsyncImage(
-                            model = entry.avatarUrl,
-                            contentDescription = "Avatar",
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (!entry.avatarUrl.isNullOrBlank()) {
+                            SubcomposeAsyncImage(
+                                model = entry.avatarUrl,
+                                contentDescription = "Avatar",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize(),
+                                loading = {
+                                    Text(
+                                        text = initials,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                },
+                                error = {
+                                    Text(
+                                        text = initials,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+                            )
+                        } else {
+                            Text(
+                                text = initials,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
                     }
 
                     Column {
@@ -883,5 +897,16 @@ private fun getLeagueColor(tier: LeagueTier): Color {
         LeagueTier.DIAMOND -> Color(0xFFB9F2FF)
         LeagueTier.MASTER -> Color(0xFF9370DB)
         LeagueTier.GRANDMASTER -> Color(0xFFFF1744)
+    }
+}
+
+// Helper to generate initials from display name for avatar fallback
+private fun generateInitials(displayName: String): String {
+    val parts = displayName.split(" ").filter { it.isNotBlank() }
+    return when {
+        parts.size >= 2 -> "${parts[0].first().uppercaseChar()}${parts[1].first().uppercaseChar()}"
+        parts.size == 1 && parts[0].length >= 2 -> "${parts[0][0].uppercaseChar()}${parts[0][1].uppercaseChar()}"
+        parts.size == 1 -> "${parts[0].first().uppercaseChar()}${parts[0].first().uppercaseChar()}"
+        else -> "VV"
     }
 }

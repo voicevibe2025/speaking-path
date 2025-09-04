@@ -31,6 +31,7 @@ import com.example.voicevibe.domain.model.LearningPath
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
+import coil.compose.SubcomposeAsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,6 +105,7 @@ fun HomeScreen(
                     userName = uiState.userName ?: "Learner",
                     level = uiState.userLevel,
                     userInitials = uiState.userInitials ?: "VV",
+                    avatarUrl = uiState.avatarUrl,
                     onProfileClick = onNavigateToProfile
                 )
             }
@@ -156,6 +158,7 @@ private fun HeaderSection(
     userName: String,
     level: Int,
     userInitials: String,
+    avatarUrl: String?,
     onProfileClick: () -> Unit
 ) {
     Row(
@@ -198,12 +201,37 @@ private fun HeaderSection(
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primary)
         ) {
-            Text(
-                text = userInitials,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            if (!avatarUrl.isNullOrBlank()) {
+                SubcomposeAsyncImage(
+                    model = avatarUrl,
+                    contentDescription = "Avatar",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                    loading = {
+                        Text(
+                            text = userInitials,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    },
+                    error = {
+                        Text(
+                            text = userInitials,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                )
+            } else {
+                Text(
+                    text = userInitials,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
     }
 }

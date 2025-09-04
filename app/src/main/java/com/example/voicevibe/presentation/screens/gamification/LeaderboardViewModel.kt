@@ -174,9 +174,33 @@ class LeaderboardViewModel @Inject constructor(
 
     fun scrollToCurrentUser() {
         viewModelScope.launch {
-            _uiState.value.leaderboardData?.currentUserEntry?.let { entry ->
-                _events.emit(LeaderboardEvent.ScrollToPosition(entry.rank - 1))
+            val data = _uiState.value.leaderboardData ?: return@launch
+            val entry = data.currentUserEntry ?: return@launch
+
+            // Find the index of the current user within the visible entries list
+            val entries = data.entries
+            val entryIndex = entries.indexOfFirst { it.userId == entry.userId }
+
+            if (entryIndex == -1) {
+                // Current user is not present in the currently visible list
+                _events.emit(
+                    LeaderboardEvent.ShowMessage(
+                        "You're ranked #${entry.rank} but not visible in the current list"
+                    )
+                )
+                return@launch
             }
+
+            val hasPodium = entries.size >= 3
+            val targetIndex = if (hasPodium) {
+                // Index 0 is the podium (ranks 1-3). Remaining items start from rank 4 at index 1
+                if (entryIndex < 3) 0 else (entryIndex - 3) + 1
+            } else {
+                // No podium header, items map 1:1 with entries
+                entryIndex
+            }
+
+            _events.emit(LeaderboardEvent.ScrollToPosition(targetIndex))
         }
     }
 }

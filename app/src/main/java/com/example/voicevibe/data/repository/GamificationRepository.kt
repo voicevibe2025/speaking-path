@@ -93,6 +93,8 @@ class GamificationRepository @Inject constructor(
             val response = when (type) {
                 LeaderboardType.WEEKLY -> apiService.getWeeklyLeaderboard()
                 LeaderboardType.MONTHLY -> apiService.getMonthlyLeaderboard()
+                LeaderboardType.ALL_TIME -> apiService.getAllTimeLeaderboard()
+                LeaderboardType.FRIENDS -> apiService.getFriendsLeaderboard()
                 else -> return Resource.Error("Unsupported leaderboard type: $type")
             }
 

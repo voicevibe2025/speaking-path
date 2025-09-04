@@ -175,7 +175,7 @@ fun LeaderboardScreen(
 
                             // Rest of leaderboard
                             items(
-                                items = if (data.entries.size > 3) data.entries.drop(3) else data.entries,
+                                items = if (data.entries.size >= 3) data.entries.drop(3) else data.entries,
                                 key = { it.userId }
                             ) { entry ->
                                 LeaderboardEntryCard(
@@ -490,13 +490,29 @@ private fun PodiumItem(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            entry.displayName,
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                entry.displayName,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (entry.isCurrentUser) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Surface(
+                    shape = RoundedCornerShape(4.dp),
+                    color = MaterialTheme.colorScheme.primary
+                ) {
+                    Text(
+                        "YOU",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                    )
+                }
+            }
+        }
 
         Text(
             "${entry.score} XP",

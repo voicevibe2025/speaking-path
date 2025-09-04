@@ -30,8 +30,11 @@ interface GamificationApiService {
     @GET("gamification/leaderboards/monthly")
     suspend fun getMonthlyLeaderboard(): Response<LeaderboardData>
 
-    @GET("gamification/leaderboard/friends")
-    suspend fun getFriendsLeaderboard(): Response<List<LeaderboardData>>
+    @GET("gamification/leaderboards/all_time")
+    suspend fun getAllTimeLeaderboard(): Response<LeaderboardData>
+
+    @GET("gamification/leaderboards/friends")
+    suspend fun getFriendsLeaderboard(): Response<LeaderboardData>
 
     @GET("gamification/achievements/stats")
     suspend fun getAchievementStats(): Response<AchievementStats>

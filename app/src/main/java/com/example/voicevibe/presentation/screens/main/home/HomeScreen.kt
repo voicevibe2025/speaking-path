@@ -18,12 +18,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.voicevibe.R
 import com.example.voicevibe.domain.model.LearningPath
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -163,11 +166,6 @@ private fun HeaderSection(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(
-                text = "Welcome back,",
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-            )
             Text(
                 text = userName,
                 fontSize = 28.sp,
@@ -401,55 +399,94 @@ private fun QuickActionsSection(
 
         // Secondary actions
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Card(
+            Box(
                 modifier = Modifier
                     .weight(1f)
-                    .clickable { onViewPaths() },
-                shape = RoundedCornerShape(16.dp)
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { onViewPaths() }
             ) {
+                androidx.compose.foundation.Image(
+                    painter = painterResource(id = R.drawable.learning_path),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                // Dark overlay for better text visibility
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.3f))
+                )
+
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.School,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = Color.White,
                         modifier = Modifier.size(32.dp)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Learning Paths",
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
                     )
                 }
             }
 
-            Card(
+            Box(
                 modifier = Modifier
                     .weight(1f)
-                    .clickable { onViewLeaderboard() },
-                shape = RoundedCornerShape(16.dp)
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { onViewLeaderboard() }
             ) {
+                androidx.compose.foundation.Image(
+                    painter = painterResource(id = R.drawable.leaderboard),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                // Dark overlay for better text visibility
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.3f))
+                )
+
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Leaderboard,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = Color.White,
                         modifier = Modifier.size(32.dp)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Leaderboard",
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
                     )
                 }
             }

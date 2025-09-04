@@ -2,6 +2,7 @@ package com.example.voicevibe.presentation.screens.gamification
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.util.Log
 import com.example.voicevibe.data.repository.GamificationRepository
 import com.example.voicevibe.domain.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,6 +38,28 @@ class LeaderboardViewModel @Inject constructor(
 
             when (val result = repository.getLeaderboard(type, filter)) {
                 is Resource.Success -> {
+                    result.data?.let { data ->
+                        runCatching {
+                            Log.d(
+                                "LeaderboardVM",
+                                "Loaded ${data.type} leaderboard: entries=${data.entries.size} total=${data.totalParticipants} lastUpdated=${data.lastUpdated}"
+                            )
+                            data.currentUserEntry?.let { e ->
+                                Log.d(
+                                    "LeaderboardVM",
+                                    "CurrentUser rank=${e.rank} level=${e.level} streakDays=${e.streakDays} score=${e.score}"
+                                )
+                            }
+                            data.entries.firstOrNull()?.let { e ->
+                                Log.d(
+                                    "LeaderboardVM",
+                                    "TopUser rank=${e.rank} level=${e.level} streakDays=${e.streakDays} score=${e.score}"
+                                )
+                            }
+                        }.onFailure { t ->
+                            Log.e("LeaderboardVM", "Logging failed: ${t.message}", t)
+                        }
+                    }
                     _uiState.update {
                         it.copy(
                             isLoading = false,

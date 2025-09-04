@@ -90,11 +90,12 @@ class GamificationRepository @Inject constructor(
         countryCode: String? = null
     ): Resource<LeaderboardData> {
         return try {
-            val response = apiService.getLeaderboard(
-                type = type.name.lowercase(),
-                filter = filter.name.lowercase(),
-                countryCode = countryCode
-            )
+            val response = when (type) {
+                LeaderboardType.WEEKLY -> apiService.getWeeklyLeaderboard()
+                LeaderboardType.MONTHLY -> apiService.getMonthlyLeaderboard()
+                else -> return Resource.Error("Unsupported leaderboard type: $type")
+            }
+
             if (response.isSuccessful) {
                 response.body()?.let { body ->
                     Resource.Success(body)

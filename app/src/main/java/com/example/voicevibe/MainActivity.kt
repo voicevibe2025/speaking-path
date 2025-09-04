@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
         
         setContent {
             // Force app-wide dark theme and disable dynamic color
-            VoiceVibeTheme(darkTheme = true, dynamicColor = false) {
+            VoiceVibeTheme(darkTheme = false, dynamicColor = true) {
                 VoiceVibeApp()
             }
         }

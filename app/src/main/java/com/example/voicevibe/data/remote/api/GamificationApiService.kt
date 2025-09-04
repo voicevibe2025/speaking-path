@@ -24,12 +24,11 @@ interface GamificationApiService {
     @GET("gamification/achievements")
     suspend fun getUserAchievements(): Response<List<Achievement>>
 
-    @GET("gamification/leaderboard")
-    suspend fun getLeaderboard(
-        @Query("type") type: String,
-        @Query("filter") filter: String,
-        @Query("countryCode") countryCode: String? = null
-    ): Response<LeaderboardData>
+    @GET("gamification/leaderboards/weekly")
+    suspend fun getWeeklyLeaderboard(): Response<LeaderboardData>
+
+    @GET("gamification/leaderboards/monthly")
+    suspend fun getMonthlyLeaderboard(): Response<LeaderboardData>
 
     @GET("gamification/leaderboard/friends")
     suspend fun getFriendsLeaderboard(): Response<List<LeaderboardData>>

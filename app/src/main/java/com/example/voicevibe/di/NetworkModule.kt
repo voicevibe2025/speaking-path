@@ -7,6 +7,12 @@ import com.example.voicevibe.data.network.ProfileApiService
 import com.example.voicevibe.utils.Constants
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.google.gson.JsonParseException
+import com.google.gson.JsonSerializationContext
+import com.google.gson.JsonSerializer
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,6 +23,12 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import java.lang.reflect.Type
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 /**
  * Hilt module for network dependencies
@@ -29,6 +41,54 @@ object NetworkModule {
     @Singleton
     fun provideGson(): Gson = GsonBuilder()
         .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+        .registerTypeAdapter(LocalDateTime::class.java,
+            object : JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
+                override fun serialize(
+                    src: LocalDateTime?, typeOfSrc: Type?, context: JsonSerializationContext?
+                ): JsonElement {
+                    if (src == null) return com.google.gson.JsonNull.INSTANCE
+                    val instant = src.atOffset(ZoneOffset.UTC).toInstant()
+                    return com.google.gson.JsonPrimitive(DateTimeFormatter.ISO_INSTANT.format(instant))
+                }
+
+                override fun deserialize(
+                    json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?
+                ): LocalDateTime {
+                    if (json == null || json.isJsonNull) throw JsonParseException("Null date")
+                    val s = json.asString.trim()
+                    // If string contains timezone info (Z or an explicit offset), parse with OffsetDateTime first
+                    val hasOffsetOrZ = s.endsWith("Z", ignoreCase = true) || s.indexOf('+', 10) != -1 || s.indexOf('-', 10) != -1
+                    if (hasOffsetOrZ) {
+                        val text = if (s.endsWith("z")) s.dropLast(1) + "Z" else s
+                        return try {
+                            val odt = OffsetDateTime.parse(text, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                            odt.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime()
+                        } catch (e: Exception) {
+                            // Fallback: try Instant for strict Z cases
+                            try {
+                                val normalized = text.replace("+00:00", "Z").replace("+0000", "Z")
+                                val instant = Instant.parse(normalized)
+                                LocalDateTime.ofInstant(instant, ZoneOffset.UTC)
+                            } catch (e2: Exception) {
+                                throw JsonParseException("Failed to parse LocalDateTime: $s", e2)
+                            }
+                        }
+                    }
+                    // Local date-time without zone info
+                    return try {
+                        LocalDateTime.parse(s, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                    } catch (e: Exception) {
+                        throw JsonParseException("Failed to parse LocalDateTime: $s", e)
+                    }
+                }
+
+                private fun normalizeIso8601(input: String): String {
+                    // Ensure 'Z' is uppercase and fractional seconds are supported by Instant.parse
+                    // DRF may return microseconds; Instant.parse supports up to nanoseconds already, so return as-is
+                    return if (input.endsWith("z")) input.dropLast(1) + "Z" else input
+                }
+            }
+        )
         .create()
 
     @Provides

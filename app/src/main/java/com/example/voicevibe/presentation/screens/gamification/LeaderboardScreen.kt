@@ -447,15 +447,27 @@ private fun PodiumItem(
         modifier = Modifier.clickable { onClick() }
     ) {
         Box(contentAlignment = Alignment.Center) {
-            AsyncImage(
-                model = entry.avatarUrl ?: Icons.Default.Person,
-                contentDescription = "Avatar",
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
-                    .border(3.dp, medalColor, CircleShape),
-                contentScale = ContentScale.Crop
-            )
+            if (entry.avatarUrl.isNullOrBlank()) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Avatar",
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape)
+                        .border(3.dp, medalColor, CircleShape),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                AsyncImage(
+                    model = entry.avatarUrl,
+                    contentDescription = "Avatar",
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape)
+                        .border(3.dp, medalColor, CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
             // Medal badge
             Surface(
@@ -555,14 +567,24 @@ private fun LeaderboardEntryCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    AsyncImage(
-                        model = entry.avatarUrl ?: Icons.Default.Person,
-                        contentDescription = "Avatar",
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
+                    if (entry.avatarUrl.isNullOrBlank()) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Avatar",
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                        )
+                    } else {
+                        AsyncImage(
+                            model = entry.avatarUrl,
+                            contentDescription = "Avatar",
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
 
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {

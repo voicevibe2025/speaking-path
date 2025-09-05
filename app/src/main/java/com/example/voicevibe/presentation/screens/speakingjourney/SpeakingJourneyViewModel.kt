@@ -418,6 +418,17 @@ class SpeakingJourneyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Begin review mode from the start of the topic.
+     * Selects the earliest practiced phrase (smallest index) so users can review from phrase 1
+     * even on completed topics. If nothing is practiced yet, falls back to index 0.
+     */
+    fun beginReviewFromStart() {
+        val practiced = _uiState.value.currentTopicTranscripts.map { it.index }.distinct().sorted()
+        val startIndex = practiced.firstOrNull() ?: 0
+        _uiState.value = _uiState.value.copy(inspectedPhraseIndex = startIndex)
+    }
+
     fun clearInspection() {
         _uiState.value = _uiState.value.copy(inspectedPhraseIndex = null)
     }

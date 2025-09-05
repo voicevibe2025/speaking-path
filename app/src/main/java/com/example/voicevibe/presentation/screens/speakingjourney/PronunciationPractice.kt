@@ -123,8 +123,12 @@ fun PronunciationPracticeScreen(
         }
     }
     
-    // Load transcripts for the current topic when we enter this screen
-    LaunchedEffect(topicId) {
+    // Select the topic by ID (so ViewModel.selectedTopicIdx matches) and load transcripts
+    LaunchedEffect(topicId, ui.topics) {
+        val idx = ui.topics.indexOfFirst { it.id == topicId }
+        if (idx >= 0 && ui.selectedTopicIdx != idx) {
+            viewModel.selectTopic(idx)
+        }
         viewModel.loadTranscriptsForCurrentTopic(context)
     }
     
@@ -254,7 +258,7 @@ fun PronunciationPracticeScreen(
                                     style = MaterialTheme.typography.titleSmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
-                                Button(onClick = { viewModel.setInspectedPhraseIndex(0) }) {
+                                Button(onClick = { viewModel.beginReviewFromStart() }) {
                                     Icon(
                                         imageVector = Icons.Filled.Refresh,
                                         contentDescription = null

@@ -57,6 +57,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -326,6 +327,12 @@ fun PronunciationPracticeScreen(
                                 IconButton(onClick = { viewModel.inspectNextPhrase() }, enabled = nextEnabled) {
                                     Icon(imageVector = Icons.Filled.ChevronRight, contentDescription = "Next phrase")
                                 }
+                            }
+                        }
+                        if (inReview) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            TextButton(onClick = { viewModel.clearInspection() }) {
+                                Text("Resume practice")
                             }
                         }
                     }

@@ -1,56 +1,41 @@
 package com.example.voicevibe.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-// Charming Seaside Dark Theme - Deep ocean inspired
-private val DarkColorScheme = darkColorScheme(
-    primary = Ocean_Blue,
-    secondary = Mint_Green,
-    tertiary = Soft_Aqua,
-    background = Charcoal_Blue,
-    surface = Deep_Teal,
-    onPrimary = Charcoal_Blue,
-    onSecondary = Charcoal_Blue,
-    onTertiary = Charcoal_Blue,
-    onBackground = Pure_White,
-    onSurface = Pure_White,
-    surfaceVariant = Medium_Teal,
-    onSurfaceVariant = Pure_White,
-    outline = Light_Teal,
-    outlineVariant = Ocean_Blue
+private val LightColorScheme = lightColorScheme(
+    primary = NeutralDarkGray,
+    secondary = AccentBlueGray,
+    tertiary = AccentWarmBeige,
+    background = NeutralLightGray,
+    surface = NeutralWhite,
+    onPrimary = NeutralWhite,
+    onSecondary = NeutralBlack,
+    onTertiary = NeutralBlack,
+    onBackground = NeutralDarkGray,
+    onSurface = NeutralDarkGray
 )
 
-// Charming Seaside Light Theme - Bright seaside inspired
-private val LightColorScheme = lightColorScheme(
-    primary = Ocean_Blue,
-    secondary = Mint_Green,
-    tertiary = Soft_Aqua,
-    background = Sea_Foam,
-    surface = Pure_White,
-    onPrimary = Pure_White,
-    onSecondary = Deep_Teal,
-    onTertiary = Deep_Teal,
-    onBackground = Deep_Teal,
-    onSurface = Deep_Teal,
-    surfaceVariant = Soft_Gray,
-    onSurfaceVariant = Deep_Teal,
-    outline = Ocean_Blue,
-    outlineVariant = Soft_Aqua
+private val DarkColorScheme = darkColorScheme(
+    primary = NeutralLightGray,
+    secondary = AccentBlueGray,
+    tertiary = AccentWarmBeige,
+    background = NeutralBlack,
+    surface = NeutralDarkGray,
+    onPrimary = NeutralBlack,
+    onSecondary = NeutralWhite,
+    onTertiary = NeutralWhite,
+    onBackground = NeutralLightGray,
+    onSurface = NeutralLightGray
 )
 
 @Composable
 fun VoiceVibeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Keep dynamic color disabled for consistent seaside theme
+    // Keep dynamic color disabled for consistent neutral theme
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -59,7 +44,6 @@ fun VoiceVibeTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

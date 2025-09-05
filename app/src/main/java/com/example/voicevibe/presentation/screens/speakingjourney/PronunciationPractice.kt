@@ -36,6 +36,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
@@ -240,11 +242,98 @@ fun PronunciationPracticeScreen(
                     }
                     
                     Spacer(modifier = Modifier.height(24.dp))
-                    
-                    // Last recording playback (only show when no current result)
+
+                    // Review navigation for previously practiced phrases
+                    val currentIdx = topic?.phraseProgress?.currentPhraseIndex ?: 0
+                    val practicedIndices = ui.currentTopicTranscripts.map { it.index }.distinct().sorted()
+                    val inReview = ui.inspectedPhraseIndex != null
+                    val prevEnabled = if (inReview) {
+                        practicedIndices.any { it < (ui.inspectedPhraseIndex ?: 0) }
+                    } else {
+                        practicedIndices.any { it <= currentIdx - 1 }
+                    }
+                    val nextEnabled = if (inReview) {
+                        practicedIndices.any { it > (ui.inspectedPhraseIndex ?: 0) }
+                    } else false
+
+                    if (practicedIndices.isNotEmpty()) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                IconButton(onClick = { viewModel.inspectPreviousPhrase() }, enabled = prevEnabled) {
+                                    Icon(imageVector = Icons.Filled.ChevronLeft, contentDescription = "Previous phrase")
+                                }
+                                val displayIdxForLabel = (ui.inspectedPhraseIndex ?: currentIdx) + 1
+                                Text(
+                                    text = if (inReview) "Reviewing phrase $displayIdxForLabel" else "Current phrase $displayIdxForLabel",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                IconButton(onClick = { viewModel.inspectNextPhrase() }, enabled = nextEnabled) {
+                                    Icon(imageVector = Icons.Filled.ChevronRight, contentDescription = "Next phrase")
+                                }
+                            }
+                        }
+                    }
+
+                    // When in review, show the target phrase for the inspected index
+                    if (inReview) {
+                        val inspectedIdx = ui.inspectedPhraseIndex ?: 0
+                        topic?.material?.getOrNull(inspectedIdx)?.let { reviewedPhrase ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "Target phrase",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = reviewedPhrase,
+                                        style = MaterialTheme.typography.titleLarge,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Transcript playback: if reviewing, show the selected index; otherwise show previous
                     if (ui.phraseSubmissionResult == null && ui.currentTopicTranscripts.isNotEmpty()) {
-                        val lastIndex = topic?.phraseProgress?.currentPhraseIndex?.minus(1) ?: 0
-                        val transcript = ui.currentTopicTranscripts.firstOrNull { it.index == lastIndex }
+                        val transcript = if (inReview) {
+                            val idx = ui.inspectedPhraseIndex ?: 0
+                            ui.currentTopicTranscripts.firstOrNull { it.index == idx }
+                        } else {
+                            val lastIndex = currentIdx - 1
+                            ui.currentTopicTranscripts.firstOrNull { it.index == lastIndex }
+                        }
                         if (transcript != null) {
                             TranscriptPlaybackCard(
                                 transcript = transcript,

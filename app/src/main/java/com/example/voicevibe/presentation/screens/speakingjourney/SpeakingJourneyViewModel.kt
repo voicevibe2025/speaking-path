@@ -165,6 +165,8 @@ class SpeakingJourneyViewModel @Inject constructor(
                 )
                 return
             }
+            // When recording, exit review mode (if any)
+            _uiState.value = _uiState.value.copy(inspectedPhraseIndex = null)
             val phraseIndex = currentTopic.phraseProgress?.currentPhraseIndex ?: 0
             val dir = File(context.filesDir, "voicevibe/recordings/${currentTopic.id}").apply { mkdirs() }
             val outFile = File(dir, "phrase_${phraseIndex}.m4a")
@@ -394,6 +396,49 @@ class SpeakingJourneyViewModel @Inject constructor(
         try { mediaPlayer?.stop() } catch (_: Throwable) {}
         try { mediaPlayer?.release() } catch (_: Throwable) {}
         mediaPlayer = null
+    }
+
+    // --- Review/inspection helpers for practiced phrases ---
+    fun setInspectedPhraseIndex(index: Int) {
+        val practiced = _uiState.value.currentTopicTranscripts.map { it.index }.distinct().toSet()
+        if (index in practiced) {
+            _uiState.value = _uiState.value.copy(inspectedPhraseIndex = index)
+        }
+    }
+
+    fun clearInspection() {
+        _uiState.value = _uiState.value.copy(inspectedPhraseIndex = null)
+    }
+
+    fun inspectPreviousPhrase() {
+        val s = _uiState.value
+        val practiced = s.currentTopicTranscripts.map { it.index }.distinct().sorted()
+        if (practiced.isEmpty()) return
+
+        val inspected = s.inspectedPhraseIndex
+        if (inspected != null) {
+            val target = practiced.filter { it < inspected }.maxOrNull()
+            if (target != null) {
+                _uiState.value = s.copy(inspectedPhraseIndex = target)
+            }
+        } else {
+            // Not currently in review: jump to the most recent practiced phrase before the current phrase
+            val currentIdx = s.topics.getOrNull(s.selectedTopicIdx)?.phraseProgress?.currentPhraseIndex ?: 0
+            val target = practiced.filter { it <= currentIdx - 1 }.maxOrNull()
+            if (target != null) {
+                _uiState.value = s.copy(inspectedPhraseIndex = target)
+            }
+        }
+    }
+
+    fun inspectNextPhrase() {
+        val s = _uiState.value
+        val practiced = s.currentTopicTranscripts.map { it.index }.distinct().sorted()
+        val inspected = s.inspectedPhraseIndex ?: return
+        val target = practiced.firstOrNull { it > inspected }
+        if (target != null) {
+            _uiState.value = s.copy(inspectedPhraseIndex = target)
+        }
     }
 
     private fun fetchGamificationProfile() {

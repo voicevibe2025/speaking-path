@@ -135,8 +135,9 @@ fun VocabularyLessonScreen(
         scope.launch {
             try {
                 val res = ai.generateContent(prompt)
+                val cleanedText = res.text?.trim()?.replace("*", "") ?: ""
                 sheetContent = sheetContent?.copy(
-                    content = res.text?.trim().orEmpty(),
+                    content = cleanedText,
                     isLoading = false
                 )
             } catch (t: Throwable) {

@@ -7,7 +7,13 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -29,18 +36,30 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.RecordVoiceOver
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -55,11 +74,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -82,6 +105,7 @@ fun FluencyPracticeScreen(
     val ui by viewModel.uiState.collectAsState()
 
     val audioPermission = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(topic) {
         if (topic != null) {
@@ -91,28 +115,53 @@ fun FluencyPracticeScreen(
 
     val background = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFF0A1128),
-            Color(0xFF1E2761),
-            Color(0xFF0A1128)
+            Color(0xFF1a1a2e),
+            Color(0xFF16213e),
+            Color(0xFF0f3460)
         )
     )
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         topBar = {
             TopAppBar(
-                title = { Text("Fluency Practice", fontWeight = FontWeight.Bold) },
+                title = { 
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.RecordVoiceOver,
+                            contentDescription = null,
+                            tint = Color(0xFF64B5F6),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(
+                            "Fluency Practice",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
+                        )
+                    }
+                },
                 navigationIcon = {
-                    IconButton(
+                    Surface(
                         onClick = onNavigateBack,
                         modifier = Modifier
                             .padding(8.dp)
-                            .clip(CircleShape)
+                            .size(40.dp),
+                        shape = CircleShape,
+                        color = Color.White.copy(alpha = 0.1f)
                     ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -132,162 +181,147 @@ fun FluencyPracticeScreen(
         ) {
             if (topic == null) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        color = Color(0xFF64B5F6),
+                        strokeWidth = 3.dp
+                    )
                 }
                 return@Box
             }
 
             AnimatedVisibility(
                 visible = true,
-                enter = slideInVertically(initialOffsetY = { 100 }, animationSpec = tween(300, easing = FastOutSlowInEasing)) +
-                        fadeIn(animationSpec = tween(300))
+                enter = slideInVertically(
+                    initialOffsetY = { 100 },
+                    animationSpec = tween(500, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(500))
             ) {
-                Column(
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(horizontal = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    // Topic Title
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Column(Modifier.padding(16.dp)) {
-                            Text(
-                                text = topic.title,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                    }
-
-                    // Prompt Card
-                    PromptCard(prompt = ui.prompt, hints = ui.hints)
-
-                    Spacer(Modifier.height(16.dp))
-
-                    // Recording area
-                    RecordingArea(
-                        recordingState = ui.recordingState,
-                        duration = ui.recordingDuration,
-                        isSubmitting = ui.isSubmitting,
-                        onStart = {
-                            if (audioPermission.status.isGranted) {
-                                viewModel.startRecording(context)
-                            } else {
-                                audioPermission.launchPermissionRequest()
-                            }
-                        },
-                        onStop = { viewModel.stopRecording() },
-                        onRetry = { viewModel.resetRecording() },
-                        onSubmit = { viewModel.submitRecording(context) }
-                    )
-
-                    Spacer(Modifier.height(12.dp))
-
-                    // Past Attempts
-                    if (ui.pastAttempts.isNotEmpty()) {
-                        Text(
-                            text = "Past Attempts",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                    item {
                         Spacer(Modifier.height(8.dp))
+                        // Topic Title Card with gradient
                         Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-                            )
-                        ) {
-                            LazyColumn(modifier = Modifier
+                            modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp)) {
-                                items(ui.pastAttempts) { attempt ->
-                                    PastAttemptItem(
-                                        attempt = attempt,
-                                        onPlay = { viewModel.playAttempt(it) }
+                                .shadow(8.dp, RoundedCornerShape(20.dp)),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.Transparent
+                            ),
+                            shape = RoundedCornerShape(20.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            colors = listOf(
+                                                Color(0xFF667eea),
+                                                Color(0xFF764ba2)
+                                            )
+                                        )
+                                    )
+                                    .padding(20.dp)
+                            ) {
+                                Column {
+                                    Text(
+                                        text = topic.title,
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
                                     )
                                 }
                             }
                         }
                     }
 
-                    Spacer(Modifier.height(80.dp))
+                    item {
+                        // Enhanced Prompt Card
+                        ModernPromptCard(prompt = ui.prompt, hints = ui.hints)
+                    }
+
+                    item {
+                        // Modern Recording Area
+                        ModernRecordingArea(
+                            recordingState = ui.recordingState,
+                            duration = ui.recordingDuration,
+                            isSubmitting = ui.isSubmitting,
+                            onStart = {
+                                if (audioPermission.status.isGranted) {
+                                    viewModel.startRecording(context)
+                                } else {
+                                    audioPermission.launchPermissionRequest()
+                                }
+                            },
+                            onStop = { viewModel.stopRecording() },
+                            onRetry = { viewModel.resetRecording() },
+                            onSubmit = { viewModel.submitRecording(context) }
+                        )
+                    }
+
+                    // Past Attempts Section
+                    if (ui.pastAttempts.isNotEmpty()) {
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.History,
+                                    contentDescription = null,
+                                    tint = Color(0xFF64B5F6),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    text = "Previous Attempts",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                        
+                        items(ui.pastAttempts) { attempt ->
+                            ModernPastAttemptItem(
+                                attempt = attempt,
+                                onPlay = { viewModel.playAttempt(it) }
+                            )
+                        }
+                    }
+
+                    item {
+                        Spacer(Modifier.height(24.dp))
+                    }
                 }
             }
 
-            // Error snackbar
+            // Modern Error Snackbar
             ui.error?.let { error ->
-                Snackbar(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp),
-                    action = {
-                        TextButton(onClick = { viewModel.clearError() }) {
-                            Text("Dismiss")
-                        }
-                    }
-                ) { Text(error) }
+                LaunchedEffect(error) {
+                    snackbarHostState.showSnackbar(error)
+                    viewModel.clearError()
+                }
             }
 
-            // Results dialog
+            // Modern Results Dialog
             if (ui.showResults) {
-                AlertDialog(
-                    onDismissRequest = { viewModel.dismissResults() },
-                    confirmButton = {
-                        TextButton(onClick = { viewModel.dismissResults() }) { Text("Close") }
-                    },
-                    title = { Text("Fluency Analysis", fontWeight = FontWeight.Bold) },
-                    text = {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("Transcript", style = MaterialTheme.typography.titleMedium)
-                            val transcript = ui.session?.transcription?.takeIf { it.isNotBlank() } ?: "No transcript"
-                            Text(transcript, fontSize = 14.sp)
-                            Spacer(Modifier.height(8.dp))
-                            Text("Technical details", style = MaterialTheme.typography.titleMedium)
-                            val analysis = ui.latestAnalysis
-                            if (analysis != null) {
-                                val pausesText = if (analysis.pauses.isNotEmpty()) {
-                                    analysis.pauses.joinToString(", ") { "${it}s" }
-                                } else "None"
-                                val misText = if (analysis.mispronunciations.isNotEmpty()) {
-                                    analysis.mispronunciations.joinToString(", ")
-                                } else "None"
-                                Text("Pauses: $pausesText", fontSize = 14.sp)
-                                Text("Stutters: ${analysis.stutterCount}", fontSize = 14.sp)
-                                Text("Mispronunciations: $misText", fontSize = 14.sp)
-                            } else {
-                                Text("Not available", fontSize = 14.sp)
-                            }
-                            Spacer(Modifier.height(8.dp))
-                            Text("AI Feedback", style = MaterialTheme.typography.titleMedium)
-                            Text(ui.evaluation?.feedback ?: "No feedback", fontSize = 14.sp)
-                            Spacer(Modifier.height(8.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                OutlinedButton(onClick = {
-                                    val candidate = ui.session?.audioUrl
-                                    val playPath = when {
-                                        candidate?.startsWith("http://") == true || candidate?.startsWith("https://") == true -> candidate
-                                        !ui.audioFilePath.isNullOrBlank() -> ui.audioFilePath
-                                        else -> candidate
-                                    }
-                                    if (!playPath.isNullOrBlank()) viewModel.playRecording(playPath)
-                                }) {
-                                    Icon(Icons.Default.PlayArrow, contentDescription = null)
-                                    Spacer(Modifier.size(4.dp))
-                                    Text("Play Recording")
-                                }
-                            }
+                ModernResultsDialog(
+                    ui = ui,
+                    onDismiss = { viewModel.dismissResults() },
+                    onPlayRecording = {
+                        val candidate = ui.session?.audioUrl
+                        val playPath = when {
+                            candidate?.startsWith("http://") == true || 
+                            candidate?.startsWith("https://") == true -> candidate
+                            !ui.audioFilePath.isNullOrBlank() -> ui.audioFilePath
+                            else -> candidate
                         }
+                        if (!playPath.isNullOrBlank()) viewModel.playRecording(playPath)
                     }
                 )
             }
@@ -296,22 +330,73 @@ fun FluencyPracticeScreen(
 }
 
 @Composable
-private fun PromptCard(prompt: String, hints: List<String>) {
+private fun ModernPromptCard(prompt: String, hints: List<String>) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(12.dp, RoundedCornerShape(24.dp)),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = Color(0xFF2a2d3a)
         )
     ) {
-        Column(Modifier.padding(16.dp)) {
-            Text("Practice Prompt", color = MaterialTheme.colorScheme.primary, fontSize = 14.sp)
-            Spacer(Modifier.height(8.dp))
-            Text(prompt, fontSize = 18.sp, fontWeight = FontWeight.Medium, lineHeight = 24.sp)
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(24.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    tint = Color(0xFFFFD700),
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    "Your Challenge",
+                    color = Color(0xFFFFD700),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.sp
+                )
+            }
+            
+            Spacer(Modifier.height(16.dp))
+            
+            Text(
+                prompt,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium,
+                lineHeight = 28.sp,
+                color = Color.White
+            )
+            
             if (hints.isNotEmpty()) {
-                Spacer(Modifier.height(8.dp))
-                hints.forEach { h ->
-                    Text(h, fontSize = 13.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f))
+                Spacer(Modifier.height(16.dp))
+                
+                Row(
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Lightbulb,
+                        contentDescription = null,
+                        tint = Color(0xFF64B5F6),
+                        modifier = Modifier.size(16.dp).padding(top = 2.dp)
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        hints.forEach { hint ->
+                            Text(
+                                hint,
+                                fontSize = 14.sp,
+                                color = Color(0xFFB0BEC5),
+                                lineHeight = 20.sp
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -319,7 +404,7 @@ private fun PromptCard(prompt: String, hints: List<String>) {
 }
 
 @Composable
-private fun RecordingArea(
+private fun ModernRecordingArea(
     recordingState: RecordingState,
     duration: Int,
     isSubmitting: Boolean,
@@ -328,72 +413,187 @@ private fun RecordingArea(
     onRetry: () -> Unit,
     onSubmit: () -> Unit,
 ) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val pulseAnimation by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+        )
+    )
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(12.dp, RoundedCornerShape(24.dp)),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+            containerColor = Color(0xFF2a2d3a)
         )
     ) {
-        Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            // Timer
-            if (recordingState != RecordingState.IDLE) {
-                val minutes = duration / 60
-                val seconds = duration % 60
-                Text(
-                    text = String.format("%02d:%02d", minutes, seconds),
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(Modifier.height(8.dp))
-            }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                when (recordingState) {
-                    RecordingState.IDLE -> {
-                        IconButton(
-                            onClick = onStart,
-                            modifier = Modifier
-                                .size(72.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary)
-                        ) {
-                            Icon(Icons.Default.Mic, contentDescription = "Record", tint = Color.White, modifier = Modifier.size(36.dp))
-                        }
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Timer Display
+            AnimatedVisibility(visible = recordingState != RecordingState.IDLE) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(bottom = 20.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Timer,
+                            contentDescription = null,
+                            tint = if (recordingState == RecordingState.RECORDING) 
+                                Color(0xFFFF6B6B) else Color(0xFF64B5F6),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(
+                            text = String.format("%02d:%02d", duration / 60, duration % 60),
+                            fontSize = 36.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (recordingState == RecordingState.RECORDING) 
+                                Color(0xFFFF6B6B) else Color.White,
+                            letterSpacing = 2.sp
+                        )
                     }
-                    RecordingState.RECORDING -> {
-                        IconButton(
-                            onClick = onStop,
-                            modifier = Modifier
-                                .size(72.dp)
-                                .clip(CircleShape)
-                                .background(Color.Red)
-                        ) {
-                            Icon(Icons.Default.Stop, contentDescription = "Stop", tint = Color.White, modifier = Modifier.size(36.dp))
-                        }
-                    }
-                    RecordingState.PAUSED, RecordingState.STOPPED -> {
-                        // Not using paused currently
+                    
+                    if (recordingState == RecordingState.RECORDING) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "Recording in progress...",
+                            fontSize = 14.sp,
+                            color = Color(0xFFFF6B6B),
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }
 
-            if (recordingState == RecordingState.STOPPED) {
-                Spacer(Modifier.height(8.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedButton(onClick = onRetry, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Default.Refresh, contentDescription = null)
-                        Spacer(Modifier.size(8.dp))
-                        Text("Retry")
+            // Recording Controls
+            when (recordingState) {
+                RecordingState.IDLE -> {
+                    Surface(
+                        onClick = onStart,
+                        modifier = Modifier.size(100.dp),
+                        shape = CircleShape,
+                        color = Color(0xFF4CAF50),
+                        shadowElevation = 8.dp
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                Icons.Default.Mic,
+                                contentDescription = "Start Recording",
+                                tint = Color.White,
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
                     }
-                    Button(onClick = onSubmit, modifier = Modifier.weight(1f), enabled = !isSubmitting) {
-                        if (isSubmitting) {
-                            CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
-                        } else {
-                            Icon(Icons.Default.Send, contentDescription = null)
-                            Spacer(Modifier.size(8.dp))
-                            Text("Submit")
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        "Tap to start recording",
+                        fontSize = 14.sp,
+                        color = Color(0xFFB0BEC5)
+                    )
+                }
+                
+                RecordingState.RECORDING -> {
+                    Surface(
+                        onClick = onStop,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .scale(pulseAnimation),
+                        shape = CircleShape,
+                        color = Color(0xFFFF6B6B),
+                        shadowElevation = 12.dp
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                Icons.Default.Stop,
+                                contentDescription = "Stop Recording",
+                                tint = Color.White,
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        "Tap to stop recording",
+                        fontSize = 14.sp,
+                        color = Color(0xFFFF6B6B)
+                    )
+                }
+                
+                RecordingState.STOPPED, RecordingState.PAUSED -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = onRetry,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            border = androidx.compose.foundation.BorderStroke(
+                                2.dp, 
+                                Color(0xFF64B5F6)
+                            ),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFF64B5F6)
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "Retry",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        
+                        Button(
+                            onClick = onSubmit,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp),
+                            enabled = !isSubmitting,
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF4CAF50),
+                                disabledContainerColor = Color(0xFF4CAF50).copy(alpha = 0.5f)
+                            )
+                        ) {
+                            if (isSubmitting) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(
+                                    Icons.Default.Send,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    "Submit",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
                 }
@@ -403,34 +603,328 @@ private fun RecordingArea(
 }
 
 @Composable
-private fun PastAttemptItem(
+private fun ModernPastAttemptItem(
     attempt: FluencyAttempt,
     onPlay: (FluencyAttempt) -> Unit
 ) {
+    val scoreColor = when {
+        attempt.overallScore >= 80 -> Color(0xFF4CAF50)
+        attempt.overallScore >= 60 -> Color(0xFFFFEB3B)
+        else -> Color(0xFFFF9800)
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(12.dp),
+            .shadow(4.dp, RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = Color(0xFF2a2d3a)
         )
     ) {
-        Column(Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                Text("Score: ${"%.1f".format(attempt.overallScore)}", fontWeight = FontWeight.SemiBold)
-                OutlinedButton(onClick = { onPlay(attempt) }) {
-                    Icon(Icons.Default.PlayArrow, contentDescription = null)
-                    Spacer(Modifier.size(6.dp))
-                    Text("Play")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier.size(40.dp),
+                        shape = CircleShape,
+                        color = scoreColor.copy(alpha = 0.2f)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "${attempt.overallScore.toInt()}",
+                                color = scoreColor,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                    
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            repeat(5) { index ->
+                                Icon(
+                                    Icons.Default.Star,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(12.dp),
+                                    tint = if (index < (attempt.overallScore / 20).toInt()) 
+                                        scoreColor else Color(0xFF37474F)
+                                )
+                            }
+                        }
+                        Text(
+                            attempt.createdAt,
+                            fontSize = 12.sp,
+                            color = Color(0xFF78909C)
+                        )
+                    }
+                }
+                
+                attempt.transcript?.takeIf { it.isNotBlank() }?.let { transcript ->
+                    Text(
+                        transcript,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 14.sp,
+                        color = Color(0xFFB0BEC5),
+                        lineHeight = 20.sp
+                    )
                 }
             }
-            attempt.transcript?.takeIf { it.isNotBlank() }?.let { t ->
-                Spacer(Modifier.height(4.dp))
-                Text(t, maxLines = 2, fontSize = 13.sp)
+            
+            IconButton(
+                onClick = { onPlay(attempt) },
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF64B5F6).copy(alpha = 0.1f))
+            ) {
+                Icon(
+                    Icons.Default.PlayArrow,
+                    contentDescription = "Play Recording",
+                    tint = Color(0xFF64B5F6),
+                    modifier = Modifier.size(24.dp)
+                )
             }
-            Spacer(Modifier.height(4.dp))
-            Text(attempt.createdAt, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
+}
+
+@Composable
+private fun ModernResultsDialog(
+    ui: FluencyUiState,
+    onDismiss: () -> Unit,
+    onPlayRecording: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF2a2d3a),
+        shape = RoundedCornerShape(24.dp),
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    Icons.Default.Psychology,
+                    contentDescription = null,
+                    tint = Color(0xFF64B5F6),
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    "Fluency Analysis",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+        },
+        text = {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Transcript Section
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF37474F).copy(alpha = 0.3f)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(Modifier.padding(12.dp)) {
+                            Text(
+                                "📝 Transcript",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = Color(0xFF64B5F6),
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            val transcriptText = ui.session?.transcription?.let { t ->
+                                if (t.isNotBlank()) t else null
+                            } ?: "No transcript available"
+                            Text(
+                                transcriptText,
+                                fontSize = 14.sp,
+                                color = Color(0xFFE0E0E0),
+                                lineHeight = 20.sp
+                            )
+                        }
+                    }
+                }
+
+                // Technical Details Section
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF37474F).copy(alpha = 0.3f)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(Modifier.padding(12.dp)) {
+                            Text(
+                                "📊 Technical Analysis",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = Color(0xFF64B5F6),
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            
+                            val analysis = ui.latestAnalysis
+                            if (analysis != null) {
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Row {
+                                        Text("⏱ Pauses: ", fontSize = 14.sp, color = Color(0xFF90A4AE))
+                                        Text(
+                                            if (analysis.pauses.isNotEmpty()) 
+                                                analysis.pauses.joinToString(", ") { "${it}s" }
+                                            else "None detected",
+                                            fontSize = 14.sp,
+                                            color = Color(0xFFE0E0E0)
+                                        )
+                                    }
+                                    Row {
+                                        Text("🔄 Stutters: ", fontSize = 14.sp, color = Color(0xFF90A4AE))
+                                        Text(
+                                            "${analysis.stutterCount}",
+                                            fontSize = 14.sp,
+                                            color = Color(0xFFE0E0E0)
+                                        )
+                                    }
+                                    Row {
+                                        Text("🗣 Mispronunciations: ", fontSize = 14.sp, color = Color(0xFF90A4AE))
+                                        Text(
+                                            if (analysis.mispronunciations.isNotEmpty())
+                                                analysis.mispronunciations.joinToString(", ")
+                                            else "None detected",
+                                            fontSize = 14.sp,
+                                            color = Color(0xFFE0E0E0)
+                                        )
+                                    }
+                                }
+                            } else {
+                                Text(
+                                    "Analysis not available",
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF90A4AE)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // AI Feedback Section
+                if (ui.evaluation?.feedback != null) {
+                    item {
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFF4CAF50).copy(alpha = 0.15f)
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Column(Modifier.padding(12.dp)) {
+                                Text(
+                                    "🤖 AI Feedback",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = Color(0xFF4CAF50),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Text(
+                                    ui.evaluation.feedback,
+                                    fontSize = 14.sp,
+                                    color = Color(0xFFE0E0E0),
+                                    lineHeight = 20.sp
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Suggestions Section
+                val suggestions = ui.evaluation?.suggestions.orEmpty()
+                if (suggestions.isNotEmpty()) {
+                    item {
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFFFEB3B).copy(alpha = 0.15f)
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Column(Modifier.padding(12.dp)) {
+                                Text(
+                                    "💡 Suggestions",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = Color(0xFFFFEB3B),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                suggestions.forEach { suggestion ->
+                                    Row(Modifier.padding(vertical = 2.dp)) {
+                                        Text("• ", fontSize = 14.sp, color = Color(0xFFFFEB3B))
+                                        Text(
+                                            suggestion,
+                                            fontSize = 14.sp,
+                                            color = Color(0xFFE0E0E0),
+                                            lineHeight = 20.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Play Recording Button
+                item {
+                    OutlinedButton(
+                        onClick = onPlayRecording,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(
+                            2.dp,
+                            Color(0xFF64B5F6)
+                        ),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF64B5F6)
+                        )
+                    ) {
+                        Icon(Icons.Default.PlayArrow, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "Play Your Recording",
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF64B5F6)
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Close", fontWeight = FontWeight.SemiBold)
+            }
+        }
+    )
 }

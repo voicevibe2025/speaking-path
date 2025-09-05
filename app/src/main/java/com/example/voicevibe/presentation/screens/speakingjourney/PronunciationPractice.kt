@@ -601,7 +601,7 @@ fun RecordingResultCard(
                 }
                 
                 Text(
-                    text = "${(result.accuracy * 100).toInt()}%",
+                    text = "${result.accuracy.toInt()}%",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = accuracyColor,
@@ -784,7 +784,7 @@ fun TranscriptPlaybackCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "${(transcript.accuracy * 100).toInt()}%",
+                        text = "${transcript.accuracy.toInt()}%",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = accuracyColor
@@ -1143,7 +1143,7 @@ fun PhrasePassCongratulationOverlay(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "${(result.accuracy * 100).toInt()}%",
+                                        text = "${result.accuracy.toInt()}%",
                                         style = MaterialTheme.typography.labelLarge,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.tertiary

@@ -39,6 +39,7 @@ import com.example.voicevibe.presentation.screens.speakingjourney.TopicConversat
 import com.example.voicevibe.presentation.screens.speakingjourney.TopicMasterScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.PronunciationPracticeScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.PlaceholderPracticeScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.ConversationPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
 import com.example.voicevibe.presentation.navigation.Screen
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
@@ -191,6 +192,9 @@ fun NavGraph(
                 },
                 onNavigateToTopicMaster = { topicId ->
                     navController.navigate(Screen.TopicMaster.createRoute(topicId))
+                },
+                onNavigateToConversationPractice = { topicId ->
+                    navController.navigate(Screen.ConversationPractice.createRoute(topicId))
                 }
             )
         }
@@ -281,6 +285,17 @@ fun NavGraph(
         ) { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             TopicConversationScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.ConversationPractice.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            ConversationPracticeScreen(
                 topicId = topicId,
                 onNavigateBack = { navController.popBackStack() }
             )

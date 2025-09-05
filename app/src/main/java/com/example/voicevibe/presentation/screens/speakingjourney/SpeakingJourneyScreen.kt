@@ -220,7 +220,8 @@ data class PhraseTranscriptEntry(
 fun SpeakingJourneyScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToConversation: (String) -> Unit,
-    onNavigateToTopicMaster: (String) -> Unit
+    onNavigateToTopicMaster: (String) -> Unit,
+    onNavigateToConversationPractice: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -398,6 +399,45 @@ fun SpeakingJourneyScreen(
                                         imageVector = Icons.Default.ChevronRight,
                                         contentDescription = "Go to practice",
                                         tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(12.dp))
+                            // Conversation Practice Button
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .clickable { onNavigateToConversationPractice(topic.id) },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Conversation Practice",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            text = "Listen with Start / Prev / Next, or play all",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                        contentDescription = "Go to conversation practice",
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 }
                             }

@@ -153,6 +153,7 @@ class SpeakingJourneyViewModel @Inject constructor(
     private var mediaRecorder: MediaRecorder? = null
     private var mediaPlayer: MediaPlayer? = null
     private var phraseAudioFile: File? = null
+    private var recordingTargetIndex: Int? = null
 
     fun startPhraseRecording(context: Context) {
         try {
@@ -165,9 +166,17 @@ class SpeakingJourneyViewModel @Inject constructor(
                 )
                 return
             }
-            // When recording, exit review mode (if any)
-            _uiState.value = _uiState.value.copy(inspectedPhraseIndex = null)
-            val phraseIndex = currentTopic.phraseProgress?.currentPhraseIndex ?: 0
+            // Choose target phrase index: prefer inspected; otherwise clamp current progress within total
+            val phraseIndex = run {
+                val inspected = s.inspectedPhraseIndex
+                if (inspected != null) inspected else {
+                    val prog = currentTopic.phraseProgress
+                    val total = prog?.totalPhrases ?: currentTopic.material.size
+                    val raw = prog?.currentPhraseIndex ?: 0
+                    if (total > 0) raw.coerceIn(0, total - 1) else 0
+                }
+            }
+            recordingTargetIndex = phraseIndex
             val dir = File(context.filesDir, "voicevibe/recordings/${currentTopic.id}").apply { mkdirs() }
             val outFile = File(dir, "phrase_${phraseIndex}.m4a")
             phraseAudioFile = outFile
@@ -210,7 +219,7 @@ class SpeakingJourneyViewModel @Inject constructor(
             return
         }
 
-        val phraseIndex = currentTopic.phraseProgress?.currentPhraseIndex ?: 0
+        val phraseIndex = recordingTargetIndex ?: currentTopic.phraseProgress?.currentPhraseIndex ?: 0
         viewModelScope.launch {
             try {
                 val part = MultipartBody.Part.createFormData(
@@ -244,6 +253,7 @@ class SpeakingJourneyViewModel @Inject constructor(
                             ),
                             currentTopicTranscripts = updatedTranscripts.sortedBy { it.index }
                         )
+                        recordingTargetIndex = null
                         // Refresh from backend to ensure we display server-side recordings
                         loadTranscriptsForCurrentTopic(context)
 
@@ -293,6 +303,7 @@ class SpeakingJourneyViewModel @Inject constructor(
                             phraseRecordingState = PhraseRecordingState.IDLE,
                             phraseSubmissionResult = PhraseSubmissionResultUi(false, 0f, "", "Failed to process recording. ${e.message ?: ""}", null, false)
                         )
+                        recordingTargetIndex = null
                     }
                 )
             } catch (t: Throwable) {
@@ -301,6 +312,7 @@ class SpeakingJourneyViewModel @Inject constructor(
                     phraseRecordingState = PhraseRecordingState.IDLE,
                     phraseSubmissionResult = PhraseSubmissionResultUi(false, 0f, "", "An error occurred. ${t.message ?: ""}", null, false)
                 )
+                recordingTargetIndex = null
             }
         }
     }

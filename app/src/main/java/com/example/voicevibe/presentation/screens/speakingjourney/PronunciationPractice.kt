@@ -98,6 +98,12 @@ fun PronunciationPracticeScreen(
     val topic = ui.topics.firstOrNull { it.id == topicId }
     val context = LocalContext.current
     
+    // Derived indices with clamping for completed topics
+    val totalPhrases = topic?.phraseProgress?.totalPhrases ?: (topic?.material?.size ?: 0)
+    val currentIdxRaw = topic?.phraseProgress?.currentPhraseIndex ?: 0
+    val clampedCurrentIdx = if (totalPhrases > 0) currentIdxRaw.coerceIn(0, totalPhrases - 1) else 0
+    val practiceHeroIdx = ui.inspectedPhraseIndex ?: clampedCurrentIdx
+    
     // Handle permissions
     val recordAudioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
     var showPermissionRequest by remember { mutableStateOf(false) }
@@ -216,7 +222,7 @@ fun PronunciationPracticeScreen(
                     // Progress Dots
                     if (topic?.phraseProgress != null) {
                         PhraseProgressDots(
-                            currentIndex = topic.phraseProgress.currentPhraseIndex,
+                            currentIndex = clampedCurrentIdx,
                             totalPhrases = topic.phraseProgress.totalPhrases,
                             completedPhrases = topic.phraseProgress.completedPhrases
                         )
@@ -224,8 +230,43 @@ fun PronunciationPracticeScreen(
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    // Hero Phrase Card with Recording Button
-                    topic?.material?.getOrNull(topic.phraseProgress?.currentPhraseIndex ?: 0)?.let { phrase ->
+                    // Optional CTA when topic is completed to quickly start from phrase 1
+                    if (topic?.completed == true) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.9f)
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Practice from start",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                                Button(onClick = { viewModel.setInspectedPhraseIndex(0) }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Refresh,
+                                        contentDescription = null
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Begin")
+                                }
+                            }
+                        }
+                    }
+
+                    // Hero Phrase Card with Recording Button (uses inspected or clamped index)
+                    topic?.material?.getOrNull(practiceHeroIdx)?.let { phrase ->
                         HeroPhraseCard(
                             phrase = phrase,
                             recordingState = ui.phraseRecordingState,
@@ -244,7 +285,7 @@ fun PronunciationPracticeScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Review navigation for previously practiced phrases
-                    val currentIdx = topic?.phraseProgress?.currentPhraseIndex ?: 0
+                    val currentIdx = clampedCurrentIdx
                     val practicedIndices = ui.currentTopicTranscripts.map { it.index }.distinct().sorted()
                     val inReview = ui.inspectedPhraseIndex != null
                     val prevEnabled = if (inReview) {
@@ -289,51 +330,9 @@ fun PronunciationPracticeScreen(
                         }
                     }
 
-                    // When in review, show the target phrase for the inspected index
-                    if (inReview) {
-                        val inspectedIdx = ui.inspectedPhraseIndex ?: 0
-                        topic?.material?.getOrNull(inspectedIdx)?.let { reviewedPhrase ->
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-                                ),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = "Target phrase",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = reviewedPhrase,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Transcript playback: if reviewing, show the selected index; otherwise show previous
+                    // Transcript playback: show the recording for the hero phrase when available
                     if (ui.phraseSubmissionResult == null && ui.currentTopicTranscripts.isNotEmpty()) {
-                        val transcript = if (inReview) {
-                            val idx = ui.inspectedPhraseIndex ?: 0
-                            ui.currentTopicTranscripts.firstOrNull { it.index == idx }
-                        } else {
-                            val lastIndex = currentIdx - 1
-                            ui.currentTopicTranscripts.firstOrNull { it.index == lastIndex }
-                        }
+                        val transcript = ui.currentTopicTranscripts.firstOrNull { it.index == practiceHeroIdx }
                         if (transcript != null) {
                             TranscriptPlaybackCard(
                                 transcript = transcript,
@@ -359,31 +358,35 @@ fun PronunciationPracticeScreen(
                 )
             }
 
-            // Phrase-level feedback overlay (not for last phrase)
-            if (ui.phraseSubmissionResult != null && 
-                topic?.phraseProgress?.let { progress -> 
-                    progress.currentPhraseIndex < progress.totalPhrases - 1 
-                } == true
-            ) {
+            // Phrase-level feedback overlay
+            // Show when a submission result exists. If in review mode, show regardless of current progress index.
+            val progress = topic?.phraseProgress
+            val showPhraseOverlay = ui.phraseSubmissionResult != null && (
+                ui.inspectedPhraseIndex != null ||
+                        (progress?.currentPhraseIndex ?: 0) < ((progress?.totalPhrases ?: 1) - 1)
+                )
+            if (showPhraseOverlay) {
+                val overlayPhraseNumber = ((ui.inspectedPhraseIndex ?: progress?.currentPhraseIndex) ?: 0) + 1
+                val overlayTotal = progress?.totalPhrases ?: (topic?.material?.size ?: 1)
                 if (ui.phraseSubmissionResult!!.success) {
                     // Success overlay
                     PhrasePassCongratulationOverlay(
                         result = ui.phraseSubmissionResult!!,
-                        phraseNumber = (topic.phraseProgress?.currentPhraseIndex ?: 0) + 1,
-                        totalPhrases = topic.phraseProgress?.totalPhrases ?: 1,
+                        phraseNumber = overlayPhraseNumber,
+                        totalPhrases = overlayTotal,
                         onDismiss = { viewModel.dismissPhraseResult() }
                     )
                 } else {
                     // Try again overlay
                     PhraseTryAgainOverlay(
                         result = ui.phraseSubmissionResult!!,
-                        phraseNumber = (topic.phraseProgress?.currentPhraseIndex ?: 0) + 1,
-                        totalPhrases = topic.phraseProgress?.totalPhrases ?: 1,
+                        phraseNumber = overlayPhraseNumber,
+                        totalPhrases = overlayTotal,
                         onDismiss = { viewModel.dismissPhraseResult() }
                     )
                 }
             }
-            
+
             // Congratulation screen for unlocking a topic (ensure it shows while in practice too)
             ui.unlockedTopicInfo?.let { unlockedTopicInfo ->
                 CongratulationScreen(

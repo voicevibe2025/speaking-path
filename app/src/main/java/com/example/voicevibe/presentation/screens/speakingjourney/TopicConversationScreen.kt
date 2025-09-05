@@ -84,18 +84,24 @@ fun TopicConversationScreen(
     val ui by viewModel.uiState
     val topic = ui.topics.firstOrNull { it.id == topicId }
     
+    // Default voice selections: A = male, B = female
+    val maleVoiceName = "Puck"      // Firm (male)
+    val femaleVoiceName = "Zephyr"    // Youthful (female)
+    
     // Backend TTS helpers
-    fun playTurn(text: String) {
-        val id = text
+    fun playTurn(turn: ConversationTurn) {
+        val id = turn.text
+        val voice = if (turn.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
         viewModel.speakWithBackendTts(
-            text = text,
+            text = turn.text,
+            voiceName = voice,
             onStart = { currentlyPlayingId = id },
             onDone = {
                 if (!isPlayingAll) {
                     currentlyPlayingId = null
                 }
             },
-            onError = {
+            onError = { _ ->
                 isPlayingAll = false
                 playAllIndex = -1
                 currentlyPlayingId = null
@@ -119,11 +125,13 @@ fun TopicConversationScreen(
             }
             val turn = conversation[i]
             val id = turn.text
+            val voice = if (turn.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
             viewModel.speakWithBackendTts(
                 text = turn.text,
+                voiceName = voice,
                 onStart = { currentlyPlayingId = id },
                 onDone = { playNext(i + 1) },
-                onError = {
+                onError = { _ ->
                     isPlayingAll = false
                     playAllIndex = -1
                     currentlyPlayingId = null
@@ -386,7 +394,7 @@ fun TopicConversationScreen(
 
                                                     // Play button for this message
                                                     IconButton(
-                                                        onClick = { playTurn(turn.text) },
+                                                        onClick = { playTurn(turn) },
                                                         modifier = Modifier
                                                             .size(32.dp)
                                                             .clip(CircleShape)

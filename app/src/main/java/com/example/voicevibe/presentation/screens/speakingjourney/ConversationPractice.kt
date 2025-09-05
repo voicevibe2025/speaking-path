@@ -85,6 +85,10 @@ fun ConversationPracticeScreen(
     var currentlyPlayingId by remember { mutableStateOf<String?>(null) }
     var isPlayingAll by remember { mutableStateOf(false) }
 
+    // Default voice selections: A = male, B = female
+    val maleVoiceName = "Orus"      // Firm (male)
+    val femaleVoiceName = "Leda"    // Youthful (female)
+
     fun resetPlaybackFlags() {
         isPlayingAll = false
         currentlyPlayingId = null
@@ -96,9 +100,11 @@ fun ConversationPracticeScreen(
         currentIndex = i
         val turn = conversation[i]
         val id = turn.text
+        val voice = if (turn.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
         isPlayingAll = false // single play
         viewModel.speakWithBackendTts(
             text = turn.text,
+            voiceName = voice,
             onStart = { currentlyPlayingId = id },
             onDone = { currentlyPlayingId = null },
             onError = { _ -> resetPlaybackFlags() }
@@ -121,8 +127,10 @@ fun ConversationPracticeScreen(
             val t = conversation[i]
             val id = t.text
             currentIndex = i
+            val voice = if (t.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
             viewModel.speakWithBackendTts(
                 text = t.text,
+                voiceName = voice,
                 onStart = { currentlyPlayingId = id },
                 onDone = { playNext(i + 1) },
                 onError = { _ -> resetPlaybackFlags() }

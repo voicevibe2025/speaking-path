@@ -85,8 +85,8 @@ fun TopicConversationScreen(
     val topic = ui.topics.firstOrNull { it.id == topicId }
     
     // Default voice selections: A = male, B = female
-    val maleVoiceName = "Puck"      // Firm (male)
-    val femaleVoiceName = "Zephyr"    // Youthful (female)
+    val maleVoiceName = "Puck"      // Upbeat (male)
+    val femaleVoiceName = "Zephyr"  // Bright (female)
     
     // Backend TTS helpers
     fun playTurn(turn: ConversationTurn) {

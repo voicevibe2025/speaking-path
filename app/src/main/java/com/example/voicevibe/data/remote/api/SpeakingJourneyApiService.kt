@@ -72,6 +72,7 @@ data class SpeakingTopicDto(
     val title: String,
     val description: String = "",
     val material: List<String>,
+    val vocabulary: List<String> = emptyList(),
     val conversation: List<ConversationTurnDto> = emptyList(),
     val phraseProgress: PhraseProgressDto? = null,
     val unlocked: Boolean,

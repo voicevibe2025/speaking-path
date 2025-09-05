@@ -149,6 +149,7 @@ data class Topic(
     val title: String,
     val description: String,
     val material: List<String>,
+    val vocabulary: List<String>,
     val conversation: List<ConversationTurn>,
     val phraseProgress: PhraseProgress?,
     val unlocked: Boolean,
@@ -221,7 +222,8 @@ fun SpeakingJourneyScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToConversation: (String) -> Unit,
     onNavigateToTopicMaster: (String) -> Unit,
-    onNavigateToConversationPractice: (String) -> Unit = {}
+    onNavigateToConversationPractice: (String) -> Unit = {},
+    onNavigateToVocabularyLesson: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -441,7 +443,46 @@ fun SpeakingJourneyScreen(
                                     )
                                 }
                             }
-                            
+
+                            Spacer(modifier = Modifier.height(12.dp))
+                            // Vocabulary Lesson Button
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .clickable { onNavigateToVocabularyLesson(topic.id) },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Vocabulary Lesson",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            text = "Learn key words with AI explanations and TTS",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                    Icon(
+                                        imageVector = Icons.Filled.School,
+                                        contentDescription = "Go to vocabulary",
+                                        tint = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                }
+                            }
+
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             // Topic Details Card

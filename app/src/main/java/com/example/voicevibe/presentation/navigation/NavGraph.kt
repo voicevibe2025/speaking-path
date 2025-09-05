@@ -43,6 +43,7 @@ import com.example.voicevibe.presentation.screens.speakingjourney.ConversationPr
 import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
 import com.example.voicevibe.presentation.navigation.Screen
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
+import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLessonScreen
 
 @Composable
 fun NavGraph(
@@ -195,6 +196,9 @@ fun NavGraph(
                 },
                 onNavigateToConversationPractice = { topicId ->
                     navController.navigate(Screen.ConversationPractice.createRoute(topicId))
+                },
+                onNavigateToVocabularyLesson = { topicId ->
+                    navController.navigate(Screen.VocabularyLesson.createRoute(topicId))
                 }
             )
         }
@@ -296,6 +300,17 @@ fun NavGraph(
         ) { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             ConversationPracticeScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.VocabularyLesson.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            VocabularyLessonScreen(
                 topicId = topicId,
                 onNavigateBack = { navController.popBackStack() }
             )

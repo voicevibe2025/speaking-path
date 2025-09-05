@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -43,8 +46,20 @@ android {
         buildConfig = true
     }
 
+    // Read GOOGLE_API_KEY from django/.env file
+    val googleApiKey: String = try {
+        // Path from app/build.gradle.kts to django/.env
+        val envFile = rootProject.file("../django/.env")
+        val properties = Properties()
+        properties.load(FileInputStream(envFile))
+        properties.getProperty("GOOGLE_API_KEY", "")
+    } catch (e: Exception) {
+        // Fallback to environment variable if file not found or error
+        System.getenv("GOOGLE_API_KEY") ?: ""
+    }
+
     buildTypes.forEach {
-        it.buildConfigField("String", "GEMINI_API_KEY", "\"${System.getenv("GOOGLE_API_KEY")}\"")
+        it.buildConfigField("String", "GEMINI_API_KEY", "\"$googleApiKey\"")
     }
 }
 

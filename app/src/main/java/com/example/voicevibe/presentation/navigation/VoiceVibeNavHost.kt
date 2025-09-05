@@ -22,6 +22,7 @@ import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourne
 import com.example.voicevibe.presentation.screens.speakingjourney.TopicConversationScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLessonScreen
 
 /**
  * Main navigation host for the VoiceVibe app
@@ -240,6 +241,9 @@ fun VoiceVibeNavHost(
                 },
                 onNavigateToConversationPractice = { topicId ->
                     navController.navigate(Screen.ConversationPractice.createRoute(topicId))
+                },
+                onNavigateToVocabularyLesson = { topicId ->
+                    navController.navigate(Screen.VocabularyLesson.createRoute(topicId))
                 }
             )
         }
@@ -261,6 +265,17 @@ fun VoiceVibeNavHost(
         ) { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             ConversationPracticeScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.VocabularyLesson.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            VocabularyLessonScreen(
                 topicId = topicId,
                 onNavigateBack = { navController.popBackStack() }
             )

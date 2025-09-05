@@ -60,6 +60,7 @@ class SpeakingJourneyViewModel @Inject constructor(
                             title = dto.title,
                             description = dto.description,
                             material = dto.material,
+                            vocabulary = dto.vocabulary,
                             conversation = dto.conversation.map { ConversationTurn(it.speaker, it.text) },
                             phraseProgress = dto.phraseProgress?.let { progress ->
                                 PhraseProgress(
@@ -105,6 +106,7 @@ class SpeakingJourneyViewModel @Inject constructor(
                                 "I work as a software developer.",
                                 "Nice to meet you!"
                             ),
+                            vocabulary = listOf("hello", "name", "from", "work"),
                             conversation = emptyList(),
                             phraseProgress = PhraseProgress(
                                 currentPhraseIndex = 0,

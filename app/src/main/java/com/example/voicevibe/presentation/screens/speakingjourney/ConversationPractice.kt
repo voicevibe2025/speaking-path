@@ -86,8 +86,8 @@ fun ConversationPracticeScreen(
     var isPlayingAll by remember { mutableStateOf(false) }
 
     // Default voice selections: A = male, B = female
-    val maleVoiceName = "Orus"      // Firm (male)
-    val femaleVoiceName = "Leda"    // Youthful (female)
+    val maleVoiceName = "Puck"      // Upbeat (male)
+    val femaleVoiceName = "Zephyr"  // Bright (female)
 
     fun resetPlaybackFlags() {
         isPlayingAll = false

@@ -44,6 +44,7 @@ import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScre
 import com.example.voicevibe.presentation.navigation.Screen
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLessonScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.FluencyPracticeScreen
 
 @Composable
 fun NavGraph(
@@ -236,10 +237,8 @@ fun NavGraph(
             arguments = listOf(navArgument("topicId") { type = NavType.StringType })
         ) { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
-            PlaceholderPracticeScreen(
+            FluencyPracticeScreen(
                 topicId = topicId,
-                practiceType = "Fluency",
-                icon = Icons.Default.RecordVoiceOver,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

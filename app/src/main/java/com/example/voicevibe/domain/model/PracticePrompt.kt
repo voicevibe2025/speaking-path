@@ -77,6 +77,8 @@ data class SpeakingEvaluation(
     val feedback: String,
     val suggestions: List<String>,
     val phoneticErrors: List<PhoneticError>,
+    val pauses: List<Float>? = null,
+    val stutters: Int? = null,
     val createdAt: String
 )
 

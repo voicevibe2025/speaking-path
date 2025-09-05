@@ -69,9 +69,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -135,9 +138,9 @@ fun VocabularyLessonScreen(
         scope.launch {
             try {
                 val res = ai.generateContent(prompt)
-                val cleanedText = res.text?.trim()?.replace("*", "") ?: ""
+                val rawText = res.text?.trim() ?: ""
                 sheetContent = sheetContent?.copy(
-                    content = cleanedText,
+                    content = rawText,
                     isLoading = false
                 )
             } catch (t: Throwable) {
@@ -336,7 +339,7 @@ fun VocabularyLessonScreen(
                                     showContent(
                                         title = "Definition",
                                         icon = Icons.Filled.Lightbulb,
-                                        prompt = "Define '$w' clearly and concisely for English learners (A2-B1 level). Include the core meaning, common usage context, and any important nuances. Keep it under 100 words.",
+                                        prompt = "Define '$w' clearly for an A2-B1 English learner. Use <b>tags for the word itself</b> and for key terms. Keep it under 100 words.",
                                         color = Color(0xFF4CAF50)
                                     )
                                 }
@@ -350,7 +353,7 @@ fun VocabularyLessonScreen(
                                     showContent(
                                         title = "Example Sentences",
                                         icon = Icons.Filled.AutoStories,
-                                        prompt = "Create 4 diverse example sentences using '$w' that show different contexts and uses. Make them practical and relevant for everyday situations. Each sentence should be on a new line.",
+                                        prompt = "Create 4 diverse example sentences using '$w'. Start each sentence with <li> and end with </li>. Use <b>tags to highlight the word '$w'</b> in each sentence.",
                                         color = Color(0xFF2196F3)
                                     )
                                 }
@@ -364,7 +367,7 @@ fun VocabularyLessonScreen(
                                     showContent(
                                         title = "Synonyms & Antonyms",
                                         icon = Icons.Filled.SwapHoriz,
-                                        prompt = "List 5 synonyms for '$w' with brief explanations of subtle differences. Then list 3 antonyms if applicable. Format clearly with bullet points.",
+                                        prompt = "List 5 synonyms for '$w' and 3 antonyms. Start each with <li> and end with </li>. Use <b>tags for the main word</b> and its synonyms/antonyms.",
                                         color = Color(0xFFFF9800)
                                     )
                                 }
@@ -378,7 +381,7 @@ fun VocabularyLessonScreen(
                                     showContent(
                                         title = "Grammar & Usage",
                                         icon = Icons.Filled.Category,
-                                        prompt = "Explain the grammatical properties of '$w': part of speech, common patterns, collocations, and any irregular forms. Include practical usage tips.",
+                                        prompt = "Explain the grammar of '$w'. Use <b>tags for key terms</b> like 'verb', 'noun', etc. Use <li>tags for lists of patterns or collocations.",
                                         color = Color(0xFF9C27B0)
                                     )
                                 }
@@ -392,7 +395,7 @@ fun VocabularyLessonScreen(
                                     showContent(
                                         title = "Word Origin",
                                         icon = Icons.Filled.History,
-                                        prompt = "Tell the fascinating story of where '$w' comes from. Include its etymology, how its meaning evolved, and any interesting historical facts. Make it engaging and memorable.",
+                                        prompt = "Tell the story of where '$w' comes from. Use <b>tags to highlight important root words or concepts</b>.",
                                         color = Color(0xFFE91E63)
                                     )
                                 }
@@ -517,12 +520,9 @@ fun VocabularyLessonScreen(
                                     ),
                                     shape = RoundedCornerShape(16.dp)
                                 ) {
-                                    Text(
+                                    MarkdownText(
                                         text = content.content,
-                                        modifier = Modifier.padding(20.dp),
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = Color.White.copy(alpha = 0.9f),
-                                        lineHeight = 24.sp
+                                        modifier = Modifier.padding(20.dp)
                                     )
                                 }
                             }
@@ -532,6 +532,70 @@ fun VocabularyLessonScreen(
             }
         }
     }
+}
+
+@Composable
+fun MarkdownText(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyLarge,
+    color: Color = Color.White.copy(alpha = 0.9f),
+    lineHeight: androidx.compose.ui.unit.TextUnit = 24.sp
+) {
+    val annotatedString = buildAnnotatedString {
+        // First, clean the text by removing all HTML tags except those we handle
+        val cleanedText = text.replace(Regex("""<(?!b>|/b>|li>|/li>|strong>|/strong>)[^>]*>"""), "")
+        
+        // Handle list items: <li>content</li> or Markdown-style * bullet points
+        val listProcessedText = cleanedText.replace(Regex("""<li>(.*?)</li>""")) { 
+            "• ${it.groupValues[1].trim()}\n" 
+        }.replace(Regex("""^\s*[\*\-]\s+(.+)""", RegexOption.MULTILINE)) {
+            "• ${it.groupValues[1].trim()}\n"
+        }
+        
+        // Split into lines and process each line
+        val lines = listProcessedText.split('\n').filter { it.isNotBlank() }
+        
+        lines.forEachIndexed { index, line ->
+            var currentPos = 0
+            val lineToProcess = line.trim()
+            
+            if (lineToProcess.isNotEmpty()) {
+                // Handle bold text: <b>content</b> or <strong>content</strong> or **content**
+                val boldRegex = Regex("""<(b|strong)>(.*?)</\1>|\*\*(.*?)\*\*""")
+                
+                boldRegex.findAll(lineToProcess).forEach { matchResult ->
+                    val startIndex = matchResult.range.first
+                    val content = matchResult.groupValues[2].ifEmpty { matchResult.groupValues[3] }
+                    
+                    if (startIndex > currentPos) {
+                        append(lineToProcess.substring(currentPos, startIndex))
+                    }
+                    
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append(content)
+                    }
+                    currentPos = matchResult.range.last + 1
+                }
+                
+                if (currentPos < lineToProcess.length) {
+                    append(lineToProcess.substring(currentPos))
+                }
+                
+                if (index < lines.size - 1) {
+                    append("\n")
+                }
+            }
+        }
+    }
+
+    Text(
+        text = annotatedString,
+        modifier = modifier,
+        style = style,
+        color = color,
+        lineHeight = lineHeight
+    )
 }
 
 @Composable

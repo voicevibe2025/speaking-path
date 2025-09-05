@@ -339,11 +339,32 @@ fun PronunciationPracticeScreen(
 
                     // Transcript playback: show the recording for the hero phrase when available
                     if (ui.phraseSubmissionResult == null && ui.currentTopicTranscripts.isNotEmpty()) {
+                        val latestIdx = ui.currentTopicTranscripts.maxByOrNull { it.timestamp }?.index
                         val transcript = ui.currentTopicTranscripts.firstOrNull { it.index == practiceHeroIdx }
-                        if (transcript != null) {
+                        if (transcript != null && latestIdx != practiceHeroIdx) {
                             TranscriptPlaybackCard(
                                 transcript = transcript,
                                 onPlayAudio = { viewModel.playUserRecording(transcript.audioPath) }
+                            )
+                        }
+                    }
+
+                    // Always show the most recent recording so users can review feedback without navigating
+                    if (ui.currentTopicTranscripts.isNotEmpty()) {
+                        val latest = ui.currentTopicTranscripts.maxByOrNull { it.timestamp }
+                        if (latest != null) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "Last recording: Phrase ${latest.index + 1}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp)
+                            )
+                            TranscriptPlaybackCard(
+                                transcript = latest,
+                                onPlayAudio = { viewModel.playUserRecording(latest.audioPath) }
                             )
                         }
                     }

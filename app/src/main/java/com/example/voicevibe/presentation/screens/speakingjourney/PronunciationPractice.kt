@@ -1231,9 +1231,9 @@ fun PhraseTryAgainOverlay(
     
     // Get motivational message based on accuracy
     val (title, message) = when {
-        result.accuracy >= 0.7f -> "Almost there!" to "You're so close! Just a little more practice."
-        result.accuracy >= 0.5f -> "Good effort!" to "Keep practicing, you're making progress!"
-        result.accuracy >= 0.3f -> "Don't give up!" to "Every attempt makes you better. Try again!"
+        result.accuracy >= 70f -> "Almost there!" to "You're so close! Just a little more practice."
+        result.accuracy >= 50f -> "Good effort!" to "Keep practicing, you're making progress!"
+        result.accuracy >= 30f -> "Don't give up!" to "Every attempt makes you better. Try again!"
         else -> "Keep trying!" to "Practice makes perfect. You've got this!"
     }
     
@@ -1359,7 +1359,7 @@ fun PhraseTryAgainOverlay(
                                 
                                 // Large accuracy display
                                 Text(
-                                    text = "${(result.accuracy * 100).toInt()}%",
+                                    text = "${result.accuracy.toInt()}%",
                                     style = MaterialTheme.typography.displaySmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
@@ -1369,7 +1369,7 @@ fun PhraseTryAgainOverlay(
                                 
                                 // Progress bar
                                 LinearProgressIndicator(
-                                    progress = result.accuracy,
+                                    progress = result.accuracy / 100f,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(8.dp)

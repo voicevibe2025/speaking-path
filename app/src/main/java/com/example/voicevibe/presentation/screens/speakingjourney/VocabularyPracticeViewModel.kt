@@ -153,7 +153,7 @@ class VocabularyPracticeViewModel @Inject constructor(
 // --- UI State ---
 
 data class VocabUiState(
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val isSubmitting: Boolean = false,
     val definition: String = "",
     val options: List<String> = emptyList(),

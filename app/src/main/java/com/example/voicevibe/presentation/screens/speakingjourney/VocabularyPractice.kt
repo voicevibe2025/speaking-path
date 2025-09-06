@@ -120,7 +120,15 @@ fun VocabularyPracticeScreen(
         ) {
             if (topic == null || ui.isLoading) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color(0xFF90CAF9), strokeWidth = 3.dp)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = Color(0xFF90CAF9), strokeWidth = 3.dp)
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = "Preparing questions with AI…",
+                            color = Color(0xFFE0E0E0),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             } else {
                 AnimatedVisibility(

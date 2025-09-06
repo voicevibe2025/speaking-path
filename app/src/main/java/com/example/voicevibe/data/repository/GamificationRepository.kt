@@ -87,14 +87,15 @@ class GamificationRepository @Inject constructor(
     suspend fun getLeaderboard(
         type: LeaderboardType,
         filter: LeaderboardFilter,
-        countryCode: String? = null
+        countryCode: String? = null,
+        refresh: Boolean = false,
     ): Resource<LeaderboardData> {
         return try {
             val response = when (type) {
-                LeaderboardType.DAILY -> apiService.getDailyLeaderboard()
-                LeaderboardType.WEEKLY -> apiService.getWeeklyLeaderboard()
-                LeaderboardType.MONTHLY -> apiService.getMonthlyLeaderboard()
-                LeaderboardType.ALL_TIME -> apiService.getAllTimeLeaderboard()
+                LeaderboardType.DAILY -> apiService.getDailyLeaderboard(refresh)
+                LeaderboardType.WEEKLY -> apiService.getWeeklyLeaderboard(refresh)
+                LeaderboardType.MONTHLY -> apiService.getMonthlyLeaderboard(refresh)
+                LeaderboardType.ALL_TIME -> apiService.getAllTimeLeaderboard(refresh)
                 LeaderboardType.FRIENDS -> apiService.getFriendsLeaderboard()
                 else -> return Resource.Error("Unsupported leaderboard type: $type")
             }

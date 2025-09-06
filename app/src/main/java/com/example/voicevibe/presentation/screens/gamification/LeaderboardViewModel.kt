@@ -29,14 +29,14 @@ class LeaderboardViewModel @Inject constructor(
         loadCompetitionStats()
     }
 
-    private fun loadLeaderboard() {
+    private fun loadLeaderboard(refresh: Boolean = false) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
             val type = _uiState.value.selectedType
             val filter = _uiState.value.selectedFilter
 
-            when (val result = repository.getLeaderboard(type, filter)) {
+            when (val result = repository.getLeaderboard(type, filter, refresh = refresh)) {
                 is Resource.Success -> {
                     result.data?.let { data ->
                         runCatching {
@@ -109,7 +109,7 @@ class LeaderboardViewModel @Inject constructor(
             _uiState.update {
                 it.copy(selectedType = type)
             }
-            loadLeaderboard()
+            loadLeaderboard(refresh = false)
         }
     }
 
@@ -118,7 +118,7 @@ class LeaderboardViewModel @Inject constructor(
             _uiState.update {
                 it.copy(selectedFilter = filter)
             }
-            loadLeaderboard()
+            loadLeaderboard(refresh = false)
         }
     }
 
@@ -156,7 +156,7 @@ class LeaderboardViewModel @Inject constructor(
     }
 
     fun refreshLeaderboard() {
-        loadLeaderboard()
+        loadLeaderboard(refresh = true)
         loadCompetitionStats()
     }
 

@@ -25,16 +25,16 @@ interface GamificationApiService {
     suspend fun getUserAchievements(): Response<List<Achievement>>
 
     @GET("gamification/leaderboards/weekly")
-    suspend fun getWeeklyLeaderboard(): Response<LeaderboardData>
+    suspend fun getWeeklyLeaderboard(@Query("refresh") refresh: Boolean = false): Response<LeaderboardData>
 
     @GET("gamification/leaderboards/daily")
-    suspend fun getDailyLeaderboard(): Response<LeaderboardData>
+    suspend fun getDailyLeaderboard(@Query("refresh") refresh: Boolean = false): Response<LeaderboardData>
 
     @GET("gamification/leaderboards/monthly")
-    suspend fun getMonthlyLeaderboard(): Response<LeaderboardData>
+    suspend fun getMonthlyLeaderboard(@Query("refresh") refresh: Boolean = false): Response<LeaderboardData>
 
     @GET("gamification/leaderboards/all_time")
-    suspend fun getAllTimeLeaderboard(): Response<LeaderboardData>
+    suspend fun getAllTimeLeaderboard(@Query("refresh") refresh: Boolean = false): Response<LeaderboardData>
 
     @GET("gamification/leaderboards/friends")
     suspend fun getFriendsLeaderboard(): Response<LeaderboardData>

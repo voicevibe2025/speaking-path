@@ -12,6 +12,11 @@ import com.example.voicevibe.data.remote.api.UserPhraseRecordingDto
 import com.example.voicevibe.data.remote.api.UserPhraseRecordingsResponseDto
 import com.example.voicevibe.data.remote.api.GenerateTtsRequestDto
 import com.example.voicevibe.data.remote.api.GenerateTtsResponseDto
+import com.example.voicevibe.data.remote.api.StartVocabularyPracticeResponseDto
+import com.example.voicevibe.data.remote.api.SubmitVocabularyAnswerRequestDto
+import com.example.voicevibe.data.remote.api.SubmitVocabularyAnswerResponseDto
+import com.example.voicevibe.data.remote.api.CompleteVocabularyPracticeRequestDto
+import com.example.voicevibe.data.remote.api.CompleteVocabularyPracticeResponseDto
 import okhttp3.MultipartBody
 import javax.inject.Inject
 
@@ -122,6 +127,65 @@ class SpeakingJourneyRepository @Inject constructor(
                 Result.success(body)
             } else {
                 Result.failure(Exception("HTTP ${response.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    // --- Vocabulary Practice ---
+    suspend fun startVocabularyPractice(
+        topicId: String
+    ): Result<StartVocabularyPracticeResponseDto> {
+        return try {
+            val res = api.startVocabularyPractice(topicId)
+            if (res.isSuccessful) {
+                val body = res.body() ?: return Result.failure(Exception("Empty response"))
+                Result.success(body)
+            } else {
+                Result.failure(Exception("HTTP ${res.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    suspend fun submitVocabularyAnswer(
+        topicId: String,
+        sessionId: String,
+        questionId: String,
+        selected: String
+    ): Result<SubmitVocabularyAnswerResponseDto> {
+        return try {
+            val res = api.submitVocabularyAnswer(
+                topicId,
+                SubmitVocabularyAnswerRequestDto(sessionId = sessionId, questionId = questionId, selected = selected)
+            )
+            if (res.isSuccessful) {
+                val body = res.body() ?: return Result.failure(Exception("Empty response"))
+                Result.success(body)
+            } else {
+                Result.failure(Exception("HTTP ${res.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    suspend fun completeVocabularyPractice(
+        topicId: String,
+        sessionId: String
+    ): Result<CompleteVocabularyPracticeResponseDto> {
+        return try {
+            val res = api.completeVocabularyPractice(
+                topicId,
+                CompleteVocabularyPracticeRequestDto(sessionId = sessionId)
+            )
+            if (res.isSuccessful) {
+                val body = res.body() ?: return Result.failure(Exception("Empty response"))
+                Result.success(body)
+            } else {
+                Result.failure(Exception("HTTP ${res.code()}"))
             }
         } catch (t: Throwable) {
             Result.failure(t)

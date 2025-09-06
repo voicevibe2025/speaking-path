@@ -48,6 +48,24 @@ interface SpeakingJourneyApiService {
         @Path("topicId") topicId: String,
         @Body body: SubmitFluencyPromptRequestDto
     ): Response<SubmitFluencyPromptResponseDto>
+
+    // --- Vocabulary Practice ---
+    @POST("speaking/topics/{topicId}/vocabulary/start")
+    suspend fun startVocabularyPractice(
+        @Path("topicId") topicId: String
+    ): Response<StartVocabularyPracticeResponseDto>
+
+    @POST("speaking/topics/{topicId}/vocabulary/answer")
+    suspend fun submitVocabularyAnswer(
+        @Path("topicId") topicId: String,
+        @Body body: SubmitVocabularyAnswerRequestDto
+    ): Response<SubmitVocabularyAnswerResponseDto>
+
+    @POST("speaking/topics/{topicId}/vocabulary/complete")
+    suspend fun completeVocabularyPractice(
+        @Path("topicId") topicId: String,
+        @Body body: CompleteVocabularyPracticeRequestDto
+    ): Response<CompleteVocabularyPracticeResponseDto>
 }
 
 data class SpeakingTopicsResponse(
@@ -161,5 +179,46 @@ data class SubmitFluencyPromptResponseDto(
     val fluencyCompleted: Boolean,
     val promptScores: List<Int>,
     val xpAwarded: Int = 0
+)
+
+// --- Vocabulary Practice DTOs ---
+data class VocabularyQuestionDto(
+    val id: String,
+    val definition: String,
+    val options: List<String>
+)
+
+data class StartVocabularyPracticeResponseDto(
+    val sessionId: String,
+    val totalQuestions: Int,
+    val questions: List<VocabularyQuestionDto>
+)
+
+data class SubmitVocabularyAnswerRequestDto(
+    val sessionId: String,
+    val questionId: String,
+    val selected: String
+)
+
+data class SubmitVocabularyAnswerResponseDto(
+    val correct: Boolean,
+    val xpAwarded: Int,
+    val nextIndex: Int?,
+    val completed: Boolean,
+    val totalScore: Int
+)
+
+data class CompleteVocabularyPracticeRequestDto(
+    val sessionId: String
+)
+
+data class CompleteVocabularyPracticeResponseDto(
+    val success: Boolean,
+    val totalQuestions: Int,
+    val correctCount: Int,
+    val totalScore: Int,
+    val xpAwarded: Int,
+    val vocabularyTotalScore: Int,
+    val topicCompleted: Boolean
 )
 

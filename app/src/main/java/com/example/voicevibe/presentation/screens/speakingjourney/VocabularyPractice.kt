@@ -168,14 +168,14 @@ fun VocabularyPracticeScreen(
                             }
                         }
 
-                        // Definition card
+                        // Clue card
                         Card(
                             modifier = Modifier.fillMaxWidth().shadow(12.dp, RoundedCornerShape(24.dp)),
                             shape = RoundedCornerShape(24.dp),
                             colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a))
                         ) {
                             Column(Modifier.fillMaxWidth().padding(24.dp)) {
-                                Text("Definition", color = Color(0xFFFFD700), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                                Text("Clue", color = Color(0xFFFFD700), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                                 Spacer(Modifier.height(10.dp))
                                 Text(ui.definition, color = Color.White, fontSize = 20.sp, lineHeight = 28.sp)
                             }

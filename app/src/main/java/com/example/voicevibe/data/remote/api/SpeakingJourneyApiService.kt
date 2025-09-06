@@ -159,6 +159,7 @@ data class SubmitFluencyPromptResponseDto(
     val nextPromptIndex: Int?,
     val fluencyTotalScore: Int,
     val fluencyCompleted: Boolean,
-    val promptScores: List<Int>
+    val promptScores: List<Int>,
+    val xpAwarded: Int = 0
 )
 

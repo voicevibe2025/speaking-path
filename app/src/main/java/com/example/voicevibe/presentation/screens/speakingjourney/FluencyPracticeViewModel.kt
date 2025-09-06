@@ -236,12 +236,23 @@ class FluencyPracticeViewModel @Inject constructor(
                                             else -> "🔒 ${p}"
                                         }
                                     }.filterIndexed { idx, _ -> idx != currentPromptIndex }.take(3)
+                                    val isCompleted = body.fluencyCompleted
+                                    val summaryScores = body.promptScores
+                                    val totalScore = body.fluencyTotalScore
+                                    val xpDelta = body.xpAwarded
+                                    // Compute total XP across all prompts when completed: 50 per prompt >=80 plus 100 bonus
+                                    val totalXpWhenCompleted = if (isCompleted) (summaryScores.count { it >= 80 } * 50) + 100 else 0
                                     _uiState.update { st ->
                                         st.copy(
                                             prompt = newPrompt,
                                             hints = newHints,
                                             currentPromptIndex = currentPromptIndex,
-                                            allPrompts = currentPrompts
+                                            allPrompts = currentPrompts,
+                                            showCongrats = isCompleted,
+                                            completionPromptScores = if (isCompleted) summaryScores else st.completionPromptScores,
+                                            totalFluencyScore = if (isCompleted) totalScore else st.totalFluencyScore,
+                                            completionXpGained = if (isCompleted) totalXpWhenCompleted else st.completionXpGained,
+                                            lastAwardedXp = xpDelta
                                         )
                                     }
                                 }.onFailure { e ->
@@ -306,7 +317,18 @@ class FluencyPracticeViewModel @Inject constructor(
     }
 
     fun dismissResults() {
-        _uiState.update { it.copy(showResults = false) }
+        _uiState.update {
+            it.copy(
+                showResults = false,
+                recordingState = RecordingState.IDLE,
+                audioFilePath = null,
+                recordingDuration = 0
+            )
+        }
+    }
+
+    fun dismissCongrats() {
+        _uiState.update { it.copy(showCongrats = false) }
     }
 
     fun resetRecording() {
@@ -442,7 +464,14 @@ data class FluencyUiState(
     val showResults: Boolean = false,
     val latestAnalysis: FluencyAnalysis? = null,
     val pastAttempts: List<FluencyAttempt> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    // Congrats overlay state
+    val showCongrats: Boolean = false,
+    val completionPromptScores: List<Int> = emptyList(),
+    val totalFluencyScore: Int = 0,
+    val completionXpGained: Int = 0,
+    val lastAwardedXp: Int = 0
 )
+ 
 
 enum class RecordingState { IDLE, RECORDING, PAUSED, STOPPED }

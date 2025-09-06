@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Button
@@ -322,6 +323,17 @@ fun FluencyPracticeScreen(
                             else -> candidate
                         }
                         if (!playPath.isNullOrBlank()) viewModel.playRecording(playPath)
+                    }
+                )
+            }
+
+            // Congratulations Overlay when all prompts are completed
+            if (ui.showCongrats) {
+                CongratsOverlay(
+                    ui = ui,
+                    onContinue = {
+                        viewModel.dismissCongrats()
+                        onNavigateBack()
                     }
                 )
             }
@@ -651,7 +663,7 @@ private fun ModernPastAttemptItem(
                             )
                         }
                     }
-                    
+
                     Column {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -662,7 +674,7 @@ private fun ModernPastAttemptItem(
                                     Icons.Default.Star,
                                     contentDescription = null,
                                     modifier = Modifier.size(12.dp),
-                                    tint = if (index < (attempt.overallScore / 20).toInt()) 
+                                    tint = if (index < (attempt.overallScore / 20).toInt())
                                         scoreColor else Color(0xFF37474F)
                                 )
                             }
@@ -674,7 +686,7 @@ private fun ModernPastAttemptItem(
                         )
                     }
                 }
-                
+
                 attempt.transcript?.takeIf { it.isNotBlank() }?.let { transcript ->
                     Text(
                         transcript,
@@ -686,7 +698,7 @@ private fun ModernPastAttemptItem(
                     )
                 }
             }
-            
+
             IconButton(
                 onClick = { onPlay(attempt) },
                 modifier = Modifier
@@ -927,4 +939,116 @@ private fun ModernResultsDialog(
             }
         }
     )
+}
+
+@Composable
+private fun CongratsOverlay(
+    ui: FluencyUiState,
+    onContinue: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a))
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.EmojiEvents,
+                        contentDescription = null,
+                        tint = Color(0xFFFFD700),
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Text(
+                        text = "Congratulations!",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
+                Text(
+                    text = "You've completed all fluency prompts.",
+                    color = Color(0xFFB0BEC5)
+                )
+
+                // Scores summary
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF37474F).copy(alpha = 0.4f))
+                ) {
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("Scores", color = Color(0xFF64B5F6), fontWeight = FontWeight.SemiBold)
+                        ui.allPrompts.forEachIndexed { idx, p ->
+                            val score = ui.completionPromptScores.getOrNull(idx)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = "${idx + 1}. ${p}", color = Color(0xFFE0E0E0))
+                                Text(
+                                    text = if (score != null) "${score}" else "-",
+                                    color = if ((score ?: 0) >= 80) Color(0xFF4CAF50) else Color(0xFFFF9800),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Total Fluency Score", color = Color(0xFFE0E0E0), fontWeight = FontWeight.SemiBold)
+                            Text("${ui.totalFluencyScore}", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+
+                // XP summary
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color(0xFFFFD700).copy(alpha = 0.15f)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700))
+                        Text(
+                            text = "+${ui.completionXpGained} XP",
+                            color = Color(0xFFFFD700),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Button(
+                    onClick = onContinue,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF64B5F6))
+                ) {
+                    Text("Continue Journey", fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+    }
 }

@@ -42,8 +42,12 @@ class FluencyPracticeViewModel @Inject constructor(
         if (currentTopicId == topic.id) return // already initialized
         currentTopicId = topic.id
 
-        val promptText = buildPromptFromTopic(topic)
-        val hints = topic.material.take(3).map { "• $it" }
+        // Prefer backend-provided prompts for this topic
+        val backendPrompts = topic.fluencyPracticePrompts
+        val promptText = backendPrompts.firstOrNull()?.trim().takeUnless { it.isNullOrBlank() }
+            ?: buildPromptFromTopic(topic)
+        val hints = if (backendPrompts.size > 1) backendPrompts.drop(1).take(3)
+            else topic.material.take(3).map { "• $it" }
         _uiState.update { it.copy(prompt = promptText, hints = hints, error = null) }
 
         // Load an associated PracticePrompt for submission (best-effort)

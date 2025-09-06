@@ -74,6 +74,7 @@ data class SpeakingTopicDto(
     val material: List<String>,
     val vocabulary: List<String> = emptyList(),
     val conversation: List<ConversationTurnDto> = emptyList(),
+    val fluencyPracticePrompts: List<String> = emptyList(),
     val phraseProgress: PhraseProgressDto? = null,
     val unlocked: Boolean,
     val completed: Boolean

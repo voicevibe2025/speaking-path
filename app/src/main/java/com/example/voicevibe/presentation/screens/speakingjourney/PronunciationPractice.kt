@@ -400,12 +400,19 @@ fun PronunciationPracticeScreen(
             if (showPhraseOverlay) {
                 val overlayPhraseNumber = ((ui.inspectedPhraseIndex ?: progress?.currentPhraseIndex) ?: 0) + 1
                 val overlayTotal = progress?.totalPhrases ?: (topic?.material?.size ?: 1)
+                // Compute running total score across phrases (latest attempt per phrase)
+                val totalScore = ui.currentTopicTranscripts
+                    .groupBy { it.index }
+                    .values
+                    .map { entries -> entries.maxByOrNull { it.timestamp }?.accuracy?.toInt() ?: 0 }
+                    .sum()
                 if (ui.phraseSubmissionResult!!.success) {
                     // Success overlay
                     PhrasePassCongratulationOverlay(
                         result = ui.phraseSubmissionResult!!,
                         phraseNumber = overlayPhraseNumber,
                         totalPhrases = overlayTotal,
+                        totalScore = totalScore,
                         onDismiss = { viewModel.dismissPhraseResult() }
                     )
                 } else {
@@ -1082,6 +1089,7 @@ fun PhrasePassCongratulationOverlay(
     result: PhraseSubmissionResultUi,
     phraseNumber: Int,
     totalPhrases: Int,
+    totalScore: Int,
     onDismiss: () -> Unit
 ) {
     var showContent by remember { mutableStateOf(false) }
@@ -1158,6 +1166,34 @@ fun PhrasePassCongratulationOverlay(
                             while (true) {
                                 pulseState = !pulseState
                                 delay(1000)
+                            }
+                        }
+                        
+                        // Total Score badge
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Card(
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.EmojiEvents,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Total score: $totalScore",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
                             }
                         }
                         
@@ -1505,7 +1541,7 @@ fun PhraseTryAgainOverlay(
                                 Spacer(modifier = Modifier.height(8.dp))
                                 
                                 Text(
-                                    text = "You need 80% to pass",
+                                    text = "Your score counts toward your total",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
                                 )

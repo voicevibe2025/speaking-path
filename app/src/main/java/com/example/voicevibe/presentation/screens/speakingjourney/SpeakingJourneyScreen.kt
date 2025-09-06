@@ -151,6 +151,7 @@ data class Topic(
     val material: List<String>,
     val vocabulary: List<String>,
     val conversation: List<ConversationTurn>,
+    val fluencyPracticePrompts: List<String>,
     val phraseProgress: PhraseProgress?,
     val unlocked: Boolean,
     val completed: Boolean
@@ -576,8 +577,15 @@ fun SpeakingJourneyScreen(
                                     .padding(16.dp), // Padding around the card
                                 contentAlignment = Alignment.Center
                             ) {
+                                // Compute running total score across phrases (latest attempt per phrase)
+                                val totalScore = ui.currentTopicTranscripts
+                                    .groupBy { it.index }
+                                    .values
+                                    .map { entries -> entries.maxByOrNull { it.timestamp }?.accuracy?.toInt() ?: 0 }
+                                    .sum()
                                 AnimatedResultCard(
                                     result = result,
+                                    totalScore = totalScore,
                                     onDismiss = viewModel::dismissPhraseResult
                                 )
                             }
@@ -2028,6 +2036,7 @@ private fun ModernWelcomeScreen(
 @Composable
 private fun AnimatedResultCard(
     result: PhraseSubmissionResultUi,
+    totalScore: Int,
     onDismiss: () -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition()
@@ -2047,7 +2056,7 @@ private fun AnimatedResultCard(
         )
     )
 
-    val isSuccess = result.accuracy >= 85
+    val isSuccess = result.success
     val shimmerAlpha by infiniteTransition.animateFloat(
         initialValue = if (isSuccess) 0.5f else 0.3f,
         targetValue = if (isSuccess) 1f else 0.5f,
@@ -2171,8 +2180,8 @@ private fun AnimatedResultCard(
                     )
                 }
 
-                // XP Earned (if success)
-                if (isSuccess) {
+                // XP Earned (show only when XP was awarded)
+                if (result.xpAwarded > 0) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Surface(
                         shape = RoundedCornerShape(20.dp),
@@ -2190,12 +2199,38 @@ private fun AnimatedResultCard(
                                 modifier = Modifier.size(20.dp)
                             )
                             Text(
-                                text = "+50 XP",
+                                text = "+${result.xpAwarded} XP",
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFB8860B)
                             )
                         }
+                    }
+                }
+
+                // Total Score across practiced phrases
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.EmojiEvents,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "Total score: $totalScore",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
 

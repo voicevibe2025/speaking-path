@@ -1,6 +1,9 @@
 package com.example.voicevibe.data.repository
 
 import com.example.voicevibe.data.remote.api.GamificationApiService
+import com.example.voicevibe.data.remote.api.AddExperienceRequest
+import com.example.voicevibe.data.remote.api.AddExperienceResponse
+
 import com.example.voicevibe.data.remote.api.UserApiService
 import com.example.voicevibe.domain.model.GamificationStats
 import com.example.voicevibe.domain.model.Badge
@@ -41,6 +44,24 @@ class GamificationRepository @Inject constructor(
             }
         } catch (e: Exception) {
             emit(Resource.Error(e.message ?: "Unknown error occurred"))
+        }
+    }
+
+    /**
+     * Award experience points to current user
+     */
+    suspend fun addExperience(points: Int, source: String): Resource<AddExperienceResponse> {
+        return try {
+            val response = apiService.addExperience(AddExperienceRequest(points = points, source = source))
+            if (response.isSuccessful) {
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error("Failed to add experience: empty body")
+            } else {
+                Resource.Error("Failed to add experience")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
         }
     }
 

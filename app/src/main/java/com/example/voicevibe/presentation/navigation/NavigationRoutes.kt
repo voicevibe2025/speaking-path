@@ -52,6 +52,12 @@ sealed class Screen(val route: String) {
     // Practice with AI standalone screen
     object PracticeWithAI : Screen("practice_with_ai")
 
+    // Topic Practice (AI-guided chat limited to Speaking Journey topics)
+    object TopicPractice : Screen("topic_practice")
+    object TopicPracticeChat : Screen("topic_practice_chat/{topicId}") {
+        fun createRoute(topicId: String) = "topic_practice_chat/$topicId"
+    }
+
     // Practice flow
     object SessionPractice : Screen("session_practice/{sessionId}") {
         fun createRoute(sessionId: String) = "session_practice/$sessionId"

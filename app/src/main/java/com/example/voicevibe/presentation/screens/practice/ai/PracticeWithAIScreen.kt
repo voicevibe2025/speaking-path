@@ -20,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun PracticeWithAIScreen(
     onNavigateBack: () -> Unit,
     onNavigateToResults: (String) -> Unit = { _ -> },
+    onNavigateToTopicPractice: () -> Unit = {},
     viewModel: PracticeWithAIViewModel = hiltViewModel()
 ) {
     var showPracticeSelection by remember { mutableStateOf(true) }
@@ -42,8 +43,7 @@ fun PracticeWithAIScreen(
                 showPracticeSelection -> {
                     PracticeSelectionScreen(
                         onTopicPracticeSelected = {
-                            showPracticeSelection = false
-                            showComingSoon = true
+                            onNavigateToTopicPractice()
                         },
                         onFreePracticeSelected = {
                             showPracticeSelection = false

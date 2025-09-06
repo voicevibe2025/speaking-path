@@ -56,6 +56,12 @@ interface GamificationApiService {
     @POST("gamification/streak")
     suspend fun updateStreak(): Response<Int>
 
+    // --- XP Awards ---
+    @POST("gamification/user-levels/add_experience/")
+    suspend fun addExperience(
+        @Body body: AddExperienceRequest
+    ): Response<AddExperienceResponse>
+
     // Challenge endpoints (kept for future use)
     @GET("gamification/challenges")
     suspend fun getChallenges(): Response<List<Challenge>>
@@ -114,4 +120,19 @@ data class ChallengeResult(
     val rank: Int,
     val rewardEarned: ChallengeReward,
     val message: String
+)
+
+// ---- XP Award DTOs ----
+data class AddExperienceRequest(
+    val points: Int,
+    val source: String
+)
+
+data class AddExperienceResponse(
+    val success: Boolean,
+    val points_added: Int? = null,
+    val current_level: Int? = null,
+    val experience_points: Int? = null,
+    val wayang_character: String? = null,
+    val leveled_up: Boolean? = null
 )

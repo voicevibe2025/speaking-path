@@ -22,6 +22,8 @@ import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourne
 import com.example.voicevibe.presentation.screens.speakingjourney.TopicConversationScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
+import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeScreen
+import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeChatScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLessonScreen
 
 /**
@@ -287,6 +289,9 @@ fun VoiceVibeNavHost(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToResults = { sessionId ->
                     navController.navigate(Screen.SessionResult.createRoute(sessionId))
+                },
+                onNavigateToTopicPractice = {
+                    navController.navigate(Screen.TopicPractice.route)
                 }
             )
         }
@@ -304,5 +309,26 @@ fun VoiceVibeNavHost(
         }
 
         // Add more screens as needed...
+        // Topic Practice list
+        composable(route = Screen.TopicPractice.route) {
+            TopicPracticeScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onOpenTopicChat = { topicId ->
+                    navController.navigate(Screen.TopicPracticeChat.createRoute(topicId))
+                }
+            )
+        }
+
+        // Topic Practice chat
+        composable(
+            route = Screen.TopicPracticeChat.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            TopicPracticeChatScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
     }
 }

@@ -41,6 +41,8 @@ import com.example.voicevibe.presentation.screens.speakingjourney.PronunciationP
 import com.example.voicevibe.presentation.screens.speakingjourney.PlaceholderPracticeScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
+import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeScreen
+import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeChatScreen
 import com.example.voicevibe.presentation.navigation.Screen
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLessonScreen
@@ -73,6 +75,28 @@ fun NavGraph(
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
+            )
+        }
+
+        // Topic Practice list
+        composable(route = Screen.TopicPractice.route) {
+            TopicPracticeScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onOpenTopicChat = { topicId ->
+                    navController.navigate(Screen.TopicPracticeChat.createRoute(topicId))
+                }
+            )
+        }
+
+        // Topic Practice chat
+        composable(
+            route = Screen.TopicPracticeChat.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            TopicPracticeChatScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
@@ -321,6 +345,9 @@ fun NavGraph(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToResults = { sessionId ->
                     navController.navigate(Screen.SessionResult.createRoute(sessionId))
+                },
+                onNavigateToTopicPractice = {
+                    navController.navigate(Screen.TopicPractice.route)
                 }
             )
         }

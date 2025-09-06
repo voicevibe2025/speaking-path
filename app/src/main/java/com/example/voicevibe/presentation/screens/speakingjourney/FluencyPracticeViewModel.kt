@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.repository.SpeakingPracticeRepository
+import com.example.voicevibe.data.repository.SpeakingJourneyRepository
 import com.example.voicevibe.domain.model.SpeakingEvaluation
 import com.example.voicevibe.domain.model.SpeakingSession
 import com.example.voicevibe.domain.model.Resource
@@ -27,7 +28,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FluencyPracticeViewModel @Inject constructor(
-    private val practiceRepo: SpeakingPracticeRepository
+    private val practiceRepo: SpeakingPracticeRepository,
+    private val journeyRepo: SpeakingJourneyRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FluencyUiState())
@@ -37,18 +39,30 @@ class FluencyPracticeViewModel @Inject constructor(
     private var mediaPlayer: MediaPlayer? = null
     private var currentTopicId: String? = null
     private var currentPromptId: String? = null // backend prompt used for submission
+    private var currentPromptIndex: Int = 0 // topic-specific fluency prompt index
+    private var currentPrompts: List<String> = emptyList()
 
     fun initializeForTopic(context: Context, topic: Topic) {
         if (currentTopicId == topic.id) return // already initialized
         currentTopicId = topic.id
 
-        // Prefer backend-provided prompts for this topic
-        val backendPrompts = topic.fluencyPracticePrompts
-        val promptText = backendPrompts.firstOrNull()?.trim().takeUnless { it.isNullOrBlank() }
-            ?: buildPromptFromTopic(topic)
-        val hints = if (backendPrompts.size > 1) backendPrompts.drop(1).take(3)
-            else topic.material.take(3).map { "• $it" }
-        _uiState.update { it.copy(prompt = promptText, hints = hints, error = null) }
+        // Prefer backend-provided prompts for this topic; set active index from fluencyProgress
+        currentPrompts = topic.fluencyPracticePrompts
+        currentPromptIndex = topic.fluencyProgress?.nextPromptIndex ?: 0
+        if (currentPromptIndex !in currentPrompts.indices) currentPromptIndex = 0
+
+        val promptText = currentPrompts.getOrNull(currentPromptIndex)?.trim()
+            ?.takeIf { it.isNotBlank() } ?: buildPromptFromTopic(topic)
+        val hints = if (currentPrompts.isNotEmpty()) {
+            currentPrompts.mapIndexed { idx, p ->
+                when {
+                    idx < currentPromptIndex -> "✓ ${p}"
+                    idx == currentPromptIndex -> "• ${p} (current)"
+                    else -> "🔒 ${p}"
+                }
+            }.filterIndexed { idx, _ -> idx != currentPromptIndex }.take(3)
+        } else topic.material.take(3).map { "• $it" }
+        _uiState.update { it.copy(prompt = promptText, hints = hints, error = null, allPrompts = currentPrompts, currentPromptIndex = currentPromptIndex) }
 
         // Load an associated PracticePrompt for submission (best-effort)
         viewModelScope.launch {
@@ -198,6 +212,46 @@ class FluencyPracticeViewModel @Inject constructor(
                         )
                         persistAttempt(context, currentTopicId!!, attempt)
                         val updated = _uiState.value.pastAttempts + attempt
+
+                        // Submit fluency score to SpeakingJourney to unlock next prompt
+                        val topicId = currentTopicId
+                        val scoreToSubmit = attempt.overallScore.toInt().coerceAtLeast(0)
+                        if (!topicId.isNullOrBlank()) {
+                            try {
+                                val res2 = journeyRepo.submitFluencyPromptScore(
+                                    topicId = topicId,
+                                    promptIndex = currentPromptIndex,
+                                    score = scoreToSubmit,
+                                    sessionId = sessionId
+                                )
+                                res2.onSuccess { body ->
+                                    // Update local active prompt based on backend response
+                                    currentPromptIndex = body.nextPromptIndex ?: currentPromptIndex + 1
+                                    if (currentPromptIndex >= currentPrompts.size) currentPromptIndex = currentPrompts.lastIndex.coerceAtLeast(0)
+                                    val newPrompt = currentPrompts.getOrNull(currentPromptIndex) ?: _uiState.value.prompt
+                                    val newHints = currentPrompts.mapIndexed { idx, p ->
+                                        when {
+                                            idx < currentPromptIndex -> "✓ ${p}"
+                                            idx == currentPromptIndex -> "• ${p} (current)"
+                                            else -> "🔒 ${p}"
+                                        }
+                                    }.filterIndexed { idx, _ -> idx != currentPromptIndex }.take(3)
+                                    _uiState.update { st ->
+                                        st.copy(
+                                            prompt = newPrompt,
+                                            hints = newHints,
+                                            currentPromptIndex = currentPromptIndex,
+                                            allPrompts = currentPrompts
+                                        )
+                                    }
+                                }.onFailure { e ->
+                                    _uiState.update { it.copy(error = "Failed to save fluency score: ${'$'}{e.message}") }
+                                }
+                            } catch (t: Throwable) {
+                                _uiState.update { it.copy(error = "Failed to save fluency score: ${'$'}{t.message}") }
+                            }
+                        }
+
                         _uiState.update {
                             it.copy(
                                 isSubmitting = false,
@@ -377,6 +431,8 @@ data class FluencyUiState(
     val isLoading: Boolean = false,
     val prompt: String = "",
     val hints: List<String> = emptyList(),
+    val allPrompts: List<String> = emptyList(),
+    val currentPromptIndex: Int = 0,
     val recordingState: RecordingState = RecordingState.IDLE,
     val recordingDuration: Int = 0,
     val audioFilePath: String? = null,

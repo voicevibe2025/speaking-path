@@ -63,6 +63,15 @@ class SpeakingJourneyViewModel @Inject constructor(
                             vocabulary = dto.vocabulary,
                             conversation = dto.conversation.map { ConversationTurn(it.speaker, it.text) },
                             fluencyPracticePrompts = dto.fluencyPracticePrompts,
+                            fluencyProgress = dto.fluencyProgress?.let { fp ->
+                                FluencyProgress(
+                                    promptsCount = fp.promptsCount,
+                                    promptScores = fp.promptScores,
+                                    totalScore = fp.totalScore,
+                                    nextPromptIndex = fp.nextPromptIndex,
+                                    completed = fp.completed
+                                )
+                            },
                             phraseProgress = dto.phraseProgress?.let { progress ->
                                 PhraseProgress(
                                     currentPhraseIndex = progress.currentPhraseIndex,
@@ -113,6 +122,13 @@ class SpeakingJourneyViewModel @Inject constructor(
                                 "Introduce yourself: name, where you're from, what you do, and one hobby.",
                                 "Give a short self-introduction for a new class or team meeting.",
                                 "Explain one fun fact about yourself."
+                            ),
+                            fluencyProgress = FluencyProgress(
+                                promptsCount = 3,
+                                promptScores = emptyList(),
+                                totalScore = 0,
+                                nextPromptIndex = 0,
+                                completed = false
                             ),
                             phraseProgress = PhraseProgress(
                                 currentPhraseIndex = 0,

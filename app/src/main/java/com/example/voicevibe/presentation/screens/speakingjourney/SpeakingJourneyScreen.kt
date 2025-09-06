@@ -144,6 +144,14 @@ data class PhraseProgress(
     val isAllPhrasesCompleted: Boolean
 )
 
+data class FluencyProgress(
+    val promptsCount: Int,
+    val promptScores: List<Int>,
+    val totalScore: Int,
+    val nextPromptIndex: Int?,
+    val completed: Boolean
+)
+
 data class Topic(
     val id: String,
     val title: String,
@@ -152,6 +160,7 @@ data class Topic(
     val vocabulary: List<String>,
     val conversation: List<ConversationTurn>,
     val fluencyPracticePrompts: List<String>,
+    val fluencyProgress: FluencyProgress?,
     val phraseProgress: PhraseProgress?,
     val unlocked: Boolean,
     val completed: Boolean

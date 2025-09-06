@@ -42,6 +42,12 @@ interface SpeakingJourneyApiService {
     suspend fun generateTts(
         @Body request: GenerateTtsRequestDto
     ): Response<GenerateTtsResponseDto>
+
+    @POST("speaking/topics/{topicId}/fluency/submit")
+    suspend fun submitFluencyPrompt(
+        @Path("topicId") topicId: String,
+        @Body body: SubmitFluencyPromptRequestDto
+    ): Response<SubmitFluencyPromptResponseDto>
 }
 
 data class SpeakingTopicsResponse(
@@ -75,6 +81,7 @@ data class SpeakingTopicDto(
     val vocabulary: List<String> = emptyList(),
     val conversation: List<ConversationTurnDto> = emptyList(),
     val fluencyPracticePrompts: List<String> = emptyList(),
+    val fluencyProgress: FluencyProgressDto? = null,
     val phraseProgress: PhraseProgressDto? = null,
     val unlocked: Boolean,
     val completed: Boolean
@@ -131,3 +138,27 @@ data class GenerateTtsResponseDto(
     val sampleRate: Int,
     val voiceName: String?
 )
+
+// --- Fluency Progress ---
+data class FluencyProgressDto(
+    val promptsCount: Int,
+    val promptScores: List<Int>,
+    val totalScore: Int,
+    val nextPromptIndex: Int?,
+    val completed: Boolean
+)
+
+data class SubmitFluencyPromptRequestDto(
+    val promptIndex: Int,
+    val score: Int,
+    val sessionId: String? = null
+)
+
+data class SubmitFluencyPromptResponseDto(
+    val success: Boolean,
+    val nextPromptIndex: Int?,
+    val fluencyTotalScore: Int,
+    val fluencyCompleted: Boolean,
+    val promptScores: List<Int>
+)
+

@@ -1,6 +1,8 @@
 package com.example.voicevibe.data.repository
 
 import com.example.voicevibe.data.remote.api.SpeakingJourneyApiService
+import com.example.voicevibe.data.remote.api.SubmitFluencyPromptRequestDto
+import com.example.voicevibe.data.remote.api.SubmitFluencyPromptResponseDto
 import com.example.voicevibe.data.remote.api.SpeakingTopicDto
 import com.example.voicevibe.data.remote.api.SpeakingTopicsResponse
 import com.example.voicevibe.data.remote.api.UpdateLastVisitedTopicRequest
@@ -98,6 +100,28 @@ class SpeakingJourneyRepository @Inject constructor(
                 Result.success(body)
             } else {
                 Result.failure(Exception("HTTP ${res.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    suspend fun submitFluencyPromptScore(
+        topicId: String,
+        promptIndex: Int,
+        score: Int,
+        sessionId: String? = null
+    ): Result<SubmitFluencyPromptResponseDto> {
+        return try {
+            val response = api.submitFluencyPrompt(
+                topicId,
+                SubmitFluencyPromptRequestDto(promptIndex = promptIndex, score = score, sessionId = sessionId)
+            )
+            if (response.isSuccessful) {
+                val body = response.body() ?: return Result.failure(Exception("Empty response"))
+                Result.success(body)
+            } else {
+                Result.failure(Exception("HTTP ${response.code()}"))
             }
         } catch (t: Throwable) {
             Result.failure(t)

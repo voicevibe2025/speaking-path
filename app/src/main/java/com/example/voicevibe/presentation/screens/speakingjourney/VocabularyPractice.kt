@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MenuBook
@@ -175,7 +176,7 @@ fun VocabularyPracticeScreen(
                             colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a))
                         ) {
                             Column(Modifier.fillMaxWidth().padding(24.dp)) {
-                                Text("Clue", color = Color(0xFFFFD700), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                                Text("Mistery Hint", color = Color(0xFFFFD700), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                                 Spacer(Modifier.height(10.dp))
                                 Text(ui.definition, color = Color.White, fontSize = 20.sp, lineHeight = 28.sp)
                             }
@@ -186,7 +187,10 @@ fun VocabularyPracticeScreen(
                             ui.options.forEach { option ->
                                 OptionItem(
                                     text = option,
-                                    enabled = !ui.isSubmitting,
+                                    enabled = !ui.isSubmitting && !ui.revealedAnswer,
+                                    selected = ui.selectedOption == option,
+                                    reveal = ui.revealedAnswer,
+                                    answerCorrect = ui.answerCorrect,
                                 ) { viewModel.selectOption(option) }
                             }
                         }
@@ -234,7 +238,27 @@ fun VocabularyPracticeScreen(
 }
 
 @Composable
-private fun OptionItem(text: String, enabled: Boolean, onClick: () -> Unit) {
+private fun OptionItem(
+    text: String,
+    enabled: Boolean,
+    selected: Boolean,
+    reveal: Boolean,
+    answerCorrect: Boolean?,
+    onClick: () -> Unit
+) {
+    val defaultColor = Color(0xFF37474F)
+    val correctColor = Color(0xFF2E7D32) // green
+    val wrongColor = Color(0xFFC62828)   // red
+    val container = when {
+        reveal && selected && (answerCorrect == true) -> correctColor
+        reveal && selected && (answerCorrect == false) -> wrongColor
+        else -> defaultColor
+    }
+    val borderColor = when {
+        reveal && selected && (answerCorrect == true) -> Color(0xFF66BB6A)
+        reveal && selected && (answerCorrect == false) -> Color(0xFFEF5350)
+        else -> Color.Transparent
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -242,7 +266,8 @@ private fun OptionItem(text: String, enabled: Boolean, onClick: () -> Unit) {
             .shadow(6.dp, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
             .clickable(enabled = enabled) { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF37474F))
+        colors = CardDefaults.cardColors(containerColor = container),
+        border = BorderStroke(if (borderColor == Color.Transparent) 0.dp else 2.dp, borderColor)
     ) {
         Box(Modifier.fillMaxWidth().padding(16.dp)) {
             Text(text = text, color = Color.White, fontSize = 18.sp)
@@ -263,10 +288,10 @@ private fun CongratsOverlay(ui: VocabUiState, onContinue: () -> Unit) {
             colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a)),
             shape = RoundedCornerShape(24.dp)
         ) {
-            Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Great job!", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 22.sp)
-                Text("Score: ${ui.score}", color = Color(0xFFFFD700), fontSize = 18.sp)
-                Text("XP gained: +${ui.completionXp} (Total ${ui.totalXp})", color = Color(0xFF81C784))
+            Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Great job!", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 22.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text("Score: ${ui.score}", color = Color(0xFFFFD700), fontSize = 18.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text("XP gained: +${ui.completionXp} (Total ${ui.totalXp})", color = Color(0xFF81C784), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                 Button(onClick = onContinue, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))) {
                     Text("Continue")
                 }

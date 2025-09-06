@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 @HiltViewModel
@@ -72,7 +73,7 @@ class VocabularyPracticeViewModel @Inject constructor(
         if (idx !in rawQuestions.indices) return
         val q = rawQuestions[idx]
         viewModelScope.launch {
-            _uiState.update { it.copy(isSubmitting = true) }
+            _uiState.update { it.copy(isSubmitting = true, selectedOption = option, revealedAnswer = false, answerCorrect = null) }
             val res = journeyRepo.submitVocabularyAnswer(
                 topicId = tid,
                 sessionId = sid,
@@ -97,22 +98,36 @@ class VocabularyPracticeViewModel @Inject constructor(
         }
         val newScore = body.totalScore
         xpFromAnswers += body.xpAwarded
-        if (body.completed) {
-            // finalize
-            finalizeSession()
-        } else {
-            val nextIdx = body.nextIndex ?: (idx + 1)
-            val def = rawQuestions.getOrNull(nextIdx)?.definition ?: ""
-            val opts = rawQuestions.getOrNull(nextIdx)?.options ?: emptyList()
-            _uiState.update { it.copy(
-                isSubmitting = false,
-                questionIndex = nextIdx,
-                definition = def,
-                options = opts,
-                score = newScore,
-                lastAwardedXp = body.xpAwarded,
-                totalXp = xpFromAnswers
-            ) }
+
+        // Show feedback highlight first
+        _uiState.update { it.copy(
+            isSubmitting = false,
+            revealedAnswer = true,
+            answerCorrect = body.correct,
+            score = newScore,
+            lastAwardedXp = body.xpAwarded,
+            totalXp = xpFromAnswers
+        ) }
+
+        val nextIdx = body.nextIndex ?: (idx + 1)
+        viewModelScope.launch {
+            delay(1000)
+            if (body.completed) {
+                finalizeSession()
+            } else {
+                val def = rawQuestions.getOrNull(nextIdx)?.definition ?: ""
+                val opts = rawQuestions.getOrNull(nextIdx)?.options ?: emptyList()
+                _uiState.update { it.copy(
+                    // advance to next question
+                    questionIndex = nextIdx,
+                    definition = def,
+                    options = opts,
+                    // reset feedback state
+                    selectedOption = null,
+                    revealedAnswer = false,
+                    answerCorrect = null,
+                ) }
+            }
         }
     }
 
@@ -165,5 +180,9 @@ data class VocabUiState(
     val completionXp: Int = 0,
     val correctCount: Int = 0,
     val showCongrats: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    // feedback highlight state
+    val selectedOption: String? = null,
+    val revealedAnswer: Boolean = false,
+    val answerCorrect: Boolean? = null,
 )

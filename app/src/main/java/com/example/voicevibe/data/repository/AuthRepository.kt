@@ -1,9 +1,14 @@
 package com.example.voicevibe.data.repository
 
+import android.content.Context
+import com.example.voicevibe.BuildConfig
 import com.example.voicevibe.data.local.TokenManager
 import com.example.voicevibe.data.remote.api.AuthApi
 import com.example.voicevibe.data.remote.dto.auth.*
 import com.example.voicevibe.domain.model.Resource
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
@@ -18,7 +23,8 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepository @Inject constructor(
     private val authApi: AuthApi,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    @ApplicationContext private val context: Context
 ) {
 
     /**
@@ -192,6 +198,20 @@ class AuthRepository @Inject constructor(
 
             // Clear local data regardless of API response
             tokenManager.clearAll()
+
+            // Sign out from Google Sign-In to force account selection on next login
+            try {
+                val webClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
+                val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(webClientId)
+                    .requestEmail()
+                    .build()
+                val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                googleSignInClient.signOut()
+            } catch (e: Exception) {
+                Timber.e(e, "Google Sign-Out failed")
+                // Continue with logout even if Google sign-out fails
+            }
 
             if (response.isSuccessful) {
                 Resource.Success(Unit)

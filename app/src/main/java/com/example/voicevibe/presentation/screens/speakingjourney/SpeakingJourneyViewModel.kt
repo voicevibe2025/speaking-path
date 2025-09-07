@@ -151,6 +151,11 @@ class SpeakingJourneyViewModel @Inject constructor(
         }
     }
 
+    // Explicitly restart review/practice from phrase 0
+    fun restartPracticeFromBeginning() {
+        _uiState.value = _uiState.value.copy(inspectedPhraseIndex = 0)
+    }
+
     fun selectTopic(index: Int) {
         val s = _uiState.value
         if (index in s.topics.indices && s.topics[index].unlocked) {
@@ -351,6 +356,8 @@ class SpeakingJourneyViewModel @Inject constructor(
                             val practicedDistinct = _uiState.value.currentTopicTranscripts.map { it.index }.distinct().size
                             val shouldComplete = dto.topicCompleted || (totalPhrases2 > 0 && practicedDistinct >= totalPhrases2)
                             if (shouldComplete && curTopic2 != null) {
+                                // Show completion overlay only once (on the run that completed the topic)
+                                _uiState.value = _uiState.value.copy(showPronunciationCongrats = true)
                                 try { repo.completeTopic(curTopic2.id) } catch (_: Throwable) {}
                                 val previousTopics = _uiState.value.topics
                                 reloadTopics(onComplete = {
@@ -407,6 +414,10 @@ class SpeakingJourneyViewModel @Inject constructor(
     }
 
     fun dismissPhraseResult() { _uiState.value = _uiState.value.copy(phraseSubmissionResult = null) }
+
+    fun dismissPronunciationCongrats() {
+        _uiState.value = _uiState.value.copy(showPronunciationCongrats = false)
+    }
 
     fun dismissUnlockedTopicInfo() {
         val unlockedInfo = _uiState.value.unlockedTopicInfo

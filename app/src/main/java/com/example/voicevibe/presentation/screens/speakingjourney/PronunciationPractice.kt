@@ -375,16 +375,20 @@ fun PronunciationPracticeScreen(
                 AnalysisDialog(entry = entry, onDismiss = { analysisFor = null })
             }
 
-            // Completion overlay for finishing all phrases in this topic
-            val isTopicFinished = topic?.phraseProgress?.isAllPhrasesCompleted == true
-            if (isTopicFinished) {
+            // Completion overlay should appear only once when the topic has just been completed
+            if (ui.showPronunciationCongrats) {
                 val totalScoreLocal = (topic?.material?.size ?: 0) * 10
                 val totalXpLocal = (topic?.material?.size ?: 0) * 20 + 100
                 PronunciationCongratsDialog(
                     topicTitle = topic?.title ?: "",
                     score = totalScoreLocal,
                     xp = totalXpLocal,
+                    onReset = {
+                        viewModel.dismissPronunciationCongrats()
+                        viewModel.restartPracticeFromBeginning()
+                    },
                     onContinue = {
+                        viewModel.dismissPronunciationCongrats()
                         onNavigateBack() // Back to TopicMasterScreen
                     }
                 )
@@ -531,13 +535,19 @@ private fun PronunciationCongratsDialog(
     topicTitle: String,
     score: Int,
     xp: Int,
+    onReset: () -> Unit,
     onContinue: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onContinue,
         confirmButton = {
-            Button(onClick = onContinue, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))) {
-                Text("Continue Journey")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onReset, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF64B5F6))) {
+                    Text("Practice from start")
+                }
+                Button(onClick = onContinue, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))) {
+                    Text("Continue Journey")
+                }
             }
         },
         title = { Text("Congratulations!", fontWeight = FontWeight.Bold) },

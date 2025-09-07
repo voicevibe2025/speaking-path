@@ -182,6 +182,7 @@ data class SpeakingJourneyUiState(
     val phraseRecordingState: PhraseRecordingState = PhraseRecordingState.IDLE,
     val phraseSubmissionResult: PhraseSubmissionResultUi? = null,
     val unlockedTopicInfo: UnlockedTopicInfo? = null,
+    val showPronunciationCongrats: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
     val currentTopicTranscripts: List<PhraseTranscriptEntry> = emptyList(),

@@ -94,6 +94,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -346,18 +348,6 @@ fun SpeakingJourneyScreen(
                             }
                         )
                         
-                        // Progress and stats bar
-                        val currentTopic = ui.topics.getOrNull(ui.selectedTopicIdx)
-                        currentTopic?.let { topic ->
-                            val phraseProgress = topic.phraseProgress ?: PhraseProgress(
-                                currentPhraseIndex = 0,
-                                completedPhrases = emptyList(),
-                                totalPhrases = topic.material.size,
-                                isAllPhrasesCompleted = false
-                            )
-                            GamificationStatsBar(ui.gamificationProfile, phraseProgress)
-                        }
-                        
                         // Loading/Error states
                         if (ui.isLoading) {
                             Box(
@@ -378,7 +368,7 @@ fun SpeakingJourneyScreen(
                         }
                         
                         // Main Hero Content Area
-                        currentTopic?.let { topic ->
+                        ui.topics.getOrNull(ui.selectedTopicIdx)?.let { topic ->
                             // Master Topic Button
                             Card(
                                 modifier = Modifier
@@ -497,79 +487,7 @@ fun SpeakingJourneyScreen(
 
                             Spacer(modifier = Modifier.height(16.dp))
                             
-                            // Topic Details Card
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp)
-                                ) {
-                                    Text(
-                                        text = "About this topic",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    
-                                    Text(
-                                        text = topic.description,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    
-                                    if (topic.material.isNotEmpty()) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.padding(top = 8.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Mic,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(20.dp),
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(
-                                                text = "${topic.material.size} phrases to practice",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                    }
-                                    
-                                    if (topic.conversation.isNotEmpty()) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.padding(top = 8.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(20.dp),
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(
-                                                text = "Includes conversation example",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                    }
-                                }
-                            }
+                            Spacer(modifier = Modifier.height(100.dp))
                         }
                         
                         Spacer(modifier = Modifier.height(100.dp))
@@ -981,41 +899,19 @@ private fun SelectedTopicDetails(topic: Topic) {
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
+                Text(
+                    text = topic.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
             
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Difficulty badge
-                val difficulty = when {
-                    topic.material.size < 6 -> "Beginner"
-                    topic.material.size < 12 -> "Intermediate"
-                    else -> "Advanced"
-                }
-                val badgeColor = when (difficulty) {
-                    "Beginner" -> Color(0xFF4CAF50).copy(alpha = 0.2f)
-                    "Intermediate" -> Color(0xFFFF9800).copy(alpha = 0.2f)
-                    else -> Color(0xFFF44336).copy(alpha = 0.2f)
-                }
-                val badgeTextColor = when (difficulty) {
-                    "Beginner" -> Color(0xFF2E7D32)
-                    "Intermediate" -> Color(0xFFE65100)
-                    else -> Color(0xFFC62828)
-                }
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = badgeColor
-                ) {
-                    Text(
-                        text = difficulty,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = badgeTextColor
-                    )
-                }
-                
                 // Phrases count
                 Column(
                     horizontalAlignment = Alignment.End
@@ -1796,13 +1692,8 @@ private fun TranscriptPlaybackSection(
                         },
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = when {
-                            isPlaying -> MaterialTheme.colorScheme.primaryContainer
-                            isWeak -> MaterialTheme.colorScheme.errorContainer
-                            else -> MaterialTheme.colorScheme.surfaceVariant
-                        }
-                    ),
-                    border = if (isPlaying) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+                        containerColor = if (isWeak) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant
+                    )
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Row(
@@ -1815,21 +1706,14 @@ private fun TranscriptPlaybackSection(
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
-                            IconButton(onClick = {
-                                playingIndex = entry.index
-                                onPlay(entry)
-                            }) {
+                            IconButton(onClick = { onPlay(entry) }) {
                                 Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = "Play recording")
                             }
                         }
                         Text(
                             text = "\"${entry.text}\"",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = when {
-                                isPlaying -> MaterialTheme.colorScheme.onPrimaryContainer
-                                isWeak -> MaterialTheme.colorScheme.onErrorContainer
-                                else -> MaterialTheme.colorScheme.onSurfaceVariant
-                            }
+                            color = if (isWeak) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         val now = System.currentTimeMillis()
@@ -1843,11 +1727,7 @@ private fun TranscriptPlaybackSection(
                         Text(
                             text = "Recorded $timeAgo",
                             style = MaterialTheme.typography.labelSmall,
-                            color = when {
-                                isPlaying -> MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
-                                isWeak -> MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.85f)
-                                else -> MaterialTheme.colorScheme.onSurfaceVariant
-                            }
+                            color = if (isWeak) MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         if (entry.accuracy > 0f) {
                             Spacer(modifier = Modifier.height(6.dp))

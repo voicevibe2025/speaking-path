@@ -127,86 +127,6 @@ fun RegisterScreen(
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Or divider
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Divider(modifier = Modifier.weight(1f))
-                    Text(
-                        text = "  or  ",
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                    )
-                    Divider(modifier = Modifier.weight(1f))
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Google Sign-In button
-                var webClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
-                if (webClientId.isBlank()) {
-                    val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
-                    if (resId != 0) webClientId = context.getString(resId)
-                }
-                val gso = remember(webClientId) {
-                    GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestIdToken(webClientId)
-                        .requestEmail()
-                        .build()
-                }
-                val googleClient = remember(webClientId) { GoogleSignIn.getClient(context, gso) }
-
-                val launcher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.StartActivityForResult()
-                ) { result ->
-                    val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                    scope.launch {
-                        try {
-                            val account = task.getResult(ApiException::class.java)
-                            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-                            val auth = FirebaseAuth.getInstance()
-                            auth.signInWithCredential(credential).await()
-                            val firebaseUser = auth.currentUser
-                            val tokenResult = firebaseUser?.getIdToken(true)?.await()
-                            val idToken = tokenResult?.token
-                            if (!idToken.isNullOrEmpty()) {
-                                viewModel.loginWithGoogle(idToken)
-                            }
-                        } catch (_: Exception) {
-                            // Snackbar already handled in Login; keep silent here to avoid duplicating UI
-                        }
-                    }
-                }
-
-                OutlinedButton(
-                    onClick = {
-                        scope.launch {
-                            try {
-                                FirebaseAuth.getInstance().signOut()
-                                googleClient.signOut().await()
-                            } catch (_: Exception) { }
-                            launcher.launch(googleClient.signInIntent)
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    enabled = !uiState.isLoading
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.CheckCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Continue with Google")
-                    }
-                }
 
                 // Logo and Title
                 Box(
@@ -476,6 +396,89 @@ fun RegisterScreen(
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Or divider
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Divider(modifier = Modifier.weight(1f))
+                    Text(
+                        text = "  or  ",
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    )
+                    Divider(modifier = Modifier.weight(1f))
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Google Sign-In button
+                var webClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
+                if (webClientId.isBlank()) {
+                    val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+                    if (resId != 0) webClientId = context.getString(resId)
+                }
+                val gso = remember(webClientId) {
+                    GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(webClientId)
+                        .requestEmail()
+                        .build()
+                }
+                val googleClient = remember(webClientId) { GoogleSignIn.getClient(context, gso) }
+
+                val launcher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.StartActivityForResult()
+                ) { result ->
+                    val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                    scope.launch {
+                        try {
+                            val account = task.getResult(ApiException::class.java)
+                            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+                            val auth = FirebaseAuth.getInstance()
+                            auth.signInWithCredential(credential).await()
+                            val firebaseUser = auth.currentUser
+                            val tokenResult = firebaseUser?.getIdToken(true)?.await()
+                            val idToken = tokenResult?.token
+                            if (!idToken.isNullOrEmpty()) {
+                                viewModel.loginWithGoogle(idToken)
+                            }
+                        } catch (_: Exception) {
+                            // Snackbar already handled in Login; keep silent here to avoid duplicating UI
+                        }
+                    }
+                }
+
+                OutlinedButton(
+                    onClick = {
+                        scope.launch {
+                            try {
+                                FirebaseAuth.getInstance().signOut()
+                                googleClient.signOut().await()
+                            } catch (_: Exception) { }
+                            launcher.launch(googleClient.signInIntent)
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = !uiState.isLoading
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "Continue with Google")
                     }
                 }
 

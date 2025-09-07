@@ -8,9 +8,11 @@ import com.example.voicevibe.data.remote.dto.auth.*
 import com.example.voicevibe.domain.model.Resource
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.tasks.await
 import retrofit2.HttpException
 import timber.log.Timber
 import java.io.IOException
@@ -199,18 +201,32 @@ class AuthRepository @Inject constructor(
             // Clear local data regardless of API response
             tokenManager.clearAll()
 
-            // Sign out from Google Sign-In to force account selection on next login
+            // Sign out from Firebase and Google to force account selection on next login
             try {
-                val webClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
+                // Sign out from FirebaseAuth to clear persisted user
+                FirebaseAuth.getInstance().signOut()
+
+                // Build GoogleSignInClient and await sign-out
+                var webClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
+                if (webClientId.isBlank()) {
+                    val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+                    if (resId != 0) {
+                        webClientId = context.getString(resId)
+                    }
+                }
                 val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestIdToken(webClientId)
                     .requestEmail()
                     .build()
                 val googleSignInClient = GoogleSignIn.getClient(context, gso)
-                googleSignInClient.signOut()
+
+                // Await sign-out completion to ensure cached account is cleared
+                googleSignInClient.signOut().await()
+                // Optionally revoke access to force re-consent and show the account picker next time
+                runCatching { googleSignInClient.revokeAccess().await() }
             } catch (e: Exception) {
-                Timber.e(e, "Google Sign-Out failed")
-                // Continue with logout even if Google sign-out fails
+                Timber.e(e, "Google/Firebase sign-out failed")
+                // Continue with logout even if sign-out fails
             }
 
             if (response.isSuccessful) {

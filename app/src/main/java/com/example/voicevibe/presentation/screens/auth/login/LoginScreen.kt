@@ -341,7 +341,16 @@ fun LoginScreen(
                 }
 
                 OutlinedButton(
-                    onClick = { launcher.launch(googleClient.signInIntent) },
+                    onClick = {
+                        scope.launch {
+                            // Clear any previous session so the account chooser shows up
+                            try {
+                                FirebaseAuth.getInstance().signOut()
+                                googleClient.signOut().await()
+                            } catch (_: Exception) { }
+                            launcher.launch(googleClient.signInIntent)
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),

@@ -143,14 +143,17 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Google Sign-In button
-                val webClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
+                var webClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
+                if (webClientId.isBlank()) {
+                    val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+                    if (resId != 0) webClientId = context.getString(resId)
+                }
                 val gso = remember(webClientId) {
                     GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                         .requestIdToken(webClientId)
                         .requestEmail()
                         .build()
                 }
-                val context = LocalContext.current
                 val googleClient = remember(webClientId) { GoogleSignIn.getClient(context, gso) }
 
                 val launcher = rememberLauncherForActivityResult(
@@ -176,7 +179,15 @@ fun RegisterScreen(
                 }
 
                 OutlinedButton(
-                    onClick = { launcher.launch(googleClient.signInIntent) },
+                    onClick = {
+                        scope.launch {
+                            try {
+                                FirebaseAuth.getInstance().signOut()
+                                googleClient.signOut().await()
+                            } catch (_: Exception) { }
+                            launcher.launch(googleClient.signInIntent)
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),

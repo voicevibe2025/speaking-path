@@ -3,9 +3,8 @@ package com.example.voicevibe.presentation.screens.speakingjourney
 import android.Manifest
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -82,76 +81,55 @@ fun PronunciationPracticeScreen(
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
 
-    // Live topic from selectedTopicIdx; select by topicId when topics load
-    val topic = ui.topics.getOrNull(ui.selectedTopicIdx)
-
+    // Select the topic by id when topics load
     LaunchedEffect(topicId, ui.topics) {
         val idx = ui.topics.indexOfFirst { it.id == topicId }
-        if (idx >= 0 && ui.selectedTopicIdx != idx) {
-            viewModel.selectTopic(idx)
-        }
+        if (idx >= 0 && ui.selectedTopicIdx != idx) viewModel.selectTopic(idx)
     }
+    // Load user's recordings when topic changes
     LaunchedEffect(ui.selectedTopicIdx, ui.topics) {
         viewModel.loadTranscriptsForCurrentTopic(context)
     }
 
-    // Permissions for recording
-    val recordPermission = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
+    val topic = ui.topics.getOrNull(ui.selectedTopicIdx)
 
-    // UI local state
-    var showRecordingsSheet by remember { mutableStateOf(false) }
+    // Permissions
+    val audioPermission = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
+
+    // Local UI state
+    var showResultsSheet by remember { mutableStateOf(false) }
     var analysisFor by remember { mutableStateOf<PhraseTranscriptEntry?>(null) }
 
-    // Whenever results sheet opens, refresh recordings
-    LaunchedEffect(showRecordingsSheet) {
-        if (showRecordingsSheet) {
-            viewModel.loadTranscriptsForCurrentTopic(context)
-        }
-    }
-
-    // Gradient background referencing FluencyPractice.kt style
+    // Gradient similar to FluencyPractice
     val background = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFF1a1a2e),
-            Color(0xFF16213e),
-            Color(0xFF0f3460)
-        )
+        listOf(Color(0xFF1a1a2e), Color(0xFF16213e), Color(0xFF0f3460))
     )
 
-    // Resolve current/displayed phrase index
+    // Resolve phrase index to display
     val totalPhrases = topic?.phraseProgress?.totalPhrases ?: (topic?.material?.size ?: 0)
     val baseIndex = topic?.phraseProgress?.currentPhraseIndex ?: 0
-    val currentIndexFromProgress = if (totalPhrases > 0) baseIndex.coerceIn(0, totalPhrases - 1) else 0
-    val displayedIndexRaw = ui.inspectedPhraseIndex ?: currentIndexFromProgress
-    val displayedIndex = if (totalPhrases > 0) displayedIndexRaw.coerceIn(0, totalPhrases - 1) else 0
+    val displayedIndex = if (totalPhrases > 0) {
+        (ui.inspectedPhraseIndex ?: baseIndex).coerceIn(0, totalPhrases - 1)
+    } else 0
     val phraseText = topic?.material?.getOrNull(displayedIndex) ?: ""
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Pronunciation Practice", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     }
                 },
                 navigationIcon = {
                     Surface(
                         onClick = onNavigateBack,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .size(40.dp),
+                        modifier = Modifier.padding(8.dp).size(40.dp),
                         shape = CircleShape,
                         color = Color.White.copy(alpha = 0.1f)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
-                                tint = Color.White
-                            )
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White, modifier = Modifier.size(20.dp))
                         }
                     }
                 },
@@ -174,163 +152,117 @@ fun PronunciationPracticeScreen(
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = Color(0xFF64B5F6), strokeWidth = 3.dp)
                 }
-            } else {
-                AnimatedVisibility(
-                    visible = true,
-                    enter = androidx.compose.animation.slideInVertically(
-                        initialOffsetY = { 100 },
-                        animationSpec = tween(400, easing = FastOutSlowInEasing)
-                    ) + fadeIn(animationSpec = tween(400))
+                return@Box
+            }
+
+            AnimatedVisibility(
+                visible = true,
+                enter = slideInVertically(initialOffsetY = { 100 }, animationSpec = tween(500, easing = FastOutSlowInEasing)) +
+                    fadeIn(animationSpec = tween(500))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
+                    Spacer(Modifier.height(8.dp))
+
+                    // Topic title and progress card
+                    Card(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 20.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .fillMaxWidth()
+                            .shadow(8.dp, RoundedCornerShape(20.dp)),
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                        shape = RoundedCornerShape(20.dp)
                     ) {
-                        Spacer(Modifier.height(8.dp))
-
-                        // DEBUG banner: helps verify screen updates and state values at runtime
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = Color(0x663A3A00)),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-                                Text(
-                                    text = "DEBUG • Pronunciation UI active",
-                                    color = Color.Yellow,
-                                    fontSize = 12.sp
-                                )
-                                Text(
-                                    text = "state=${ui.phraseRecordingState} • transcripts=${ui.currentTopicTranscripts.size} • curr=${currentIndexFromProgress} • inspected=${ui.inspectedPhraseIndex}",
-                                    color = Color.Yellow,
-                                    fontSize = 12.sp
-                                )
-                                ui.debug?.let { d ->
-                                    Text(
-                                        text = "vm=${d}",
-                                        color = Color.Yellow,
-                                        fontSize = 11.sp
-                                    )
-                                }
-                            }
-                        }
-                        
-                        Spacer(Modifier.height(4.dp))
-
-                        // Topic title card
-                        Card(
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .shadow(8.dp, RoundedCornerShape(20.dp)),
-                            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                            shape = RoundedCornerShape(20.dp)
+                                .background(
+                                    Brush.horizontalGradient(
+                                        colors = listOf(Color(0xFF667eea), Color(0xFF764ba2))
+                                    )
+                                )
+                                .padding(20.dp)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        Brush.horizontalGradient(
-                                            colors = listOf(Color(0xFF667eea), Color(0xFF764ba2))
-                                        )
-                                    )
-                                    .padding(20.dp)
-                            ) {
-                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Text(topic.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Color.White)
-                                    Text(
-                                        text = "Phrase ${displayedIndex + 1} of $totalPhrases",
-                                        color = Color.White.copy(alpha = 0.9f)
-                                    )
-                                }
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(topic.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Color.White)
+                                Text("Phrase ${displayedIndex + 1} of $totalPhrases", color = Color.White.copy(alpha = 0.9f))
                             }
                         }
-
-                        // Phrase card with mic button
-                        PhrasePracticeCard(
-                            phrase = phraseText,
-                            recordingState = ui.phraseRecordingState,
-                            onMicClicked = {
-                                when (ui.phraseRecordingState) {
-                                    PhraseRecordingState.RECORDING -> viewModel.stopPhraseRecording(context)
-                                    PhraseRecordingState.IDLE -> {
-                                        if (recordPermission.status.isGranted) {
-                                            viewModel.startPhraseRecording(context)
-                                        } else {
-                                            recordPermission.launchPermissionRequest()
-                                        }
-                                    }
-                                    PhraseRecordingState.PROCESSING -> { /* ignore taps while processing */ }
-                                }
-                            }
-                        )
-
-                        // Controls: Prev - Show Results - Next
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // Prev navigates within completed (practiced) phrases
-                            val hasPrev = ui.currentTopicTranscripts
-                                .map { it.index }.distinct().any { it < (ui.inspectedPhraseIndex ?: currentIndexFromProgress) }
-                            IconButton(
-                                onClick = { viewModel.inspectPreviousPhrase() },
-                                enabled = hasPrev,
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .clip(CircleShape)
-                            ) {
-                                Icon(Icons.Filled.ChevronLeft, contentDescription = "Previous", tint = if (hasPrev) Color.White else Color.White.copy(alpha = 0.4f))
-                            }
-
-                            Button(
-                                onClick = { showRecordingsSheet = true },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF64B5F6))
-                            ) { Text("Show results") }
-
-                            // Next: in review -> next practiced; otherwise disabled (next phrase appears automatically after a pass)
-                            val hasNextInReview = ui.inspectedPhraseIndex?.let { inspected ->
-                                ui.currentTopicTranscripts.map { it.index }.distinct().any { it > inspected }
-                            } ?: false
-                            IconButton(
-                                onClick = {
-                                    if (ui.inspectedPhraseIndex != null) viewModel.inspectNextPhrase()
-                                },
-                                enabled = hasNextInReview,
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .clip(CircleShape)
-                            ) {
-                                Icon(Icons.Filled.ChevronRight, contentDescription = "Next", tint = if (hasNextInReview) Color.White else Color.White.copy(alpha = 0.4f))
-                            }
-                        }
-
-                        Spacer(Modifier.height(8.dp))
-
-                        // Helper text and rewards policy (display only; server still stores XP and scores)
-                        Text(
-                            text = "Complete a phrase to earn +10 score and +20 XP. Finish all to get an extra +100 XP.",
-                            color = Color(0xFFB0BEC5),
-                            fontSize = 13.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        Spacer(Modifier.height(24.dp))
                     }
+
+                    // Phrase card with Mic button
+                    PhrasePracticeCard(
+                        phrase = phraseText,
+                        recordingState = ui.phraseRecordingState,
+                        onMicClicked = {
+                            when (ui.phraseRecordingState) {
+                                PhraseRecordingState.RECORDING -> viewModel.stopPhraseRecording(context)
+                                PhraseRecordingState.IDLE -> {
+                                    if (audioPermission.status.isGranted) viewModel.startPhraseRecording(context) else audioPermission.launchPermissionRequest()
+                                }
+                                PhraseRecordingState.PROCESSING -> Unit // ignore taps while processing
+                            }
+                        }
+                    )
+
+                    // Controls row: Prev - Show results - Next
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val practiced = ui.currentTopicTranscripts.map { it.index }.distinct().sorted()
+                        val hasPrev = if (ui.inspectedPhraseIndex != null) practiced.any { it < (ui.inspectedPhraseIndex ?: 0) }
+                            else practiced.any { it < baseIndex }
+                        IconButton(
+                            onClick = { viewModel.inspectPreviousPhrase() },
+                            enabled = hasPrev,
+                            modifier = Modifier.size(48.dp).clip(CircleShape)
+                        ) {
+                            Icon(Icons.Filled.ChevronLeft, contentDescription = "Previous", tint = if (hasPrev) Color.White else Color.White.copy(alpha = 0.4f))
+                        }
+
+                        Button(
+                            onClick = { showResultsSheet = true },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF64B5F6))
+                        ) { Text("Show result") }
+
+                        val hasNextInReview = ui.inspectedPhraseIndex?.let { inspected -> practiced.any { it > inspected } } ?: false
+                        IconButton(
+                            onClick = { if (ui.inspectedPhraseIndex != null) viewModel.inspectNextPhrase() },
+                            enabled = hasNextInReview,
+                            modifier = Modifier.size(48.dp).clip(CircleShape)
+                        ) {
+                            Icon(Icons.Filled.ChevronRight, contentDescription = "Next", tint = if (hasNextInReview) Color.White else Color.White.copy(alpha = 0.4f))
+                        }
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    // Helper text about rewards
+                    Text(
+                        text = "Complete a phrase to earn +10 score and +20 XP. Finish all to get +100 XP.",
+                        color = Color(0xFFB0BEC5),
+                        fontSize = 13.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(Modifier.height(24.dp))
                 }
             }
 
-            // Bottom sheet: All recordings list
-            if (showRecordingsSheet) {
+            // Results bottom sheet: all recordings list
+            if (showResultsSheet) {
                 val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
                 ModalBottomSheet(
-                    onDismissRequest = { showRecordingsSheet = false },
+                    onDismissRequest = { showResultsSheet = false },
                     sheetState = sheetState,
                     containerColor = Color(0xFF2a2d3a),
-                    dragHandle = null
                 ) {
                     Column(
                         modifier = Modifier
@@ -370,26 +302,23 @@ fun PronunciationPracticeScreen(
                 }
             }
 
-            // Analysis dialog for a selected recording
+            // Analysis dialog for selected recording
             analysisFor?.let { entry ->
                 AnalysisDialog(entry = entry, onDismiss = { analysisFor = null })
             }
 
-            // Completion overlay should appear only once when the topic has just been completed
+            // Topic completion congratulations overlay
             if (ui.showPronunciationCongrats) {
-                val totalScoreLocal = (topic?.material?.size ?: 0) * 10
-                val totalXpLocal = (topic?.material?.size ?: 0) * 20 + 100
+                val phraseCount = topic.material.size
+                val totalScore = phraseCount * 10
+                val totalXp = phraseCount * 20 + 100
                 PronunciationCongratsDialog(
-                    topicTitle = topic?.title ?: "",
-                    score = totalScoreLocal,
-                    xp = totalXpLocal,
-                    onReset = {
-                        viewModel.dismissPronunciationCongrats()
-                        viewModel.restartPracticeFromBeginning()
-                    },
+                    topicTitle = topic.title,
+                    score = totalScore,
+                    xp = totalXp,
                     onContinue = {
                         viewModel.dismissPronunciationCongrats()
-                        onNavigateBack() // Back to TopicMasterScreen
+                        onNavigateBack()
                     }
                 )
             }
@@ -401,7 +330,7 @@ fun PronunciationPracticeScreen(
 private fun PhrasePracticeCard(
     phrase: String,
     recordingState: PhraseRecordingState,
-    onMicClicked: () -> Unit,
+    onMicClicked: () -> Unit
 ) {
     val isRecording = recordingState == PhraseRecordingState.RECORDING
     val isProcessing = recordingState == PhraseRecordingState.PROCESSING
@@ -428,12 +357,9 @@ private fun PhrasePracticeCard(
                 textAlign = TextAlign.Center
             )
 
-            // Mic button
             Surface(
                 onClick = onMicClicked,
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape),
+                modifier = Modifier.size(100.dp).clip(CircleShape),
                 shape = CircleShape,
                 color = if (isRecording) Color(0xFFFF6B6B) else Color(0xFF4CAF50),
                 shadowElevation = if (isRecording) 16.dp else 8.dp
@@ -477,23 +403,13 @@ private fun RecordingListItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Phrase ${entry.index + 1}",
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Text(text = "Phrase ${entry.index + 1}", color = Color.White, fontWeight = FontWeight.SemiBold)
                 val date = remember(entry.timestamp) { DateFormat.getDateTimeInstance().format(Date(entry.timestamp)) }
                 Text(text = date, color = Color(0xFFB0BEC5), fontSize = 12.sp)
                 if (entry.text.isNotBlank()) {
-                    Text(
-                        text = entry.text,
-                        color = Color(0xFFE0E0E0),
-                        fontSize = 14.sp,
-                        maxLines = 2
-                    )
+                    Text(text = entry.text, color = Color(0xFFE0E0E0), fontSize = 14.sp, maxLines = 2)
                 }
             }
-
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onPlay) {
                     Icon(Icons.Filled.PlayArrow, contentDescription = "Play", tint = Color(0xFF64B5F6))
@@ -510,21 +426,15 @@ private fun RecordingListItem(
 private fun AnalysisDialog(entry: PhraseTranscriptEntry, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
-        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
         title = { Text("Pronunciation Analysis", fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Phrase ${entry.index + 1}")
-                if (entry.text.isNotBlank()) {
-                    Text("Transcript:\n${entry.text}")
-                }
+                if (entry.text.isNotBlank()) Text("Transcript:\n${entry.text}")
                 val pct = (entry.accuracy * 100).toInt().coerceIn(0, 100)
                 Text("Accuracy: ${pct}%")
-                entry.feedback?.takeIf { it.isNotBlank() }?.let { fb ->
-                    Text("Feedback:\n$fb")
-                }
+                entry.feedback?.takeIf { it.isNotBlank() }?.let { fb -> Text("Feedback:\n$fb") }
             }
         }
     )
@@ -535,20 +445,15 @@ private fun PronunciationCongratsDialog(
     topicTitle: String,
     score: Int,
     xp: Int,
-    onReset: () -> Unit,
     onContinue: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onContinue,
         confirmButton = {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = onReset, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF64B5F6))) {
-                    Text("Practice from start")
-                }
-                Button(onClick = onContinue, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))) {
-                    Text("Continue Journey")
-                }
-            }
+            Button(
+                onClick = onContinue,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+            ) { Text("Continue Journey") }
         },
         title = { Text("Congratulations!", fontWeight = FontWeight.Bold) },
         text = {
@@ -557,6 +462,9 @@ private fun PronunciationCongratsDialog(
                 Text("Score $score")
                 Text("XP $xp")
             }
-        }
+        },
+        containerColor = Color(0xFF2D2F5B),
+        titleContentColor = Color.White,
+        textContentColor = Color.White.copy(alpha = 0.9f)
     )
 }

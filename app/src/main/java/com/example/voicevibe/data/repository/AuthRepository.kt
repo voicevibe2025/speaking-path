@@ -77,6 +77,41 @@ class AuthRepository @Inject constructor(
     }
 
     /**
+     * Login or register via Google using a Firebase ID token
+     */
+    fun loginWithGoogle(idToken: String): Flow<Resource<AuthResponse>> = flow {
+        emit(Resource.Loading())
+
+        try {
+            val request = GoogleLoginRequest(idToken = idToken)
+            val response = authApi.googleLogin(request)
+
+            if (response.isSuccessful && response.body() != null) {
+                val authResponse = response.body()!!
+                tokenManager.saveTokens(authResponse.access, authResponse.refresh)
+                tokenManager.saveUserData(
+                    userId = authResponse.user.id.toString(),
+                    email = authResponse.user.email,
+                    name = "${authResponse.user.firstName} ${authResponse.user.lastName}"
+                )
+                emit(Resource.Success(authResponse))
+            } else {
+                val errorMessage = response.errorBody()?.string() ?: "Google sign-in failed"
+                emit(Resource.Error(errorMessage))
+            }
+        } catch (e: HttpException) {
+            Timber.e(e, "Google login HTTP exception")
+            emit(Resource.Error("Network error: ${e.message()}"))
+        } catch (e: IOException) {
+            Timber.e(e, "Google login IO exception")
+            emit(Resource.Error("Connection error. Please check your internet connection."))
+        } catch (e: Exception) {
+            Timber.e(e, "Google login unexpected exception")
+            emit(Resource.Error("An unexpected error occurred: ${e.localizedMessage}"))
+        }
+    }
+
+    /**
      * Login user
      */
     fun login(email: String, password: String): Flow<Resource<AuthResponse>> = flow {

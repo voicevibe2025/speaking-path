@@ -108,6 +108,30 @@ class LoginViewModel @Inject constructor(
     fun clearError() {
         _uiState.update { it.copy(generalError = null) }
     }
+
+    fun loginWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            authRepository.loginWithGoogle(idToken).collect { resource ->
+                when (resource) {
+                    is Resource.Loading -> {
+                        _uiState.update { it.copy(isLoading = true, generalError = null) }
+                    }
+                    is Resource.Success -> {
+                        _uiState.update { it.copy(isLoading = false) }
+                        _loginEvent.emit(LoginEvent.Success)
+                    }
+                    is Resource.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                generalError = resource.message ?: "Google sign-in failed"
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 /**

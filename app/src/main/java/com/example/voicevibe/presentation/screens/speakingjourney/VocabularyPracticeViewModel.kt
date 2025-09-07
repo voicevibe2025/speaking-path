@@ -31,7 +31,9 @@ class VocabularyPracticeViewModel @Inject constructor(
     private var correctCount: Int = 0
 
     fun start(topic: Topic) {
-        if (topicId == topic.id && sessionId != null) return
+        // If we already have an active session for this topic and no congrats is showing, keep it.
+        // But if congrats was showing from the last session, allow a fresh start so user can re-practice.
+        if (topicId == topic.id && sessionId != null && !_uiState.value.showCongrats) return
         topicId = topic.id
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -157,6 +159,9 @@ class VocabularyPracticeViewModel @Inject constructor(
     }
 
     fun dismissCongrats() {
+        // Reset session so re-entering the screen starts a fresh practice instead of showing congrats again
+        sessionId = null
+        rawQuestions = emptyList()
         _uiState.update { it.copy(showCongrats = false) }
     }
 

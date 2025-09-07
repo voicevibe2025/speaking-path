@@ -58,8 +58,19 @@ android {
         System.getenv("GOOGLE_API_KEY") ?: ""
     }
 
+    // Read FIREBASE_WEB_CLIENT_ID from django/.env (or env var)
+    val firebaseWebClientId: String = try {
+        val envFile = rootProject.file("../django/.env")
+        val properties = Properties()
+        properties.load(FileInputStream(envFile))
+        properties.getProperty("FIREBASE_WEB_CLIENT_ID", "")
+    } catch (e: Exception) {
+        System.getenv("FIREBASE_WEB_CLIENT_ID") ?: ""
+    }
+
     buildTypes.forEach {
         it.buildConfigField("String", "GEMINI_API_KEY", "\"$googleApiKey\"")
+        it.buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$firebaseWebClientId\"")
     }
 }
 
@@ -171,6 +182,11 @@ dependencies {
     // Gemini
     implementation(libs.gemini.generativeai)
 
+    // Firebase Auth + Google Sign-In
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.play.services.auth)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -184,4 +200,12 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     debugImplementation(libs.leakcanary)
+}
+
+// Apply Google Services plugin only if google-services.json is present
+val hasGoogleServicesJson = file("google-services.json").exists()
+if (hasGoogleServicesJson) {
+    apply(plugin = "com.google.gms.google-services")
+} else {
+    logger.lifecycle("google-services.json not found in app/. Skipping Google Services plugin.")
 }

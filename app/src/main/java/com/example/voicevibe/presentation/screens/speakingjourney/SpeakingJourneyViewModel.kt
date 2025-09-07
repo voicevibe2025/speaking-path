@@ -178,6 +178,8 @@ class SpeakingJourneyViewModel @Inject constructor(
     private var mediaPlayer: MediaPlayer? = null
     private var phraseAudioFile: File? = null
     private var recordingTargetIndex: Int? = null
+    private var currentUserKey: String = "default"
+    private var userKeyInitialized: Boolean = false
 
     fun startPhraseRecording(context: Context) {
         try {
@@ -201,7 +203,7 @@ class SpeakingJourneyViewModel @Inject constructor(
                 }
             }
             recordingTargetIndex = phraseIndex
-            val dir = File(context.filesDir, "voicevibe/recordings/${currentTopic.id}").apply { mkdirs() }
+            val dir = userRecordingsDir(context, currentTopic.id)
             val outFile = File(dir, "phrase_${phraseIndex}.m4a")
             phraseAudioFile = outFile
             val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) MediaRecorder(context) else MediaRecorder()
@@ -421,11 +423,20 @@ class SpeakingJourneyViewModel @Inject constructor(
             _uiState.value = s.copy(currentTopicTranscripts = emptyList())
             return
         }
+        // Ensure we have a user key before reading user-scoped storage
+        if (!userKeyInitialized) {
+            viewModelScope.launch {
+                ensureUserKey()
+                // Re-run load after key is set
+                loadTranscriptsForCurrentTopic(context)
+            }
+            return
+        }
         // Load locally persisted transcripts first for instant UI, then merge server results
         val local = readTranscriptEntriesFromDisk(context, topic.id)
         _uiState.value = _uiState.value.copy(
             currentTopicTranscripts = local,
-            debug = "load rec local=${local.size}"
+            debug = "load rec local=${local.size} user=${currentUserKey}"
         )
         viewModelScope.launch {
             try {
@@ -482,7 +493,7 @@ class SpeakingJourneyViewModel @Inject constructor(
 
     private fun readTranscriptEntriesFromDisk(context: Context, topicId: String): List<PhraseTranscriptEntry> {
         return try {
-            val dir = File(context.filesDir, "voicevibe/transcripts")
+            val dir = userTranscriptsDir(context)
             val file = File(dir, "$topicId.json")
             if (!file.exists()) return emptyList()
             val root = JSONObject(file.readText())
@@ -658,6 +669,15 @@ class SpeakingJourneyViewModel @Inject constructor(
                 val xp = profile.experiencePoints ?: 0
                 val level = xp / 500 + 1 // Consistent with mock logic
                 val streak = profile.streakDays ?: 0
+                // Update user-scoped storage key from profile so recordings/transcripts are namespaced per user
+                runCatching {
+                    val base = (profile.userEmail?.trim()?.lowercase(Locale.US))
+                        ?: (profile.userName?.trim()?.lowercase(Locale.US))
+                        ?: "default"
+                    val sanitized = base.replace(Regex("[^a-z0-9._-]"), "_")
+                    currentUserKey = sanitized
+                    userKeyInitialized = true
+                }
                 _uiState.value = _uiState.value.copy(
                     gamificationProfile = GamificationProfile(level, xp, streak)
                 )
@@ -719,7 +739,7 @@ class SpeakingJourneyViewModel @Inject constructor(
 
     private fun saveTranscriptEntryToDisk(context: Context, topicId: String, entry: PhraseTranscriptEntry) {
         try {
-            val dir = File(context.filesDir, "voicevibe/transcripts").apply { mkdirs() }
+            val dir = userTranscriptsDir(context)
             val file = File(dir, "$topicId.json")
             val root = if (file.exists()) JSONObject(file.readText()) else JSONObject()
             val entries = if (root.has("entries")) root.getJSONObject("entries") else JSONObject().also { root.put("entries", it) }
@@ -735,6 +755,30 @@ class SpeakingJourneyViewModel @Inject constructor(
             file.writeText(root.toString())
         } catch (t: Throwable) {
             Log.e("SpeakingJourney", "Failed to persist transcript", t)
+        }
+    }
+
+    private fun userTranscriptsDir(context: Context): File {
+        return File(context.filesDir, "voicevibe/users/${currentUserKey}/transcripts").apply { mkdirs() }
+    }
+
+    private fun userRecordingsDir(context: Context, topicId: String): File {
+        return File(context.filesDir, "voicevibe/users/${currentUserKey}/recordings/${topicId}").apply { mkdirs() }
+    }
+
+    private suspend fun ensureUserKey() {
+        if (userKeyInitialized && currentUserKey != "default") return
+        try {
+            val profile = profileRepo.getProfile()
+            val base = (profile.userEmail?.trim()?.lowercase(Locale.US))
+                ?: (profile.userName?.trim()?.lowercase(Locale.US))
+                ?: "default"
+            val sanitized = base.replace(Regex("[^a-z0-9._-]"), "_")
+            currentUserKey = sanitized
+            userKeyInitialized = true
+        } catch (_: Throwable) {
+            // Keep default, but mark initialized to avoid loops
+            userKeyInitialized = true
         }
     }
 }

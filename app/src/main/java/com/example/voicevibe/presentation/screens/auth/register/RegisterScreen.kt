@@ -1,5 +1,7 @@
 package com.example.voicevibe.presentation.screens.auth.register
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -28,7 +30,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.voicevibe.BuildConfig
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 /**
  * Register screen composable
@@ -117,6 +126,76 @@ fun RegisterScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
+
+                // Or divider
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Divider(modifier = Modifier.weight(1f))
+                    Text(
+                        text = "  or  ",
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    )
+                    Divider(modifier = Modifier.weight(1f))
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Google Sign-In button
+                val webClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
+                val gso = remember(webClientId) {
+                    GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(webClientId)
+                        .requestEmail()
+                        .build()
+                }
+                val context = LocalContext.current
+                val googleClient = remember(webClientId) { GoogleSignIn.getClient(context, gso) }
+
+                val launcher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.StartActivityForResult()
+                ) { result ->
+                    val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                    scope.launch {
+                        try {
+                            val account = task.getResult(ApiException::class.java)
+                            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+                            val auth = FirebaseAuth.getInstance()
+                            auth.signInWithCredential(credential).await()
+                            val firebaseUser = auth.currentUser
+                            val tokenResult = firebaseUser?.getIdToken(true)?.await()
+                            val idToken = tokenResult?.token
+                            if (!idToken.isNullOrEmpty()) {
+                                viewModel.loginWithGoogle(idToken)
+                            }
+                        } catch (_: Exception) {
+                            // Snackbar already handled in Login; keep silent here to avoid duplicating UI
+                        }
+                    }
+                }
+
+                OutlinedButton(
+                    onClick = { launcher.launch(googleClient.signInIntent) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = !uiState.isLoading
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "Continue with Google")
+                    }
+                }
 
                 // Logo and Title
                 Box(

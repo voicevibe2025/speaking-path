@@ -30,6 +30,11 @@ data class RefreshTokenRequest(
     val refresh: String
 )
 
+data class GoogleLoginRequest(
+    @SerializedName("id_token")
+    val idToken: String
+)
+
 data class VerifyEmailRequest(
     val token: String
 )

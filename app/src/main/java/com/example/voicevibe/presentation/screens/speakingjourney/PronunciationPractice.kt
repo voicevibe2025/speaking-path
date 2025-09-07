@@ -2,49 +2,35 @@ package com.example.voicevibe.presentation.screens.speakingjourney
 
 import android.Manifest
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -53,15 +39,16 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,12 +57,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -84,7 +69,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import kotlinx.coroutines.delay
 import java.text.DateFormat
 import java.util.Date
 
@@ -94,79 +78,81 @@ fun PronunciationPracticeScreen(
     topicId: String,
     onNavigateBack: () -> Unit
 ) {
+    val context = LocalContext.current
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
-    val topic = ui.topics.firstOrNull { it.id == topicId }
-    val context = LocalContext.current
-    
-    // Derived indices with clamping for completed topics
-    val totalPhrases = topic?.phraseProgress?.totalPhrases ?: (topic?.material?.size ?: 0)
-    val currentIdxRaw = topic?.phraseProgress?.currentPhraseIndex ?: 0
-    val clampedCurrentIdx = if (totalPhrases > 0) currentIdxRaw.coerceIn(0, totalPhrases - 1) else 0
-    val practiceHeroIdx = ui.inspectedPhraseIndex ?: clampedCurrentIdx
-    
-    // Handle permissions
-    val recordAudioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
-    var showPermissionRequest by remember { mutableStateOf(false) }
-    
-    // State for animated entry
-    var showContent by remember { mutableStateOf(false) }
-    
-    // Start animation after a brief delay
-    LaunchedEffect(topic) {
-        delay(300)
-        showContent = true
-        
-        // Check if we need to request permission
-        if (!recordAudioPermissionState.status.isGranted) {
-            showPermissionRequest = true
-        }
-    }
-    
-    // Select the topic by ID (so ViewModel.selectedTopicIdx matches) and load transcripts
+
+    // Live topic from selectedTopicIdx; select by topicId when topics load
+    val topic = ui.topics.getOrNull(ui.selectedTopicIdx)
+
     LaunchedEffect(topicId, ui.topics) {
         val idx = ui.topics.indexOfFirst { it.id == topicId }
         if (idx >= 0 && ui.selectedTopicIdx != idx) {
             viewModel.selectTopic(idx)
         }
+    }
+    LaunchedEffect(ui.selectedTopicIdx, ui.topics) {
         viewModel.loadTranscriptsForCurrentTopic(context)
     }
-    
-    // Modern gradient background colors
-    val backgroundGradient = Brush.verticalGradient(
+
+    // Permissions for recording
+    val recordPermission = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
+
+    // UI local state
+    var showRecordingsSheet by remember { mutableStateOf(false) }
+    var analysisFor by remember { mutableStateOf<PhraseTranscriptEntry?>(null) }
+
+    // Whenever results sheet opens, refresh recordings
+    LaunchedEffect(showRecordingsSheet) {
+        if (showRecordingsSheet) {
+            viewModel.loadTranscriptsForCurrentTopic(context)
+        }
+    }
+
+    // Gradient background referencing FluencyPractice.kt style
+    val background = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFF0A1128), // Dark blue top
-            Color(0xFF2D5A5B), // Deep teal
-            Color(0xFF0A1128)  // Dark blue bottom
+            Color(0xFF1a1a2e),
+            Color(0xFF16213e),
+            Color(0xFF0f3460)
         )
     )
+
+    // Resolve current/displayed phrase index
+    val totalPhrases = topic?.phraseProgress?.totalPhrases ?: (topic?.material?.size ?: 0)
+    val baseIndex = topic?.phraseProgress?.currentPhraseIndex ?: 0
+    val currentIndexFromProgress = if (totalPhrases > 0) baseIndex.coerceIn(0, totalPhrases - 1) else 0
+    val displayedIndexRaw = ui.inspectedPhraseIndex ?: currentIndexFromProgress
+    val displayedIndex = if (totalPhrases > 0) displayedIndexRaw.coerceIn(0, totalPhrases - 1) else 0
+    val phraseText = topic?.material?.getOrNull(displayedIndex) ?: ""
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "Pronunciation Practice",
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("Pronunciation Practice", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     }
                 },
                 navigationIcon = {
-                    IconButton(
+                    Surface(
                         onClick = onNavigateBack,
                         modifier = Modifier
                             .padding(8.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f))
+                            .size(40.dp),
+                        shape = CircleShape,
+                        color = Color.White.copy(alpha = 0.1f)
                     ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -181,259 +167,225 @@ fun PronunciationPracticeScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(backgroundGradient)
+                .background(background)
                 .padding(innerPadding)
         ) {
-            AnimatedVisibility(
-                visible = showContent,
-                enter = slideInVertically(
-                    initialOffsetY = { 100 },
-                    animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
-                ) + fadeIn(animationSpec = tween(durationMillis = 300))
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally
+            if (topic == null) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Color(0xFF64B5F6), strokeWidth = 3.dp)
+                }
+            } else {
+                AnimatedVisibility(
+                    visible = true,
+                    enter = androidx.compose.animation.slideInVertically(
+                        initialOffsetY = { 100 },
+                        animationSpec = tween(400, easing = FastOutSlowInEasing)
+                    ) + fadeIn(animationSpec = tween(400))
                 ) {
-                    // Topic Title
-                    Card(
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Spacer(Modifier.height(8.dp))
+
+                        // DEBUG banner: helps verify screen updates and state values at runtime
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = Color(0x663A3A00)),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                                Text(
+                                    text = "DEBUG • Pronunciation UI active",
+                                    color = Color.Yellow,
+                                    fontSize = 12.sp
+                                )
+                                Text(
+                                    text = "state=${ui.phraseRecordingState} • transcripts=${ui.currentTopicTranscripts.size} • curr=${currentIndexFromProgress} • inspected=${ui.inspectedPhraseIndex}",
+                                    color = Color.Yellow,
+                                    fontSize = 12.sp
+                                )
+                                ui.debug?.let { d ->
+                                    Text(
+                                        text = "vm=${d}",
+                                        color = Color.Yellow,
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
+                        }
+                        
+                        Spacer(Modifier.height(4.dp))
+
+                        // Topic title card
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .shadow(8.dp, RoundedCornerShape(20.dp)),
+                            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                            shape = RoundedCornerShape(20.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            colors = listOf(Color(0xFF667eea), Color(0xFF764ba2))
+                                        )
+                                    )
+                                    .padding(20.dp)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(topic.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Text(
+                                        text = "Phrase ${displayedIndex + 1} of $totalPhrases",
+                                        color = Color.White.copy(alpha = 0.9f)
+                                    )
+                                }
+                            }
+                        }
+
+                        // Phrase card with mic button
+                        PhrasePracticeCard(
+                            phrase = phraseText,
+                            recordingState = ui.phraseRecordingState,
+                            onMicClicked = {
+                                when (ui.phraseRecordingState) {
+                                    PhraseRecordingState.RECORDING -> viewModel.stopPhraseRecording(context)
+                                    PhraseRecordingState.IDLE -> {
+                                        if (recordPermission.status.isGranted) {
+                                            viewModel.startPhraseRecording(context)
+                                        } else {
+                                            recordPermission.launchPermissionRequest()
+                                        }
+                                    }
+                                    PhraseRecordingState.PROCESSING -> { /* ignore taps while processing */ }
+                                }
+                            }
+                        )
+
+                        // Controls: Prev - Show Results - Next
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Prev navigates within completed (practiced) phrases
+                            val hasPrev = ui.currentTopicTranscripts
+                                .map { it.index }.distinct().any { it < (ui.inspectedPhraseIndex ?: currentIndexFromProgress) }
+                            IconButton(
+                                onClick = { viewModel.inspectPreviousPhrase() },
+                                enabled = hasPrev,
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                            ) {
+                                Icon(Icons.Filled.ChevronLeft, contentDescription = "Previous", tint = if (hasPrev) Color.White else Color.White.copy(alpha = 0.4f))
+                            }
+
+                            Button(
+                                onClick = { showRecordingsSheet = true },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF64B5F6))
+                            ) { Text("Show results") }
+
+                            // Next: in review -> next practiced; otherwise disabled (next phrase appears automatically after a pass)
+                            val hasNextInReview = ui.inspectedPhraseIndex?.let { inspected ->
+                                ui.currentTopicTranscripts.map { it.index }.distinct().any { it > inspected }
+                            } ?: false
+                            IconButton(
+                                onClick = {
+                                    if (ui.inspectedPhraseIndex != null) viewModel.inspectNextPhrase()
+                                },
+                                enabled = hasNextInReview,
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                            ) {
+                                Icon(Icons.Filled.ChevronRight, contentDescription = "Next", tint = if (hasNextInReview) Color.White else Color.White.copy(alpha = 0.4f))
+                            }
+                        }
+
+                        Spacer(Modifier.height(8.dp))
+
+                        // Helper text and rewards policy (display only; server still stores XP and scores)
+                        Text(
+                            text = "Complete a phrase to earn +10 score and +20 XP. Finish all to get an extra +100 XP.",
+                            color = Color(0xFFB0BEC5),
+                            fontSize = 13.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(Modifier.height(24.dp))
+                    }
+                }
+            }
+
+            // Bottom sheet: All recordings list
+            if (showRecordingsSheet) {
+                val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                ModalBottomSheet(
+                    onDismissRequest = { showRecordingsSheet = false },
+                    sheetState = sheetState,
+                    containerColor = Color(0xFF2a2d3a),
+                    dragHandle = null
+                ) {
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
-                        ),
-                        shape = RoundedCornerShape(12.dp)
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = topic?.title ?: "Topic",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                    
-                    // Progress Dots
-                    if (topic?.phraseProgress != null) {
-                        PhraseProgressDots(
-                            currentIndex = clampedCurrentIdx,
-                            totalPhrases = topic.phraseProgress.totalPhrases,
-                            completedPhrases = topic.phraseProgress.completedPhrases
+                        Text(
+                            text = "Your recordings (" + ui.currentTopicTranscripts.size + ")",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 4.dp)
                         )
-                    }
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    // Optional CTA when topic is completed to quickly start from phrase 1
-                    if (topic?.completed == true) {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 12.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.9f)
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                        val itemsList = ui.currentTopicTranscripts.sortedByDescending { it.timestamp }
+                        if (itemsList.isEmpty()) {
+                            Text(
+                                text = "No recordings yet. Record the current phrase to see results here.",
+                                color = Color(0xFFB0BEC5),
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                Text(
-                                    text = "Practice from start",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                                Button(onClick = { viewModel.beginReviewFromStart() }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Refresh,
-                                        contentDescription = null
+                                items(itemsList) { rec ->
+                                    RecordingListItem(
+                                        entry = rec,
+                                        onPlay = { viewModel.playUserRecording(rec.audioPath) },
+                                        onShowAnalysis = { analysisFor = rec }
                                     )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Begin")
                                 }
                             }
                         }
-                    }
-
-                    // Hero Phrase Card with Recording Button (uses inspected or clamped index)
-                    topic?.material?.getOrNull(practiceHeroIdx)?.let { phrase ->
-                        HeroPhraseCard(
-                            phrase = phrase,
-                            recordingState = ui.phraseRecordingState,
-                            onStartRecording = { 
-                                if (recordAudioPermissionState.status.isGranted) {
-                                    viewModel.startPhraseRecording(context)
-                                } else {
-                                    showPermissionRequest = true
-                                    recordAudioPermissionState.launchPermissionRequest()
-                                }
-                            },
-                            onStopRecording = { viewModel.stopPhraseRecording(context) }
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Review navigation for previously practiced phrases
-                    val currentIdx = clampedCurrentIdx
-                    val practicedIndices = ui.currentTopicTranscripts.map { it.index }.distinct().sorted()
-                    val inReview = ui.inspectedPhraseIndex != null
-                    val prevEnabled = if (inReview) {
-                        practicedIndices.any { it < (ui.inspectedPhraseIndex ?: 0) }
-                    } else {
-                        practicedIndices.any { it <= currentIdx - 1 }
-                    }
-                    val nextEnabled = if (inReview) {
-                        practicedIndices.any { it > (ui.inspectedPhraseIndex ?: 0) }
-                    } else false
-
-                    if (practicedIndices.isNotEmpty()) {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 12.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                IconButton(onClick = { viewModel.inspectPreviousPhrase() }, enabled = prevEnabled) {
-                                    Icon(imageVector = Icons.Filled.ChevronLeft, contentDescription = "Previous phrase")
-                                }
-                                val displayIdxForLabel = (ui.inspectedPhraseIndex ?: currentIdx) + 1
-                                Text(
-                                    text = if (inReview) "Reviewing phrase $displayIdxForLabel" else "Current phrase $displayIdxForLabel",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                IconButton(onClick = { viewModel.inspectNextPhrase() }, enabled = nextEnabled) {
-                                    Icon(imageVector = Icons.Filled.ChevronRight, contentDescription = "Next phrase")
-                                }
-                            }
-                        }
-                        if (inReview) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            TextButton(onClick = { viewModel.clearInspection() }) {
-                                Text("Resume practice")
-                            }
-                        }
-                    }
-
-                    // Transcript playback: show the recording for the hero phrase when available
-                    if (ui.phraseSubmissionResult == null && ui.currentTopicTranscripts.isNotEmpty()) {
-                        val latestIdx = ui.currentTopicTranscripts.maxByOrNull { it.timestamp }?.index
-                        val transcript = ui.currentTopicTranscripts.firstOrNull { it.index == practiceHeroIdx }
-                        if (transcript != null && latestIdx != practiceHeroIdx) {
-                            TranscriptPlaybackCard(
-                                transcript = transcript,
-                                onPlayAudio = { viewModel.playUserRecording(transcript.audioPath) }
-                            )
-                        }
-                    }
-
-                    // Always show the most recent recording so users can review feedback without navigating
-                    if (ui.currentTopicTranscripts.isNotEmpty()) {
-                        val latest = ui.currentTopicTranscripts.maxByOrNull { it.timestamp }
-                        if (latest != null) {
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text = "Last recording: Phrase ${latest.index + 1}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 8.dp)
-                            )
-                            TranscriptPlaybackCard(
-                                transcript = latest,
-                                onPlayAudio = { viewModel.playUserRecording(latest.audioPath) }
-                            )
-                        }
+                        Spacer(Modifier.height(20.dp))
                     }
                 }
             }
-            
-            // Permission Request Card
-            AnimatedVisibility(
-                visible = showPermissionRequest,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                PermissionRequestCard(
-                    onGranted = { 
-                        showPermissionRequest = false
-                        recordAudioPermissionState.launchPermissionRequest()
-                    },
-                    onDismiss = { showPermissionRequest = false }
-                )
+
+            // Analysis dialog for a selected recording
+            analysisFor?.let { entry ->
+                AnalysisDialog(entry = entry, onDismiss = { analysisFor = null })
             }
 
-            // Phrase-level feedback overlay
-            // Show when a submission result exists. If in review mode, show regardless of current progress index.
-            val progress = topic?.phraseProgress
-            val showPhraseOverlay = ui.phraseSubmissionResult != null && (
-                ui.inspectedPhraseIndex != null ||
-                        (progress?.currentPhraseIndex ?: 0) < ((progress?.totalPhrases ?: 1) - 1)
-                )
-            if (showPhraseOverlay) {
-                val overlayPhraseNumber = ((ui.inspectedPhraseIndex ?: progress?.currentPhraseIndex) ?: 0) + 1
-                val overlayTotal = progress?.totalPhrases ?: (topic?.material?.size ?: 1)
-                // Compute running total score across phrases (latest attempt per phrase)
-                val totalScore = ui.currentTopicTranscripts
-                    .groupBy { it.index }
-                    .values
-                    .map { entries -> entries.maxByOrNull { it.timestamp }?.accuracy?.toInt() ?: 0 }
-                    .sum()
-                if (ui.phraseSubmissionResult!!.success) {
-                    // Success overlay
-                    PhrasePassCongratulationOverlay(
-                        result = ui.phraseSubmissionResult!!,
-                        phraseNumber = overlayPhraseNumber,
-                        totalPhrases = overlayTotal,
-                        totalScore = totalScore,
-                        onDismiss = { viewModel.dismissPhraseResult() }
-                    )
-                } else {
-                    // Try again overlay
-                    PhraseTryAgainOverlay(
-                        result = ui.phraseSubmissionResult!!,
-                        phraseNumber = overlayPhraseNumber,
-                        totalPhrases = overlayTotal,
-                        onDismiss = { viewModel.dismissPhraseResult() }
-                    )
-                }
-            }
-
-            // Congratulation screen for unlocking a topic (ensure it shows while in practice too)
-            ui.unlockedTopicInfo?.let { unlockedTopicInfo ->
-                CongratulationScreen(
-                    unlockedTopicInfo = unlockedTopicInfo,
-                    onDismiss = {
-                        viewModel.dismissUnlockedTopicInfo()
-                        viewModel.dismissPhraseResult()
-                        onNavigateBack()
+            // Completion overlay for finishing all phrases in this topic
+            val isTopicFinished = topic?.phraseProgress?.isAllPhrasesCompleted == true
+            if (isTopicFinished) {
+                val totalScoreLocal = (topic?.material?.size ?: 0) * 10
+                val totalXpLocal = (topic?.material?.size ?: 0) * 20 + 100
+                PronunciationCongratsDialog(
+                    topicTitle = topic?.title ?: "",
+                    score = totalScoreLocal,
+                    xp = totalXpLocal,
+                    onContinue = {
+                        onNavigateBack() // Back to TopicMasterScreen
                     }
                 )
             }
@@ -442,642 +394,108 @@ fun PronunciationPracticeScreen(
 }
 
 @Composable
-fun PhraseProgressDots(
-    currentIndex: Int,
-    totalPhrases: Int,
-    completedPhrases: List<Int>
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
-        ),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Phrases Progress",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                itemsIndexed(List(totalPhrases) { it }) { idx, _ ->
-                    val isCompleted = completedPhrases.contains(idx)
-                    val isCurrent = idx == currentIndex
-                    val dotSize = if (isCurrent) 16.dp else 12.dp
-                    val color = when {
-                        isCurrent -> MaterialTheme.colorScheme.primary
-                        isCompleted -> MaterialTheme.colorScheme.tertiary
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
-                    }
-                    
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .size(dotSize)
-                            .clip(CircleShape)
-                            .background(color)
-                            .then(
-                                if (isCurrent) 
-                                    Modifier.border(2.dp, MaterialTheme.colorScheme.tertiary, CircleShape)
-                                else
-                                    Modifier
-                            )
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = "Phrase ${currentIndex + 1} of $totalPhrases",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun HeroPhraseCard(
+private fun PhrasePracticeCard(
     phrase: String,
     recordingState: PhraseRecordingState,
-    onStartRecording: () -> Unit,
-    onStopRecording: () -> Unit
+    onMicClicked: () -> Unit,
 ) {
     val isRecording = recordingState == PhraseRecordingState.RECORDING
     val isProcessing = recordingState == PhraseRecordingState.PROCESSING
-    
-    // Animation for recording pulse
-    var pulseState by remember { mutableStateOf(false) }
-    val pulseScale by animateFloatAsState(
-        targetValue = if (pulseState) 1.1f else 1.0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        )
-    )
-    
-    // Pulse animation when recording
-    LaunchedEffect(isRecording) {
-        if (isRecording) {
-            while (true) {
-                pulseState = !pulseState
-                delay(800)
-            }
-        } else {
-            pulseState = false
-        }
-    }
-    
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(20.dp)),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-        )
+            .shadow(12.dp, RoundedCornerShape(24.dp)),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Repeat the phrase",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                fontStyle = FontStyle.Italic,
+                text = if (phrase.isNotBlank()) phrase else "Loading phrase…",
+                color = Color.White,
+                fontSize = 22.sp,
+                lineHeight = 30.sp,
                 textAlign = TextAlign.Center
             )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = phrase,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center,
-                lineHeight = 32.sp,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Recording button
-            Button(
-                onClick = { if (isRecording) onStopRecording() else onStartRecording() },
+
+            // Mic button
+            Surface(
+                onClick = onMicClicked,
                 modifier = Modifier
-                    .scale(if (isRecording) pulseScale else 1f)
-                    .size(80.dp),
+                    .size(100.dp)
+                    .clip(CircleShape),
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isRecording) Color.Red else MaterialTheme.colorScheme.primary
-                )
+                color = if (isRecording) Color(0xFFFF6B6B) else Color(0xFF4CAF50),
+                shadowElevation = if (isRecording) 16.dp else 8.dp
             ) {
-                when {
-                    isProcessing -> {
-                        CircularProgressIndicator(
-                            color = Color.White,
-                            modifier = Modifier.size(32.dp),
-                            strokeWidth = 3.dp
-                        )
-                    }
-                    isRecording -> {
-                        Icon(
-                            imageVector = Icons.Default.MicOff,
-                            contentDescription = "Stop Recording",
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                    else -> {
-                        Icon(
-                            imageVector = Icons.Default.Mic,
-                            contentDescription = "Start Recording",
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    when {
+                        isProcessing -> CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+                        isRecording -> Icon(Icons.Filled.MicOff, contentDescription = "Stop Recording", tint = Color.White, modifier = Modifier.size(40.dp))
+                        else -> Icon(Icons.Filled.Mic, contentDescription = "Start Recording", tint = Color.White, modifier = Modifier.size(40.dp))
                     }
                 }
             }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = when {
-                    isProcessing -> "Processing..."
-                    isRecording -> "Tap to stop recording"
-                    else -> "Tap to record"
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center
-            )
+
+            val hint = when {
+                isProcessing -> "Processing…"
+                isRecording -> "Tap to stop"
+                else -> "Tap to record"
+            }
+            Text(hint, color = Color(0xFFB0BEC5))
         }
     }
 }
 
 @Composable
-fun RecordingResultCard(
-    result: PhraseSubmissionResultUi,
-    onDismiss: () -> Unit
-) {
-    val accuracyColor = when {
-        result.accuracy >= 0.8f -> MaterialTheme.colorScheme.tertiary
-        result.accuracy >= 0.6f -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.error
-    }
-    
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(16.dp)),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Result title and icon
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    tint = if (result.success) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(28.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(8.dp))
-                
-                Text(
-                    text = if (result.success) "Great job!" else "Try again",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = if (result.success) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Accuracy indicator
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Pronunciation accuracy",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "0%",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    
-                    LinearProgressIndicator(
-                        progress = result.accuracy,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 8.dp)
-                            .height(8.dp)
-                            .clip(RoundedCornerShape(4.dp)),
-                        color = accuracyColor,
-                        trackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                    )
-                    
-                    Text(
-                        text = "100%",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                
-                Text(
-                    text = "${result.accuracy.toInt()}%",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = accuracyColor,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Transcription
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "What you said:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    Text(
-                        text = result.transcription.ifEmpty { "No speech detected" },
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontStyle = if (result.transcription.isEmpty()) FontStyle.Italic else FontStyle.Normal
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Feedback
-            if (!result.feedback.isNullOrEmpty()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = "Feedback:",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        Text(
-                            text = result.feedback,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-            
-            // XP award
-            if (result.xpAwarded != null && result.xpAwarded > 0) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Card(
-                        shape = CircleShape,
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)
-                        )
-                    ) {
-                        Text(
-                            text = "+${result.xpAwarded} XP",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-            
-            // Continue button
-            Button(
-                onClick = onDismiss,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Text(
-                    text = "Continue",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun TranscriptPlaybackCard(
-    transcript: PhraseTranscriptEntry,
-    onPlayAudio: () -> Unit
+private fun RecordingListItem(
+    entry: PhraseTranscriptEntry,
+    onPlay: () -> Unit,
+    onShowAnalysis: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(16.dp)),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
-        )
+            .clip(RoundedCornerShape(16.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF37474F).copy(alpha = 0.6f))
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            val accuracyColor = when {
-                transcript.accuracy >= 0.8f -> MaterialTheme.colorScheme.tertiary
-                transcript.accuracy >= 0.6f -> MaterialTheme.colorScheme.primary
-                else -> MaterialTheme.colorScheme.error
-            }
-            val formattedDate = remember(transcript.timestamp) {
-                if (transcript.timestamp > 0L) {
-                    DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
-                        .format(Date(transcript.timestamp))
-                } else null
-            }
-            Text(
-                text = "Your last recording",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Medium
-            )
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.TrendingUp,
-                        contentDescription = null,
-                        tint = accuracyColor,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Accuracy",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "${transcript.accuracy.toInt()}%",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = accuracyColor
-                    )
-                }
-                formattedDate?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = transcript.text,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-            
-            if (!transcript.feedback.isNullOrEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = "Feedback",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = transcript.feedback ?: "",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Play button
-            Button(
-                onClick = onPlayAudio,
-                modifier = Modifier
-                    .wrapContentSize()
-                    .aspectRatio(1f),
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "Play Recording",
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun PermissionRequestCard(
-    onGranted: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.5f)),
-        contentAlignment = Alignment.Center
-    ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .shadow(16.dp, RoundedCornerShape(24.dp)),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Microphone Permission Required",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
+                    text = "Phrase ${entry.index + 1}",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold
                 )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Text(
-                    text = "To record your voice and provide feedback, VoiceVibe needs access to your microphone.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Button(
-                        onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            contentColor = MaterialTheme.colorScheme.primary
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("Not Now")
-                    }
-                    
-                    Spacer(modifier = Modifier.width(16.dp))
-                    
-                    Button(
-                        onClick = onGranted,
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("Grant Access")
-                    }
+                val date = remember(entry.timestamp) { DateFormat.getDateTimeInstance().format(Date(entry.timestamp)) }
+                Text(text = date, color = Color(0xFFB0BEC5), fontSize = 12.sp)
+                if (entry.text.isNotBlank()) {
+                    Text(
+                        text = entry.text,
+                        color = Color(0xFFE0E0E0),
+                        fontSize = 14.sp,
+                        maxLines = 2
+                    )
+                }
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onPlay) {
+                    Icon(Icons.Filled.PlayArrow, contentDescription = "Play", tint = Color(0xFF64B5F6))
+                }
+                IconButton(onClick = onShowAnalysis) {
+                    Icon(Icons.Filled.Info, contentDescription = "Analysis", tint = Color(0xFFFFD54F))
                 }
             }
         }
@@ -1085,541 +503,50 @@ fun PermissionRequestCard(
 }
 
 @Composable
-fun PhrasePassCongratulationOverlay(
-    result: PhraseSubmissionResultUi,
-    phraseNumber: Int,
-    totalPhrases: Int,
-    totalScore: Int,
-    onDismiss: () -> Unit
-) {
-    var showContent by remember { mutableStateOf(false) }
-    
-    // Start animation after a brief delay
-    LaunchedEffect(Unit) {
-        delay(200)
-        showContent = true
-    }
-    
-    // Auto-dismiss after a few seconds
-    LaunchedEffect(Unit) {
-        delay(3000)
-        onDismiss()
-    }
-    
-    // Animated celebration background
-    val celebrationGradient = Brush.radialGradient(
-        colors = listOf(
-            Color(0xFFFFD700).copy(alpha = 0.3f), // Gold
-            Color(0xFFFF6B35).copy(alpha = 0.2f), // Orange
-            Color.Transparent
-        ),
-        radius = 800f
-    )
-    
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.6f)),
-        contentAlignment = Alignment.Center
-    ) {
-        AnimatedVisibility(
-            visible = showContent,
-            enter = scaleIn(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            ) + fadeIn(animationSpec = tween(500)),
-            exit = scaleOut() + fadeOut()
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(0.85f)
-                    .shadow(24.dp, RoundedCornerShape(28.dp)),
-                shape = RoundedCornerShape(28.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(celebrationGradient)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        // Trophy icon with pulse animation
-                        var pulseState by remember { mutableStateOf(false) }
-                        val pulseScale by animateFloatAsState(
-                            targetValue = if (pulseState) 1.2f else 1.0f,
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessVeryLow
-                            )
-                        )
-                        
-                        LaunchedEffect(Unit) {
-                            while (true) {
-                                pulseState = !pulseState
-                                delay(1000)
-                            }
-                        }
-                        
-                        // Total Score badge
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Card(
-                            shape = RoundedCornerShape(20.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.EmojiEvents,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Total score: $totalScore",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                        
-                        Box(
-                            modifier = Modifier
-                                .size(72.dp)
-                                .scale(pulseScale)
-                                .clip(CircleShape)
-                                .background(
-                                    Brush.radialGradient(
-                                        colors = listOf(
-                                            Color(0xFFFFD700), // Gold
-                                            Color(0xFFFF8F00)  // Amber
-                                        )
-                                    )
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.EmojiEvents,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(40.dp)
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.height(20.dp))
-                        
-                        // Congratulations text
-                        Text(
-                            text = "Excellent!",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        Text(
-                            text = "You nailed that pronunciation!",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                            textAlign = TextAlign.Center
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // Progress indicator
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                            ),
-                            shape = RoundedCornerShape(16.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "Phrase $phraseNumber of $totalPhrases completed",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                
-                                Spacer(modifier = Modifier.height(8.dp))
-                                
-                                LinearProgressIndicator(
-                                    progress = phraseNumber.toFloat() / totalPhrases.toFloat(),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(6.dp)
-                                        .clip(RoundedCornerShape(3.dp)),
-                                    color = MaterialTheme.colorScheme.primary,
-                                    trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                )
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // XP and accuracy row
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // Accuracy badge
-                            Card(
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)
-                                )
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.tertiary,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "${result.accuracy.toInt()}%",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.tertiary
-                                    )
-                                }
-                            }
-                            
-                            // XP badge
-                            if (result.xpAwarded != null && result.xpAwarded > 0) {
-                                Card(
-                                    shape = RoundedCornerShape(20.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = Color(0xFFFFD700).copy(alpha = 0.2f)
-                                    )
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Star,
-                                            contentDescription = null,
-                                            tint = Color(0xFFFFD700),
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
-                                            text = "+${result.xpAwarded} XP",
-                                            style = MaterialTheme.typography.labelLarge,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color(0xFFFF8F00)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.height(20.dp))
-                        
-                        // Keep going message
-                        Text(
-                            text = "Keep going! You're doing great! 🚀",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+private fun AnalysisDialog(entry: PhraseTranscriptEntry, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Close") }
+        },
+        title = { Text("Pronunciation Analysis", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Phrase ${entry.index + 1}")
+                if (entry.text.isNotBlank()) {
+                    Text("Transcript:\n${entry.text}")
+                }
+                val pct = (entry.accuracy * 100).toInt().coerceIn(0, 100)
+                Text("Accuracy: ${pct}%")
+                entry.feedback?.takeIf { it.isNotBlank() }?.let { fb ->
+                    Text("Feedback:\n$fb")
                 }
             }
         }
-    }
+    )
 }
 
 @Composable
-fun PhraseTryAgainOverlay(
-    result: PhraseSubmissionResultUi,
-    phraseNumber: Int,
-    totalPhrases: Int,
-    onDismiss: () -> Unit
+private fun PronunciationCongratsDialog(
+    topicTitle: String,
+    score: Int,
+    xp: Int,
+    onContinue: () -> Unit
 ) {
-    var showContent by remember { mutableStateOf(false) }
-    
-    // Start animation after a brief delay
-    LaunchedEffect(Unit) {
-        delay(200)
-        showContent = true
-    }
-    
-    // Auto-dismiss after 4 seconds (a bit longer than success to read feedback)
-    LaunchedEffect(Unit) {
-        delay(4000)
-        onDismiss()
-    }
-    
-    // Encouraging gradient background
-    val encouragementGradient = Brush.radialGradient(
-        colors = listOf(
-            Color(0xFF2196F3).copy(alpha = 0.3f), // Blue
-            Color(0xFF03DAC5).copy(alpha = 0.2f), // Teal
-            Color.Transparent
-        ),
-        radius = 800f
-    )
-    
-    // Get motivational message based on accuracy
-    val (title, message) = when {
-        result.accuracy >= 70f -> "Almost there!" to "You're so close! Just a little more practice."
-        result.accuracy >= 50f -> "Good effort!" to "Keep practicing, you're making progress!"
-        result.accuracy >= 30f -> "Don't give up!" to "Every attempt makes you better. Try again!"
-        else -> "Keep trying!" to "Practice makes perfect. You've got this!"
-    }
-    
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.6f)),
-        contentAlignment = Alignment.Center
-    ) {
-        AnimatedVisibility(
-            visible = showContent,
-            enter = scaleIn(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            ) + fadeIn(animationSpec = tween(500)),
-            exit = scaleOut() + fadeOut()
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(0.85f)
-                    .shadow(24.dp, RoundedCornerShape(28.dp)),
-                shape = RoundedCornerShape(28.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(encouragementGradient)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        // Retry icon with gentle bounce animation
-                        var bounceState by remember { mutableStateOf(false) }
-                        val bounceScale by animateFloatAsState(
-                            targetValue = if (bounceState) 1.1f else 1.0f,
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessMedium
-                            )
-                        )
-                        
-                        LaunchedEffect(Unit) {
-                            while (true) {
-                                bounceState = !bounceState
-                                delay(1500)
-                            }
-                        }
-                        
-                        Box(
-                            modifier = Modifier
-                                .size(72.dp)
-                                .scale(bounceScale)
-                                .clip(CircleShape)
-                                .background(
-                                    Brush.radialGradient(
-                                        colors = listOf(
-                                            Color(0xFF2196F3), // Blue
-                                            Color(0xFF1976D2)  // Darker blue
-                                        )
-                                    )
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.TrendingUp,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(40.dp)
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.height(20.dp))
-                        
-                        // Encouraging title
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        Text(
-                            text = message,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                            textAlign = TextAlign.Center
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // Accuracy feedback card
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
-                            ),
-                            shape = RoundedCornerShape(16.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(20.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "Your pronunciation accuracy",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                
-                                Spacer(modifier = Modifier.height(12.dp))
-                                
-                                // Large accuracy display
-                                Text(
-                                    text = "${result.accuracy.toInt()}%",
-                                    style = MaterialTheme.typography.displaySmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                
-                                Spacer(modifier = Modifier.height(8.dp))
-                                
-                                // Progress bar
-                                LinearProgressIndicator(
-                                    progress = result.accuracy / 100f,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(8.dp)
-                                        .clip(RoundedCornerShape(4.dp)),
-                                    color = MaterialTheme.colorScheme.primary,
-                                    trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                )
-                                
-                                Spacer(modifier = Modifier.height(8.dp))
-                                
-                                Text(
-                                    text = "Your score counts toward your total",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
-                                )
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // What they said (if available)
-                        if (result.transcription.isNotEmpty()) {
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                                ),
-                                shape = RoundedCornerShape(16.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp)
-                                ) {
-                                    Text(
-                                        text = "What you said:",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    
-                                    Text(
-                                        text = "\"${result.transcription}\"",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontStyle = FontStyle.Italic
-                                    )
-                                }
-                            }
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
-                        
-                        // Try again button
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Card(
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                )
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Refresh,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = "Try Again",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+    AlertDialog(
+        onDismissRequest = onContinue,
+        confirmButton = {
+            Button(onClick = onContinue, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))) {
+                Text("Continue Journey")
+            }
+        },
+        title = { Text("Congratulations!", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("You've completed $topicTitle")
+                Text("Score $score")
+                Text("XP $xp")
             }
         }
-    }
+    )
 }

@@ -185,7 +185,8 @@ data class SpeakingJourneyUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val currentTopicTranscripts: List<PhraseTranscriptEntry> = emptyList(),
-    val inspectedPhraseIndex: Int? = null
+    val inspectedPhraseIndex: Int? = null,
+    val debug: String? = null
 )
 
 data class UnlockedTopicInfo(

@@ -17,13 +17,13 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import org.json.JSONObject
 import java.io.File
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import org.json.JSONObject
 import javax.inject.Inject
 
 @HiltViewModel
@@ -213,7 +213,11 @@ class SpeakingJourneyViewModel @Inject constructor(
             mr.setAudioSamplingRate(44_100)
             mr.setOutputFile(outFile.absolutePath)
             mr.prepare(); mr.start()
-            _uiState.value = _uiState.value.copy(phraseRecordingState = PhraseRecordingState.RECORDING, phraseSubmissionResult = null)
+            _uiState.value = _uiState.value.copy(
+                phraseRecordingState = PhraseRecordingState.RECORDING,
+                phraseSubmissionResult = null,
+                debug = "recording start idx=$phraseIndex"
+            )
         } catch (t: Throwable) {
             Log.e("SpeakingJourney", "Failed to start recording", t)
             _uiState.value = _uiState.value.copy(
@@ -255,63 +259,120 @@ class SpeakingJourneyViewModel @Inject constructor(
                 result.fold(
                     onSuccess = { dto ->
                         val audioOutPath = dto.audioUrl?.takeIf { it.isNotBlank() } ?: file.absolutePath
+                        val safeText = dto.transcription ?: currentTopic.material.getOrNull(phraseIndex) ?: ""
+                        val safeAccuracy = try { dto.accuracy } catch (_: Throwable) { null } ?: 0f
                         val newEntry = PhraseTranscriptEntry(
                             index = phraseIndex,
-                            text = dto.transcription,
+                            text = safeText,
                             audioPath = audioOutPath,
-                            accuracy = dto.accuracy,
-                            feedback = dto.feedback,
+                            accuracy = safeAccuracy,
+                            feedback = dto.feedback, // nullable in our model
                             timestamp = System.currentTimeMillis()
                         )
+                        // Persist locally so recordings survive re-entry
+                        saveTranscriptEntryToDisk(context, currentTopic.id, newEntry)
                         val updatedTranscripts = _uiState.value.currentTopicTranscripts.filterNot { it.index == phraseIndex } + newEntry
                         _uiState.value = _uiState.value.copy(
                             phraseRecordingState = PhraseRecordingState.IDLE,
                             phraseSubmissionResult = PhraseSubmissionResultUi(
                                 success = dto.success,
-                                accuracy = dto.accuracy,
-                                transcription = dto.transcription,
-                                feedback = dto.feedback,
+                                accuracy = try { dto.accuracy } catch (_: Throwable) { null } ?: 0f,
+                                transcription = dto.transcription ?: "",
+                                feedback = dto.feedback ?: "",
                                 nextPhraseIndex = dto.nextPhraseIndex,
                                 topicCompleted = dto.topicCompleted,
                                 xpAwarded = dto.xpAwarded
                             ),
-                            currentTopicTranscripts = updatedTranscripts.sortedBy { it.index }
+                            currentTopicTranscripts = updatedTranscripts.sortedBy { it.index },
+                            debug = "submit ok idx=$phraseIndex next=${dto.nextPhraseIndex} topicCompleted=${dto.topicCompleted} localRecs=${updatedTranscripts.size}"
                         )
+                        // Exit review mode so hero follows current progress
+                        _uiState.value = _uiState.value.copy(inspectedPhraseIndex = null)
+                        // Optimistically advance current phrase so the UI updates immediately
+                        dto.nextPhraseIndex?.let { nextIdx ->
+                            val sNow = _uiState.value
+                            val selIdx = sNow.selectedTopicIdx
+                            val curTopic = sNow.topics.getOrNull(selIdx)
+                            if (curTopic != null) {
+                                val total = curTopic.phraseProgress?.totalPhrases ?: curTopic.material.size
+                                val practicedDistinctCount = updatedTranscripts.map { it.index }.distinct().size
+                                val completedNow = dto.topicCompleted || (total > 0 && practicedDistinctCount >= total)
+                                val newProgress = curTopic.phraseProgress?.copy(
+                                    currentPhraseIndex = nextIdx,
+                                    isAllPhrasesCompleted = curTopic.phraseProgress?.isAllPhrasesCompleted == true || completedNow
+                                ) ?: PhraseProgress(
+                                    currentPhraseIndex = nextIdx,
+                                    completedPhrases = curTopic.phraseProgress?.completedPhrases ?: emptyList(),
+                                    totalPhrases = total,
+                                    isAllPhrasesCompleted = completedNow
+                                )
+                                val newTopics = sNow.topics.toMutableList()
+                                newTopics[selIdx] = curTopic.copy(phraseProgress = newProgress)
+                                _uiState.value = sNow.copy(topics = newTopics)
+                            }
+                        }
+                        // Fallback: if success but no nextPhraseIndex returned, advance to phraseIndex + 1
+                        if (dto.success && !dto.topicCompleted && dto.nextPhraseIndex == null) {
+                            val sNow = _uiState.value
+                            val selIdx = sNow.selectedTopicIdx
+                            val curTopic = sNow.topics.getOrNull(selIdx)
+                            if (curTopic != null) {
+                                val total = curTopic.phraseProgress?.totalPhrases ?: curTopic.material.size
+                                val nextIdx = (phraseIndex + 1).coerceAtMost((total - 1).coerceAtLeast(0))
+                                if (nextIdx != phraseIndex) {
+                                    val practicedDistinctCount = updatedTranscripts.map { it.index }.distinct().size
+                                    val completedNow = total > 0 && practicedDistinctCount >= total
+                                    val newProgress = curTopic.phraseProgress?.copy(
+                                        currentPhraseIndex = nextIdx,
+                                        isAllPhrasesCompleted = curTopic.phraseProgress?.isAllPhrasesCompleted == true || completedNow
+                                    ) ?: PhraseProgress(
+                                        currentPhraseIndex = nextIdx,
+                                        completedPhrases = curTopic.phraseProgress?.completedPhrases ?: emptyList(),
+                                        totalPhrases = total,
+                                        isAllPhrasesCompleted = completedNow
+                                    )
+                                    val newTopics = sNow.topics.toMutableList()
+                                    newTopics[selIdx] = curTopic.copy(phraseProgress = newProgress)
+                                    _uiState.value = sNow.copy(topics = newTopics)
+                                }
+                            }
+                        }
                         recordingTargetIndex = null
                         // Refresh from backend to ensure we display server-side recordings
                         loadTranscriptsForCurrentTopic(context)
 
                         if (dto.success) {
-                            // If topic is completed, we need to check for unlock *after* reload
-                            if (dto.topicCompleted) {
+                            // Consider topic completion if backend flag is true OR all phrases have at least one recording locally
+                            val sNow2 = _uiState.value
+                            val curTopic2 = sNow2.topics.getOrNull(sNow2.selectedTopicIdx)
+                            val totalPhrases2 = curTopic2?.phraseProgress?.totalPhrases ?: curTopic2?.material?.size ?: 0
+                            val practicedDistinct = _uiState.value.currentTopicTranscripts.map { it.index }.distinct().size
+                            val shouldComplete = dto.topicCompleted || (totalPhrases2 > 0 && practicedDistinct >= totalPhrases2)
+                            if (shouldComplete && curTopic2 != null) {
+                                try { repo.completeTopic(curTopic2.id) } catch (_: Throwable) {}
                                 val previousTopics = _uiState.value.topics
-                                val currentTopicIndex = _uiState.value.selectedTopicIdx
-
-                                // Reload topics and then check for unlock
                                 reloadTopics(onComplete = {
                                     val newTopics = _uiState.value.topics
-                                    val nextTopic = newTopics.getOrNull(currentTopicIndex + 1)
-                                    val previousNextTopic = previousTopics.getOrNull(currentTopicIndex + 1)
-
-                                    if (nextTopic != null && nextTopic.unlocked && previousNextTopic?.unlocked == false) {
+                                    val unlockedIndex = newTopics.indices.firstOrNull { idx ->
+                                        val prev = previousTopics.getOrNull(idx)
+                                        val now = newTopics[idx]
+                                        prev != null && !prev.unlocked && now.unlocked
+                                    }
+                                    if (unlockedIndex != null) {
                                         _uiState.value = _uiState.value.copy(
                                             unlockedTopicInfo = UnlockedTopicInfo(
-                                                title = nextTopic.title,
-                                                description = nextTopic.description,
+                                                title = newTopics[unlockedIndex].title,
+                                                description = newTopics[unlockedIndex].description,
                                                 xpGained = 100,
-                                                topicIndex = currentTopicIndex + 1
-                                            )
-                                        )
-                                        // Also update the XP in the other modal if it's showing
-                                        _uiState.value = _uiState.value.copy(
+                                                topicIndex = unlockedIndex
+                                            ),
+                                            // Also update the XP in the other modal if it's showing
                                             phraseSubmissionResult = _uiState.value.phraseSubmissionResult?.copy(
-                                                xpAwarded = dto.xpAwarded + 100
+                                                xpAwarded = (_uiState.value.phraseSubmissionResult?.xpAwarded ?: dto.xpAwarded) + 100
                                             )
                                         )
                                     }
                                 })
-                            } else {
-                                reloadTopics() // Just reload without the special check
                             }
                             fetchGamificationProfile()
                         } else {
@@ -325,7 +386,8 @@ class SpeakingJourneyViewModel @Inject constructor(
                         Log.e("SpeakingJourney", "Submit phrase failed", e)
                         _uiState.value = _uiState.value.copy(
                             phraseRecordingState = PhraseRecordingState.IDLE,
-                            phraseSubmissionResult = PhraseSubmissionResultUi(false, 0f, "", "Failed to process recording. ${e.message ?: ""}", null, false)
+                            phraseSubmissionResult = PhraseSubmissionResultUi(false, 0f, "", "Failed to process recording. ${e.message ?: ""}", null, false),
+                            debug = "submit fail: ${e.message ?: "unknown"}"
                         )
                         recordingTargetIndex = null
                     }
@@ -334,24 +396,125 @@ class SpeakingJourneyViewModel @Inject constructor(
                 Log.e("SpeakingJourney", "Error submitting phrase", t)
                 _uiState.value = _uiState.value.copy(
                     phraseRecordingState = PhraseRecordingState.IDLE,
-                    phraseSubmissionResult = PhraseSubmissionResultUi(false, 0f, "", "An error occurred. ${t.message ?: ""}", null, false)
+                    phraseSubmissionResult = PhraseSubmissionResultUi(false, 0f, "", "An error occurred. ${t.message ?: ""}", null, false),
+                    debug = "submit error: ${t.message ?: "unknown"}"
                 )
                 recordingTargetIndex = null
             }
         }
     }
 
-        fun dismissPhraseResult() { _uiState.value = _uiState.value.copy(phraseSubmissionResult = null) }
+    fun dismissPhraseResult() { _uiState.value = _uiState.value.copy(phraseSubmissionResult = null) }
 
-        fun dismissUnlockedTopicInfo() {
-            val unlockedInfo = _uiState.value.unlockedTopicInfo
-            _uiState.value = _uiState.value.copy(unlockedTopicInfo = null)
-            if (unlockedInfo != null) {
-                selectTopic(unlockedInfo.topicIndex)
+    fun dismissUnlockedTopicInfo() {
+        val unlockedInfo = _uiState.value.unlockedTopicInfo
+        _uiState.value = _uiState.value.copy(unlockedTopicInfo = null)
+        if (unlockedInfo != null) {
+            selectTopic(unlockedInfo.topicIndex)
+        }
+    }
+
+    fun loadTranscriptsForCurrentTopic(context: Context) {
+        val s = _uiState.value
+        val topic = s.topics.getOrNull(s.selectedTopicIdx)
+        if (topic == null) {
+            _uiState.value = s.copy(currentTopicTranscripts = emptyList())
+            return
+        }
+        // Load locally persisted transcripts first for instant UI, then merge server results
+        val local = readTranscriptEntriesFromDisk(context, topic.id)
+        _uiState.value = _uiState.value.copy(
+            currentTopicTranscripts = local,
+            debug = "load rec local=${local.size}"
+        )
+        viewModelScope.launch {
+            try {
+                val res = repo.getUserPhraseRecordings(topic.id)
+                res.fold(
+                    onSuccess = { list ->
+                        // Deduplicate by phraseIndex, keeping the most recent by createdAt
+                        val latestByPhrase = list
+                            .groupBy { it.phraseIndex }
+                            .mapValues { (_, recs) ->
+                                recs.maxByOrNull { r -> parseCreatedAtToEpoch(r.createdAt) ?: Long.MIN_VALUE }!!
+                            }
+                        val serverMapped = latestByPhrase.values.map { rec ->
+                            val ts = parseCreatedAtToEpoch(rec.createdAt) ?: 0L
+                            PhraseTranscriptEntry(
+                                index = rec.phraseIndex,
+                                text = rec.transcription,
+                                audioPath = rec.audioUrl,
+                                accuracy = rec.accuracy ?: 0f,
+                                feedback = rec.feedback,
+                                timestamp = ts
+                            )
+                        }
+                        // Merge with existing local state to avoid wiping the latest local submission
+                        val existing = _uiState.value.currentTopicTranscripts
+                        val merged = (existing + serverMapped)
+                            .groupBy { it.index }
+                            .map { (_, entries) -> entries.maxByOrNull { it.timestamp }!! }
+                            .sortedByDescending { it.timestamp }
+                        _uiState.value = _uiState.value.copy(
+                            currentTopicTranscripts = merged,
+                            debug = "load rec local=${existing.size} server=${list.size} merged=${merged.size}"
+                        )
+                    },
+                    onFailure = { e ->
+                        Log.e("SpeakingJourney", "Failed to fetch recordings", e)
+                        // Keep existing transcripts instead of clearing to avoid empty UI states
+                        _uiState.value = _uiState.value.copy(
+                            currentTopicTranscripts = _uiState.value.currentTopicTranscripts,
+                            debug = "load rec fail: ${e.message ?: "unknown"}"
+                        )
+                    }
+                )
+            } catch (t: Throwable) {
+                Log.e("SpeakingJourney", "Error fetching recordings", t)
+                // Keep existing transcripts on error
+                _uiState.value = _uiState.value.copy(
+                    currentTopicTranscripts = _uiState.value.currentTopicTranscripts,
+                    debug = "load rec error: ${t.message ?: "unknown"}"
+                )
             }
         }
+    }
 
-    
+    private fun readTranscriptEntriesFromDisk(context: Context, topicId: String): List<PhraseTranscriptEntry> {
+        return try {
+            val dir = File(context.filesDir, "voicevibe/transcripts")
+            val file = File(dir, "$topicId.json")
+            if (!file.exists()) return emptyList()
+            val root = JSONObject(file.readText())
+            val entries = if (root.has("entries")) root.getJSONObject("entries") else JSONObject()
+            val list = mutableListOf<PhraseTranscriptEntry>()
+            val keys = entries.keys()
+            while (keys.hasNext()) {
+                val key = keys.next()
+                val obj = entries.optJSONObject(key) ?: continue
+                val index = obj.optInt("index", key.toIntOrNull() ?: 0)
+                val text = obj.optString("text", "")
+                val audioPath = obj.optString("audioPath", "")
+                val accuracy = obj.optDouble("accuracy", 0.0).toFloat()
+                val feedback = obj.optString("feedback", null)
+                val timestamp = obj.optLong("timestamp", 0L)
+                list.add(
+                    PhraseTranscriptEntry(
+                        index = index,
+                        text = text,
+                        audioPath = audioPath,
+                        accuracy = accuracy,
+                        feedback = feedback,
+                        timestamp = timestamp
+                    )
+                )
+            }
+            list.sortedByDescending { it.timestamp }
+        } catch (t: Throwable) {
+            Log.e("SpeakingJourney", "Failed to read local transcripts", t)
+            emptyList()
+        }
+    }
 
     fun playUserRecording(path: String) {
         try { mediaPlayer?.release() } catch (_: Throwable) {}
@@ -511,49 +674,6 @@ class SpeakingJourneyViewModel @Inject constructor(
         mediaRecorder = null
         try { mediaPlayer?.release() } catch (_: Throwable) {}
         mediaPlayer = null
-    }
-
-    fun loadTranscriptsForCurrentTopic(context: Context) {
-        val s = _uiState.value
-        val topic = s.topics.getOrNull(s.selectedTopicIdx)
-        if (topic == null) {
-            _uiState.value = s.copy(currentTopicTranscripts = emptyList())
-            return
-        }
-        viewModelScope.launch {
-            try {
-                val res = repo.getUserPhraseRecordings(topic.id)
-                res.fold(
-                    onSuccess = { list ->
-                        // Deduplicate by phraseIndex, keeping the most recent by createdAt
-                        val latestByPhrase = list
-                            .groupBy { it.phraseIndex }
-                            .mapValues { (_, recs) ->
-                                recs.maxByOrNull { r -> parseCreatedAtToEpoch(r.createdAt) ?: Long.MIN_VALUE }!!
-                            }
-                        val mapped = latestByPhrase.values.map { rec ->
-                            val ts = parseCreatedAtToEpoch(rec.createdAt) ?: 0L
-                            PhraseTranscriptEntry(
-                                index = rec.phraseIndex,
-                                text = rec.transcription,
-                                audioPath = rec.audioUrl,
-                                accuracy = rec.accuracy ?: 0f,
-                                feedback = rec.feedback,
-                                timestamp = ts
-                            )
-                        }.sortedByDescending { it.timestamp }
-                        _uiState.value = _uiState.value.copy(currentTopicTranscripts = mapped)
-                    },
-                    onFailure = { e ->
-                        Log.e("SpeakingJourney", "Failed to fetch recordings", e)
-                        _uiState.value = _uiState.value.copy(currentTopicTranscripts = emptyList())
-                    }
-                )
-            } catch (t: Throwable) {
-                Log.e("SpeakingJourney", "Error fetching recordings", t)
-                _uiState.value = _uiState.value.copy(currentTopicTranscripts = emptyList())
-            }
-        }
     }
 
     private fun parseCreatedAtToEpoch(createdAt: String?): Long? {

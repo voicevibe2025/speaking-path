@@ -113,20 +113,14 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(48.dp))
 
                 // Logo and App Name
-                Box(
+                Image(
+                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                    contentDescription = "VoiceVibe Logo",
                     modifier = Modifier
                         .size(120.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(MaterialTheme.colorScheme.primary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "VV",
-                        fontSize = 48.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
+                        .clip(RoundedCornerShape(24.dp)),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 

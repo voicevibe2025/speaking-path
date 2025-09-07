@@ -50,7 +50,7 @@ class SettingsViewModel @Inject constructor(
     val errorMessage: State<String> = _errorMessage
 
     // Feature flags / preferences
-    private val _speakingOnlyEnabled = mutableStateOf(false)
+    private val _speakingOnlyEnabled = mutableStateOf(true)
     val speakingOnlyEnabled: State<Boolean> = _speakingOnlyEnabled
 
     private val _ttsVoiceId = mutableStateOf<String?>(null)

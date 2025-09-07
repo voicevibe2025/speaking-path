@@ -75,7 +75,19 @@ fun HomeScreen(
     ) {
         // Add refresh button in top app bar for now
         TopAppBar(
-            title = { Text("Home") },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                        contentDescription = "VoiceVibe Logo",
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Home")
+                }
+            },
             actions = {
                 IconButton(
                     onClick = { onRefresh() }

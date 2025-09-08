@@ -388,7 +388,7 @@ fun SpeakingJourneyScreen(
                                 colors = CardDefaults.cardColors(
                                     containerColor = Color.Transparent // container is transparent to show background
                                 ),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                             ) {
                                 Box(
                                     modifier = Modifier
@@ -440,8 +440,9 @@ fun SpeakingJourneyScreen(
                                     .clickable { onNavigateToConversationPractice(topic.id) },
                                 shape = RoundedCornerShape(20.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFF2a2d3a)
-                                )
+                                    containerColor = Color(0xFF1f2c4c)
+                                ),
+                                border = BorderStroke(1.dp, Color(0xFF64B5F6).copy(alpha = 0.6f))
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -480,8 +481,9 @@ fun SpeakingJourneyScreen(
                                     .clickable { onNavigateToVocabularyLesson(topic.id) },
                                 shape = RoundedCornerShape(20.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFF2a2d3a)
-                                )
+                                    containerColor = Color(0xFF1f2c4c)
+                                ),
+                                border = BorderStroke(1.dp, Color(0xFF64B5F6).copy(alpha = 0.6f))
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -797,7 +799,7 @@ private fun ModernTopicCard(
             BorderStroke(borderWidth, MaterialTheme.colorScheme.primary)
         } else null,
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 8.dp else 4.dp
+            defaultElevation = 0.dp
         )
     ) {
         Box(
@@ -913,7 +915,7 @@ private fun SelectedTopicDetails(topic: Topic) {
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF2a2d3a)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = BorderStroke(1.dp, Color(0xFF64B5F6).copy(alpha = 0.5f))
     ) {
         Column(
@@ -963,7 +965,7 @@ private fun GamificationStatsBar(gamificationProfile: GamificationProfile?, phra
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -1336,7 +1338,7 @@ private fun HeroPhraseCard(
                         .height(320.dp),
                     shape = RoundedCornerShape(24.dp),
                     elevation = CardDefaults.cardElevation(
-                        defaultElevation = if (recordingState == PhraseRecordingState.RECORDING) 16.dp else 8.dp
+                        defaultElevation = 0.dp
                     ),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface
@@ -1986,7 +1988,7 @@ private fun AnimatedResultCard(
                 MaterialTheme.colorScheme.errorContainer
             }
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Box {
             // Success particles background
@@ -2239,7 +2241,7 @@ private fun CompletionCelebrationCard() {
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Box(
             modifier = Modifier

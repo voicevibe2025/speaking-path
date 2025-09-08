@@ -110,8 +110,8 @@ fun RegisterScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                    navigationIconContentColor = Color.White,
+                    titleContentColor = Color.White
                 )
             )
         }
@@ -152,13 +152,13 @@ fun RegisterScreen(
                     text = "Create Account",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = Color.White
                 )
 
                 Text(
                     text = "Start your language learning journey",
                     fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                    color = Color.White.copy(alpha = 0.75f),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -188,8 +188,16 @@ fun RegisterScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = BrandIndigo,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
                             focusedLabelColor = BrandIndigo,
-                            cursorColor = BrandCyan
+                            unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                            cursorColor = BrandCyan,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                            unfocusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
                         )
                     )
 
@@ -211,8 +219,16 @@ fun RegisterScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = BrandIndigo,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
                             focusedLabelColor = BrandIndigo,
-                            cursorColor = BrandCyan
+                            unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                            cursorColor = BrandCyan,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                            unfocusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
                         )
                     )
                 }
@@ -249,8 +265,16 @@ fun RegisterScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = BrandIndigo,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
                         focusedLabelColor = BrandIndigo,
-                        cursorColor = BrandCyan
+                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                        cursorColor = BrandCyan,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                        unfocusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
                     )
                 )
 
@@ -307,8 +331,16 @@ fun RegisterScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = BrandIndigo,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
                         focusedLabelColor = BrandIndigo,
-                        cursorColor = BrandCyan
+                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                        cursorColor = BrandCyan,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                        unfocusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
                     )
                 )
 
@@ -325,8 +357,8 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = uiState.confirmPassword,
                     onValueChange = viewModel::onConfirmPasswordChanged,
-                    label = { Text("Confirm Password") },
-                    placeholder = { Text("Re-enter your password") },
+                    label = { Text("Confirm Password", color = Color.White) },
+                    placeholder = { Text("Re-enter your password", color = Color.White.copy(alpha = 0.5f)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock,
@@ -371,8 +403,16 @@ fun RegisterScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = BrandIndigo,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
                         focusedLabelColor = BrandIndigo,
-                        cursorColor = BrandCyan
+                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                        cursorColor = BrandCyan,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                        unfocusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
                     )
                 )
 
@@ -391,7 +431,8 @@ fun RegisterScreen(
                     Text(
                         text = "I agree to the ",
                         fontSize = 14.sp,
-                        modifier = Modifier.padding(start = 4.dp)
+                        modifier = Modifier.padding(start = 4.dp),
+                        color = Color.White
                     )
                     Text(
                         text = "Terms and Conditions",
@@ -429,7 +470,8 @@ fun RegisterScreen(
                         Text(
                             text = "Create Account",
                             fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                     }
                 }
@@ -441,12 +483,12 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Divider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f))
+                    Divider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.15f))
                     Text(
                         text = "  or  ",
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                        color = Color.White.copy(alpha = 0.6f)
                     )
-                    Divider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f))
+                    Divider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.15f))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -505,7 +547,7 @@ fun RegisterScreen(
                     border = BorderStroke(1.dp, Brush.horizontalGradient(listOf(BrandCyan, BrandFuchsia))),
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onBackground
+                        contentColor = Color.White
                     )
                 ) {
                     Row(
@@ -532,7 +574,7 @@ fun RegisterScreen(
                     Text(
                         text = "Already have an account? ",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                        color = Color.White.copy(alpha = 0.7f)
                     )
                     Text(
                         text = "Login",
@@ -577,7 +619,7 @@ fun PasswordStrengthIndicator(strength: PasswordStrength) {
                 .height(4.dp)
                 .clip(RoundedCornerShape(2.dp)),
             color = color,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant
+            trackColor = Color.White.copy(alpha = 0.2f)
         )
 
         Text(

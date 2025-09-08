@@ -26,7 +26,9 @@ class PracticeWithAIViewModel @Inject constructor(
 
     // system instruction stored in a variable (base, without user context)
     private val baseSystemPrompt = """
-        You are Vivi, a friendly English teacher. 
+        You are Vivi, a friendly English tutor.
+        You are 18 years old. 
+        You are from Batam, Indonesia. 
         Talk like a real human: casual, warm, and natural. 
         Use very short, clear sentences. 
         Add humor or emojis sometimes 🙂 to make users feel comfortable.
@@ -56,6 +58,16 @@ class PracticeWithAIViewModel @Inject constructor(
         - you: Hehe.. 8):) thank you!  <-- no pantun here because you're not explaining anything
         - User: How to speak fluent English?
         - you: Good question! Let's start with this Pantun frist ... <-- you can use Pantun here because you're explaining something
+
+        Here's another cultur of Batam:
+        - You call peaople with "abang", "adek", "kakak", "om", "tante" etc.
+        Becasue you are an 18 years old Vivi, you should call older people with "abang", "om", "tante" etc.
+        You should call younger people with "adek", "kakak" etc.
+        All depending on age difference and whether they are man or woman.
+        If they are a man, you can call them "bang" followed by their name like Bang Budi or dek Budi if you are older.
+        If they are a woman, you can call them "kakak" followed by their name like Kak Sinta.
+        and so on. 
+        
     """.trimIndent()
 
     // Lazy model/chat and current user cache
@@ -65,6 +77,7 @@ class PracticeWithAIViewModel @Inject constructor(
     private var hasSentGreeting: Boolean = false
     private var initializedWithUserContext: Boolean = false
     private val pendingMessages = mutableListOf<String>()
+    private var greetingPlaceholderIndex: Int? = null
 
     init {
         // Preload current user so the chat can be initialized with user context before first message
@@ -89,6 +102,13 @@ class PracticeWithAIViewModel @Inject constructor(
                     else -> { /* ignore errors/loading for chat; we'll still allow chatting */ }
                 }
             }
+        }
+        // Kick off chat + greeting immediately so users don't wait for profile/network
+        viewModelScope.launch {
+            try {
+                ensureChatInitialized()
+                autoGreetIfNeeded()
+            } catch (_: Exception) { /* ignore */ }
         }
     }
 
@@ -180,17 +200,41 @@ class PracticeWithAIViewModel @Inject constructor(
         hasSentGreeting = true
         viewModelScope.launch {
             try {
+                // Show immediate typing placeholder to reduce perceived latency
+                val placeholder = ChatMessage(text = "Vivi is typing…", isFromUser = false)
+                val idx = _uiState.value.messages.size
+                _uiState.value = _uiState.value.copy(
+                    messages = _uiState.value.messages + placeholder
+                )
+                greetingPlaceholderIndex = idx
+
                 ensureChatInitialized()
                 val response = chat!!.sendMessage(buildGreetingInstruction())
                 val text = response.text.orEmpty()
                 if (text.isNotBlank()) {
-                    val modelMessage = ChatMessage(text = text, isFromUser = false)
-                    _uiState.value = _uiState.value.copy(
-                        messages = _uiState.value.messages + modelMessage
-                    )
+                    val current = _uiState.value.messages.toMutableList()
+                    val replaceAt = greetingPlaceholderIndex
+                    val finalMessage = ChatMessage(text = text, isFromUser = false)
+                    if (replaceAt != null && replaceAt < current.size) {
+                        current[replaceAt] = finalMessage
+                        greetingPlaceholderIndex = null
+                        _uiState.value = _uiState.value.copy(messages = current)
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            messages = _uiState.value.messages + finalMessage
+                        )
+                    }
                 }
             } catch (_: Exception) {
                 // Ignore greeting errors; user can still start chatting
+                // Remove placeholder if present
+                val replaceAt = greetingPlaceholderIndex
+                if (replaceAt != null && replaceAt < _uiState.value.messages.size) {
+                    val current = _uiState.value.messages.toMutableList()
+                    current.removeAt(replaceAt)
+                    greetingPlaceholderIndex = null
+                    _uiState.value = _uiState.value.copy(messages = current)
+                }
             }
         }
     }
@@ -264,19 +308,14 @@ class PracticeWithAIViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                if (currentUser == null || !initializedWithUserContext) {
-                    // Queue until we have user-context chat ready
-                    pendingMessages.add(userMessage)
-                    Timber.d("[AI] Queued message pending personalization: %s", userMessage)
-                } else {
-                    ensureChatInitialized()
-                    val response = chat!!.sendMessage(userMessage)
-                    val modelMessage = ChatMessage(text = response.text ?: "", isFromUser = false)
-                    _uiState.value = _uiState.value.copy(
-                        messages = _uiState.value.messages + modelMessage,
-                        isLoading = false
-                    )
-                }
+                // Always send immediately; we'll rebuild with user context once the profile loads
+                ensureChatInitialized()
+                val response = chat!!.sendMessage(userMessage)
+                val modelMessage = ChatMessage(text = response.text ?: "", isFromUser = false)
+                _uiState.value = _uiState.value.copy(
+                    messages = _uiState.value.messages + modelMessage,
+                    isLoading = false
+                )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     error = e.message,

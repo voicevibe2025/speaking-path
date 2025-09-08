@@ -32,6 +32,11 @@ import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 import coil.compose.SubcomposeAsyncImage
+import com.example.voicevibe.ui.theme.BrandNavyDark
+import com.example.voicevibe.ui.theme.BrandNavy
+import com.example.voicevibe.ui.theme.BrandCyan
+import com.example.voicevibe.ui.theme.BrandIndigo
+import com.example.voicevibe.ui.theme.BrandFuchsia
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +76,13 @@ fun HomeScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(BrandNavyDark, BrandNavy)
+                )
+            )
     ) {
         // Add refresh button in top app bar for now
         TopAppBar(
@@ -95,19 +106,25 @@ fun HomeScreen(
                     if (isRefreshing) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
-                            strokeWidth = 2.dp
+                            strokeWidth = 2.dp,
+                            color = Color.White
                         )
                     } else {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
                 }
-            }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                titleContentColor = Color.White,
+                actionIconContentColor = Color.White
+            )
         )
 
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
+                .background(Color.Transparent),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
@@ -184,7 +201,8 @@ private fun HeaderSection(
             Text(
                 text = userName,
                 fontSize = 28.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -192,14 +210,14 @@ private fun HeaderSection(
             // Level badge
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                color = Color.White.copy(alpha = 0.08f),
                 modifier = Modifier.padding(top = 4.dp)
             ) {
                 Text(
                     text = "Level $level",
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = BrandCyan,
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -211,7 +229,7 @@ private fun HeaderSection(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary)
+                .background(BrandIndigo)
         ) {
             if (!avatarUrl.isNullOrBlank()) {
                 SubcomposeAsyncImage(
@@ -309,7 +327,7 @@ private fun StatCard(
             ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = color.copy(alpha = 0.1f)
+            containerColor = Color.White.copy(alpha = 0.06f)
         )
     ) {
         Column(
@@ -334,7 +352,7 @@ private fun StatCard(
             Text(
                 text = title,
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                color = Color.White.copy(alpha = 0.75f)
             )
         }
     }
@@ -354,22 +372,29 @@ private fun QuickActionsSection(
             text = "Quick Actions",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 12.dp)
+            modifier = Modifier.padding(bottom = 12.dp),
+            color = Color.White
         )
 
         // Primary action - Start Practice
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onStartPractice() },
+                .clickable { onStartPractice() }
+                .clip(RoundedCornerShape(16.dp)),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = Color.Transparent
             )
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(BrandCyan, BrandIndigo, BrandFuchsia)
+                        )
+                    )
                     .padding(20.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -384,7 +409,7 @@ private fun QuickActionsSection(
                     Text(
                         text = "Practice your pronunciation now",
                         fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.8f)
+                        color = Color.White.copy(alpha = 0.85f)
                     )
                 }
 
@@ -404,7 +429,10 @@ private fun QuickActionsSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onPracticeWithAI() },
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White.copy(alpha = 0.06f)
+            )
         ) {
             Row(
                 modifier = Modifier
@@ -417,19 +445,20 @@ private fun QuickActionsSection(
                     Text(
                         text = "Practice with Vivi",
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                     Text(
                         text = "super friendly chatbot",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                        color = Color.White.copy(alpha = 0.75f)
                     )
                 }
 
                 Icon(
                     imageVector = Icons.Default.Mic,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = BrandCyan,
                     modifier = Modifier.size(32.dp)
                 )
             }
@@ -550,7 +579,8 @@ private fun ActivePathsSection(
             Text(
                 text = "Continue Learning",
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
         }
 
@@ -575,7 +605,8 @@ private fun PathCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.06f))
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -590,12 +621,13 @@ private fun PathCard(
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = Color.White
                     )
                     Text(
                         text = "${path.completedLessons}/${path.totalLessons} lessons",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                        color = Color.White.copy(alpha = 0.75f)
                     )
                 }
 
@@ -603,7 +635,7 @@ private fun PathCard(
                     text = "${path.progress}%",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = BrandCyan
                 )
             }
 
@@ -615,7 +647,7 @@ private fun PathCard(
                     .fillMaxWidth()
                     .height(8.dp)
                     .clip(RoundedCornerShape(4.dp)),
-                color = MaterialTheme.colorScheme.primary
+                color = BrandCyan
             )
         }
     }
@@ -637,11 +669,12 @@ private fun RecentBadgesSection(
             Text(
                 text = "Recent Achievements",
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
 
             TextButton(onClick = onViewAll) {
-                Text(text = "View All")
+                Text(text = "View All", color = BrandCyan)
             }
         }
 
@@ -660,7 +693,7 @@ private fun BadgeItem(badge: String) {
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+            containerColor = Color.White.copy(alpha = 0.06f)
         )
     ) {
         Box(
@@ -672,7 +705,7 @@ private fun BadgeItem(badge: String) {
             Icon(
                 imageVector = Icons.Default.Star,
                 contentDescription = badge,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = BrandCyan,
                 modifier = Modifier.size(40.dp)
             )
         }

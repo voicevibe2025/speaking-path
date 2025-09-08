@@ -131,13 +131,13 @@ fun LoginScreen(
                     text = "Welcome Back!",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = Color.White
                 )
 
                 Text(
                     text = "Login to continue your learning journey",
                     fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                    color = Color.White.copy(alpha = 0.75f),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -167,8 +167,16 @@ fun LoginScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = BrandIndigo,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
                         focusedLabelColor = BrandIndigo,
-                        cursorColor = BrandCyan
+                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                        cursorColor = BrandCyan,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                        unfocusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
                     )
                 )
 
@@ -218,8 +226,16 @@ fun LoginScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = BrandIndigo,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
                         focusedLabelColor = BrandIndigo,
-                        cursorColor = BrandCyan
+                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                        cursorColor = BrandCyan,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                        unfocusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
                     )
                 )
 
@@ -242,7 +258,8 @@ fun LoginScreen(
                         Text(
                             text = "Remember me",
                             fontSize = 14.sp,
-                            modifier = Modifier.padding(start = 4.dp)
+                            modifier = Modifier.padding(start = 4.dp),
+                            color = Color.White
                         )
                     }
 
@@ -284,7 +301,8 @@ fun LoginScreen(
                         Text(
                             text = "Login",
                             fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                     }
                 }
@@ -296,12 +314,12 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Divider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f))
+                    Divider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.15f))
                     Text(
                         text = "  or  ",
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                        color = Color.White.copy(alpha = 0.6f)
                     )
-                    Divider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f))
+                    Divider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.15f))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -374,7 +392,7 @@ fun LoginScreen(
                     border = BorderStroke(1.dp, Brush.horizontalGradient(listOf(BrandCyan, BrandFuchsia))),
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onBackground
+                        contentColor = Color.White
                     )
                 ) {
                     Row(
@@ -391,6 +409,7 @@ fun LoginScreen(
                         Text(text = "Continue with Google")
                     }
                 }
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Register Link
                 Row(
@@ -400,7 +419,7 @@ fun LoginScreen(
                     Text(
                         text = "Don't have an account? ",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                        color = Color.White.copy(alpha = 0.7f)
                     )
                     Text(
                         text = "Sign Up",

@@ -66,6 +66,7 @@ import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
@@ -131,6 +132,14 @@ import androidx.annotation.DrawableRes
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+
+@DrawableRes
+private fun getTopicDrawableId(context: Context, topicTitle: String): Int {
+    val resourceName = topicTitle.lowercase(Locale.ROOT).replace(" ", "_").replace("-", "_")
+    val resourceId = context.resources.getIdentifier(resourceName, "drawable", context.packageName)
+    // A fallback drawable should be created with this name to avoid crashes
+    return if (resourceId != 0) resourceId else R.drawable.ic_launcher_background
+}
 
 enum class Stage { MATERIAL, PRACTICE }
 
@@ -298,9 +307,9 @@ fun SpeakingJourneyScreen(
         .background(
             Brush.verticalGradient(
                 colors = listOf(
-                    Color(0xFF0A1128), // Dark blue
-                    Color(0xFF2D5A5B), // Deep teal
-                    Color(0xFF0A1128)  // Back to dark blue for depth
+                    Color(0xFF1a1a2e),
+                    Color(0xFF16213e),
+                    Color(0xFF0f3460)
                 ),
                 startY = 0f,
                 endY = Float.POSITIVE_INFINITY
@@ -308,7 +317,7 @@ fun SpeakingJourneyScreen(
         )
     ) {
         // Animated background particles for engagement
-        AnimatedBackgroundParticles()
+        // AnimatedBackgroundParticles()
         
         Scaffold(
             containerColor = Color.Transparent,
@@ -375,9 +384,9 @@ fun SpeakingJourneyScreen(
                                     .fillMaxWidth()
                                     .padding(top = 16.dp, start = 16.dp, end = 16.dp)
                                     .clickable { onNavigateToTopicMaster(topic.id) },
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(20.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                    containerColor = Color(0xFF2a2d3a)
                                 )
                             ) {
                                 Row(
@@ -391,18 +400,19 @@ fun SpeakingJourneyScreen(
                                         Text(
                                             text = "Master ${topic.title}",
                                             style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color.White
                                         )
                                         Text(
                                             text = "Practice pronunciation, fluency, vocabulary and more",
                                             style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                                            color = Color(0xFFB0BEC5)
                                         )
                                     }
                                     Icon(
                                         imageVector = Icons.Default.ChevronRight,
                                         contentDescription = "Go to practice",
-                                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                        tint = Color(0xFF64B5F6)
                                     )
                                 }
                             }
@@ -414,9 +424,9 @@ fun SpeakingJourneyScreen(
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp)
                                     .clickable { onNavigateToConversationPractice(topic.id) },
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(20.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                    containerColor = Color(0xFF2a2d3a)
                                 )
                             ) {
                                 Row(
@@ -428,20 +438,21 @@ fun SpeakingJourneyScreen(
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = "Conversation Practice",
+                                            text = "Conversation",
                                             style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color.White
                                         )
                                         Text(
                                             text = "Listen with Start / Prev / Next, or play all",
                                             style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                                            color = Color(0xFFB0BEC5)
                                         )
                                     }
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                         contentDescription = "Go to conversation practice",
-                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                        tint = Color(0xFF64B5F6)
                                     )
                                 }
                             }
@@ -453,9 +464,9 @@ fun SpeakingJourneyScreen(
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp)
                                     .clickable { onNavigateToVocabularyLesson(topic.id) },
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(20.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                                    containerColor = Color(0xFF2a2d3a)
                                 )
                             ) {
                                 Row(
@@ -467,20 +478,21 @@ fun SpeakingJourneyScreen(
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = "Vocabulary Lesson",
+                                            text = "Vocabulary",
                                             style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color.White
                                         )
                                         Text(
                                             text = "Learn key words with AI explanations and TTS",
                                             style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
+                                            color = Color(0xFFB0BEC5)
                                         )
                                     }
                                     Icon(
                                         imageVector = Icons.Filled.School,
                                         contentDescription = "Go to vocabulary",
-                                        tint = MaterialTheme.colorScheme.onTertiaryContainer
+                                        tint = Color(0xFFFFD700)
                                     )
                                 }
                             }
@@ -644,16 +656,35 @@ private fun MinimalTopBar(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.EmojiEvents,
+                    imageVector = Icons.Filled.RecordVoiceOver,
                     contentDescription = null,
-                    tint = Color.White
+                    tint = Color(0xFF64B5F6),
+                    modifier = Modifier.size(24.dp)
                 )
-                Text("Speaking Quest", fontWeight = FontWeight.Bold)
+                Text(
+                    "Speaking Journey",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
             }
         },
         navigationIcon = {
-            IconButton(onClick = onNavigateBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+            Surface(
+                onClick = onNavigateBack,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .size(40.dp),
+                shape = CircleShape,
+                color = Color.White.copy(alpha = 0.1f)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -663,14 +694,6 @@ private fun MinimalTopBar(
             actionIconContentColor = Color.White
         )
     )
-}
-
-@DrawableRes
-private fun getTopicDrawableId(context: Context, topicTitle: String): Int {
-    val resourceName = topicTitle.lowercase(Locale.ROOT).replace(" ", "_").replace("-", "_")
-    val resourceId = context.resources.getIdentifier(resourceName, "drawable", context.packageName)
-    // A fallback drawable should be created with this name to avoid crashes
-    return if (resourceId != 0) resourceId else R.drawable.ic_launcher_background
 }
 
 @Composable
@@ -694,11 +717,11 @@ private fun CompactTopicSelector(
             .padding(vertical = 8.dp)
     ) {
         Text(
-            text = "Choose Your Topic",
+            text = "Topics",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            color = MaterialTheme.colorScheme.onSurface
+            color = Color.White
         )
         
         LazyRow(
@@ -874,7 +897,7 @@ private fun SelectedTopicDetails(topic: Topic) {
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = shimmerAlpha)
+            containerColor = Color(0xFF2a2d3a)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -891,18 +914,18 @@ private fun SelectedTopicDetails(topic: Topic) {
                 Text(
                     text = "Current Topic",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                    color = Color(0xFF64B5F6)
                 )
                 Text(
                     text = topic.title,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                    color = Color.White
                 )
                 Text(
                     text = topic.description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f),
+                    color = Color(0xFFB0BEC5),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -920,12 +943,12 @@ private fun SelectedTopicDetails(topic: Topic) {
                         text = "${topic.material.size}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        color = Color.White
                     )
                     Text(
                         text = "phrases",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                        color = Color(0xFFB0BEC5)
                     )
                 }
             }
@@ -1627,7 +1650,7 @@ private fun ModernConversationCard(
             .fillMaxWidth()
             .padding(top = 16.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a))
     ) {
         Column(
             modifier = Modifier
@@ -1644,15 +1667,21 @@ private fun ModernConversationCard(
                     text = "Conversation Example",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
+                    color = Color.White,
                     modifier = Modifier.weight(1f)
                 )
                 IconButton(onClick = { onSpeak(combined) }) {
-                    Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = "Play conversation")
+                    Icon(
+                        Icons.AutoMirrored.Filled.VolumeUp,
+                        contentDescription = "Play conversation",
+                        tint = Color(0xFF64B5F6)
+                    )
                 }
             }
             Text(
                 text = combined,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color(0xFFB0BEC5)
             )
         }
     }

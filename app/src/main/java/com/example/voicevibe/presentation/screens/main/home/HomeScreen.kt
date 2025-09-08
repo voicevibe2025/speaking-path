@@ -415,12 +415,12 @@ private fun QuickActionsSection(
             ) {
                 Column {
                     Text(
-                        text = "Practice with AI",
+                        text = "Practice with Vivi",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Speak and get instant feedback",
+                        text = "super friendly chatbot",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                     )

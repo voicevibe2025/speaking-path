@@ -14,7 +14,7 @@ interface UserApiService {
     @GET("users/profile/")
     suspend fun getCurrentUser(): Response<UserProfile>
     
-    @PUT("users/me")
+    @PUT("users/profile/")
     suspend fun updateProfile(@Body user: UserProfile): Response<UserProfile>
     
     @GET("users/progress")
@@ -26,13 +26,13 @@ interface UserApiService {
         @Part avatar: MultipartBody.Part
     ): Response<UserProfile>
     
-    @PATCH("users/preferences")
+    @PATCH("users/preferences/")
     suspend fun updatePreferences(@Body preferences: Map<String, Any>): Response<UserProfile>
     
     @DELETE("users/me")
     suspend fun deleteAccount(): Response<Unit>
     
-    @GET("users/{id}")
+    @GET("users/{id}/")
     suspend fun getUserById(@Path("id") userId: String): Response<UserProfile>
     
     @GET("users/search")

@@ -133,19 +133,8 @@ class HomeViewModel @Inject constructor(
             }
         }
 
-        viewModelScope.launch {
-            // Load user progress
-            userRepository.getUserProgress().collect { resource ->
-                when (resource) {
-                    is Resource.Success -> {
-                        _uiState.update {
-                            it.copy(userProgress = resource.data)
-                        }
-                    }
-                    else -> {}
-                }
-            }
-        }
+        // Skipping user progress API for now: backend exposes users/stats/ which doesn't match domain model.
+        // Points and streak are loaded from ProfileRepository in loadUserProfileData().
 
         // Note: totalPoints and currentStreak are now loaded from ProfileRepository
         // in loadUserProfileData() method above

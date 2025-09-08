@@ -1,5 +1,6 @@
 package com.example.voicevibe.presentation.screens.speakingjourney
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -147,14 +148,12 @@ fun ConversationPracticeScreen(
         }
     }
 
-    // Background gradient and image per topic
-    val backgroundGradient = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFF0A1128),
-            Color(0xFF1E2761),
-            Color(0xFF0A1128)
-        )
-    )
+    // Define a modern color palette
+    val backgroundColor = Color(0xFF121212)
+    val primaryColor = Color(0xFFBB86FC)
+    val secondaryColor = Color(0xFF03DAC6)
+    val surfaceColor = Color(0xFF1E1E1E)
+    val onSurfaceColor = Color(0xFFE0E0E0)
 
     Scaffold(
         topBar = {
@@ -164,7 +163,8 @@ fun ConversationPracticeScreen(
                         text = topic?.title ?: "Conversation",
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = onSurfaceColor
                     )
                 },
                 navigationIcon = {
@@ -176,60 +176,36 @@ fun ConversationPracticeScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color.White
+                            tint = onSurfaceColor
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = backgroundColor,
+                    titleContentColor = onSurfaceColor,
+                    navigationIconContentColor = onSurfaceColor
                 )
             )
         },
-        containerColor = Color.Transparent
+        containerColor = backgroundColor
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(backgroundGradient)
+                .background(backgroundColor)
                 .padding(innerPadding)
         ) {
-            // Background image based on topic title
-            topic?.let { t ->
-                val resId = remember(t.title) { getTopicDrawableId(context, t.title) }
-                Image(
-                    painter = painterResource(id = resId),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                )
-                // Scrim for readability
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Black.copy(alpha = 0.3f),
-                                    Color.Black.copy(alpha = 0.6f)
-                                )
-                            )
-                        )
-                )
-            }
-
             when {
                 topic == null && ui.isLoading -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Color.White)
+                        CircularProgressIndicator(color = primaryColor)
                     }
                 }
                 topic == null -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
                             text = "Conversation not available",
-                            color = Color.White,
+                            color = onSurfaceColor,
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
@@ -238,7 +214,7 @@ fun ConversationPracticeScreen(
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
                             text = "No conversation example for this topic",
-                            color = Color.White,
+                            color = onSurfaceColor,
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
@@ -248,8 +224,12 @@ fun ConversationPracticeScreen(
                     val isSpeakerA = current?.speaker.equals("A", ignoreCase = true)
                     val playing = currentlyPlayingId == current?.text
                     val scale by animateFloatAsState(
-                        targetValue = if (playing) 1.03f else 1f,
-                        animationSpec = tween(200, easing = FastOutSlowInEasing)
+                        targetValue = if (playing) 1.05f else 1f,
+                        animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    )
+                    val animatedBubbleColor by animateColorAsState(
+                        targetValue = if (isSpeakerA) primaryColor else secondaryColor,
+                        animationSpec = tween(300)
                     )
 
                     Column(
@@ -259,14 +239,14 @@ fun ConversationPracticeScreen(
                         verticalArrangement = Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         // Characters row with speech bubble
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                            horizontalArrangement = Arrangement.SpaceAround,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Left character (Speaker A)
+                            // Speaker A
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Image(
                                     painter = painterResource(id = R.drawable.ic_male_head),
@@ -275,39 +255,10 @@ fun ConversationPracticeScreen(
                                         .size(84.dp)
                                         .clip(CircleShape)
                                 )
+                                Text("Speaker A", color = onSurfaceColor, fontWeight = FontWeight.Bold)
                             }
 
-                            // Speech bubble centered, aligned towards speaking side
-                            Box(modifier = Modifier.weight(1f)) {
-                                current?.let { turn ->
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = if (isSpeakerA) Arrangement.Start else Arrangement.End
-                                    ) {
-                                        Card(
-                                            shape = RoundedCornerShape(16.dp),
-                                            colors = CardDefaults.cardColors(
-                                                containerColor = if (isSpeakerA)
-                                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
-                                                else MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
-                                            ),
-                                            elevation = CardDefaults.cardElevation(defaultElevation = if (playing) 8.dp else 2.dp),
-                                            modifier = Modifier
-                                                .padding(horizontal = 12.dp)
-                                                .scale(scale)
-                                        ) {
-                                            Text(
-                                                text = turn.text,
-                                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                                                color = if (isSpeakerA) MaterialTheme.colorScheme.onSurfaceVariant else Color.White,
-                                                fontSize = 18.sp
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Right character (Speaker B)
+                            // Speaker B
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Image(
                                     painter = painterResource(id = R.drawable.ic_female_head),
@@ -316,15 +267,37 @@ fun ConversationPracticeScreen(
                                         .size(84.dp)
                                         .clip(CircleShape)
                                 )
+                                Text("Speaker B", color = onSurfaceColor, fontWeight = FontWeight.Bold)
                             }
                         }
 
-                        // Controls row: Prev - Start (click/long press) - Next
+                        // Speech bubble
+                        current?.let { turn ->
+                            Card(
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = animatedBubbleColor),
+                                elevation = CardDefaults.cardElevation(defaultElevation = if (playing) 12.dp else 4.dp),
+                                modifier = Modifier
+                                    .padding(horizontal = 12.dp, vertical = 24.dp)
+                                    .scale(scale)
+                                    .fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = turn.text,
+                                    modifier = Modifier.padding(16.dp),
+                                    color = Color.Black,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+
+                        // Controls row
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 16.dp, top = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                                .padding(bottom = 24.dp, top = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             IconButton(
@@ -337,36 +310,29 @@ fun ConversationPracticeScreen(
                                 Icon(
                                     imageVector = Icons.Filled.ChevronLeft,
                                     contentDescription = "Previous",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(32.dp)
+                                    tint = onSurfaceColor,
+                                    modifier = Modifier.size(48.dp)
                                 )
                             }
 
-                            // Start button with long-press to play all
                             Surface(
                                 modifier = Modifier
                                     .combinedClickable(
                                         onClick = { playTurn(0) },
                                         onLongClick = { playAllFrom(0) }
                                     )
-                                    .clip(RoundedCornerShape(24.dp)),
-                                color = MaterialTheme.colorScheme.primary
+                                    .clip(CircleShape),
+                                color = primaryColor
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.size(72.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.PlayArrow,
-                                        contentDescription = null,
-                                        tint = Color.White
-                                    )
-                                    Text(
-                                        text = "Start",
-                                        color = Color.White,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold
+                                        contentDescription = "Start",
+                                        tint = Color.Black,
+                                        modifier = Modifier.size(48.dp)
                                     )
                                 }
                             }
@@ -381,8 +347,8 @@ fun ConversationPracticeScreen(
                                 Icon(
                                     imageVector = Icons.Filled.ChevronRight,
                                     contentDescription = "Next",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(32.dp)
+                                    tint = onSurfaceColor,
+                                    modifier = Modifier.size(48.dp)
                                 )
                             }
                         }
@@ -391,13 +357,4 @@ fun ConversationPracticeScreen(
             }
         }
     }
-}
-
-// Helper: find background image by topic title; falls back to launcher background
-private fun getTopicDrawableId(context: android.content.Context, topicTitle: String): Int {
-    val resourceName = topicTitle.lowercase(java.util.Locale.ROOT)
-        .replace(" ", "_")
-        .replace("-", "_")
-    val resId = context.resources.getIdentifier(resourceName, "drawable", context.packageName)
-    return if (resId != 0) resId else R.drawable.ic_launcher_background
 }

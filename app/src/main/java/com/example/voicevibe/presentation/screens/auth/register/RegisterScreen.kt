@@ -41,6 +41,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import androidx.compose.foundation.BorderStroke
+import com.example.voicevibe.ui.theme.BrandCyan
+import com.example.voicevibe.ui.theme.BrandFuchsia
+import com.example.voicevibe.ui.theme.BrandIndigo
+import com.example.voicevibe.ui.theme.BrandNavy
+import com.example.voicevibe.ui.theme.BrandNavyDark
 
 /**
  * Register screen composable
@@ -103,7 +109,9 @@ fun RegisterScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
+                    containerColor = Color.Transparent,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
         }
@@ -113,10 +121,7 @@ fun RegisterScreen(
                 .fillMaxSize()
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            MaterialTheme.colorScheme.background
-                        )
+                        colors = listOf(BrandNavyDark, BrandNavy)
                     )
                 )
                 .padding(paddingValues)
@@ -153,7 +158,7 @@ fun RegisterScreen(
                 Text(
                     text = "Start your language learning journey",
                     fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -180,7 +185,12 @@ fun RegisterScreen(
                         },
                         singleLine = true,
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BrandIndigo,
+                            focusedLabelColor = BrandIndigo,
+                            cursorColor = BrandCyan
+                        )
                     )
 
                     OutlinedTextField(
@@ -198,7 +208,12 @@ fun RegisterScreen(
                         },
                         singleLine = true,
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BrandIndigo,
+                            focusedLabelColor = BrandIndigo,
+                            cursorColor = BrandCyan
+                        )
                     )
                 }
 
@@ -214,7 +229,7 @@ fun RegisterScreen(
                         Icon(
                             imageVector = Icons.Default.Email,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = BrandCyan
                         )
                     },
                     isError = uiState.emailError != null,
@@ -231,7 +246,12 @@ fun RegisterScreen(
                     ),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = BrandIndigo,
+                        focusedLabelColor = BrandIndigo,
+                        cursorColor = BrandCyan
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -247,7 +267,7 @@ fun RegisterScreen(
                         Icon(
                             imageVector = Icons.Default.Lock,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = BrandCyan
                         )
                     },
                     isError = uiState.passwordError != null,
@@ -284,7 +304,12 @@ fun RegisterScreen(
                     },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = BrandIndigo,
+                        focusedLabelColor = BrandIndigo,
+                        cursorColor = BrandCyan
+                    )
                 )
 
                 // Password Strength Indicator
@@ -306,7 +331,7 @@ fun RegisterScreen(
                         Icon(
                             imageVector = Icons.Default.Lock,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = BrandCyan
                         )
                     },
                     isError = uiState.confirmPasswordError != null,
@@ -343,7 +368,12 @@ fun RegisterScreen(
                     },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = BrandIndigo,
+                        focusedLabelColor = BrandIndigo,
+                        cursorColor = BrandCyan
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -355,7 +385,8 @@ fun RegisterScreen(
                 ) {
                     Checkbox(
                         checked = uiState.agreeToTerms,
-                        onCheckedChange = viewModel::onAgreeToTermsChanged
+                        onCheckedChange = viewModel::onAgreeToTermsChanged,
+                        colors = CheckboxDefaults.colors(checkedColor = BrandIndigo)
                     )
                     Text(
                         text = "I agree to the ",
@@ -365,7 +396,7 @@ fun RegisterScreen(
                     Text(
                         text = "Terms and Conditions",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = BrandCyan,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable { /* Open terms */ }
                     )
@@ -378,9 +409,16 @@ fun RegisterScreen(
                     onClick = viewModel::register,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    enabled = !uiState.isLoading && uiState.agreeToTerms
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(BrandCyan, BrandIndigo, BrandFuchsia)
+                            )
+                        ),
+                    shape = RoundedCornerShape(14.dp),
+                    enabled = !uiState.isLoading && uiState.agreeToTerms,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                 ) {
                     if (uiState.isLoading) {
                         CircularProgressIndicator(
@@ -403,12 +441,12 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Divider(modifier = Modifier.weight(1f))
+                    Divider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f))
                     Text(
                         text = "  or  ",
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                     )
-                    Divider(modifier = Modifier.weight(1f))
+                    Divider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -463,7 +501,12 @@ fun RegisterScreen(
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(12.dp),
-                    enabled = !uiState.isLoading
+                    enabled = !uiState.isLoading,
+                    border = BorderStroke(1.dp, Brush.horizontalGradient(listOf(BrandCyan, BrandFuchsia))),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onBackground
+                    )
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -472,7 +515,7 @@ fun RegisterScreen(
                         Icon(
                             imageVector = Icons.Filled.CheckCircle,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = BrandCyan
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(text = "Continue with Google")
@@ -489,13 +532,13 @@ fun RegisterScreen(
                     Text(
                         text = "Already have an account? ",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                     )
                     Text(
                         text = "Login",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = BrandCyan,
                         modifier = Modifier.clickable { onNavigateToLogin() }
                     )
                 }
@@ -512,7 +555,7 @@ fun PasswordStrengthIndicator(strength: PasswordStrength) {
         targetValue = when (strength) {
             PasswordStrength.WEAK -> Color.Red
             PasswordStrength.MEDIUM -> Color(0xFFFFA500) // Orange
-            PasswordStrength.STRONG -> Color.Green
+            PasswordStrength.STRONG -> BrandCyan
         },
         label = "strength_color"
     )

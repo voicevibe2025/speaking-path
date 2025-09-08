@@ -7,35 +7,35 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColorScheme = lightColorScheme(
-    primary = NeutralDarkGray,
-    secondary = AccentBlueGray,
-    tertiary = AccentWarmBeige,
-    background = NeutralLightGray,
-    surface = NeutralWhite,
+    primary = BrandIndigo,
+    secondary = BrandFuchsia,
+    tertiary = BrandCyan,
+    background = BrandNavyDark,
+    surface = BrandNavy,
     onPrimary = NeutralWhite,
-    onSecondary = NeutralBlack,
+    onSecondary = NeutralWhite,
     onTertiary = NeutralBlack,
-    onBackground = NeutralDarkGray,
-    onSurface = NeutralDarkGray
+    onBackground = NeutralWhite,
+    onSurface = NeutralWhite
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = NeutralLightGray,
-    secondary = AccentBlueGray,
-    tertiary = AccentWarmBeige,
-    background = NeutralBlack,
-    surface = NeutralDarkGray,
-    onPrimary = NeutralBlack,
+    primary = BrandIndigo,
+    secondary = BrandFuchsia,
+    tertiary = BrandCyan,
+    background = BrandNavyDark,
+    surface = BrandNavy,
+    onPrimary = NeutralWhite,
     onSecondary = NeutralWhite,
-    onTertiary = NeutralWhite,
-    onBackground = NeutralLightGray,
-    onSurface = NeutralLightGray
+    onTertiary = NeutralBlack,
+    onBackground = NeutralWhite,
+    onSurface = NeutralWhite
 )
 
 @Composable
 fun VoiceVibeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Keep dynamic color disabled for consistent neutral theme
+    // Keep dynamic color disabled for consistent brand theme
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {

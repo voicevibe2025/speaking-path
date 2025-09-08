@@ -11,7 +11,7 @@ import retrofit2.http.*
  */
 interface UserApiService {
     
-    @GET("users/me")
+    @GET("users/profile/")
     suspend fun getCurrentUser(): Response<UserProfile>
     
     @PUT("users/me")

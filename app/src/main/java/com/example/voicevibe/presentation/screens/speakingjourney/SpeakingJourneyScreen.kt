@@ -931,27 +931,6 @@ private fun SelectedTopicDetails(topic: Topic) {
                 )
             }
             
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Phrases count
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Text(
-                        text = "${topic.material.size}",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "phrases",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFFB0BEC5)
-                    )
-                }
-            }
         }
     }
 }

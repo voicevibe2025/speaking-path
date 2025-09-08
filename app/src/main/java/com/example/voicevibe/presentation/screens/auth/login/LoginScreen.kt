@@ -41,6 +41,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import androidx.compose.foundation.BorderStroke
+import com.example.voicevibe.ui.theme.BrandCyan
+import com.example.voicevibe.ui.theme.BrandFuchsia
+import com.example.voicevibe.ui.theme.BrandIndigo
+import com.example.voicevibe.ui.theme.BrandNavy
+import com.example.voicevibe.ui.theme.BrandNavyDark
 
 /**
  * Login screen composable
@@ -94,10 +100,7 @@ fun LoginScreen(
                 .fillMaxSize()
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            MaterialTheme.colorScheme.background
-                        )
+                        colors = listOf(BrandNavyDark, BrandNavy)
                     )
                 )
                 .padding(paddingValues)
@@ -134,7 +137,7 @@ fun LoginScreen(
                 Text(
                     text = "Login to continue your learning journey",
                     fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -161,7 +164,12 @@ fun LoginScreen(
                     ),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = BrandIndigo,
+                        focusedLabelColor = BrandIndigo,
+                        cursorColor = BrandCyan
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -207,7 +215,12 @@ fun LoginScreen(
                     },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = BrandIndigo,
+                        focusedLabelColor = BrandIndigo,
+                        cursorColor = BrandCyan
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -223,7 +236,8 @@ fun LoginScreen(
                     ) {
                         Checkbox(
                             checked = uiState.rememberMe,
-                            onCheckedChange = viewModel::onRememberMeChanged
+                            onCheckedChange = viewModel::onRememberMeChanged,
+                            colors = CheckboxDefaults.colors(checkedColor = BrandIndigo)
                         )
                         Text(
                             text = "Remember me",
@@ -238,7 +252,7 @@ fun LoginScreen(
                         Text(
                             text = "Forgot Password?",
                             fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.primary
+                            color = BrandCyan
                         )
                     }
                 }
@@ -250,9 +264,16 @@ fun LoginScreen(
                     onClick = viewModel::login,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    enabled = !uiState.isLoading
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(BrandCyan, BrandIndigo, BrandFuchsia)
+                            )
+                        ),
+                    shape = RoundedCornerShape(14.dp),
+                    enabled = !uiState.isLoading,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                 ) {
                     if (uiState.isLoading) {
                         CircularProgressIndicator(
@@ -275,12 +296,12 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Divider(modifier = Modifier.weight(1f))
+                    Divider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f))
                     Text(
                         text = "  or  ",
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                     )
-                    Divider(modifier = Modifier.weight(1f))
+                    Divider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -349,7 +370,12 @@ fun LoginScreen(
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(12.dp),
-                    enabled = !uiState.isLoading
+                    enabled = !uiState.isLoading,
+                    border = BorderStroke(1.dp, Brush.horizontalGradient(listOf(BrandCyan, BrandFuchsia))),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onBackground
+                    )
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -359,7 +385,7 @@ fun LoginScreen(
                         Icon(
                             imageVector = Icons.Filled.Visibility,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = BrandCyan
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(text = "Continue with Google")
@@ -374,13 +400,13 @@ fun LoginScreen(
                     Text(
                         text = "Don't have an account? ",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                     )
                     Text(
                         text = "Sign Up",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = BrandCyan,
                         modifier = Modifier.clickable { onNavigateToRegister() }
                     )
                 }

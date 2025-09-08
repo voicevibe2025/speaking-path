@@ -29,7 +29,7 @@ fun PracticeWithAIScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Practice with AI", fontWeight = FontWeight.Bold) },
+                title = { Text("Vivi", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")

@@ -9,34 +9,38 @@ import retrofit2.http.*
  */
 interface LearningPathApiService {
 
-    @GET("learning-paths/user")
+    @GET("learning/paths/")
     suspend fun getUserLearningPaths(): Response<List<LearningPath>>
 
-    @GET("learning-paths/{id}")
+    @GET("learning/paths/{id}/")
     suspend fun getLearningPath(@Path("id") pathId: String): Response<LearningPath>
 
-    @GET("learning-paths")
+    @GET("learning/paths/")
     suspend fun getAllLearningPaths(): Response<List<LearningPath>>
 
-    @POST("learning-paths/{id}/start")
+    // Backend custom action name is 'activate' on LearningPathViewSet
+    @POST("learning/paths/{id}/activate/")
     suspend fun startLearningPath(@Path("id") pathId: String): Response<LearningPath>
 
-    @PUT("learning-paths/{id}/progress")
+    // Note: Progress updates are modeled under modules/activities in the backend.
+    // This endpoint is kept for compatibility and may not exist server-side yet.
+    @PUT("learning/paths/{id}/progress/")
     suspend fun updateProgress(
         @Path("id") pathId: String,
         @Body request: Map<String, Any>
     ): Response<LearningPath>
 
-    @GET("learning-paths/{id}/lessons")
+    // These lesson endpoints may not exist on the backend. Keep signatures for forward-compat.
+    @GET("learning/paths/{id}/lessons/")
     suspend fun getLessons(@Path("id") pathId: String): Response<List<Lesson>>
 
-    @GET("learning-paths/{pathId}/lessons/{lessonId}")
+    @GET("learning/paths/{pathId}/lessons/{lessonId}/")
     suspend fun getLesson(
         @Path("pathId") pathId: String,
         @Path("lessonId") lessonId: String
     ): Response<Lesson>
 
-    @POST("learning-paths/{pathId}/lessons/{lessonId}/complete")
+    @POST("learning/paths/{pathId}/lessons/{lessonId}/complete/")
     suspend fun completeLesson(
         @Path("pathId") pathId: String,
         @Path("lessonId") lessonId: String

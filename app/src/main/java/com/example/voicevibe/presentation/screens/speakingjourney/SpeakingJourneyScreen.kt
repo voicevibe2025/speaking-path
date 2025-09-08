@@ -386,34 +386,48 @@ fun SpeakingJourneyScreen(
                                     .clickable { onNavigateToTopicMaster(topic.id) },
                                 shape = RoundedCornerShape(20.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFF2a2d3a)
-                                )
+                                    containerColor = Color.Transparent // container is transparent to show background
+                                ),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                             ) {
-                                Row(
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = "Master ${topic.title}",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = Color.White
+                                        .background(
+                                            Brush.horizontalGradient(
+                                                colors = listOf(
+                                                    Color(0xFFFF6B35),
+                                                    Color(0xFFFFD700)
+                                                )
+                                            )
                                         )
-                                        Text(
-                                            text = "Practice pronunciation, fluency, vocabulary and more",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = Color(0xFFB0BEC5)
+                                        .padding(16.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = "Master ${topic.title}",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold, // Bolder
+                                                color = Color.White
+                                            )
+                                            Text(
+                                                text = "Practice pronunciation, fluency, vocabulary and more",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = Color.White.copy(alpha = 0.9f)
+                                            )
+                                        }
+                                        Icon(
+                                            imageVector = Icons.Default.ChevronRight,
+                                            contentDescription = "Go to practice",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(32.dp) // Bigger icon
                                         )
                                     }
-                                    Icon(
-                                        imageVector = Icons.Default.ChevronRight,
-                                        contentDescription = "Go to practice",
-                                        tint = Color(0xFF64B5F6)
-                                    )
                                 }
                             }
                             
@@ -899,38 +913,31 @@ private fun SelectedTopicDetails(topic: Topic) {
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF2a2d3a)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = BorderStroke(1.dp, Color(0xFF64B5F6).copy(alpha = 0.5f))
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = "Current Topic",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFF64B5F6)
-                )
-                Text(
-                    text = topic.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Text(
-                    text = topic.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFFB0BEC5),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            
+            Text(
+                text = "Current Topic",
+                style = MaterialTheme.typography.labelSmall,
+                color = Color(0xFF64B5F6)
+            )
+            Text(
+                text = topic.title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            Text(
+                text = topic.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFFB0BEC5),
+            )
         }
     }
 }

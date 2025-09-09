@@ -96,16 +96,35 @@ class SpeakingJourneyViewModel @Inject constructor(
                             completed = dto.completed
                         )
                     } else emptyList()
-                    val newIndex = when {
+                    // Prefer auto-selecting the next unlocked, incomplete topic when coming back
+                    // from practice and the last-visited/previously-selected topic is now completed.
+                    val lastVisitedIdx: Int? = if (!userProfile.firstVisit && userProfile.lastVisitedTopicId != null) {
+                        mapped.indexOfFirst { it.id == userProfile.lastVisitedTopicId }.takeIf { it >= 0 }
+                    } else null
+                    val prevSelectedIdx: Int? = prevSelectedId?.let { id ->
+                        mapped.indexOfFirst { it.id == id }.takeIf { it >= 0 }
+                    }
+                    // Base selection: prefer server's lastVisited, then previous selection, then first unlocked
+                    var baseIndex: Int = when {
                         mapped.isEmpty() -> 0
-                        !userProfile.firstVisit && userProfile.lastVisitedTopicId != null -> {
-                            mapped.indexOfFirst { it.id == userProfile.lastVisitedTopicId }
-                                .let { if (it >= 0) it else mapped.indexOfFirst { it.unlocked }.let { idx -> if (idx >= 0) idx else 0 } }
-                        }
-                        prevSelectedId != null -> mapped.indexOfFirst { it.id == prevSelectedId }
-                            .let { if (it >= 0) it else mapped.indexOfFirst { it.unlocked }.let { idx -> if (idx >= 0) idx else 0 } }
+                        lastVisitedIdx != null -> lastVisitedIdx
+                        prevSelectedIdx != null -> prevSelectedIdx
                         else -> mapped.indexOfFirst { it.unlocked }.let { if (it >= 0) it else 0 }
                     }
+                    // If the base topic is completed, try to move to the next unlocked & incomplete topic
+                    if (mapped.isNotEmpty()) {
+                        val baseTopic = mapped.getOrNull(baseIndex)
+                        if (baseTopic?.completed == true) {
+                            val nextIdx = ((baseIndex + 1) until mapped.size)
+                                .firstOrNull { idx -> mapped[idx].unlocked && !mapped[idx].completed }
+                                ?: mapped.indexOfFirst { it.unlocked && !it.completed }
+                                    .takeIf { it >= 0 }
+                            if (nextIdx != null) {
+                                baseIndex = nextIdx
+                            }
+                        }
+                    }
+                    val newIndex = baseIndex
                     _uiState.value = _uiState.value.copy(
                         topics = mapped,
                         userProfile = userProfile,

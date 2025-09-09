@@ -758,7 +758,7 @@ private fun CompactTopicSelector(
         
         // Selected topic details
         topics.getOrNull(selectedTopicIdx)?.let { selectedTopic ->
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(15.dp))
             SelectedTopicDetails(selectedTopic)
         }
     }
@@ -1860,12 +1860,12 @@ private fun ModernWelcomeScreen(
     currentTopic: Topic?,
     onDismiss: () -> Unit
 ) {
-    // Auto-dismiss after 4 seconds, but user can tap to skip
+    // Auto-dismiss after 8 seconds, but user can tap to skip
     LaunchedEffect(Unit) {
-        delay(4000)
+        delay(8000)
         onDismiss()
     }
-    
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1880,21 +1880,22 @@ private fun ModernWelcomeScreen(
                 text = "Welcome to Speaking Journey",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = Color.White // Changed for better contrast
             )
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             currentTopic?.let { topic ->
                 Text(
                     text = "Lesson ${topic.title.substringBefore(':').takeIf { it.contains("Lesson") } ?: "1"}: ${topic.title}",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White.copy(alpha = 0.9f) // Changed for better contrast
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "In this lesson, you will learn ${topic.description.lowercase()}",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color.White.copy(alpha = 0.8f) // Changed for better contrast
                 )
             }
         } else {
@@ -1903,40 +1904,43 @@ private fun ModernWelcomeScreen(
                 text = "Welcome back!",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = Color.White // Changed for better contrast
             )
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             if (!userProfile?.lastVisitedTopicTitle.isNullOrBlank()) {
                 Text(
                     text = "Last time you were learning about:",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color.White.copy(alpha = 0.8f) // Changed for better contrast
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = userProfile?.lastVisitedTopicTitle ?: "",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White.copy(alpha = 0.9f) // Changed for better contrast
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "Want to continue?",
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White // Changed for better contrast
                 )
             } else {
                 Text(
                     text = "Ready to continue your journey?",
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White // Changed for better contrast
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(32.dp))
         Text(
             text = "Tap anywhere to continue",
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = Color.White.copy(alpha = 0.7f) // Changed for better contrast
         )
     }
 }

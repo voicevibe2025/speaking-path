@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.repository.SpeakingPracticeRepository
+import com.example.voicevibe.data.repository.GamificationRepository
 import com.example.voicevibe.data.repository.SpeakingJourneyRepository
 import com.example.voicevibe.domain.model.SpeakingEvaluation
 import com.example.voicevibe.domain.model.SpeakingSession
@@ -29,7 +30,8 @@ import javax.inject.Inject
 @HiltViewModel
 class FluencyPracticeViewModel @Inject constructor(
     private val practiceRepo: SpeakingPracticeRepository,
-    private val journeyRepo: SpeakingJourneyRepository
+    private val journeyRepo: SpeakingJourneyRepository,
+    private val gamificationRepo: GamificationRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FluencyUiState())
@@ -211,6 +213,8 @@ class FluencyPracticeViewModel @Inject constructor(
                             mispronunciations = analysis.mispronunciations
                         )
                         persistAttempt(context, currentTopicId!!, attempt)
+                        // Count this speaking activity towards Day Streak (idempotent server-side)
+                        runCatching { gamificationRepo.updateStreak() }
                         val updated = _uiState.value.pastAttempts + attempt
 
                         // Submit fluency score to SpeakingJourney to unlock next prompt

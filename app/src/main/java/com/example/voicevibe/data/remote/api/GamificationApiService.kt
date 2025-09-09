@@ -53,8 +53,10 @@ interface GamificationApiService {
     @POST("gamification/daily-reward")
     suspend fun claimDailyReward(): Response<DailyReward>
 
-    @POST("gamification/streak")
-    suspend fun updateStreak(): Response<Int>
+    @POST("gamification/user-levels/update_streak/")
+    suspend fun updateStreak(
+        @Body body: UpdateStreakRequest = UpdateStreakRequest()
+    ): Response<UpdateStreakResponse>
 
     // --- XP Awards ---
     @POST("gamification/user-levels/add_experience/")
@@ -135,4 +137,17 @@ data class AddExperienceResponse(
     val experience_points: Int? = null,
     val wayang_character: String? = null,
     val leveled_up: Boolean? = null
+)
+
+// ---- Streak DTOs ----
+data class UpdateStreakRequest(
+    val activity_type: String = "practice",
+    val session_id: Int? = null
+)
+
+data class UpdateStreakResponse(
+    val streak_days: Int? = null,
+    val longest_streak: Int? = null,
+    val bonus_points: Int? = null,
+    val message: String? = null
 )

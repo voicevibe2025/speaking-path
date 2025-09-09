@@ -66,7 +66,9 @@ class HomeViewModel @Inject constructor(
                         userInitials = userInitials,
                         avatarUrl = avatarUrl,
                         totalPoints = userProfile.experiencePoints ?: 0,
-                        currentStreak = userProfile.streakDays ?: 0
+                        currentStreak = userProfile.streakDays ?: 0,
+                        // Completed should reflect Speaking Journey topics completed from backend profile
+                        completedLessons = userProfile.lessonsCompleted ?: 0
                     )
                 }
             } catch (e: IOException) {
@@ -121,10 +123,7 @@ class HomeViewModel @Inject constructor(
                             it.copy(
                                 activeLearningPaths = resource.data?.filter { path ->
                                     path.progress < 100
-                                } ?: emptyList(),
-                                completedLessons = resource.data?.sumOf { path ->
-                                    path.completedLessons
-                                } ?: 0
+                                } ?: emptyList()
                             )
                         }
                     }

@@ -3,6 +3,7 @@ package com.example.voicevibe.data.repository
 import com.example.voicevibe.data.remote.api.GamificationApiService
 import com.example.voicevibe.data.remote.api.AddExperienceRequest
 import com.example.voicevibe.data.remote.api.AddExperienceResponse
+import com.example.voicevibe.data.remote.api.UpdateStreakResponse
 
 import com.example.voicevibe.data.remote.api.UserApiService
 import com.example.voicevibe.domain.model.GamificationStats
@@ -152,9 +153,9 @@ class GamificationRepository @Inject constructor(
     }
 
     /**
-     * Update streak
+     * Update streak (counts today's activity). Safe to call multiple times per day.
      */
-    suspend fun updateStreak(): Resource<Int> {
+    suspend fun updateStreak(): Resource<UpdateStreakResponse> {
         return try {
             val response = apiService.updateStreak()
             if (response.isSuccessful) {

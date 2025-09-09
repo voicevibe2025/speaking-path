@@ -92,6 +92,8 @@ fun TopicConversationScreen(
     fun playTurn(turn: ConversationTurn) {
         val id = turn.text
         val voice = if (turn.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
+        // Count this Speaking activity towards Day Streak (idempotent server-side)
+        viewModel.markSpeakingActivity()
         viewModel.speakWithBackendTts(
             text = turn.text,
             voiceName = voice,
@@ -126,6 +128,8 @@ fun TopicConversationScreen(
             val turn = conversation[i]
             val id = turn.text
             val voice = if (turn.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
+            // Count this Speaking activity towards Day Streak (idempotent server-side)
+            viewModel.markSpeakingActivity()
             viewModel.speakWithBackendTts(
                 text = turn.text,
                 voiceName = voice,

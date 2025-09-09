@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.repository.GamificationProfile
+import com.example.voicevibe.data.repository.GamificationRepository
 import com.example.voicevibe.data.repository.ProfileRepository
 import com.example.voicevibe.data.repository.SpeakingJourneyRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +30,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SpeakingJourneyViewModel @Inject constructor(
     private val repo: SpeakingJourneyRepository,
-    private val profileRepo: ProfileRepository
+    private val profileRepo: ProfileRepository,
+    private val gamificationRepo: GamificationRepository
 ) : ViewModel() {
     private val _uiState = mutableStateOf(
         SpeakingJourneyUiState(topics = emptyList())
@@ -39,6 +41,16 @@ class SpeakingJourneyViewModel @Inject constructor(
     init {
         reloadTopics(showWelcomeOnLoad = true)
         fetchGamificationProfile()
+    }
+
+    /**
+     * Mark that the user performed a Speaking Journey activity today to update Day Streak.
+     * Safe to call multiple times per day; backend is idempotent.
+     */
+    fun markSpeakingActivity() {
+        viewModelScope.launch {
+            runCatching { gamificationRepo.updateStreak() }
+        }
     }
 
     fun reloadTopics(showWelcomeOnLoad: Boolean = false, onComplete: (() -> Unit)? = null) {
@@ -293,6 +305,8 @@ class SpeakingJourneyViewModel @Inject constructor(
                             currentTopicTranscripts = updatedTranscripts.sortedBy { it.index },
                             debug = "submit ok idx=$phraseIndex next=${dto.nextPhraseIndex} topicCompleted=${dto.topicCompleted} localRecs=${updatedTranscripts.size}"
                         )
+                        // Count today's activity towards Day Streak
+                        markSpeakingActivity()
                         // Exit review mode so hero follows current progress
                         _uiState.value = _uiState.value.copy(inspectedPhraseIndex = null)
                         // Optimistically advance current phrase so the UI updates immediately

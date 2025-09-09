@@ -6,6 +6,7 @@ import com.example.voicevibe.data.remote.api.StartVocabularyPracticeResponseDto
 import com.example.voicevibe.data.remote.api.SubmitVocabularyAnswerResponseDto
 import com.example.voicevibe.data.remote.api.VocabularyQuestionDto
 import com.example.voicevibe.data.remote.api.CompleteVocabularyPracticeResponseDto
+import com.example.voicevibe.data.repository.GamificationRepository
 import com.example.voicevibe.data.repository.SpeakingJourneyRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class VocabularyPracticeViewModel @Inject constructor(
-    private val journeyRepo: SpeakingJourneyRepository
+    private val journeyRepo: SpeakingJourneyRepository,
+    private val gamificationRepo: GamificationRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(VocabUiState())
@@ -40,6 +42,8 @@ class VocabularyPracticeViewModel @Inject constructor(
             val res = journeyRepo.startVocabularyPractice(topic.id)
             res.fold(
                 onSuccess = { dto: StartVocabularyPracticeResponseDto ->
+                    // Count as Speaking activity for Day Streak (idempotent server-side)
+                    runCatching { gamificationRepo.updateStreak() }
                     sessionId = dto.sessionId
                     rawQuestions = dto.questions
                     xpFromAnswers = 0
@@ -84,6 +88,8 @@ class VocabularyPracticeViewModel @Inject constructor(
             )
             res.fold(
                 onSuccess = { body: SubmitVocabularyAnswerResponseDto ->
+                    // Count as Speaking activity for Day Streak (idempotent server-side)
+                    runCatching { gamificationRepo.updateStreak() }
                     handleAnswerResponse(body)
                 },
                 onFailure = { e: Throwable ->
@@ -140,6 +146,8 @@ class VocabularyPracticeViewModel @Inject constructor(
             val res = journeyRepo.completeVocabularyPractice(tid, sid)
             res.fold(
                 onSuccess = { dto: CompleteVocabularyPracticeResponseDto ->
+                    // Count as Speaking activity for Day Streak (idempotent server-side)
+                    runCatching { gamificationRepo.updateStreak() }
                     _uiState.update { it.copy(
                         isSubmitting = false,
                         showCongrats = true,

@@ -65,6 +65,8 @@ fun ProfileScreen(
     val recentActivities by viewModel.recentActivities
     val avatarUrl by viewModel.avatarUrl
     val userInitials by viewModel.userInitials
+    val nextLevelXp by viewModel.nextLevelXp
+    val totalXp by viewModel.totalXp
 
     // Learning Preferences data
     val dailyPracticeGoal by viewModel.dailyPracticeGoal
@@ -117,7 +119,8 @@ fun ProfileScreen(
                 userName = userName,
                 level = proficiency,
                 currentXp = xp,
-                nextLevelXp = 5000, // Placeholder
+                totalXp = totalXp,
+                nextLevelXp = nextLevelXp,
                 streak = streak,
                 avatarUrl = avatarUrl,
                 userInitials = userInitials
@@ -185,6 +188,7 @@ fun ProfileHeader(
     userName: String,
     level: String,
     currentXp: Int,
+    totalXp: Int,
     nextLevelXp: Int,
     streak: Int,
     avatarUrl: String?,
@@ -297,6 +301,12 @@ fun ProfileHeader(
                     .clip(RoundedCornerShape(4.dp)),
                 color = MaterialTheme.colorScheme.primary,
                 trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "Total XP: $totalXp",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 

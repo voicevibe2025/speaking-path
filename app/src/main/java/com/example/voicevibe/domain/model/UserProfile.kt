@@ -16,6 +16,7 @@ data class UserProfile(
     val coverImageUrl: String? = null,
     val level: Int,
     val xp: Int,
+    val totalXp: Int = 0,
     val xpToNextLevel: Int,
     val streakDays: Int,
     val longestStreak: Int,

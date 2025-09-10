@@ -405,13 +405,11 @@ class SpeakingJourneyViewModel @Inject constructor(
                                             unlockedTopicInfo = UnlockedTopicInfo(
                                                 title = newTopics[unlockedIndex].title,
                                                 description = newTopics[unlockedIndex].description,
-                                                xpGained = 100,
+                                                xpGained = dto.xpAwarded,
                                                 topicIndex = unlockedIndex
                                             ),
-                                            // Also update the XP in the other modal if it's showing
-                                            phraseSubmissionResult = _uiState.value.phraseSubmissionResult?.copy(
-                                                xpAwarded = (_uiState.value.phraseSubmissionResult?.xpAwarded ?: dto.xpAwarded) + 100
-                                            )
+                                            // Keep phraseSubmissionResult as returned by server; do not local-add bonuses
+                                            phraseSubmissionResult = _uiState.value.phraseSubmissionResult
                                         )
                                     }
                                 })
@@ -711,7 +709,7 @@ class SpeakingJourneyViewModel @Inject constructor(
             try {
                 val profile = profileRepo.getProfile()
                 val xp = profile.experiencePoints ?: 0
-                val level = xp / 500 + 1 // Consistent with mock logic
+                val level = profile.currentLevel ?: 1
                 val streak = profile.streakDays ?: 0
                 // Update user-scoped storage key from profile so recordings/transcripts are namespaced per user
                 runCatching {
@@ -731,6 +729,7 @@ class SpeakingJourneyViewModel @Inject constructor(
             }
         }
     }
+ 
 
     override fun onCleared() {
         super.onCleared()

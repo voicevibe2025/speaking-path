@@ -429,10 +429,29 @@ private fun ProfileHeader(
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "${profile.xp} XP",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                val threshold = (profile.xp + profile.xpToNextLevel).coerceAtLeast(1)
+                Column(horizontalAlignment = Alignment.Start) {
+                    Text(
+                        "Level XP: ${profile.xp} / $threshold",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    LinearProgressIndicator(
+                        progress = (profile.xp.toFloat() / threshold.toFloat()).coerceIn(0f, 1f),
+                        modifier = Modifier
+                            .width(160.dp)
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp)),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Total XP: ${profile.totalXp}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 if (profile.streakDays > 0) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {

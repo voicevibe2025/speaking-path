@@ -1,6 +1,9 @@
 package com.example.voicevibe.presentation.screens.practice.ai
 
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,9 +17,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -125,38 +131,214 @@ fun PracticeSelectionScreen(
     onTopicPracticeSelected: () -> Unit,
     onFreePracticeSelected: () -> Unit
 ) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF1A1B3A),
+                        Color(0xFF2D2E4F),
+                        Color(0xFF1A1B3A)
+                    )
+                )
+            )
     ) {
-        Button(
-            onClick = onTopicPracticeSelected,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF64B5F6)
+        // Decorative circles
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF7C3AED).copy(alpha = 0.1f),
+                        Color.Transparent
+                    ),
+                    radius = 300f
+                ),
+                radius = 300f,
+                center = Offset(x = size.width * 0.1f, y = size.height * 0.2f)
             )
-        ) {
-            Text("Topic Practice", color = Color.White, fontWeight = FontWeight.SemiBold)
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF3B82F6).copy(alpha = 0.1f),
+                        Color.Transparent
+                    ),
+                    radius = 250f
+                ),
+                radius = 250f,
+                center = Offset(x = size.width * 0.9f, y = size.height * 0.7f)
+            )
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        OutlinedButton(
-            onClick = onFreePracticeSelected,
+
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(16.dp),
-            border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFF64B5F6)),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = Color(0xFF64B5F6)
-            )
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Free Practice", fontWeight = FontWeight.SemiBold)
+            // Header Section
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(bottom = 48.dp)
+            ) {
+                Text(
+                    text = "Choose Your",
+                    fontSize = 18.sp,
+                    color = Color(0xFF9CA3AF),
+                    fontWeight = FontWeight.Normal
+                )
+                Text(
+                    text = "Practice Mode",
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+
+            // Practice Cards
+            PracticeCard(
+                title = "Topic Practice",
+                description = "Master specific topics with guided exercises",
+                icon = "📚",
+                gradientColors = listOf(
+                    Color(0xFF667EEA),
+                    Color(0xFF764BA2)
+                ),
+                onClick = onTopicPracticeSelected,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            PracticeCard(
+                title = "Free Practice",
+                description = "Explore and practice at your own pace",
+                icon = "🎯",
+                gradientColors = listOf(
+                    Color(0xFF3B82F6),
+                    Color(0xFF06B6D4)
+                ),
+                onClick = onFreePracticeSelected,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PracticeCard(
+    title: String,
+    description: String,
+    icon: String,
+    gradientColors: List<Color>,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "scale"
+    )
+
+    Card(
+        onClick = onClick,
+        modifier = modifier
+            .height(140.dp)
+            .scale(scale)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        isPressed = true
+                        tryAwaitRelease()
+                        isPressed = false
+                    }
+                )
+            },
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp,
+            pressedElevation = 4.dp
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.linearGradient(
+                        colors = gradientColors,
+                        start = Offset.Zero,
+                        end = Offset.Infinite
+                    )
+                )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = title,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = description,
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.9f),
+                        lineHeight = 20.sp
+                    )
+                }
+                
+                // Icon container
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .background(
+                            color = Color.White.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(16.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = icon,
+                        fontSize = 32.sp
+                    )
+                }
+            }
+
+            // Subtle glow effect - removed the problematic toPx() call
+            Canvas(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.05f),
+                            Color.Transparent
+                        ),
+                        radius = size.minDimension / 2
+                    ),
+                    radius = size.minDimension / 2,
+                    center = center
+                )
+            }
         }
     }
 }

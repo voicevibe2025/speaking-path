@@ -22,7 +22,8 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
         coverImageUrl = null, // Not available in data model
         level = this.currentLevel ?: 1,
         xp = this.experiencePoints ?: 0,
-        xpToNextLevel = 1000, // Placeholder, not in data model
+        totalXp = this.totalPointsEarned ?: (this.experiencePoints ?: 0),
+        xpToNextLevel = this.xpToNextLevel ?: 100,
         streakDays = this.streakDays ?: 0,
         longestStreak = 0, // Not in data model
         joinedDate = LocalDateTime.now(), // Placeholder
@@ -78,6 +79,8 @@ fun DomainUserProfile.toData(): DataUserProfile {
         currentProficiency = null, // Not in domain model
         currentLevel = this.level,
         experiencePoints = this.xp,
+        totalPointsEarned = null, // Domain model doesn't track lifetime XP; let server compute
+        xpToNextLevel = this.xpToNextLevel,
         streakDays = this.streakDays,
         totalPracticeHours = this.stats.totalPracticeMinutes / 60f,
         lessonsCompleted = this.stats.completedLessons,

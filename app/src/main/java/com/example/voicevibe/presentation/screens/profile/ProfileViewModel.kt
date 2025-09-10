@@ -25,6 +25,14 @@ class ProfileViewModel @Inject constructor(
     private val _xp = mutableStateOf(0)
     val xp: State<Int> = _xp
 
+    // Next level XP threshold (denominator for progress bar)
+    private val _nextLevelXp = mutableStateOf(100)
+    val nextLevelXp: State<Int> = _nextLevelXp
+
+    // Lifetime XP (never decreases): total_points_earned
+    private val _totalXp = mutableStateOf(0)
+    val totalXp: State<Int> = _totalXp
+
     private val _streak = mutableStateOf(0)
     val streak: State<Int> = _streak
 
@@ -119,7 +127,13 @@ class ProfileViewModel @Inject constructor(
                 _userName.value = displayName
                 _userInitials.value = generateInitials(displayName)
                 _proficiency.value = userProfile.currentProficiency?.replaceFirstChar { it.titlecase() } ?: "N/A"
-                _xp.value = userProfile.experiencePoints ?: 0
+                val currentXp = userProfile.experiencePoints ?: 0
+                _xp.value = currentXp
+                _totalXp.value = userProfile.totalPointsEarned ?: currentXp
+                // Compute threshold = currentXp + remaining (xpToNextLevel). If backend didn't provide, use Option A default
+                val currentLevel = userProfile.currentLevel ?: 1
+                val remaining = userProfile.xpToNextLevel ?: kotlin.math.max(1, 100 + 25 * (currentLevel - 1) - currentXp)
+                _nextLevelXp.value = (currentXp + remaining).coerceAtLeast(1)
                 _streak.value = userProfile.streakDays ?: 0
 
                 // Avatar URL (normalize if relative)

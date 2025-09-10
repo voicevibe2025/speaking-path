@@ -65,7 +65,7 @@ class HomeViewModel @Inject constructor(
                         userLevel = userProfile.currentLevel ?: 1,
                         userInitials = userInitials,
                         avatarUrl = avatarUrl,
-                        totalPoints = userProfile.experiencePoints ?: 0,
+                        totalPoints = userProfile.totalPointsEarned ?: (userProfile.experiencePoints ?: 0),
                         currentStreak = userProfile.streakDays ?: 0,
                         // Completed should reflect Speaking Journey topics completed from backend profile
                         completedLessons = userProfile.lessonsCompleted ?: 0

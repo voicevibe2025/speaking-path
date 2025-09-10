@@ -20,6 +20,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.LibraryBooks
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.RecordVoiceOver
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -53,6 +60,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
+import com.example.voicevibe.presentation.screens.speakingjourney.ConversationTurn
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,16 +152,41 @@ fun TopicPracticeChatScreen(
                     )
                 }
             } else {
-                TopicChatBody(modifier = Modifier.fillMaxSize(), vm = viewModel)
+                TopicChatBody(
+                    modifier = Modifier.fillMaxSize(),
+                    vm = viewModel,
+                    sjVM = sjVM
+                )
             }
         }
     }
 }
 
 @Composable
-private fun TopicChatBody(modifier: Modifier = Modifier, vm: TopicPracticeChatViewModel) {
+private fun TopicChatBody(
+    modifier: Modifier = Modifier,
+    vm: TopicPracticeChatViewModel,
+    sjVM: SpeakingJourneyViewModel
+) {
     val state by vm.uiState.collectAsStateWithLifecycle()
     var messageText by remember { mutableStateOf("") }
+    var currentlyPlayingId by remember { mutableStateOf<String?>(null) }
+
+    val maleVoiceName = "Puck"
+    val femaleVoiceName = "Zephyr"
+
+    fun playTts(turn: ConversationTurn) {
+        val id = turn.text
+        val voice = if (turn.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
+        sjVM.markSpeakingActivity()
+        sjVM.speakWithBackendTts(
+            text = turn.text,
+            voiceName = voice,
+            onStart = { currentlyPlayingId = id },
+            onDone = { currentlyPlayingId = null },
+            onError = { currentlyPlayingId = null }
+        )
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
         LazyColumn(
@@ -162,8 +195,23 @@ private fun TopicChatBody(modifier: Modifier = Modifier, vm: TopicPracticeChatVi
                 .padding(16.dp),
             reverseLayout = true
         ) {
-            items(state.messages.reversed()) { message ->
-                TopicChatMessageItem(message)
+            items(state.items.reversed()) { item ->
+                when (item) {
+                    is TopicChatItem.UserText -> TopicChatBubble(text = item.text, isFromUser = true)
+                    is TopicChatItem.AiText -> TopicChatBubble(text = item.text, isFromUser = false)
+                    is TopicChatItem.PracticeMenu -> PracticeMenuCard(
+                        onSelect = { mode -> vm.onSelectPracticeMode(mode) }
+                    )
+                    is TopicChatItem.ConversationExample -> ConversationExampleInline(
+                        turns = item.turns,
+                        currentlyPlayingId = currentlyPlayingId,
+                        onPlay = { playTts(it) },
+                        onExplain = { vm.explainConversationTurn(it.text) },
+                        onPracticeWithAi = {
+                            vm.sendMessage("Yes, I want to practice this conversation with you.")
+                        }
+                    )
+                }
             }
         }
 
@@ -226,16 +274,16 @@ private fun TopicChatBody(modifier: Modifier = Modifier, vm: TopicPracticeChatVi
 }
 
 @Composable
-private fun TopicChatMessageItem(message: ChatMessage) {
+private fun TopicChatBubble(text: String, isFromUser: Boolean) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
-        horizontalArrangement = if (message.isFromUser) Arrangement.End else Arrangement.Start,
+        horizontalArrangement = if (isFromUser) Arrangement.End else Arrangement.Start,
         verticalAlignment = Alignment.Top
     ) {
         val shape = RoundedCornerShape(16.dp)
-        if (message.isFromUser) {
+        if (isFromUser) {
             Card(
                 shape = shape,
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent),
@@ -256,7 +304,7 @@ private fun TopicChatMessageItem(message: ChatMessage) {
                         .padding(12.dp)
                 ) {
                     Text(
-                        text = message.text,
+                        text = text,
                         color = Color.White
                     )
                 }
@@ -268,10 +316,146 @@ private fun TopicChatMessageItem(message: ChatMessage) {
                 modifier = Modifier.widthIn(max = 320.dp)
             ) {
                 Text(
-                    text = message.text,
+                    text = text,
                     color = Color(0xFFE0E0E0),
                     modifier = Modifier.padding(12.dp)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PracticeMenuCard(onSelect: (PracticeMode) -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("Choose a practice mode", color = Color.White, fontWeight = FontWeight.SemiBold)
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                PracticeMenuRow(
+                    items = listOf(
+                        PracticeMenuItem(Icons.Filled.Chat, "Conversation", PracticeMode.CONVERSATION),
+                        PracticeMenuItem(Icons.Filled.RecordVoiceOver, "Pronunciation", PracticeMode.PRONUNCIATION),
+                        PracticeMenuItem(Icons.Filled.GraphicEq, "Fluency", PracticeMode.FLUENCY)
+                    ),
+                    onSelect = onSelect
+                )
+                PracticeMenuRow(
+                    items = listOf(
+                        PracticeMenuItem(Icons.Filled.LibraryBooks, "Vocabulary", PracticeMode.VOCABULARY),
+                        PracticeMenuItem(Icons.Filled.VolumeUp, "Listening", PracticeMode.LISTENING),
+                        PracticeMenuItem(Icons.Filled.School, "Grammar", PracticeMode.GRAMMAR)
+                    ),
+                    onSelect = onSelect
+                )
+            }
+        }
+    }
+}
+
+private data class PracticeMenuItem(val icon: androidx.compose.ui.graphics.vector.ImageVector, val title: String, val mode: PracticeMode)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PracticeMenuRow(items: List<PracticeMenuItem>, onSelect: (PracticeMode) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        for (item in items) {
+            Surface(
+                onClick = { onSelect(item.mode) },
+                shape = RoundedCornerShape(12.dp),
+                color = Color.White.copy(alpha = 0.06f),
+                modifier = Modifier.weight(1f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(item.icon, contentDescription = item.title, tint = Color.White)
+                    Column(Modifier.weight(1f)) {
+                        Text(item.title, color = Color.White)
+                        if (item.mode != PracticeMode.CONVERSATION) {
+                            Text("Coming soon", color = Color(0xFFB0BEC5), fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ConversationExampleInline(
+    turns: List<ConversationTurn>,
+    currentlyPlayingId: String?,
+    onPlay: (ConversationTurn) -> Unit,
+    onExplain: (ConversationTurn) -> Unit,
+    onPracticeWithAi: () -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Conversation Example", color = Color.White, fontWeight = FontWeight.SemiBold)
+            for (turn in turns) {
+                val isActive = currentlyPlayingId == turn.text
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(if (isActive) Color.White.copy(alpha = 0.06f) else Color.Transparent, RoundedCornerShape(10.dp))
+                        .padding(10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(shape = CircleShape, color = Color.White.copy(alpha = 0.1f)) {
+                        Text(
+                            turn.speaker,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    Text(turn.text, color = Color.White, modifier = Modifier.weight(1f))
+                    IconButton(onClick = { onPlay(turn) }) {
+                        Icon(Icons.Filled.VolumeUp, contentDescription = "Play", tint = Color.White)
+                    }
+                    IconButton(onClick = { onExplain(turn) }) {
+                        Icon(Icons.Filled.Info, contentDescription = "Explain", tint = Color(0xFF64B5F6))
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Surface(
+                onClick = onPracticeWithAi,
+                shape = RoundedCornerShape(12.dp),
+                color = Color.White.copy(alpha = 0.06f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Filled.RecordVoiceOver, contentDescription = null, tint = Color.White)
+                    Column(Modifier.weight(1f)) {
+                        Text("Practice this conversation with AI", color = Color.White)
+                        Text("Coming soon", color = Color(0xFFB0BEC5), fontSize = 12.sp)
+                    }
+                }
             }
         }
     }

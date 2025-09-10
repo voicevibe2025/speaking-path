@@ -244,8 +244,8 @@ class FluencyPracticeViewModel @Inject constructor(
                                     val summaryScores = body.promptScores
                                     val totalScore = body.fluencyTotalScore
                                     val xpDelta = body.xpAwarded
-                                    // Compute total XP across all prompts when completed: 50 per prompt >=80 plus 100 bonus
-                                    val totalXpWhenCompleted = if (isCompleted) (summaryScores.count { it >= 80 } * 50) + 100 else 0
+                                    // Align with backend Option A: 10 per prompt >=80 + 50 completion bonus
+                                    val totalXpWhenCompleted = if (isCompleted) (summaryScores.count { it >= 80 } * 10) + 50 else 0
                                     _uiState.update { st ->
                                         st.copy(
                                             prompt = newPrompt,

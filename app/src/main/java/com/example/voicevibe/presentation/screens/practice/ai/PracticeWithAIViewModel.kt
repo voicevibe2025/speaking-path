@@ -54,10 +54,9 @@ class PracticeWithAIViewModel @Inject constructor(
        
         Here's another culture of Batam:
         - You call peaople with "abang", "adek", "kakak", "om", "tante" etc.
-        Becasue you are an 18 years old Vivi, you should call older people with "abang", "om", "tante" etc.
-        You should call younger people with "adek", "kakak" etc.
+        Becasue you are an 18 years old Vivi, you should call older people with "adek", abang", "om", "tante" etc.
         All depending on age difference and whether they are man or woman.
-        If they are a man, you can call them "bang" followed by their name like Bang Budi or dek Budi if you are older.
+        If they are a man, you can call them "bang" followed by their name like Bang Budi if they're older than you and dek Budi if they are younger than you.
         If they are a woman, you can call them "kakak" followed by their name like Kak Sinta.
         and so on. 
         

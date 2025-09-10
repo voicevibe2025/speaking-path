@@ -245,7 +245,7 @@ fun PronunciationPracticeScreen(
 
                     // Helper text about rewards
                     Text(
-                        text = "Complete a phrase to earn +10 score and +20 XP. Finish all to get +100 XP.",
+                        text = "Complete a phrase (≥80% accuracy) to earn +10 score and +20 XP. Complete all modes to earn +50 XP Topic Mastery.",
                         color = Color(0xFFB0BEC5),
                         fontSize = 13.sp,
                         textAlign = TextAlign.Center,
@@ -311,7 +311,8 @@ fun PronunciationPracticeScreen(
             if (ui.showPronunciationCongrats) {
                 val phraseCount = topic.material.size
                 val totalScore = phraseCount * 10
-                val totalXp = phraseCount * 20 + 100
+                // Estimate XP as +20 per phrase (≥80% accuracy). Topic Mastery (+50) is awarded when all modes complete.
+                val totalXp = phraseCount * 20
                 PronunciationCongratsDialog(
                     topicTitle = topic.title,
                     score = totalScore,

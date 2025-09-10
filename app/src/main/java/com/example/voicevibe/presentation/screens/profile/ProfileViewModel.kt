@@ -102,6 +102,10 @@ class ProfileViewModel @Inject constructor(
         fetchUserProfile()
     }
 
+    fun refresh() {
+        fetchUserProfile()
+    }
+
     private fun fetchUserProfile() {
         viewModelScope.launch {
             _isLoading.value = true

@@ -28,6 +28,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.voicevibe.data.model.Achievement
 import com.example.voicevibe.presentation.components.LoadingScreen
 import coil.compose.SubcomposeAsyncImage
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +40,17 @@ fun ProfileScreen(
     onNavigateBack: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
+    // Refresh Quick Stats when screen resumes (after practice, etc.)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refresh()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Progress", "Activity")
     val userName by viewModel.userName
@@ -344,7 +358,7 @@ fun QuickStatsGrid(
             ) {
                 StatCard(
                     icon = Icons.Default.Schedule,
-                    value = practiceHours.toInt().toString(),
+                    value = String.format("%.1f", practiceHours),
                     label = "Hours",
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.primary

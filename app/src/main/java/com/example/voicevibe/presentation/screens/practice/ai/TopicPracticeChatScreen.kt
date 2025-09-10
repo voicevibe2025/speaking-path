@@ -27,6 +27,11 @@ import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -59,8 +64,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
+import com.example.voicevibe.presentation.screens.practice.ai.*
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationTurn
+import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -208,8 +214,38 @@ private fun TopicChatBody(
                         onPlay = { playTts(it) },
                         onExplain = { vm.explainConversationTurn(it.text) },
                         onPracticeWithAi = {
-                            vm.sendMessage("Yes, I want to practice this conversation with you.")
+                            vm.sendMessage("I want to practice this conversation with AI. Please call start_practice_conversation to show role selection.")
                         }
+                    )
+                    is TopicChatItem.RoleSelection -> RoleSelectionCard(
+                        onRoleSelected = { role -> vm.onRoleSelected(role) }
+                    )
+                    is TopicChatItem.PracticeTurn -> PracticeTurnCard(
+                        text = item.text,
+                        speaker = item.speaker,
+                        isUserTurn = item.isUserTurn,
+                        currentlyPlayingId = currentlyPlayingId,
+                        onPlay = { 
+                            val voice = if (item.speaker == "A") "Puck" else "Zephyr"
+                            sjVM.speakWithBackendTts(
+                                text = item.text,
+                                voiceName = voice,
+                                onStart = { currentlyPlayingId = item.text },
+                                onDone = { currentlyPlayingId = null },
+                                onError = { currentlyPlayingId = null }
+                            )
+                        }
+                    )
+                    is TopicChatItem.RecordingPrompt -> RecordingPromptCard(
+                        expectedText = item.expectedText,
+                        onRecordingComplete = { transcript -> vm.onUserRecordingComplete(transcript) }
+                    )
+                    is TopicChatItem.PracticeHint -> PracticeHintCard(
+                        hint = item.hint,
+                        expectedText = item.expectedText
+                    )
+                    is TopicChatItem.RevealAnswer -> RevealAnswerCard(
+                        correctText = item.correctText
                     )
                 }
             }

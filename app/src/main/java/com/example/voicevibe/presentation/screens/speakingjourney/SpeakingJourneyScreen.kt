@@ -133,6 +133,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 
+import com.example.voicevibe.presentation.components.AnimatedBackground
+import com.example.voicevibe.presentation.components.FloatingParticles
+import com.example.voicevibe.presentation.components.ModernTopBar
+import com.example.voicevibe.ui.theme.BrandCyan
+import com.example.voicevibe.ui.theme.BrandIndigo
+import com.example.voicevibe.ui.theme.BrandFuchsia
+
 @DrawableRes
 private fun getTopicDrawableId(context: Context, topicTitle: String): Int {
     val resourceName = topicTitle.lowercase(Locale.ROOT).replace(" ", "_").replace("-", "_")
@@ -301,30 +308,31 @@ fun SpeakingJourneyScreen(
         viewModel.loadTranscriptsForCurrentTopic(context)
     }
     
+    // Animated brand background (matches HomeScreen style)
+    val backgroundTransition = rememberInfiniteTransition(label = "background")
+    val animatedOffset by backgroundTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(20000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "gradient"
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-        .background(
-            Brush.verticalGradient(
-                colors = listOf(
-                    Color(0xFF1a1a2e),
-                    Color(0xFF16213e),
-                    Color(0xFF0f3460)
-                ),
-                startY = 0f,
-                endY = Float.POSITIVE_INFINITY
-            )
-        )
     ) {
-        // Animated background particles for engagement
-        // AnimatedBackgroundParticles()
-        
+        AnimatedBackground(animatedOffset)
+        FloatingParticles()
+
         Scaffold(
             containerColor = Color.Transparent,
             topBar = {
-                MinimalTopBar(
-                    onNavigateBack = onNavigateBack,
-                    currentTopic = ui.topics.getOrNull(ui.selectedTopicIdx)
+                ModernTopBar(
+                    title = "Speaking Journey",
+                    onNavigateBack = onNavigateBack
                 )
             }
         ) { innerPadding: PaddingValues ->
@@ -396,8 +404,8 @@ fun SpeakingJourneyScreen(
                                         .background(
                                             Brush.horizontalGradient(
                                                 colors = listOf(
-                                                    Color(0xFFFF6B35),
-                                                    Color(0xFFFFD700)
+                                                    BrandCyan,
+                                                    BrandIndigo
                                                 )
                                             )
                                         )
@@ -440,9 +448,17 @@ fun SpeakingJourneyScreen(
                                     .clickable { onNavigateToConversationPractice(topic.id) },
                                 shape = RoundedCornerShape(20.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFF1f2c4c)
+                                    containerColor = Color.White.copy(alpha = 0.05f)
                                 ),
-                                border = BorderStroke(1.dp, Color(0xFF64B5F6).copy(alpha = 0.6f))
+                                border = BorderStroke(
+                                    width = 1.dp,
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            BrandIndigo.copy(alpha = 0.5f),
+                                            BrandFuchsia.copy(alpha = 0.5f)
+                                        )
+                                    )
+                                )
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -467,7 +483,7 @@ fun SpeakingJourneyScreen(
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                         contentDescription = "Go to conversation practice",
-                                        tint = Color(0xFF64B5F6)
+                                        tint = BrandIndigo
                                     )
                                 }
                             }
@@ -481,9 +497,17 @@ fun SpeakingJourneyScreen(
                                     .clickable { onNavigateToVocabularyLesson(topic.id) },
                                 shape = RoundedCornerShape(20.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFF1f2c4c)
+                                    containerColor = Color.White.copy(alpha = 0.05f)
                                 ),
-                                border = BorderStroke(1.dp, Color(0xFF64B5F6).copy(alpha = 0.6f))
+                                border = BorderStroke(
+                                    width = 1.dp,
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            BrandCyan.copy(alpha = 0.5f),
+                                            BrandIndigo.copy(alpha = 0.5f)
+                                        )
+                                    )
+                                )
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -508,7 +532,7 @@ fun SpeakingJourneyScreen(
                                     Icon(
                                         imageVector = Icons.Filled.School,
                                         contentDescription = "Go to vocabulary",
-                                        tint = Color(0xFFFFD700)
+                                        tint = BrandCyan
                                     )
                                 }
                             }
@@ -913,10 +937,18 @@ private fun SelectedTopicDetails(topic: Topic) {
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF2a2d3a)
+            containerColor = Color.White.copy(alpha = 0.05f)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, Color(0xFF64B5F6).copy(alpha = 0.5f))
+        border = BorderStroke(
+            width = 1.dp,
+            brush = Brush.linearGradient(
+                colors = listOf(
+                    BrandCyan.copy(alpha = 0.5f),
+                    BrandIndigo.copy(alpha = 0.5f)
+                )
+            )
+        )
     ) {
         Column(
             modifier = Modifier
@@ -927,7 +959,7 @@ private fun SelectedTopicDetails(topic: Topic) {
             Text(
                 text = "Current Topic",
                 style = MaterialTheme.typography.labelSmall,
-                color = Color(0xFF64B5F6)
+                color = BrandCyan
             )
             Text(
                 text = topic.title,
@@ -1638,7 +1670,18 @@ private fun ModernConversationCard(
             .fillMaxWidth()
             .padding(top = 16.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a))
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.05f)
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            brush = Brush.linearGradient(
+                colors = listOf(
+                    BrandCyan.copy(alpha = 0.5f),
+                    BrandIndigo.copy(alpha = 0.5f)
+                )
+            )
+        )
     ) {
         Column(
             modifier = Modifier
@@ -1662,7 +1705,7 @@ private fun ModernConversationCard(
                     Icon(
                         Icons.AutoMirrored.Filled.VolumeUp,
                         contentDescription = "Play conversation",
-                        tint = Color(0xFF64B5F6)
+                        tint = BrandIndigo
                     )
                 }
             }

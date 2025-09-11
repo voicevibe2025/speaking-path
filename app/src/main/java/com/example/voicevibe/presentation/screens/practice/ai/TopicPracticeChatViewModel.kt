@@ -1,9 +1,15 @@
 package com.example.voicevibe.presentation.screens.practice.ai
 
+import android.content.Context
+import android.media.MediaRecorder
+import android.os.Build
+import android.util.Base64
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.BuildConfig
 import com.example.voicevibe.data.repository.GamificationRepository
+import com.example.voicevibe.data.repository.AiEvaluationRepository
+import com.example.voicevibe.domain.model.Resource
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationTurn
 import com.example.voicevibe.presentation.screens.speakingjourney.Topic
 import com.google.ai.client.generativeai.GenerativeModel
@@ -21,7 +27,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TopicPracticeChatViewModel @Inject constructor(
-    private val gamificationRepository: GamificationRepository
+    private val gamificationRepository: GamificationRepository,
+    private val aiEvaluationRepository: AiEvaluationRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TopicChatUiState())
@@ -35,6 +42,8 @@ class TopicPracticeChatViewModel @Inject constructor(
 
     // Practice conversation state
     private var practiceState: PracticeConversationState? = null
+    private var practiceRecorder: MediaRecorder? = null
+    private var practiceAudioFile: java.io.File? = null
 
     // Function calling: award_xp(points, topicId, reason?)
     private val awardXpDeclaration = FunctionDeclaration(
@@ -339,14 +348,35 @@ class TopicPracticeChatViewModel @Inject constructor(
     }
     
     // UI callbacks (member functions)
+    fun startPractice() {
+        // Start practice by asking for role selection. No AI involvement.
+        practiceState = null
+        val newItem = TopicChatItem.RoleSelection
+        _uiState.value = _uiState.value.copy(items = _uiState.value.items + newItem, practiceActive = true, isLoading = false, error = null)
+    }
+
+    fun exitPractice() {
+        // Exit practice mode and return to normal chat
+        practiceState = null
+        try { practiceRecorder?.stop() } catch (_: Throwable) {}
+        try { practiceRecorder?.reset() } catch (_: Throwable) {}
+        try { practiceRecorder?.release() } catch (_: Throwable) {}
+        practiceRecorder = null
+        val exitMsg = TopicChatItem.AiText("Practice ended. I'm back. How else can I help?")
+        val menu = TopicChatItem.PracticeMenu
+        _uiState.value = _uiState.value.copy(items = _uiState.value.items + exitMsg + menu, practiceActive = false)
+    }
     fun onSelectPracticeMode(mode: PracticeMode) {
         when (mode) {
             PracticeMode.CONVERSATION -> {
                 // Add a user marker and nudge the model to call the function
                 val marker = TopicChatItem.UserText("Selected: Conversation Practice")
-                _uiState.value = _uiState.value.copy(items = _uiState.value.items + marker, isLoading = true)
-                viewModelScope.launch {
-                    sendInternal("The user selected Conversation Practice. Please call show_conversation_example to render the inline conversation example in the chat, then ask if they'd like to practice it with you.")
+                _uiState.value = _uiState.value.copy(items = _uiState.value.items + marker)
+                // Show the conversation example immediately; user can tap Practice with AI to begin
+                currentTopic?.let { topic ->
+                    val example = TopicChatItem.ConversationExample(topic.conversation)
+                    val menu = TopicChatItem.PracticeMenu
+                    _uiState.value = _uiState.value.copy(items = _uiState.value.items + example + menu)
                 }
             }
             else -> {
@@ -372,25 +402,33 @@ class TopicPracticeChatViewModel @Inject constructor(
     fun onRoleSelected(role: String) {
         val topic = currentTopic ?: return
         val aiRole = if (role == "A") "B" else "A"
-        
+        // Locate first user and first AI turns
+        val firstUserTurnIndex = topic.conversation.indexOfFirst { it.speaker == role }
+        val firstAiTurnIndex = topic.conversation.indexOfFirst { it.speaker == aiRole }
+
         practiceState = PracticeConversationState(
             userRole = role,
             aiRole = aiRole,
             conversation = topic.conversation,
-            currentTurnIndex = if (role == "A") 0 else 1, // Start with first turn of chosen role
-            isUserTurn = role == topic.conversation.getOrNull(0)?.speaker
+            currentTurnIndex = firstUserTurnIndex,
+            isUserTurn = firstUserTurnIndex == 0
         )
-        
+
         val marker = TopicChatItem.UserText("Selected role: Speaker $role")
-        _uiState.value = _uiState.value.copy(items = _uiState.value.items + marker, isLoading = true)
-        
-        viewModelScope.launch {
-            if (practiceState?.isUserTurn == true) {
-                sendInternal("User selected role $role and will start first. Call prompt_user_recording to show recording interface.")
-            } else {
-                sendInternal("User selected role $role. Call play_practice_turn to start the conversation with AI's first turn.")
-            }
+        val newItems = mutableListOf<TopicChatItem>(marker)
+
+        // If AI starts, show the first AI phrase with auto-play
+        if (firstAiTurnIndex != -1 && firstAiTurnIndex < firstUserTurnIndex) {
+            val aiFirst = topic.conversation[firstAiTurnIndex]
+            newItems += TopicChatItem.PracticeTurn(text = aiFirst.text, speaker = aiFirst.speaker, isUserTurn = false, autoPlay = true)
         }
+        // Then prompt the user for their first turn
+        val userFirst = topic.conversation.getOrNull(firstUserTurnIndex)
+        if (userFirst != null) {
+            newItems += TopicChatItem.RecordingPrompt(expectedText = userFirst.text)
+            practiceState = practiceState?.copy(isUserTurn = true)
+        }
+        _uiState.value = _uiState.value.copy(items = _uiState.value.items + newItems)
     }
 
     fun onUserRecordingComplete(transcript: String) {
@@ -401,35 +439,85 @@ class TopicPracticeChatViewModel @Inject constructor(
         val isCorrect = transcript.trim().lowercase().contains(currentTurn.text.lowercase().substringBefore(".").substringBefore(",").trim())
         
         if (isCorrect) {
-            // Move to next turn
-            val nextTurnIndex = state.currentTurnIndex + 2 // Skip to next user turn
-            if (nextTurnIndex < state.conversation.size) {
-                practiceState = state.copy(
-                    currentTurnIndex = nextTurnIndex,
-                    userAttempts = 0,
-                    isUserTurn = false
+            // Find next AI turn after current user turn
+            val nextAiTurnIndex = state.conversation.drop(state.currentTurnIndex + 1)
+                .indexOfFirst { it.speaker == state.aiRole }
+                .let { if (it == -1) -1 else it + state.currentTurnIndex + 1 }
+
+            if (nextAiTurnIndex != -1) {
+                val aiTurn = state.conversation[nextAiTurnIndex]
+                // Append AI turn with auto-play
+                _uiState.value = _uiState.value.copy(
+                    items = _uiState.value.items + TopicChatItem.UserText(transcript) + TopicChatItem.PracticeTurn(
+                        text = aiTurn.text,
+                        speaker = aiTurn.speaker,
+                        isUserTurn = false,
+                        autoPlay = true
+                    )
                 )
-                viewModelScope.launch {
-                    sendInternal("Correct! User said: '$transcript'. Call play_practice_turn to continue with AI's next turn.")
+                // Now find the next user turn after AI
+                val nextUserTurnIndex = state.conversation.drop(nextAiTurnIndex + 1)
+                    .indexOfFirst { it.speaker == state.userRole }
+                    .let { if (it == -1) -1 else it + nextAiTurnIndex + 1 }
+                if (nextUserTurnIndex != -1) {
+                    val nextUserTurn = state.conversation[nextUserTurnIndex]
+                    _uiState.value = _uiState.value.copy(
+                        items = _uiState.value.items + TopicChatItem.RecordingPrompt(expectedText = nextUserTurn.text)
+                    )
+                    practiceState = state.copy(
+                        currentTurnIndex = nextUserTurnIndex,
+                        userAttempts = 0,
+                        isUserTurn = true
+                    )
+                } else {
+                    // AI turn was last; finish practice
+                    practiceState = null
+                    viewModelScope.launch {
+                        gamificationRepository.addExperience(points = 100, source = "practice_conversation")
+                    }
+                    _uiState.value = _uiState.value.copy(
+                        items = _uiState.value.items + TopicChatItem.AiText("Great job — you finished the conversation practice!") + TopicChatItem.PracticeMenu,
+                        practiceActive = false
+                    )
                 }
             } else {
-                // Conversation completed
-                practiceState = null
-                viewModelScope.launch {
-                    sendInternal("Excellent! You completed the conversation practice. Call award_xp with 100 points for completing conversation practice.")
+                // No next AI turn; check for next user turn (rare)
+                val nextUserTurnIndex = state.conversation.drop(state.currentTurnIndex + 1)
+                    .indexOfFirst { it.speaker == state.userRole }
+                    .let { if (it == -1) -1 else it + state.currentTurnIndex + 1 }
+                if (nextUserTurnIndex != -1) {
+                    val nextUserTurn = state.conversation[nextUserTurnIndex]
+                    _uiState.value = _uiState.value.copy(
+                        items = _uiState.value.items + TopicChatItem.UserText(transcript) + TopicChatItem.RecordingPrompt(expectedText = nextUserTurn.text)
+                    )
+                    practiceState = state.copy(
+                        currentTurnIndex = nextUserTurnIndex,
+                        userAttempts = 0,
+                        isUserTurn = true
+                    )
+                } else {
+                    // Finished
+                    practiceState = null
+                    viewModelScope.launch { gamificationRepository.addExperience(points = 100, source = "practice_conversation") }
+                    _uiState.value = _uiState.value.copy(
+                        items = _uiState.value.items + TopicChatItem.AiText("Great job — you finished the conversation practice!") + TopicChatItem.PracticeMenu,
+                        practiceActive = false
+                    )
                 }
             }
         } else {
             // Incorrect response
             val newAttempts = state.userAttempts + 1
             practiceState = state.copy(userAttempts = newAttempts)
-            
-            viewModelScope.launch {
-                if (newAttempts >= state.maxAttempts) {
-                    sendInternal("User tried '$transcript' but it's not quite right after ${state.maxAttempts} attempts. Call reveal_correct_answer to show the correct phrase.")
-                } else {
-                    sendInternal("User said '$transcript' but it's not quite right (attempt $newAttempts/${state.maxAttempts}). Call show_practice_hint to give a helpful hint.")
-                }
+            val expected = currentTurn.text
+            if (newAttempts >= state.maxAttempts) {
+                _uiState.value = _uiState.value.copy(
+                    items = _uiState.value.items + TopicChatItem.UserText(transcript) + TopicChatItem.PracticeHint(generateHint(expected), expected) + TopicChatItem.RevealAnswer(expected)
+                )
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    items = _uiState.value.items + TopicChatItem.UserText(transcript) + TopicChatItem.PracticeHint(generateHint(expected), expected)
+                )
             }
         }
     }
@@ -441,12 +529,80 @@ class TopicPracticeChatViewModel @Inject constructor(
             else -> "Try starting with: ${words.take(2).joinToString(" ")}..."
         }
     }
+
+    // --- Recording & Whisper transcription for Practice mode ---
+    fun startUserRecording(context: Context) {
+        try {
+            // Stop any existing recorder
+            try { practiceRecorder?.stop() } catch (_: Throwable) {}
+            try { practiceRecorder?.reset() } catch (_: Throwable) {}
+            try { practiceRecorder?.release() } catch (_: Throwable) {}
+            practiceRecorder = null
+
+            val outFile = java.io.File(context.cacheDir, "practice_turn_${System.currentTimeMillis()}.m4a")
+            practiceAudioFile = outFile
+            val mr = if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) MediaRecorder(context) else MediaRecorder()
+            practiceRecorder = mr
+            mr.setAudioSource(MediaRecorder.AudioSource.MIC)
+            mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            mr.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            mr.setAudioEncodingBitRate(128_000)
+            mr.setAudioSamplingRate(44_100)
+            mr.setOutputFile(outFile.absolutePath)
+            mr.prepare(); mr.start()
+        } catch (t: Throwable) {
+            // Surface error to UI
+            _uiState.value = _uiState.value.copy(error = "Unable to start recording. ${t.message ?: "unknown"}")
+            try { practiceRecorder?.release() } catch (_: Throwable) {}
+            practiceRecorder = null
+        }
+    }
+
+    fun stopUserRecordingAndTranscribe(context: Context) {
+        try { practiceRecorder?.stop() } catch (_: Throwable) {}
+        try { practiceRecorder?.reset() } catch (_: Throwable) {}
+        try { practiceRecorder?.release() } catch (_: Throwable) {}
+        practiceRecorder = null
+
+        val file = practiceAudioFile
+        if (file == null || !file.exists()) {
+            _uiState.value = _uiState.value.copy(error = "Recording not available.")
+            return
+        }
+
+        _uiState.value = _uiState.value.copy(error = null, isLoading = true)
+        viewModelScope.launch {
+            try {
+                val bytes = file.readBytes()
+                val b64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
+                when (val res = aiEvaluationRepository.transcribeBase64(b64, language = "en")) {
+                    is Resource.Success -> {
+                        val text = res.data ?: ""
+                        if (text.isNotBlank()) {
+                            onUserRecordingComplete(text)
+                        } else {
+                            _uiState.value = _uiState.value.copy(error = "Empty transcription returned.")
+                        }
+                    }
+                    is Resource.Error -> {
+                        _uiState.value = _uiState.value.copy(error = res.message ?: "Transcription failed")
+                    }
+                    is Resource.Loading -> Unit
+                }
+            } catch (t: Throwable) {
+                _uiState.value = _uiState.value.copy(error = "Transcription error: ${t.message ?: "unknown"}")
+            } finally {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
+        }
+    }
 }
 
 data class TopicChatUiState(
     val items: List<TopicChatItem> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val practiceActive: Boolean = false
 )
 
 // Rich chat item model for Topic Practice
@@ -456,7 +612,7 @@ sealed class TopicChatItem {
     object PracticeMenu : TopicChatItem()
     data class ConversationExample(val turns: List<ConversationTurn>) : TopicChatItem()
     object RoleSelection : TopicChatItem()
-    data class PracticeTurn(val text: String, val speaker: String, val isUserTurn: Boolean) : TopicChatItem()
+    data class PracticeTurn(val text: String, val speaker: String, val isUserTurn: Boolean, val autoPlay: Boolean = false) : TopicChatItem()
     data class RecordingPrompt(val expectedText: String) : TopicChatItem()
     data class PracticeHint(val hint: String, val expectedText: String) : TopicChatItem()
     data class RevealAnswer(val correctText: String) : TopicChatItem()

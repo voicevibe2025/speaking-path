@@ -32,8 +32,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.Brush
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,7 +142,9 @@ fun PracticeTurnCard(
 @Composable
 fun RecordingPromptCard(
     expectedText: String,
-    onRecordingComplete: (String) -> Unit
+    isProcessing: Boolean,
+    onStartRecording: () -> Unit,
+    onStopRecording: () -> Unit
 ) {
     var isRecording by remember { mutableStateOf(false) }
     
@@ -158,15 +165,17 @@ fun RecordingPromptCard(
             Text("\"$expectedText\"", color = Color.White, fontStyle = FontStyle.Italic)
             
             Surface(
-                onClick = { 
+                onClick = {
+                    if (isProcessing) return@Surface
                     isRecording = !isRecording
-                    if (!isRecording) {
-                        // Simulate recording completion - in real app, integrate with speech recognition
-                        onRecordingComplete("Hello, nice to meet you") // Mock transcript
+                    if (isRecording) {
+                        onStartRecording()
+                    } else {
+                        onStopRecording()
                     }
                 },
                 shape = RoundedCornerShape(12.dp),
-                color = if (isRecording) Color(0xFFE53935) else Color(0xFF4CAF50)
+                color = if (isProcessing) Color(0xFF8D6E63) else if (isRecording) Color(0xFFE53935) else Color(0xFF4CAF50)
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -175,11 +184,15 @@ fun RecordingPromptCard(
                 ) {
                     Icon(
                         Icons.Filled.Mic, 
-                        contentDescription = if (isRecording) "Stop Recording" else "Start Recording", 
+                        contentDescription = if (isProcessing) "Processing" else if (isRecording) "Stop Recording" else "Start Recording", 
                         tint = Color.White
                     )
                     Text(
-                        if (isRecording) "Stop Recording" else "Start Recording",
+                        when {
+                            isProcessing -> "Transcribing..."
+                            isRecording -> "Stop Recording"
+                            else -> "Start Recording"
+                        },
                         color = Color.White,
                         fontWeight = FontWeight.Medium
                     )

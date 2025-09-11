@@ -38,6 +38,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -67,6 +68,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.voicevibe.presentation.screens.practice.ai.*
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationTurn
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -177,6 +179,7 @@ private fun TopicChatBody(
     val state by vm.uiState.collectAsStateWithLifecycle()
     var messageText by remember { mutableStateOf("") }
     var currentlyPlayingId by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
 
     val maleVoiceName = "Puck"
     val femaleVoiceName = "Zephyr"
@@ -214,31 +217,48 @@ private fun TopicChatBody(
                         onPlay = { playTts(it) },
                         onExplain = { vm.explainConversationTurn(it.text) },
                         onPracticeWithAi = {
-                            vm.sendMessage("I want to practice this conversation with AI. Please call start_practice_conversation to show role selection.")
+                            vm.startPractice()
                         }
                     )
                     is TopicChatItem.RoleSelection -> RoleSelectionCard(
                         onRoleSelected = { role -> vm.onRoleSelected(role) }
                     )
-                    is TopicChatItem.PracticeTurn -> PracticeTurnCard(
-                        text = item.text,
-                        speaker = item.speaker,
-                        isUserTurn = item.isUserTurn,
-                        currentlyPlayingId = currentlyPlayingId,
-                        onPlay = { 
-                            val voice = if (item.speaker == "A") "Puck" else "Zephyr"
-                            sjVM.speakWithBackendTts(
-                                text = item.text,
-                                voiceName = voice,
-                                onStart = { currentlyPlayingId = item.text },
-                                onDone = { currentlyPlayingId = null },
-                                onError = { currentlyPlayingId = null }
-                            )
+                    is TopicChatItem.PracticeTurn -> {
+                        // Auto play TTS when requested
+                        LaunchedEffect(item.text, item.autoPlay) {
+                            if (item.autoPlay) {
+                                val voice = if (item.speaker == "A") "Puck" else "Zephyr"
+                                sjVM.speakWithBackendTts(
+                                    text = item.text,
+                                    voiceName = voice,
+                                    onStart = { currentlyPlayingId = item.text },
+                                    onDone = { currentlyPlayingId = null },
+                                    onError = { currentlyPlayingId = null }
+                                )
+                            }
                         }
-                    )
+                        PracticeTurnCard(
+                            text = item.text,
+                            speaker = item.speaker,
+                            isUserTurn = item.isUserTurn,
+                            currentlyPlayingId = currentlyPlayingId,
+                            onPlay = { 
+                                val voice = if (item.speaker == "A") "Puck" else "Zephyr"
+                                sjVM.speakWithBackendTts(
+                                    text = item.text,
+                                    voiceName = voice,
+                                    onStart = { currentlyPlayingId = item.text },
+                                    onDone = { currentlyPlayingId = null },
+                                    onError = { currentlyPlayingId = null }
+                                )
+                            }
+                        )
+                    }
                     is TopicChatItem.RecordingPrompt -> RecordingPromptCard(
                         expectedText = item.expectedText,
-                        onRecordingComplete = { transcript -> vm.onUserRecordingComplete(transcript) }
+                        isProcessing = state.isLoading,
+                        onStartRecording = { vm.startUserRecording(context) },
+                        onStopRecording = { vm.stopUserRecordingAndTranscribe(context) }
                     )
                     is TopicChatItem.PracticeHint -> PracticeHintCard(
                         hint = item.hint,
@@ -251,50 +271,64 @@ private fun TopicChatBody(
             }
         }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = messageText,
-                onValueChange = { messageText = it },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Type a message", color = Color(0xFF78909C)) },
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF64B5F6),
-                    unfocusedBorderColor = Color(0xFF37474F),
-                    cursorColor = Color(0xFF64B5F6),
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
-                )
-            )
-            Button(
-                onClick = {
-                    vm.sendMessage(messageText)
-                    messageText = ""
-                },
-                enabled = !state.isLoading && messageText.isNotBlank(),
-                modifier = Modifier.height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4CAF50),
-                    contentColor = Color.White,
-                    disabledContainerColor = Color(0xFF4CAF50).copy(alpha = 0.5f),
-                    disabledContentColor = Color.White.copy(alpha = 0.7f)
-                )
+        if (state.practiceActive) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
             ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp
+                TextButton(onClick = { vm.exitPractice() }) {
+                    Text("Exit Practice", color = Color(0xFFE57373))
+                }
+            }
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = messageText,
+                    onValueChange = { messageText = it },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("Type a message", color = Color(0xFF78909C)) },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF64B5F6),
+                        unfocusedBorderColor = Color(0xFF37474F),
+                        cursorColor = Color(0xFF64B5F6),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
                     )
-                } else {
-                    Icon(Icons.Filled.Send, contentDescription = "Send")
+                )
+                Button(
+                    onClick = {
+                        vm.sendMessage(messageText)
+                        messageText = ""
+                    },
+                    enabled = !state.isLoading && messageText.isNotBlank(),
+                    modifier = Modifier.height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4CAF50),
+                        contentColor = Color.White,
+                        disabledContainerColor = Color(0xFF4CAF50).copy(alpha = 0.5f),
+                        disabledContentColor = Color.White.copy(alpha = 0.7f)
+                    )
+                ) {
+                    if (state.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(Icons.Filled.Send, contentDescription = "Send")
+                    }
                 }
             }
         }
@@ -364,31 +398,117 @@ private fun TopicChatBubble(text: String, isFromUser: Boolean) {
 @Composable
 private fun PracticeMenuCard(onSelect: (PracticeMode) -> Unit) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a)),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(16.dp)
+            .padding(vertical = 6.dp)
+            .shadow(8.dp, RoundedCornerShape(20.dp)),
+        shape = RoundedCornerShape(20.dp)
     ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Choose a practice mode", color = Color.White, fontWeight = FontWeight.SemiBold)
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                PracticeMenuRow(
-                    items = listOf(
-                        PracticeMenuItem(Icons.Filled.Chat, "Conversation", PracticeMode.CONVERSATION),
-                        PracticeMenuItem(Icons.Filled.RecordVoiceOver, "Pronunciation", PracticeMode.PRONUNCIATION),
-                        PracticeMenuItem(Icons.Filled.GraphicEq, "Fluency", PracticeMode.FLUENCY)
-                    ),
-                    onSelect = onSelect
+        Box(
+            modifier = Modifier.background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF2D3748),
+                        Color(0xFF1A202C)
+                    )
                 )
-                PracticeMenuRow(
-                    items = listOf(
-                        PracticeMenuItem(Icons.Filled.LibraryBooks, "Vocabulary", PracticeMode.VOCABULARY),
-                        PracticeMenuItem(Icons.Filled.VolumeUp, "Listening", PracticeMode.LISTENING),
-                        PracticeMenuItem(Icons.Filled.School, "Grammar", PracticeMode.GRAMMAR)
-                    ),
-                    onSelect = onSelect
-                )
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Header with icon and gradient text
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = Color(0xFF667eea).copy(alpha = 0.2f)
+                    ) {
+                        Icon(
+                            Icons.Filled.Psychology,
+                            contentDescription = null,
+                            tint = Color(0xFF667eea),
+                            modifier = Modifier.padding(10.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            "Choose Practice Mode",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+                        Text(
+                            "Select how you'd like to practice",
+                            color = Color(0xFFB0BEC5),
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+                
+                // Practice mode grid
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        PracticeModeTile(
+                            icon = Icons.Filled.Chat,
+                            title = "Conversation",
+                            gradient = listOf(Color(0xFF4CAF50), Color(0xFF2E7D32)),
+                            modifier = Modifier.weight(1f)
+                        ) { onSelect(PracticeMode.CONVERSATION) }
+                        
+                        PracticeModeTile(
+                            icon = Icons.Filled.RecordVoiceOver,
+                            title = "Pronunciation",
+                            gradient = listOf(Color(0xFF2196F3), Color(0xFF1565C0)),
+                            modifier = Modifier.weight(1f)
+                        ) { onSelect(PracticeMode.PRONUNCIATION) }
+                    }
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        PracticeModeTile(
+                            icon = Icons.Filled.GraphicEq,
+                            title = "Fluency",
+                            gradient = listOf(Color(0xFF9C27B0), Color(0xFF6A1B9A)),
+                            modifier = Modifier.weight(1f)
+                        ) { onSelect(PracticeMode.FLUENCY) }
+                        
+                        PracticeModeTile(
+                            icon = Icons.Filled.LibraryBooks,
+                            title = "Vocabulary",
+                            gradient = listOf(Color(0xFFFF9800), Color(0xFFE65100)),
+                            modifier = Modifier.weight(1f)
+                        ) { onSelect(PracticeMode.VOCABULARY) }
+                    }
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        PracticeModeTile(
+                            icon = Icons.Filled.VolumeUp,
+                            title = "Listening",
+                            gradient = listOf(Color(0xFFE91E63), Color(0xFFC2185B)),
+                            modifier = Modifier.weight(1f)
+                        ) { onSelect(PracticeMode.LISTENING) }
+                        
+                        PracticeModeTile(
+                            icon = Icons.Filled.School,
+                            title = "Grammar",
+                            gradient = listOf(Color(0xFF607D8B), Color(0xFF455A64)),
+                            modifier = Modifier.weight(1f)
+                        ) { onSelect(PracticeMode.GRAMMAR) }
+                    }
+                }
             }
         }
     }
@@ -489,7 +609,7 @@ private fun ConversationExampleInline(
                     Icon(Icons.Filled.RecordVoiceOver, contentDescription = null, tint = Color.White)
                     Column(Modifier.weight(1f)) {
                         Text("Practice this conversation with AI", color = Color.White)
-                        Text("Coming soon", color = Color(0xFFB0BEC5), fontSize = 12.sp)
+                        Text("Start a guided practice", color = Color(0xFFB0BEC5), fontSize = 12.sp)
                     }
                 }
             }

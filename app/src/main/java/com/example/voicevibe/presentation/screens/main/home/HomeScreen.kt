@@ -21,16 +21,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,18 +34,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.SubcomposeAsyncImage
 import com.example.voicevibe.R
 import com.example.voicevibe.domain.model.LearningPath
+import com.example.voicevibe.presentation.components.*
+import com.example.voicevibe.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
-import java.util.Locale
-import coil.compose.SubcomposeAsyncImage
-import com.example.voicevibe.ui.theme.BrandNavyDark
-import com.example.voicevibe.ui.theme.BrandNavy
-import com.example.voicevibe.ui.theme.BrandCyan
-import com.example.voicevibe.ui.theme.BrandIndigo
-import com.example.voicevibe.ui.theme.BrandFuchsia
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,109 +88,35 @@ fun HomeScreen(
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        BrandNavyDark,
-                        BrandNavy,
-                        BrandNavy.copy(alpha = 0.95f)
-                    )
-                )
-            )
-    ) {
-        // Background decoration
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .offset(x = 100.dp, y = (-50).dp)
-                .blur(100.dp)
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            BrandCyan.copy(alpha = 0.3f),
-                            Color.Transparent
-                        )
-                    )
-                )
-        )
+    val infiniteTransition = rememberInfiniteTransition(label = "background")
+    val animatedOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(20000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "gradient"
+    )
 
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // Enhanced Top Bar
-            TopAppBar(
-                title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.animateContentSize()
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(BrandCyan, BrandIndigo)
-                                    )
-                                )
-                                .padding(2.dp)
-                        ) {
-                            androidx.compose.foundation.Image(
-                                painter = painterResource(id = R.mipmap.ic_launcher_foreground),
-                                contentDescription = "VoiceVibe Logo",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(CircleShape)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            "VoiceVibe",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp
-                        )
-                    }
-                },
-                actions = {
-                    // Animated refresh button
-                    val rotation by animateFloatAsState(
-                        targetValue = if (isRefreshing) 360f else 0f,
-                        animationSpec = if (isRefreshing) {
-                            infiniteRepeatable(
-                                animation = tween(1000, easing = LinearEasing),
-                                repeatMode = RepeatMode.Restart
-                            )
-                        } else {
-                            spring()
-                        },
-                        label = "rotation"
-                    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        AnimatedBackground(animatedOffset)
+        FloatingParticles()
 
-                    IconButton(
-                        onClick = { if (!isRefreshing) onRefresh() }
-                    ) {
-                        Icon(
-                            Icons.Default.Refresh,
-                            contentDescription = "Refresh",
-                            modifier = Modifier.rotate(rotation),
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = Color.White,
-                    actionIconContentColor = Color.White
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = Color.Transparent,
+            topBar = {
+                ModernTopBar(
+                    title = "VoiceVibe",
+                    onNavigateBack = onNavigateToProfile
                 )
-            )
-
+            }
+        ) { innerPadding ->
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(innerPadding)
                     .background(Color.Transparent),
                 verticalArrangement = Arrangement.spacedBy(20.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 4.dp)
@@ -209,7 +127,7 @@ fun HomeScreen(
                         visible = isVisible,
                         enter = fadeIn() + slideInVertically()
                     ) {
-                        EnhancedHeaderSection(
+                        HeroSection(
                             userName = uiState.userName ?: "Learner",
                             level = uiState.userLevel,
                             userInitials = uiState.userInitials ?: "VV",
@@ -225,7 +143,7 @@ fun HomeScreen(
                         visible = isVisible,
                         enter = fadeIn(animationSpec = tween(400, 100)) + slideInVertically()
                     ) {
-                        EnhancedStatsSection(
+                        StatsSection(
                             totalPoints = uiState.totalPoints,
                             currentStreak = uiState.currentStreak,
                             completedLessons = uiState.completedLessons,
@@ -234,13 +152,13 @@ fun HomeScreen(
                     }
                 }
 
-                // Enhanced Quick Actions
+                // Quick Actions
                 item {
                     AnimatedVisibility(
                         visible = isVisible,
                         enter = fadeIn(animationSpec = tween(400, 200)) + slideInVertically()
                     ) {
-                        EnhancedQuickActionsSection(
+                        QuickActionsSection(
                             onStartPractice = viewModel::onStartPractice,
                             onPracticeWithAI = onNavigateToPracticeAI,
                             onViewPaths = viewModel::onViewAllPaths,
@@ -249,33 +167,23 @@ fun HomeScreen(
                     }
                 }
 
-                // Enhanced Active Learning Paths
+                // Active Learning Paths
                 if (uiState.activeLearningPaths.isNotEmpty()) {
                     item {
-                        AnimatedVisibility(
-                            visible = isVisible,
-                            enter = fadeIn(animationSpec = tween(400, 300)) + slideInVertically()
-                        ) {
-                            EnhancedActivePathsSection(
-                                paths = uiState.activeLearningPaths,
-                                onPathClick = viewModel::onContinueLearning
-                            )
-                        }
+                        ActivePathsSection(
+                            paths = uiState.activeLearningPaths,
+                            onPathClick = viewModel::onContinueLearning
+                        )
                     }
                 }
 
-                // Enhanced Recent Badges
+                // Recent Badges
                 if (uiState.badges.isNotEmpty()) {
                     item {
-                        AnimatedVisibility(
-                            visible = isVisible,
-                            enter = fadeIn(animationSpec = tween(400, 400)) + slideInVertically()
-                        ) {
-                            EnhancedRecentBadgesSection(
-                                badges = uiState.badges,
-                                onViewAll = viewModel::onViewAchievements
-                            )
-                        }
+                        RecentBadgesSection(
+                            badges = uiState.badges,
+                            onViewAll = viewModel::onViewAchievements
+                        )
                     }
                 }
 
@@ -288,224 +196,62 @@ fun HomeScreen(
     }
 }
 
-@Composable
-private fun EnhancedHeaderSection(
-    userName: String,
-    level: Int,
-    userInitials: String,
-    avatarUrl: String?,
-    onProfileClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.05f)
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = Color.White.copy(alpha = 0.1f)
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = "Welcome back,",
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontWeight = FontWeight.Normal
-                )
-                
-                Spacer(modifier = Modifier.height(4.dp))
-                
-                Text(
-                    text = userName,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Enhanced Level badge with gradient
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(BrandCyan.copy(alpha = 0.2f), BrandIndigo.copy(alpha = 0.2f))
-                            )
-                        )
-                        .border(
-                            width = 1.dp,
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(BrandCyan, BrandIndigo)
-                            ),
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.Stars,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = BrandCyan
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Level $level",
-                            fontSize = 14.sp,
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-            }
-
-            // Enhanced Profile Avatar with animation
-            val scale by animateFloatAsState(
-                targetValue = 1f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                ),
-                label = "scale"
-            )
-
-            Box(
-                modifier = Modifier
-                    .scale(scale)
-                    .size(72.dp)
-                    .clip(CircleShape)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(BrandIndigo, BrandFuchsia)
-                        )
-                    )
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null  // Remove ripple effect
-                    ) { onProfileClick() }
-                    .padding(3.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                        .background(BrandNavyDark),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (!avatarUrl.isNullOrBlank()) {
-                        SubcomposeAsyncImage(
-                            model = avatarUrl,
-                            contentDescription = "Avatar",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize(),
-                            loading = {
-                                Text(
-                                    text = userInitials,
-                                    fontSize = 28.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                            },
-                            error = {
-                                Text(
-                                    text = userInitials,
-                                    fontSize = 28.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                            }
-                        )
-                    } else {
-                        Text(
-                            text = userInitials,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
-private fun EnhancedStatsSection(
+private fun StatsSection(
     totalPoints: Int,
     currentStreak: Int,
     completedLessons: Int,
     onViewAchievements: () -> Unit
 ) {
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        itemsIndexed(
-            listOf(
-                Triple(Icons.Default.EmojiEvents, "Total Points", NumberFormat.getNumberInstance(Locale.US).format(totalPoints)),
-                Triple(Icons.Default.LocalFireDepartment, "Day Streak", "$currentStreak"),
-                Triple(Icons.Default.CheckCircle, "Completed", "$completedLessons")
-            )
-        ) { index, (icon, title, value) ->
-            val animatedScale by animateFloatAsState(
-                targetValue = 1f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                ),
-                label = "scale"
-            )
-
-            EnhancedStatCard(
-                icon = icon,
-                title = title,
-                value = value,
-                color = when (index) {
-                    0 -> Color(0xFFFFD700)
-                    1 -> Color(0xFFFF6B6B)
-                    else -> Color(0xFF4ECDC4)
-                },
-                onClick = if (index == 0) onViewAchievements else null,
-                modifier = Modifier.scale(animatedScale)
-            )
-        }
+        StatCard(
+            modifier = Modifier.weight(1f),
+            icon = Icons.Default.EmojiEvents,
+            title = "Total Points",
+            value = NumberFormat.getNumberInstance(Locale.US).format(totalPoints),
+            color = Color(0xFFFFD700),
+            onClick = onViewAchievements
+        )
+        StatCard(
+            modifier = Modifier.weight(1f),
+            icon = Icons.Default.LocalFireDepartment,
+            title = "Day Streak",
+            value = "$currentStreak",
+            color = Color(0xFFFF6B6B)
+        )
+        StatCard(
+            modifier = Modifier.weight(1f),
+            icon = Icons.Default.CheckCircle,
+            title = "Completed",
+            value = "$completedLessons",
+            color = Color(0xFF4ECDC4)
+        )
     }
 }
 
 @Composable
-private fun EnhancedStatCard(
+private fun StatCard(
+    modifier: Modifier = Modifier,
     icon: ImageVector,
     title: String,
     value: String,
     color: Color,
-    onClick: (() -> Unit)?,
-    modifier: Modifier = Modifier
+    onClick: (() -> Unit)? = null
 ) {
     Card(
         modifier = modifier
-            .width(140.dp)
-            .height(140.dp)
+            .aspectRatio(1f)
             .then(
                 if (onClick != null) {
                     Modifier.clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = null  // Remove ripple effect
+                        indication = null
                     ) { onClick() }
                 } else Modifier
             ),
@@ -521,7 +267,6 @@ private fun EnhancedStatCard(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Background decoration
             Box(
                 modifier = Modifier
                     .size(60.dp)
@@ -542,45 +287,35 @@ private fun EnhancedStatCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(color.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = color,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-
-                Column {
-                    Text(
-                        text = value,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = color
-                    )
-                    
-                    Text(
-                        text = title,
-                        fontSize = 13.sp,
-                        color = Color.White.copy(alpha = 0.6f),
-                        fontWeight = FontWeight.Normal
-                    )
-                }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = value,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = color
+                )
+                Text(
+                    text = title,
+                    fontSize = 12.sp,
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontWeight = FontWeight.Normal
+                )
             }
         }
     }
 }
 
 @Composable
-private fun EnhancedQuickActionsSection(
+private fun QuickActionsSection(
     onStartPractice: () -> Unit,
     onPracticeWithAI: () -> Unit,
     onViewPaths: () -> Unit,
@@ -597,212 +332,43 @@ private fun EnhancedQuickActionsSection(
             color = Color.White
         )
 
-        // Primary action with enhanced gradient and animation
-        var isPracticePressed by remember { mutableStateOf(false) }
-        val practiceScale by animateFloatAsState(
-            targetValue = if (isPracticePressed) 0.95f else 1f,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            ),
-            label = "scale"
+        QuickActionCard(
+            title = "Start Speaking Practice",
+            description = "Practice your pronunciation now",
+            icon = Icons.Default.Mic,
+            gradient = listOf(Color(0xFF6C63FF), Color(0xFF00D9FF)),
+            onClick = onStartPractice
         )
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .scale(practiceScale)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null
-                ) {
-                    isPracticePressed = true
-                    onStartPractice()
-                }
-                .shadow(
-                    elevation = 8.dp,
-                    shape = RoundedCornerShape(20.dp),
-                    ambientColor = BrandCyan.copy(alpha = 0.3f),
-                    spotColor = BrandCyan.copy(alpha = 0.3f)
-                ),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.Transparent
-            )
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                BrandCyan,
-                                BrandIndigo,
-                                BrandFuchsia.copy(alpha = 0.8f)
-                            )
-                        )
-                    )
-            ) {
-                // Animated background pattern
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp)
-                        .offset(x = 50.dp)
-                        .blur(50.dp)
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    Color.White.copy(alpha = 0.2f),
-                                    Color.Transparent
-                                )
-                            )
-                        )
-                )
+        Spacer(modifier = Modifier.height(16.dp))
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Start Speaking Practice",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Practice your pronunciation now",
-                            fontSize = 14.sp,
-                            color = Color.White.copy(alpha = 0.9f)
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Mic,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
-            }
-        }
-
-        LaunchedEffect(isPracticePressed) {
-            if (isPracticePressed) {
-                delay(100)
-                isPracticePressed = false
-            }
-        }
+        QuickActionCard(
+            title = "Practice with Vivi",
+            description = "AI-powered conversation",
+            icon = Icons.Default.Psychology,
+            gradient = listOf(Color(0xFFFF006E), Color(0xFFFF4081)),
+            onClick = onPracticeWithAI
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // AI Practice card with glassmorphism
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onPracticeWithAI() },
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White.copy(alpha = 0.05f)
-            ),
-            border = BorderStroke(
-                width = 1.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        BrandCyan.copy(alpha = 0.3f),
-                        BrandIndigo.copy(alpha = 0.3f)
-                    )
-                )
-            )
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(BrandCyan.copy(alpha = 0.2f), BrandIndigo.copy(alpha = 0.2f))
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Psychology,
-                            contentDescription = null,
-                            tint = BrandCyan,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.width(16.dp))
-                    
-                    Column {
-                        Text(
-                            text = "Practice with Vivi",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = "AI-powered conversation",
-                            fontSize = 13.sp,
-                            color = BrandCyan.copy(alpha = 0.8f)
-                        )
-                    }
-                }
-
-                Icon(
-                    imageVector = Icons.Default.ArrowForward,
-                    contentDescription = null,
-                    tint = BrandCyan.copy(alpha = 0.6f),
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Secondary actions grid with enhanced visuals
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SecondaryActionCard(
+            QuickActionCard(
                 modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.School,
                 title = "Learning Paths",
-                gradient = listOf(BrandIndigo, BrandCyan),
+                icon = Icons.Outlined.School,
+                gradient = listOf(Color(0xFFFFBE0B), Color(0xFFFB8500)),
                 onClick = onViewPaths
             )
 
-            SecondaryActionCard(
+            QuickActionCard(
                 modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.Leaderboard,
                 title = "Leaderboard",
-                gradient = listOf(BrandFuchsia, BrandIndigo),
+                icon = Icons.Outlined.Leaderboard,
+                gradient = listOf(Color(0xFF8338EC), Color(0xFF6C63FF)),
                 onClick = onViewLeaderboard
             )
         }
@@ -810,16 +376,17 @@ private fun EnhancedQuickActionsSection(
 }
 
 @Composable
-private fun SecondaryActionCard(
+private fun QuickActionCard(
     modifier: Modifier = Modifier,
-    icon: ImageVector,
     title: String,
+    description: String? = null,
+    icon: ImageVector,
     gradient: List<Color>,
     onClick: () -> Unit
 ) {
     Card(
         modifier = modifier
-            .aspectRatio(1f)
+            .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
@@ -827,66 +394,65 @@ private fun SecondaryActionCard(
         ),
         border = BorderStroke(
             width = 1.dp,
-            color = gradient.first().copy(alpha = 0.3f)
+            brush = Brush.linearGradient(
+                colors = listOf(
+                    gradient[0].copy(alpha = 0.5f),
+                    gradient[1].copy(alpha = 0.5f)
+                )
+            )
         )
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Gradient overlay
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
                     .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                gradient.first().copy(alpha = 0.1f)
-                            )
+                        Brush.linearGradient(
+                            colors = gradient
                         )
-                    )
-            )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(20.dp))
 
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(
-                            brush = Brush.linearGradient(gradient.map { it.copy(alpha = 0.2f) })
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = gradient.first(),
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
                 Text(
                     text = title,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
+                if (description != null) {
+                    Text(
+                        text = description,
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun EnhancedActivePathsSection(
+private fun ActivePathsSection(
     paths: List<LearningPath>,
     onPathClick: (String) -> Unit
 ) {
@@ -919,7 +485,7 @@ private fun EnhancedActivePathsSection(
         Spacer(modifier = Modifier.height(16.dp))
 
         paths.forEachIndexed { index, path ->
-            EnhancedPathCard(
+            PathCard(
                 path = path,
                 onClick = { onPathClick(path.id) },
                 index = index
@@ -933,7 +499,7 @@ private fun EnhancedActivePathsSection(
 }
 
 @Composable
-private fun EnhancedPathCard(
+private fun PathCard(
     path: LearningPath,
     onClick: () -> Unit,
     index: Int
@@ -1016,7 +582,6 @@ private fun EnhancedPathCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Enhanced progress bar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1039,7 +604,7 @@ private fun EnhancedPathCard(
 }
 
 @Composable
-private fun EnhancedRecentBadgesSection(
+private fun RecentBadgesSection(
     badges: List<String>,
     onViewAll: () -> Unit
 ) {
@@ -1073,14 +638,14 @@ private fun EnhancedRecentBadgesSection(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             itemsIndexed(badges) { index, badge ->
-                EnhancedBadgeItem(badge = badge, index = index)
+                BadgeItem(badge = badge, index = index)
             }
         }
     }
 }
 
 @Composable
-private fun EnhancedBadgeItem(
+private fun BadgeItem(
     badge: String,
     index: Int
 ) {
@@ -1093,15 +658,6 @@ private fun EnhancedBadgeItem(
     
     val badgeColor = colors[index % colors.size]
 
-    val animatedScale by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "scale"
-    )
-
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
@@ -1110,8 +666,7 @@ private fun EnhancedBadgeItem(
         border = BorderStroke(
             width = 1.dp,
             color = badgeColor.copy(alpha = 0.3f)
-        ),
-        modifier = Modifier.scale(animatedScale)
+        )
     ) {
         Box(
             modifier = Modifier

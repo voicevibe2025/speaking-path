@@ -3,35 +3,32 @@ package com.example.voicevibe.presentation.screens.speakingjourney
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.voicevibe.presentation.components.*
 import kotlinx.coroutines.delay
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,14 +45,14 @@ fun TopicMasterScreen(
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
     val topic = ui.topics.firstOrNull { it.id == topicId }
-    
+
     var showContent by remember { mutableStateOf(false) }
-    
+
     LaunchedEffect(topic) {
         delay(100)
         showContent = true
     }
-    
+
     // Animated gradient background
     val infiniteTransition = rememberInfiniteTransition(label = "background")
     val animatedOffset by infiniteTransition.animateFloat(
@@ -71,10 +68,10 @@ fun TopicMasterScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // Animated gradient background
         AnimatedBackground(animatedOffset)
-        
+
         // Floating particles
         FloatingParticles()
-        
+
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = Color.Transparent,
@@ -108,12 +105,12 @@ fun TopicMasterScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Spacer(modifier = Modifier.height(20.dp))
-                        
+
                         // Hero Section
                         HeroSection()
-                        
+
                         Spacer(modifier = Modifier.height(32.dp))
-                        
+
                         // Practice Cards Grid
                         PracticeCardsSection(
                             topicId = topicId,
@@ -124,7 +121,7 @@ fun TopicMasterScreen(
                             onNavigateToGrammarPractice = onNavigateToGrammarPractice,
                             onNavigateToConversation = onNavigateToConversation
                         )
-                        
+
                         Spacer(modifier = Modifier.height(32.dp))
                     }
                 }
@@ -133,280 +130,6 @@ fun TopicMasterScreen(
     }
 }
 
-@Composable
-fun AnimatedBackground(animatedOffset: Float) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val width = size.width
-        val height = size.height
-        
-        // Create animated gradient mesh
-        val colors = listOf(
-            Color(0xFF6C63FF),
-            Color(0xFF00D9FF),
-            Color(0xFFFF006E),
-            Color(0xFFFFBE0B),
-            Color(0xFF8338EC)
-        )
-        
-        // Draw multiple gradient circles
-        colors.forEachIndexed { index, color ->
-            val angle = animatedOffset + (index * 72f)
-            val radius = width * 0.6f
-            val x = width / 2 + cos(Math.toRadians(angle.toDouble())).toFloat() * radius * 0.3f
-            val y = height / 2 + sin(Math.toRadians(angle.toDouble())).toFloat() * radius * 0.3f
-            
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        color.copy(alpha = 0.3f),
-                        color.copy(alpha = 0.1f),
-                        Color.Transparent
-                    ),
-                    center = Offset(x, y),
-                    radius = radius
-                ),
-                center = Offset(x, y),
-                radius = radius
-            )
-        }
-        
-        // Dark overlay for better contrast
-        drawRect(
-            brush = Brush.verticalGradient(
-                colors = listOf(
-                    Color.Black.copy(alpha = 0.5f),
-                    Color.Black.copy(alpha = 0.7f),
-                    Color.Black.copy(alpha = 0.6f)
-                )
-            )
-        )
-    }
-}
-
-@Composable
-fun FloatingParticles() {
-    val infiniteTransition = rememberInfiniteTransition(label = "particles")
-    
-    Box(modifier = Modifier.fillMaxSize()) {
-        repeat(15) { index ->
-            val offsetY by infiniteTransition.animateFloat(
-                initialValue = 1f,
-                targetValue = -0.1f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(
-                        durationMillis = (15000..25000).random(),
-                        easing = LinearEasing
-                    ),
-                    repeatMode = RepeatMode.Restart
-                ),
-                label = "particle$index"
-            )
-            
-            val offsetX by infiniteTransition.animateFloat(
-                initialValue = -0.1f,
-                targetValue = 0.1f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(
-                        durationMillis = (5000..8000).random(),
-                        easing = FastOutSlowInEasing
-                    ),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "particleX$index"
-            )
-            
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .offset(
-                        x = (offsetX * 100).dp,
-                        y = with(LocalDensity.current) { (offsetY * 1200).dp }
-                    )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .offset(
-                            x = ((index * 73) % 350).dp,
-                            y = ((index * 47) % 200).dp
-                        )
-                        .size((2..6).random().dp)
-                        .clip(CircleShape)
-                        .background(
-                            Color.White.copy(alpha = Random.nextFloat() * 0.4f + 0.3f)
-                        )
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ModernTopBar(
-    title: String,
-    onNavigateBack: () -> Unit
-) {
-    TopAppBar(
-        modifier = Modifier
-            .padding(horizontal = 20.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(
-                Brush.horizontalGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.05f),
-                        Color.White.copy(alpha = 0.1f),
-                        Color.White.copy(alpha = 0.05f)
-                    )
-                )
-            )
-            .border(
-                width = 1.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.2f),
-                        Color.White.copy(alpha = 0.1f)
-                    )
-                ),
-                shape = RoundedCornerShape(20.dp)
-            ),
-        title = {
-            Text(
-                text = title,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
-                color = Color.White,
-                modifier = Modifier.padding(start = 8.dp)
-            )
-        },
-        navigationIcon = {
-            IconButton(
-                onClick = onNavigateBack,
-                modifier = Modifier
-                    .padding(8.dp)
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFF6C63FF).copy(alpha = 0.3f),
-                                Color(0xFF00D9FF).copy(alpha = 0.3f)
-                            )
-                        )
-                    )
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent
-        )
-    )
-}
-
-@Composable
-fun HeroSection() {
-    val shimmerTransition = rememberInfiniteTransition(label = "shimmer")
-    val shimmerOffset by shimmerTransition.animateFloat(
-        initialValue = -1f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "shimmer"
-    )
-    
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.05f),
-                        Color.White.copy(alpha = 0.1f),
-                        Color.White.copy(alpha = 0.05f)
-                    ),
-                    start = Offset(shimmerOffset * 1000f, 0f),
-                    end = Offset(shimmerOffset * 1000f + 500f, 0f)
-                )
-            )
-            .border(
-                width = 1.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFF6C63FF).copy(alpha = 0.5f),
-                        Color(0xFF00D9FF).copy(alpha = 0.5f)
-                    )
-                ),
-                shape = RoundedCornerShape(24.dp)
-            )
-            .padding(24.dp)
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Animated icon
-            val pulseAnimation by shimmerTransition.animateFloat(
-                initialValue = 0.9f,
-                targetValue = 1.1f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(1500, easing = FastOutSlowInEasing),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "pulse"
-            )
-            
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .scale(pulseAnimation)
-                    .clip(CircleShape)
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFF6C63FF),
-                                Color(0xFF00D9FF)
-                            )
-                        )
-                    )
-                    .padding(20.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.AutoAwesome,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = "Master Your Speaking Skills",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                textAlign = TextAlign.Center
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = "Choose your practice mode and level up",
-                fontSize = 16.sp,
-                color = Color.White.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
 
 @Composable
 fun PracticeCardsSection(

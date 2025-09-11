@@ -44,16 +44,6 @@ fun ModernTopBar(
                         Color.White.copy(alpha = 0.05f)
                     )
                 )
-            )
-            .border(
-                width = 1.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.2f),
-                        Color.White.copy(alpha = 0.1f)
-                    )
-                ),
-                shape = RoundedCornerShape(20.dp)
             ),
         title = {
             Text(

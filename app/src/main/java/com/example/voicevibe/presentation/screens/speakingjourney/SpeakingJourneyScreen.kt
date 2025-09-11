@@ -332,7 +332,7 @@ fun SpeakingJourneyScreen(
             topBar = {
                 ModernTopBar(
                     title = "Speaking Journey",
-                    onNavigateBack = onNavigateBack
+                    onNavigationIconClick = onNavigateBack
                 )
             }
         ) { innerPadding: PaddingValues ->

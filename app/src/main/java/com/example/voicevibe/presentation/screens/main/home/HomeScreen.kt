@@ -2,7 +2,8 @@ package com.example.voicevibe.presentation.screens.main.home
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.BorderStroke  // Add this import
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -108,8 +110,17 @@ fun HomeScreen(
             containerColor = Color.Transparent,
             topBar = {
                 ModernTopBar(
-                    title = "VoiceVibe",
-                    onNavigateBack = onNavigateToProfile
+                    title = "VozVibe",
+                    onNavigationIconClick = onNavigateToProfile,
+                    navigationIcon = {
+                        Image(
+                            painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                            contentDescription = "VoiceVibe Logo",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                        )
+                    }
                 )
             }
         ) { innerPadding ->
@@ -549,7 +560,7 @@ private fun PathCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            Icons.Default.MenuBook,
+                            Icons.AutoMirrored.Filled.MenuBook,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
                             tint = gradientColors.first().copy(alpha = 0.8f)

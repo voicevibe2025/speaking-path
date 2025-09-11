@@ -22,7 +22,15 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun ModernTopBar(
     title: String,
-    onNavigateBack: () -> Unit
+    onNavigationIconClick: () -> Unit,
+    navigationIcon: @Composable () -> Unit = {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = "Back",
+            tint = Color.White,
+            modifier = Modifier.size(20.dp)
+        )
+    }
 ) {
     TopAppBar(
         modifier = Modifier
@@ -58,7 +66,7 @@ fun ModernTopBar(
         },
         navigationIcon = {
             IconButton(
-                onClick = onNavigateBack,
+                onClick = onNavigationIconClick,
                 modifier = Modifier
                     .padding(8.dp)
                     .size(40.dp)
@@ -72,12 +80,7 @@ fun ModernTopBar(
                         )
                     )
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
+                navigationIcon()
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(

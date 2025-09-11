@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -78,7 +80,7 @@ fun TopicMasterScreen(
             topBar = {
                 ModernTopBar(
                     title = topic?.title ?: "Master Topic",
-                    onNavigateBack = onNavigateBack
+                    onNavigationIconClick = onNavigateBack
                 )
             }
         ) { innerPadding ->
@@ -166,7 +168,7 @@ fun PracticeCardsSection(
         PracticeItem(
             title = "Listening",
             description = "Improve comprehension",
-            icon = Icons.Default.VolumeUp,
+            icon = Icons.AutoMirrored.Filled.VolumeUp,
             gradient = listOf(Color(0xFF8338EC), Color(0xFF6C63FF)),
             onClick = { onNavigateToListeningPractice(topicId) }
         ),
@@ -324,7 +326,7 @@ fun ModernPracticeCard(
                     }
                     
                     Icon(
-                        imageVector = Icons.Default.ArrowForwardIos,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                         contentDescription = null,
                         tint = Color.White.copy(alpha = 0.5f),
                         modifier = Modifier.size(20.dp)

@@ -373,10 +373,10 @@ class TopicPracticeChatViewModel @Inject constructor(
                 val marker = TopicChatItem.UserText("Selected: Conversation Practice")
                 _uiState.value = _uiState.value.copy(items = _uiState.value.items + marker)
                 // Show the conversation example immediately; user can tap Practice with AI to begin
+                // Don't show the practice menu again to avoid clutter
                 currentTopic?.let { topic ->
                     val example = TopicChatItem.ConversationExample(topic.conversation)
-                    val menu = TopicChatItem.PracticeMenu
-                    _uiState.value = _uiState.value.copy(items = _uiState.value.items + example + menu)
+                    _uiState.value = _uiState.value.copy(items = _uiState.value.items + example)
                 }
             }
             else -> {

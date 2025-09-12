@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Person
@@ -24,6 +25,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -102,7 +104,9 @@ fun PracticeTurnCard(
     currentlyPlayingId: String?,
     onPlay: () -> Unit
 ) {
-    val isActive = currentlyPlayingId == text
+    // Create unique ID for this specific turn to avoid conflicts
+    val uniqueId = "${speaker}_${text.hashCode()}"
+    val isActive = currentlyPlayingId == uniqueId
     
     Card(
         colors = CardDefaults.cardColors(containerColor = if (isUserTurn) Color(0xFF1B4332) else Color(0xFF2a2d3a)),

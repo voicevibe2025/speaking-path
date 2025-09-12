@@ -184,6 +184,30 @@ private fun TopicChatBody(
     val maleVoiceName = "Puck"
     val femaleVoiceName = "Zephyr"
 
+    var lastAutoPlayedKey by remember { mutableStateOf<String?>(null) }
+
+    // Auto-play latest AI PracticeTurn flagged with autoPlay, even if it's offscreen
+    LaunchedEffect(state.items) {
+        val idx = state.items.indexOfLast { it is TopicChatItem.PracticeTurn && !it.isUserTurn && it.autoPlay }
+        if (idx != -1) {
+            val it = state.items[idx] as TopicChatItem.PracticeTurn
+            val key = "ap:$idx:${it.speaker}:${it.text.hashCode()}"
+            if (lastAutoPlayedKey != key) {
+                val voice = if (it.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
+                val uniqueId = "${it.speaker}_${it.text.hashCode()}"
+                sjVM.markSpeakingActivity()
+                sjVM.speakWithBackendTts(
+                    text = it.text,
+                    voiceName = voice,
+                    onStart = { currentlyPlayingId = uniqueId },
+                    onDone = { currentlyPlayingId = null },
+                    onError = { currentlyPlayingId = null }
+                )
+                lastAutoPlayedKey = key
+            }
+        }
+    }
+
     fun playTts(turn: ConversationTurn) {
         val id = turn.text
         val voice = if (turn.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
@@ -224,19 +248,6 @@ private fun TopicChatBody(
                         onRoleSelected = { role -> vm.onRoleSelected(role) }
                     )
                     is TopicChatItem.PracticeTurn -> {
-                        // Auto play TTS when requested
-                        LaunchedEffect(item.text, item.autoPlay) {
-                            if (item.autoPlay) {
-                                val voice = if (item.speaker == "A") "Puck" else "Zephyr"
-                                sjVM.speakWithBackendTts(
-                                    text = item.text,
-                                    voiceName = voice,
-                                    onStart = { currentlyPlayingId = item.text },
-                                    onDone = { currentlyPlayingId = null },
-                                    onError = { currentlyPlayingId = null }
-                                )
-                            }
-                        }
                         PracticeTurnCard(
                             text = item.text,
                             speaker = item.speaker,
@@ -244,10 +255,11 @@ private fun TopicChatBody(
                             currentlyPlayingId = currentlyPlayingId,
                             onPlay = { 
                                 val voice = if (item.speaker == "A") "Puck" else "Zephyr"
+                                val uniqueId = "${item.speaker}_${item.text.hashCode()}"
                                 sjVM.speakWithBackendTts(
                                     text = item.text,
                                     voiceName = voice,
-                                    onStart = { currentlyPlayingId = item.text },
+                                    onStart = { currentlyPlayingId = uniqueId },
                                     onDone = { currentlyPlayingId = null },
                                     onError = { currentlyPlayingId = null }
                                 )

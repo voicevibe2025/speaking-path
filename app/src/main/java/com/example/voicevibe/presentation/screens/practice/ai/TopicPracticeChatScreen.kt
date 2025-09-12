@@ -593,27 +593,35 @@ private fun ConversationExampleInline(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Make text take full width; move speaker + actions to the far right
+                    // Speaker label on the left
+                    Surface(shape = CircleShape, color = Color.White.copy(alpha = 0.1f)) {
+                        Text(
+                            turn.speaker,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    // Text takes most space
                     Text(
                         turn.text,
                         color = Color.White,
                         modifier = Modifier.weight(1f)
                     )
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = { onPlay(turn) }) {
-                            Icon(Icons.Filled.VolumeUp, contentDescription = "Play", tint = Color.White)
+                    // Play and info icons on the far right
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(
+                            onClick = { onPlay(turn) },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(Icons.Filled.VolumeUp, contentDescription = "Play", tint = Color.White, modifier = Modifier.size(20.dp))
                         }
-                        IconButton(onClick = { onExplain(turn) }) {
-                            Icon(Icons.Filled.Info, contentDescription = "Explain", tint = Color(0xFF64B5F6))
-                        }
-                        Surface(shape = CircleShape, color = Color.White.copy(alpha = 0.1f)) {
-                            Text(
-                                turn.speaker,
-                                color = Color.White,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                        IconButton(
+                            onClick = { onExplain(turn) },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(Icons.Filled.Info, contentDescription = "Explain", tint = Color(0xFF64B5F6), modifier = Modifier.size(20.dp))
                         }
                     }
                 }

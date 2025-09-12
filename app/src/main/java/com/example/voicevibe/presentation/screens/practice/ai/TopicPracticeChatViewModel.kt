@@ -483,8 +483,7 @@ class TopicPracticeChatViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         items = _uiState.value.items +
                                 TopicChatItem.AiText("Great job — you finished the conversation practice!") +
-                                TopicChatItem.Congrats(message = "Conversation complete!", xp = 100) +
-                                TopicChatItem.PracticeMenu,
+                                TopicChatItem.Congrats(message = "Conversation complete!", xp = 100),
                         practiceActive = false
                     )
                 }
@@ -510,8 +509,7 @@ class TopicPracticeChatViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         items = _uiState.value.items +
                                 TopicChatItem.AiText("Great job — you finished the conversation practice!") +
-                                TopicChatItem.Congrats(message = "Conversation complete!", xp = 100) +
-                                TopicChatItem.PracticeMenu,
+                                TopicChatItem.Congrats(message = "Conversation complete!", xp = 100),
                         practiceActive = false
                     )
                 }

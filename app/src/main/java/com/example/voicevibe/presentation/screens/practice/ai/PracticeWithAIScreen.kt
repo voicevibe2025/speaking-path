@@ -13,6 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,11 +25,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -360,7 +364,34 @@ fun ComingSoonScreen() {
 @Composable
 fun ChatScreen(viewModel: PracticeWithAIViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val sjVM: SpeakingJourneyViewModel = hiltViewModel()
+    val context = LocalContext.current
     var messageText by remember { mutableStateOf("") }
+    var lastSpokenIndex by remember { mutableStateOf(-1) }
+
+    // Auto-play latest AI message when voice mode is ON
+    LaunchedEffect(uiState.messages.size, uiState.aiVoiceMode) {
+        if (!uiState.aiVoiceMode) return@LaunchedEffect
+        val idx = uiState.messages.lastIndex
+        if (idx <= lastSpokenIndex || idx < 0) return@LaunchedEffect
+        val msg = uiState.messages[idx]
+        if (!msg.isFromUser && msg.text.isNotBlank() && !msg.text.contains("Vivi is typing")) {
+            // Count activity towards streak
+            sjVM.markSpeakingActivity()
+            sjVM.speakWithBackendTts(
+                text = msg.text,
+                voiceName = "Zephyr", // Vivi default voice
+                onStart = { lastSpokenIndex = idx },
+                onDone = {},
+                onError = { _ -> }
+            )
+        }
+    }
+
+    // Stop playback when leaving the screen
+    DisposableEffect(Unit) {
+        onDispose { sjVM.stopPlayback() }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -395,6 +426,31 @@ fun ChatScreen(viewModel: PracticeWithAIViewModel) {
                     unfocusedTextColor = Color.White
                 )
             )
+            // AI Voice toggle
+            IconToggleButton(
+                checked = uiState.aiVoiceMode,
+                onCheckedChange = { viewModel.setAiVoiceMode(it) }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.VolumeUp,
+                    contentDescription = if (uiState.aiVoiceMode) "AI voice on" else "AI voice off",
+                    tint = if (uiState.aiVoiceMode) Color(0xFF64B5F6) else Color(0xFFB0BEC5)
+                )
+            }
+            // Mic record button
+            IconButton(
+                onClick = {
+                    if (uiState.isRecording) viewModel.stopRecordingAndTranscribe(context)
+                    else viewModel.startVoiceRecording(context)
+                },
+                enabled = !uiState.isLoading
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Mic,
+                    contentDescription = if (uiState.isRecording) "Stop recording" else "Start recording",
+                    tint = if (uiState.isRecording) Color(0xFFE57373) else Color.White
+                )
+            }
             Button(
                 onClick = {
                     viewModel.sendMessage(messageText)

@@ -279,6 +279,7 @@ private fun TopicChatBody(
                     is TopicChatItem.RevealAnswer -> RevealAnswerCard(
                         correctText = item.correctText
                     )
+                    is TopicChatItem.Congrats -> CongratsCard(message = item.message, xp = item.xp)
                 }
             }
         }
@@ -577,52 +578,105 @@ private fun ConversationExampleInline(
             .padding(vertical = 6.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Conversation Example", color = Color.White, fontWeight = FontWeight.SemiBold)
             for (turn in turns) {
                 val isActive = currentlyPlayingId == turn.text
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(if (isActive) Color.White.copy(alpha = 0.06f) else Color.Transparent, RoundedCornerShape(10.dp))
-                        .padding(10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        .background(
+                            if (isActive) Color.White.copy(alpha = 0.06f) else Color.Transparent,
+                            RoundedCornerShape(10.dp)
+                        )
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Surface(shape = CircleShape, color = Color.White.copy(alpha = 0.1f)) {
-                        Text(
-                            turn.speaker,
-                            color = Color.White,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                    Text(turn.text, color = Color.White, modifier = Modifier.weight(1f))
-                    IconButton(onClick = { onPlay(turn) }) {
-                        Icon(Icons.Filled.VolumeUp, contentDescription = "Play", tint = Color.White)
-                    }
-                    IconButton(onClick = { onExplain(turn) }) {
-                        Icon(Icons.Filled.Info, contentDescription = "Explain", tint = Color(0xFF64B5F6))
+                    // Make text take full width; move speaker + actions to the far right
+                    Text(
+                        turn.text,
+                        color = Color.White,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { onPlay(turn) }) {
+                            Icon(Icons.Filled.VolumeUp, contentDescription = "Play", tint = Color.White)
+                        }
+                        IconButton(onClick = { onExplain(turn) }) {
+                            Icon(Icons.Filled.Info, contentDescription = "Explain", tint = Color(0xFF64B5F6))
+                        }
+                        Surface(shape = CircleShape, color = Color.White.copy(alpha = 0.1f)) {
+                            Text(
+                                turn.speaker,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(4.dp))
+            // Prominent CTA with gradient
             Surface(
                 onClick = onPracticeWithAi,
-                shape = RoundedCornerShape(12.dp),
-                color = Color.White.copy(alpha = 0.06f)
+                shape = RoundedCornerShape(14.dp),
+                color = Color.Transparent,
             ) {
-                Row(
-                    modifier = Modifier.padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(Color(0xFF667eea), Color(0xFF764ba2))
+                            ),
+                            RoundedCornerShape(14.dp)
+                        )
+                        .padding(horizontal = 16.dp, vertical = 14.dp)
                 ) {
-                    Icon(Icons.Filled.RecordVoiceOver, contentDescription = null, tint = Color.White)
-                    Column(Modifier.weight(1f)) {
-                        Text("Practice this conversation with AI", color = Color.White)
-                        Text("Start a guided practice", color = Color(0xFFB0BEC5), fontSize = 12.sp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(Icons.Filled.RecordVoiceOver, contentDescription = null, tint = Color.White)
+                        Column(Modifier.weight(1f)) {
+                            Text("Practice this conversation with AI", color = Color.White, fontWeight = FontWeight.SemiBold)
+                            Text("Start a guided practice", color = Color.White.copy(alpha = 0.85f), fontSize = 12.sp)
+                        }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CongratsCard(message: String, xp: Int) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .shadow(6.dp, RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Box(
+            modifier = Modifier.background(
+                Brush.horizontalGradient(
+                    colors = listOf(Color(0xFF43A047), Color(0xFF66BB6A))
+                )
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = Color.White)
+                Column(Modifier.weight(1f)) {
+                    Text(text = message, color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(text = "+$xp XP", color = Color.White.copy(alpha = 0.9f))
                 }
             }
         }

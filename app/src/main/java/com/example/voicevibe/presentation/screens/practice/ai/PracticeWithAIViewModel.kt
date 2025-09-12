@@ -1,5 +1,9 @@
 package com.example.voicevibe.presentation.screens.practice.ai
 
+import android.content.Context
+import android.media.MediaRecorder
+import android.os.Build
+import android.util.Base64
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.BuildConfig
@@ -7,6 +11,7 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
 import com.example.voicevibe.data.repository.UserRepository
+import com.example.voicevibe.data.repository.AiEvaluationRepository
 import com.example.voicevibe.domain.model.Resource
 import timber.log.Timber
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +23,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PracticeWithAIViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val aiEvaluationRepository: AiEvaluationRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -70,6 +76,10 @@ class PracticeWithAIViewModel @Inject constructor(
     private var initializedWithUserContext: Boolean = false
     private val pendingMessages = mutableListOf<String>()
     private var greetingPlaceholderIndex: Int? = null
+
+    // Voice recording for free chat
+    private var recorder: MediaRecorder? = null
+    private var audioFile: java.io.File? = null
 
     init {
         // Preload current user so the chat can be initialized with user context before first message
@@ -316,12 +326,86 @@ class PracticeWithAIViewModel @Inject constructor(
             }
         }
     }
+
+    // --- Voice mode controls ---
+    fun setAiVoiceMode(enabled: Boolean) {
+        _uiState.value = _uiState.value.copy(aiVoiceMode = enabled)
+    }
+
+    // --- Recording & Whisper transcription for free chat ---
+    fun startVoiceRecording(context: Context) {
+        try {
+            // Stop any existing recorder
+            try { recorder?.stop() } catch (_: Throwable) {}
+            try { recorder?.reset() } catch (_: Throwable) {}
+            try { recorder?.release() } catch (_: Throwable) {}
+            recorder = null
+
+            val outFile = java.io.File(context.cacheDir, "free_chat_${System.currentTimeMillis()}.m4a")
+            audioFile = outFile
+            val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) MediaRecorder(context) else MediaRecorder()
+            recorder = mr
+            mr.setAudioSource(MediaRecorder.AudioSource.MIC)
+            mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            mr.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            mr.setAudioEncodingBitRate(128_000)
+            mr.setAudioSamplingRate(44_100)
+            mr.setOutputFile(outFile.absolutePath)
+            mr.prepare(); mr.start()
+            _uiState.value = _uiState.value.copy(isRecording = true, error = null)
+        } catch (t: Throwable) {
+            _uiState.value = _uiState.value.copy(error = "Unable to start recording. ${t.message ?: "unknown"}", isRecording = false)
+            try { recorder?.release() } catch (_: Throwable) {}
+            recorder = null
+        }
+    }
+
+    fun stopRecordingAndTranscribe(context: Context) {
+        try { recorder?.stop() } catch (_: Throwable) {}
+        try { recorder?.reset() } catch (_: Throwable) {}
+        try { recorder?.release() } catch (_: Throwable) {}
+        recorder = null
+
+        val file = audioFile
+        if (file == null || !file.exists()) {
+            _uiState.value = _uiState.value.copy(error = "Recording not available.", isRecording = false)
+            return
+        }
+
+        _uiState.value = _uiState.value.copy(error = null, isLoading = true, isRecording = false)
+        viewModelScope.launch {
+            try {
+                val bytes = file.readBytes()
+                val b64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
+                when (val res = aiEvaluationRepository.transcribeBase64(b64, language = "en")) {
+                    is Resource.Success -> {
+                        val text = res.data ?: ""
+                        if (text.isNotBlank()) {
+                            sendMessage(text)
+                        } else {
+                            _uiState.value = _uiState.value.copy(error = "Empty transcription returned.")
+                        }
+                    }
+                    is Resource.Error -> {
+                        _uiState.value = _uiState.value.copy(error = res.message ?: "Transcription failed")
+                    }
+                    is Resource.Loading -> Unit
+                }
+            } catch (t: Throwable) {
+                _uiState.value = _uiState.value.copy(error = "Transcription error: ${t.message ?: "unknown"}")
+            } finally {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
+        }
+    }
 }
 
 data class ChatUiState(
     val messages: List<ChatMessage> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isRecording: Boolean = false,
+    val aiVoiceMode: Boolean = false
 )
 
 data class ChatMessage(

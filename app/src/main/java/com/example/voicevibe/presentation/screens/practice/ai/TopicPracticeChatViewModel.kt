@@ -173,6 +173,11 @@ class TopicPracticeChatViewModel @Inject constructor(
                             }
                             val result = gamificationRepository.addExperience(points = points, source = reason)
                             val success = result is com.example.voicevibe.domain.model.Resource.Success
+                            if (success && points > 0) {
+                                _uiState.value = _uiState.value.copy(
+                                    items = _uiState.value.items + TopicChatItem.Congrats("Nice work!", points)
+                                )
+                            }
                             val payload = org.json.JSONObject().apply {
                                 put("success", success)
                                 put("awarded", points)
@@ -476,7 +481,10 @@ class TopicPracticeChatViewModel @Inject constructor(
                         gamificationRepository.addExperience(points = 100, source = "practice_conversation")
                     }
                     _uiState.value = _uiState.value.copy(
-                        items = _uiState.value.items + TopicChatItem.AiText("Great job — you finished the conversation practice!") + TopicChatItem.PracticeMenu,
+                        items = _uiState.value.items +
+                                TopicChatItem.AiText("Great job — you finished the conversation practice!") +
+                                TopicChatItem.Congrats(message = "Conversation complete!", xp = 100) +
+                                TopicChatItem.PracticeMenu,
                         practiceActive = false
                     )
                 }
@@ -500,7 +508,10 @@ class TopicPracticeChatViewModel @Inject constructor(
                     practiceState = null
                     viewModelScope.launch { gamificationRepository.addExperience(points = 100, source = "practice_conversation") }
                     _uiState.value = _uiState.value.copy(
-                        items = _uiState.value.items + TopicChatItem.AiText("Great job — you finished the conversation practice!") + TopicChatItem.PracticeMenu,
+                        items = _uiState.value.items +
+                                TopicChatItem.AiText("Great job — you finished the conversation practice!") +
+                                TopicChatItem.Congrats(message = "Conversation complete!", xp = 100) +
+                                TopicChatItem.PracticeMenu,
                         practiceActive = false
                     )
                 }
@@ -616,6 +627,7 @@ sealed class TopicChatItem {
     data class RecordingPrompt(val expectedText: String) : TopicChatItem()
     data class PracticeHint(val hint: String, val expectedText: String) : TopicChatItem()
     data class RevealAnswer(val correctText: String) : TopicChatItem()
+    data class Congrats(val message: String, val xp: Int) : TopicChatItem()
 }
 
 enum class PracticeMode { CONVERSATION, PRONUNCIATION, FLUENCY, VOCABULARY, LISTENING, GRAMMAR }

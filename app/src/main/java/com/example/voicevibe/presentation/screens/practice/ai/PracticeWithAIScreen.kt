@@ -381,7 +381,7 @@ fun ChatScreen(viewModel: PracticeWithAIViewModel) {
             sjVM.markSpeakingActivity()
             sjVM.speakWithBackendTts(
                 text = msg.text,
-                voiceName = "Zephyr", // Vivi default voice
+                voiceName = "Leda", // Vivi default voice (youthful, higher pitch)
                 onStart = { lastSpokenIndex = idx },
                 onDone = {},
                 onError = { _ -> lastSpokenIndex = idx }

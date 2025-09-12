@@ -7,6 +7,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -383,7 +384,7 @@ fun ChatScreen(viewModel: PracticeWithAIViewModel) {
                 voiceName = "Zephyr", // Vivi default voice
                 onStart = { lastSpokenIndex = idx },
                 onDone = {},
-                onError = { _ -> }
+                onError = { _ -> lastSpokenIndex = idx }
             )
         }
     }
@@ -400,8 +401,14 @@ fun ChatScreen(viewModel: PracticeWithAIViewModel) {
                 .padding(16.dp),
             reverseLayout = true
         ) {
-            items(uiState.messages.reversed()) { message ->
-                ChatMessageItem(message)
+            itemsIndexed(uiState.messages.reversed()) { reversedIndex, reversedMsg ->
+                val originalIdx = uiState.messages.lastIndex - reversedIndex
+                val isAiMsg = !reversedMsg.isFromUser
+                val shouldMask = uiState.aiVoiceMode && isAiMsg && originalIdx > lastSpokenIndex
+                val displayed = if (shouldMask) {
+                    ChatMessage(text = "Vivi is speaking…", isFromUser = false)
+                } else reversedMsg
+                ChatMessageItem(displayed)
             }
         }
 

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -24,13 +25,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -40,8 +42,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,6 +59,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.voicevibe.utils.Constants
+import kotlinx.coroutines.delay
+import android.media.ToneGenerator
+import android.media.AudioManager
 
 @Composable
 fun VocabularyPracticeScreen(
@@ -78,6 +88,37 @@ fun VocabularyPracticeScreen(
         )
     )
 
+    // Timed practice state
+    var showStartOverlay by remember(topic?.id, ui.totalQuestions) { mutableStateOf(true) }
+    var isTimeUp by remember { mutableStateOf(false) }
+    val totalSeconds = ui.totalQuestions * Constants.CONVERSATION_SECONDS_PER_TURN
+    var remainingSeconds by remember(totalSeconds) { mutableStateOf(totalSeconds) }
+
+    val isTimerRunning = !showStartOverlay && !isTimeUp && totalSeconds > 0 && !ui.isLoading
+
+    // Simple tick sound on each second using system tone
+    val toneGen = remember {
+        runCatching { ToneGenerator(AudioManager.STREAM_NOTIFICATION, /*volume*/ 60) }.getOrNull()
+    }
+    DisposableEffect(Unit) {
+        onDispose { toneGen?.release() }
+    }
+
+    LaunchedEffect(isTimerRunning) {
+        if (isTimerRunning) {
+            while (remainingSeconds > 0 && !showStartOverlay && !isTimeUp) {
+                delay(1000L)
+                remainingSeconds -= 1
+                runCatching { toneGen?.startTone(ToneGenerator.TONE_PROP_BEEP, /*durationMs*/ 60) }
+            }
+            if (remainingSeconds <= 0 && !showStartOverlay && !isTimeUp) {
+                isTimeUp = true
+                // Final tone to signal time up
+                runCatching { toneGen?.startTone(ToneGenerator.TONE_PROP_ACK, /*durationMs*/ 200) }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -102,6 +143,11 @@ fun VocabularyPracticeScreen(
                                 modifier = Modifier.size(20.dp)
                             )
                         }
+                    }
+                },
+                actions = {
+                    if (!showStartOverlay && !isTimeUp && totalSeconds > 0 && !ui.isLoading) {
+                        TimerChip(remainingSeconds = remainingSeconds)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -232,6 +278,176 @@ fun VocabularyPracticeScreen(
                     viewModel.dismissCongrats()
                     onNavigateBack()
                 })
+            }
+
+            // Timed practice overlays
+            if (showStartOverlay && topic != null && !ui.isLoading && ui.totalQuestions > 0) {
+                StartOverlay(
+                    totalSeconds = totalSeconds,
+                    perQuestionSeconds = Constants.CONVERSATION_SECONDS_PER_TURN,
+                    totalQuestions = ui.totalQuestions,
+                    onStart = {
+                        remainingSeconds = totalSeconds
+                        isTimeUp = false
+                        showStartOverlay = false
+                    }
+                )
+            }
+
+            if (isTimeUp && topic != null) {
+                TimeUpOverlay(
+                    onRestart = {
+                        remainingSeconds = totalSeconds
+                        isTimeUp = false
+                        showStartOverlay = false
+                        // restart the practice from backend
+                        viewModel.restart(topic)
+                    },
+                    onExit = onNavigateBack
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TimerChip(remainingSeconds: Int) {
+    val timeText = "%d:%02d".format(remainingSeconds / 60, remainingSeconds % 60)
+    Surface(
+        shape = RoundedCornerShape(24.dp),
+        color = Color.White.copy(alpha = 0.12f),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Timer,
+                contentDescription = "Time left",
+                tint = Color.White,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = timeText,
+                color = Color.White,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
+@Composable
+private fun StartOverlay(
+    totalSeconds: Int,
+    perQuestionSeconds: Int,
+    totalQuestions: Int,
+    onStart: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0A1128))
+            .clickable(
+                indication = null,
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+            ) { }
+    ) {
+        Surface(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(24.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = Color.White.copy(alpha = 0.08f),
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Bolt,
+                    contentDescription = null,
+                    tint = Color(0xFFF093FB),
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Timed Vocabulary",
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "You have $perQuestionSeconds seconds per question to finish all $totalQuestions questions. Be quick and focused!",
+                    color = Color.White.copy(alpha = 0.85f),
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = onStart,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF667EEA))
+                ) {
+                    Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.White)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Start", color = Color.White)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TimeUpOverlay(onRestart: () -> Unit, onExit: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0A1128))
+            .clickable(
+                indication = null,
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+            ) { }
+    ) {
+        Surface(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(24.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = Color.White.copy(alpha = 0.08f),
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.HourglassBottom,
+                    contentDescription = null,
+                    tint = Color(0xFF4FACFE),
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Time's up!",
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(onClick = onExit, border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))) {
+                        Text("Back", color = Color.White)
+                    }
+                    Button(onClick = onRestart, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF667EEA))) {
+                        Text("Try Again", color = Color.White)
+                    }
+                }
             }
         }
     }

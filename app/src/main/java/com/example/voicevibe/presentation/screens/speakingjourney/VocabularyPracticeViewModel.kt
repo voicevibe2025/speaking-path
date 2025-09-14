@@ -176,6 +176,16 @@ class VocabularyPracticeViewModel @Inject constructor(
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
+
+    fun restart(topic: Topic) {
+        // reset local session state, then start a new session
+        sessionId = null
+        rawQuestions = emptyList()
+        xpFromAnswers = 0
+        correctCount = 0
+        _uiState.update { VocabUiState(isLoading = true) }
+        start(topic)
+    }
 }
 
 // --- UI State ---

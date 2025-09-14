@@ -45,6 +45,9 @@ object Constants {
     const val ANIMATION_DURATION_MEDIUM = 500
     const val ANIMATION_DURATION_LONG = 1000
 
+    // Conversation Practice
+    const val CONVERSATION_SECONDS_PER_TURN = 6
+
     // Learning Levels
     val PROFICIENCY_LEVELS = listOf("A1", "A2", "B1", "B2", "C1", "C2")
 

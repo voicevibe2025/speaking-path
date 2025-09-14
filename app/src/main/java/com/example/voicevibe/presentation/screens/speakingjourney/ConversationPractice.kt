@@ -39,6 +39,8 @@ fun ConversationPracticeScreen(
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
     val topic = ui.topics.firstOrNull { it.id == topicId }
+
+ 
     val conversation = topic?.conversation ?: emptyList()
 
     // Playback state
@@ -74,6 +76,7 @@ fun ConversationPracticeScreen(
     )
     val darkBackground = Color(0xFF0D0D1A)
     val glassSurface = Color(0x1AFFFFFF)
+    // Timed overlay removed for ConversationPractice
 
     fun resetPlaybackFlags() {
         isPlayingAll = false
@@ -273,6 +276,8 @@ fun ConversationPracticeScreen(
                     }
                 }
             }
+
+            // Timed overlays removed
         }
     }
 }

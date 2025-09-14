@@ -770,40 +770,64 @@ private fun ModernResultsDialog(
             }
         },
         text = {
+            val score = ui.evaluation?.overallScore ?: 0f
+            val scoreInt = score.toInt()
+            val scoreColor = when {
+                score >= 80f -> Color(0xFF4CAF50)
+                score >= 60f -> Color(0xFFFFC107)
+                else -> Color(0xFFFF7043)
+            }
+            val showAdvancedSections = false // Keep code but hide from display for now
+
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Transcript Section
+                // Big Score Badge
                 item {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFF37474F).copy(alpha = 0.3f)
-                        ),
-                        shape = RoundedCornerShape(12.dp)
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Column(Modifier.padding(12.dp)) {
-                            Text(
-                                "📝 Transcript",
-                                style = MaterialTheme.typography.titleSmall,
-                                color = Color(0xFF64B5F6),
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Spacer(Modifier.height(8.dp))
-                            val transcriptText = ui.session?.transcription?.let { t ->
-                                if (t.isNotBlank()) t else null
-                            } ?: "No transcript available"
-                            Text(
-                                transcriptText,
-                                fontSize = 14.sp,
-                                color = Color(0xFFE0E0E0),
-                                lineHeight = 20.sp
-                            )
+                        Box(
+                            modifier = Modifier
+                                .size(140.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(scoreColor.copy(alpha = 0.35f), Color.Transparent),
+                                        center = androidx.compose.ui.geometry.Offset(70f, 70f),
+                                        radius = 120f
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Surface(
+                                color = Color(0xFF1E2932),
+                                shape = CircleShape,
+                                shadowElevation = 8.dp,
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(120.dp)
+                                        .background(Color(0xFF1E2932)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "$scoreInt",
+                                        color = Color.White,
+                                        fontSize = 48.sp,
+                                        fontWeight = FontWeight.ExtraBold
+                                    )
+                                }
+                            }
                         }
+                        Spacer(Modifier.height(8.dp))
+                        Text("Fluency Score", color = scoreColor, fontWeight = FontWeight.SemiBold)
                     }
                 }
 
-                // Technical Details Section
+                // Simple Analysis
                 item {
                     Card(
                         colors = CardDefaults.cardColors(
@@ -813,20 +837,20 @@ private fun ModernResultsDialog(
                     ) {
                         Column(Modifier.padding(12.dp)) {
                             Text(
-                                "📊 Technical Analysis",
+                                "Simple Analysis",
                                 style = MaterialTheme.typography.titleSmall,
                                 color = Color(0xFF64B5F6),
                                 fontWeight = FontWeight.SemiBold
                             )
                             Spacer(Modifier.height(8.dp))
-                            
+
                             val analysis = ui.latestAnalysis
                             if (analysis != null) {
-                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                     Row {
                                         Text("⏱ Pauses: ", fontSize = 14.sp, color = Color(0xFF90A4AE))
                                         Text(
-                                            if (analysis.pauses.isNotEmpty()) 
+                                            if (analysis.pauses.isNotEmpty())
                                                 analysis.pauses.joinToString(", ") { "${it}s" }
                                             else "None detected",
                                             fontSize = 14.sp,
@@ -863,25 +887,29 @@ private fun ModernResultsDialog(
                     }
                 }
 
-                // AI Feedback Section
-                if (ui.evaluation?.feedback != null) {
+                // Advanced sections (preserved but hidden for now)
+                if (showAdvancedSections) {
+                    // Transcript Section
                     item {
                         Card(
                             colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFF4CAF50).copy(alpha = 0.15f)
+                                containerColor = Color(0xFF37474F).copy(alpha = 0.3f)
                             ),
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Column(Modifier.padding(12.dp)) {
                                 Text(
-                                    "🤖 AI Feedback",
+                                    "📝 Transcript",
                                     style = MaterialTheme.typography.titleSmall,
-                                    color = Color(0xFF4CAF50),
+                                    color = Color(0xFF64B5F6),
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Spacer(Modifier.height(8.dp))
+                                val transcriptText = ui.session?.transcription?.let { t ->
+                                    if (t.isNotBlank()) t else null
+                                } ?: "No transcript available"
                                 Text(
-                                    ui.evaluation.feedback,
+                                    transcriptText,
                                     fontSize = 14.sp,
                                     color = Color(0xFFE0E0E0),
                                     lineHeight = 20.sp
@@ -889,35 +917,63 @@ private fun ModernResultsDialog(
                             }
                         }
                     }
-                }
 
-                // Suggestions Section
-                val suggestions = ui.evaluation?.suggestions.orEmpty()
-                if (suggestions.isNotEmpty()) {
-                    item {
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFFFEB3B).copy(alpha = 0.15f)
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Column(Modifier.padding(12.dp)) {
-                                Text(
-                                    "💡 Suggestions",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = Color(0xFFFFEB3B),
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                Spacer(Modifier.height(8.dp))
-                                suggestions.forEach { suggestion ->
-                                    Row(Modifier.padding(vertical = 2.dp)) {
-                                        Text("• ", fontSize = 14.sp, color = Color(0xFFFFEB3B))
-                                        Text(
-                                            suggestion,
-                                            fontSize = 14.sp,
-                                            color = Color(0xFFE0E0E0),
-                                            lineHeight = 20.sp
-                                        )
+                    // AI Feedback Section
+                    if (ui.evaluation?.feedback != null) {
+                        item {
+                            Card(
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFF4CAF50).copy(alpha = 0.15f)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(Modifier.padding(12.dp)) {
+                                    Text(
+                                        "🤖 AI Feedback",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = Color(0xFF4CAF50),
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Spacer(Modifier.height(8.dp))
+                                    Text(
+                                        ui.evaluation.feedback,
+                                        fontSize = 14.sp,
+                                        color = Color(0xFFE0E0E0),
+                                        lineHeight = 20.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Suggestions Section
+                    val suggestions = ui.evaluation?.suggestions.orEmpty()
+                    if (suggestions.isNotEmpty()) {
+                        item {
+                            Card(
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFFFFEB3B).copy(alpha = 0.15f)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(Modifier.padding(12.dp)) {
+                                    Text(
+                                        "💡 Suggestions",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = Color(0xFFFFEB3B),
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Spacer(Modifier.height(8.dp))
+                                    suggestions.forEach { suggestion ->
+                                        Row(Modifier.padding(vertical = 2.dp)) {
+                                            Text("• ", fontSize = 14.sp, color = Color(0xFFFFEB3B))
+                                            Text(
+                                                suggestion,
+                                                fontSize = 14.sp,
+                                                color = Color(0xFFE0E0E0),
+                                                lineHeight = 20.sp
+                                            )
+                                        }
                                     }
                                 }
                             }

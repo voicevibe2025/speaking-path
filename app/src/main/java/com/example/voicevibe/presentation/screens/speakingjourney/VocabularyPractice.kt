@@ -64,6 +64,8 @@ import kotlinx.coroutines.delay
 import androidx.compose.ui.platform.LocalContext
 import android.media.SoundPool
 import android.media.AudioAttributes
+import android.media.ToneGenerator
+import android.media.AudioManager
 
 @Composable
 fun VocabularyPracticeScreen(
@@ -114,6 +116,7 @@ fun VocabularyPracticeScreen(
     // Load sounds if available
     val sfxCorrect = remember(soundPool) { rawId("correct").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
     val sfxIncorrect = remember(soundPool) { rawId("incorrect").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
+    val sfxTick = remember(soundPool) { rawId("tick").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
     val sfxWelcome = remember(soundPool) {
         val rid = rawId("welcom_to_vocab").takeIf { it != 0 } ?: rawId("welcome_to_vocab")
         if (rid != 0) soundPool.load(context, rid, 1) else 0
@@ -123,6 +126,9 @@ fun VocabularyPracticeScreen(
     DisposableEffect(soundPool) {
         onDispose { runCatching { soundPool.release() } }
     }
+    // Fallback tone generator for tick if tick.wav is not provided yet
+    val toneGen = remember { runCatching { ToneGenerator(AudioManager.STREAM_NOTIFICATION, 60) }.getOrNull() }
+    DisposableEffect(Unit) { onDispose { toneGen?.release() } }
     // Play welcome when the start overlay first appears (once per session)
     var playedWelcome by remember(topic?.id) { mutableStateOf(false) }
     LaunchedEffect(sfxWelcome, showStartOverlay, ui.isLoading, ui.totalQuestions) {
@@ -153,6 +159,13 @@ fun VocabularyPracticeScreen(
             while (remainingSeconds > 0 && !showStartOverlay && !isTimeUp && !ui.showCongrats) {
                 delay(1000L)
                 remainingSeconds -= 1
+                if (remainingSeconds > 0) {
+                    if (sfxTick != 0) {
+                        soundPool.play(sfxTick, 1f, 1f, 1, 0, 1f)
+                    } else {
+                        runCatching { toneGen?.startTone(ToneGenerator.TONE_PROP_BEEP, 60) }
+                    }
+                }
             }
             if (remainingSeconds <= 0 && !showStartOverlay && !isTimeUp && !ui.showCongrats) {
                 isTimeUp = true

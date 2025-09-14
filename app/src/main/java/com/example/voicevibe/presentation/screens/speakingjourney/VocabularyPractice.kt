@@ -61,8 +61,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.voicevibe.utils.Constants
 import kotlinx.coroutines.delay
-import android.media.ToneGenerator
-import android.media.AudioManager
+import androidx.compose.ui.platform.LocalContext
+import android.media.SoundPool
+import android.media.AudioAttributes
 
 @Composable
 fun VocabularyPracticeScreen(
@@ -94,29 +95,50 @@ fun VocabularyPracticeScreen(
     val totalSeconds = ui.totalQuestions * Constants.CONVERSATION_SECONDS_PER_TURN
     var remainingSeconds by remember(totalSeconds) { mutableStateOf(totalSeconds) }
 
-    val isTimerRunning = !showStartOverlay && !isTimeUp && totalSeconds > 0 && !ui.isLoading
+    val isTimerRunning = !showStartOverlay && !isTimeUp && totalSeconds > 0 && !ui.isLoading && !ui.showCongrats
 
-    // Simple tick sound on each second using system tone
-    val toneGen = remember {
-        runCatching { ToneGenerator(AudioManager.STREAM_NOTIFICATION, /*volume*/ 60) }.getOrNull()
+    // --- Sound Effects using SoundPool ---
+    val context = LocalContext.current
+    val soundPool = remember {
+        val attrs = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_GAME)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+        SoundPool.Builder()
+            .setMaxStreams(4)
+            .setAudioAttributes(attrs)
+            .build()
     }
-    DisposableEffect(Unit) {
-        onDispose { toneGen?.release() }
+    // Helper to get raw id by name; returns 0 if not found (safe when assets aren't added yet)
+    fun rawId(name: String): Int = context.resources.getIdentifier(name, "raw", context.packageName)
+    // Load sounds if available
+    val sfxCorrect = remember(soundPool) { rawId("correct").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
+    val sfxIncorrect = remember(soundPool) { rawId("incorrect").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
+    val sfxWelcome = remember(soundPool) { rawId("welcom_to_vocab").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
+    val sfxTimeUp = remember(soundPool) { rawId("timeisup").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
+    val sfxWin = remember(soundPool) { rawId("win").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
+    DisposableEffect(soundPool) {
+        onDispose { runCatching { soundPool.release() } }
+    }
+    // Play welcome when the start overlay first appears (once per session)
+    var playedWelcome by remember(topic?.id) { mutableStateOf(false) }
+    LaunchedEffect(showStartOverlay, ui.isLoading, ui.totalQuestions) {
+        if (showStartOverlay && !playedWelcome && !ui.isLoading && ui.totalQuestions > 0) {
+            if (sfxWelcome != 0) soundPool.play(sfxWelcome, 1f, 1f, 1, 0, 1f)
+            playedWelcome = true
+        }
     }
 
     LaunchedEffect(isTimerRunning) {
         if (isTimerRunning) {
-            while (remainingSeconds > 0 && !showStartOverlay && !isTimeUp) {
+            while (remainingSeconds > 0 && !showStartOverlay && !isTimeUp && !ui.showCongrats) {
                 delay(1000L)
                 remainingSeconds -= 1
-                if (remainingSeconds > 0) {
-                    runCatching { toneGen?.startTone(ToneGenerator.TONE_PROP_BEEP, /*durationMs*/ 60) }
-                }
             }
-            if (remainingSeconds <= 0 && !showStartOverlay && !isTimeUp) {
+            if (remainingSeconds <= 0 && !showStartOverlay && !isTimeUp && !ui.showCongrats) {
                 isTimeUp = true
-                // Final tone to signal time up
-                runCatching { toneGen?.startTone(ToneGenerator.TONE_PROP_ACK, /*durationMs*/ 200) }
+                // Final SFX to signal time up
+                if (sfxTimeUp != 0) soundPool.play(sfxTimeUp, 1f, 1f, 1, 0, 1f)
             }
         }
     }
@@ -124,8 +146,15 @@ fun VocabularyPracticeScreen(
     // Play sound feedback when an answer is revealed
     LaunchedEffect(ui.questionIndex, ui.revealedAnswer, ui.answerCorrect) {
         if (ui.revealedAnswer) {
-            val tone = if (ui.answerCorrect == true) ToneGenerator.TONE_PROP_ACK else ToneGenerator.TONE_PROP_BEEP2
-            runCatching { toneGen?.startTone(tone, /*durationMs*/ 200) }
+            val soundId = if (ui.answerCorrect == true) sfxCorrect else sfxIncorrect
+            if (soundId != 0) soundPool.play(soundId, 1f, 1f, 1, 0, 1f)
+        }
+    }
+
+    // Play win sound when user completes before time is up (congrats shown)
+    LaunchedEffect(ui.showCongrats) {
+        if (ui.showCongrats) {
+            if (sfxWin != 0) soundPool.play(sfxWin, 1f, 1f, 1, 0, 1f)
         }
     }
 
@@ -156,7 +185,7 @@ fun VocabularyPracticeScreen(
                     }
                 },
                 actions = {
-                    if (!showStartOverlay && !isTimeUp && totalSeconds > 0 && !ui.isLoading) {
+                    if (!showStartOverlay && !isTimeUp && totalSeconds > 0 && !ui.isLoading && !ui.showCongrats) {
                         TimerChip(remainingSeconds = remainingSeconds)
                     }
                 },
@@ -304,7 +333,7 @@ fun VocabularyPracticeScreen(
                 )
             }
 
-            if (isTimeUp && topic != null) {
+            if (isTimeUp && topic != null && !ui.showCongrats) {
                 TimeUpOverlay(
                     onRestart = {
                         remainingSeconds = totalSeconds

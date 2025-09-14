@@ -242,7 +242,11 @@ fun FluencyPracticeScreen(
 
                     item {
                         // Enhanced Prompt Card
-                        ModernPromptCard(prompt = ui.prompt, hints = ui.hints)
+                        ModernPromptCard(
+                            prompt = ui.prompt,
+                            hints = ui.hints,
+                            isCompleted = topic.fluencyProgress?.completed == true
+                        )
                     }
 
                     item {
@@ -342,7 +346,7 @@ fun FluencyPracticeScreen(
 }
 
 @Composable
-private fun ModernPromptCard(prompt: String, hints: List<String>) {
+private fun ModernPromptCard(prompt: String, hints: List<String>, isCompleted: Boolean = false) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -358,22 +362,42 @@ private fun ModernPromptCard(prompt: String, hints: List<String>) {
                 .padding(24.dp)
         ) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    Icons.Default.AutoAwesome,
-                    contentDescription = null,
-                    tint = Color(0xFFFFD700),
-                    modifier = Modifier.size(20.dp)
-                )
-                Text(
-                    "Your Challenge",
-                    color = Color(0xFFFFD700),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.sp
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint = Color(0xFFFFD700),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        "Your Challenge",
+                        color = Color(0xFFFFD700),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 1.sp
+                    )
+                }
+                if (isCompleted) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF4CAF50).copy(alpha = 0.2f)
+                    ) {
+                        Text(
+                            "Completed",
+                            color = Color(0xFF4CAF50),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        )
+                    }
+                }
             }
             
             Spacer(Modifier.height(16.dp))

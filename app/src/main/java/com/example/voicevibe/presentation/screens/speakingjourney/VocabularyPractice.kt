@@ -109,13 +109,23 @@ fun VocabularyPracticeScreen(
             while (remainingSeconds > 0 && !showStartOverlay && !isTimeUp) {
                 delay(1000L)
                 remainingSeconds -= 1
-                runCatching { toneGen?.startTone(ToneGenerator.TONE_PROP_BEEP, /*durationMs*/ 60) }
+                if (remainingSeconds > 0) {
+                    runCatching { toneGen?.startTone(ToneGenerator.TONE_PROP_BEEP, /*durationMs*/ 60) }
+                }
             }
             if (remainingSeconds <= 0 && !showStartOverlay && !isTimeUp) {
                 isTimeUp = true
                 // Final tone to signal time up
                 runCatching { toneGen?.startTone(ToneGenerator.TONE_PROP_ACK, /*durationMs*/ 200) }
             }
+        }
+    }
+
+    // Play sound feedback when an answer is revealed
+    LaunchedEffect(ui.questionIndex, ui.revealedAnswer, ui.answerCorrect) {
+        if (ui.revealedAnswer) {
+            val tone = if (ui.answerCorrect == true) ToneGenerator.TONE_PROP_ACK else ToneGenerator.TONE_PROP_BEEP2
+            runCatching { toneGen?.startTone(tone, /*durationMs*/ 200) }
         }
     }
 

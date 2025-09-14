@@ -114,7 +114,10 @@ fun VocabularyPracticeScreen(
     // Load sounds if available
     val sfxCorrect = remember(soundPool) { rawId("correct").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
     val sfxIncorrect = remember(soundPool) { rawId("incorrect").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
-    val sfxWelcome = remember(soundPool) { rawId("welcom_to_vocab").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
+    val sfxWelcome = remember(soundPool) {
+        val rid = rawId("welcom_to_vocab").takeIf { it != 0 } ?: rawId("welcome_to_vocab")
+        if (rid != 0) soundPool.load(context, rid, 1) else 0
+    }
     val sfxTimeUp = remember(soundPool) { rawId("timeisup").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
     val sfxWin = remember(soundPool) { rawId("win").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
     DisposableEffect(soundPool) {
@@ -122,10 +125,26 @@ fun VocabularyPracticeScreen(
     }
     // Play welcome when the start overlay first appears (once per session)
     var playedWelcome by remember(topic?.id) { mutableStateOf(false) }
-    LaunchedEffect(showStartOverlay, ui.isLoading, ui.totalQuestions) {
-        if (showStartOverlay && !playedWelcome && !ui.isLoading && ui.totalQuestions > 0) {
-            if (sfxWelcome != 0) soundPool.play(sfxWelcome, 1f, 1f, 1, 0, 1f)
-            playedWelcome = true
+    LaunchedEffect(sfxWelcome, showStartOverlay, ui.isLoading, ui.totalQuestions) {
+        // Ensure we play as soon as the sample finishes loading
+        soundPool.setOnLoadCompleteListener { sp, sampleId, status ->
+            if (status == 0 && sampleId == sfxWelcome && showStartOverlay && !playedWelcome && !ui.isLoading && ui.totalQuestions > 0) {
+                val sid = sp.play(sampleId, 1f, 1f, 1, 0, 1f)
+                if (sid != 0) playedWelcome = true
+            }
+        }
+        if (showStartOverlay && !playedWelcome && !ui.isLoading && ui.totalQuestions > 0 && sfxWelcome != 0) {
+            // Try immediate play, and if not ready, retry a few times briefly
+            var sid = soundPool.play(sfxWelcome, 1f, 1f, 1, 0, 1f)
+            if (sid == 0) {
+                repeat(4) {
+                    kotlinx.coroutines.delay(150)
+                    if (!showStartOverlay || playedWelcome) return@repeat
+                    sid = soundPool.play(sfxWelcome, 1f, 1f, 1, 0, 1f)
+                    if (sid != 0) return@repeat
+                }
+            }
+            if (sid != 0) playedWelcome = true
         }
     }
 

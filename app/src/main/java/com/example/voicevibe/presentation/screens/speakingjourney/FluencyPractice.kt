@@ -998,25 +998,45 @@ private fun CongratsOverlay(
                             val score = ui.completionPromptScores.getOrNull(idx)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.Top
                             ) {
-                                Text(text = "${idx + 1}. ${p}", color = Color(0xFFE0E0E0))
+                                Text(
+                                    text = "${idx + 1}. ${p}",
+                                    color = Color(0xFFE0E0E0),
+                                    modifier = Modifier.weight(1f),
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontSize = 13.sp
+                                )
                                 Text(
                                     text = if (score != null) "${score}" else "-",
                                     color = if ((score ?: 0) >= 80) Color(0xFF4CAF50) else Color(0xFFFF9800),
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.width(48.dp),
+                                    textAlign = TextAlign.End
                                 )
                             }
                         }
                         Spacer(Modifier.height(6.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.Top
                         ) {
-                            Text("Total Fluency Score", color = Color(0xFFE0E0E0), fontWeight = FontWeight.SemiBold)
-                            Text("${ui.totalFluencyScore}", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(
+                                "Total Fluency Score",
+                                color = Color(0xFFE0E0E0),
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                "${ui.totalFluencyScore}",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.width(56.dp),
+                                textAlign = TextAlign.End
+                            )
                         }
                     }
                 }

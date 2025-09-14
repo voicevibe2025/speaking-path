@@ -446,6 +446,13 @@ class PracticeWithAIViewModel @Inject constructor(
             }
         }
     }
+
+    // Trigger background prewarm for the next time user opens Free Practice
+    fun prewarmForNextEntry() {
+        try {
+            prewarmManager.prewarm()
+        } catch (_: Throwable) { /* best-effort */ }
+    }
 }
 
 data class ChatUiState(

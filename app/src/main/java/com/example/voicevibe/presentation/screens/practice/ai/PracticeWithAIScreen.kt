@@ -391,7 +391,11 @@ fun ChatScreen(viewModel: PracticeWithAIViewModel) {
 
     // Stop playback when leaving the screen
     DisposableEffect(Unit) {
-        onDispose { sjVM.stopPlayback() }
+        onDispose {
+            sjVM.stopPlayback()
+            // Prewarm Vivi greeting for the next time user opens Free Practice
+            viewModel.prewarmForNextEntry()
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {

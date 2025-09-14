@@ -59,6 +59,12 @@ class SettingsViewModel @Inject constructor(
     init {
         fetchUserProfile()
         observeSettings()
+        // Ensure preference is persisted as ON while lock is active
+        if (com.example.voicevibe.utils.Constants.LOCK_SPEAKING_ONLY_ON) {
+            viewModelScope.launch {
+                tokenManager.setSpeakingOnlyFlowEnabled(true)
+            }
+        }
     }
 
     private fun fetchUserProfile() {
@@ -148,7 +154,13 @@ class SettingsViewModel @Inject constructor(
     // UI actions for settings
     fun onToggleSpeakingOnly(enabled: Boolean) {
         viewModelScope.launch {
-            tokenManager.setSpeakingOnlyFlowEnabled(enabled)
+            if (com.example.voicevibe.utils.Constants.LOCK_SPEAKING_ONLY_ON) {
+                // Ignore UI toggle when locked; force state to ON
+                _speakingOnlyEnabled.value = true
+                tokenManager.setSpeakingOnlyFlowEnabled(true)
+            } else {
+                tokenManager.setSpeakingOnlyFlowEnabled(enabled)
+            }
         }
     }
 

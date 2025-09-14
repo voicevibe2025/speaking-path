@@ -10,6 +10,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.example.voicevibe.utils.Constants
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
@@ -158,11 +159,24 @@ class TokenManager @Inject constructor(
     /**
      * Speaking-only flow feature flag
      */
-    fun speakingOnlyFlowEnabledFlow(): Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[speakingOnlyFlowKey] ?: false
-    }
+    fun speakingOnlyFlowEnabledFlow(): Flow<Boolean> =
+        if (Constants.LOCK_SPEAKING_ONLY_ON) {
+            // Hard-lock to ON while feature is in beta
+            flowOf(true)
+        } else {
+            dataStore.data.map { preferences ->
+                preferences[speakingOnlyFlowKey] ?: false
+            }
+        }
 
     suspend fun setSpeakingOnlyFlowEnabled(enabled: Boolean) {
+        if (Constants.LOCK_SPEAKING_ONLY_ON) {
+            // Persist ON so when the lock is removed later, default remains enabled
+            dataStore.edit { preferences ->
+                preferences[speakingOnlyFlowKey] = true
+            }
+            return
+        }
         dataStore.edit { preferences ->
             preferences[speakingOnlyFlowKey] = enabled
         }

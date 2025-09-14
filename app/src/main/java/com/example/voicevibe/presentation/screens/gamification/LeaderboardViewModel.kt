@@ -9,6 +9,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.comparisons.compareByDescending
+import kotlin.comparisons.thenByDescending
 
 /**
  * ViewModel for Leaderboard screen
@@ -27,6 +29,31 @@ class LeaderboardViewModel @Inject constructor(
     init {
         loadLeaderboard()
         loadCompetitionStats()
+    }
+
+    private fun applySorting(data: LeaderboardData, filter: LeaderboardFilter): LeaderboardData {
+        val sorted = when (filter) {
+            LeaderboardFilter.OVERALL_XP -> data.entries.sortedByDescending { it.score }
+            LeaderboardFilter.STREAK -> data.entries.sortedWith(
+                compareByDescending<LeaderboardEntry> { it.streakDays }
+                    .thenByDescending { it.score }
+            )
+            LeaderboardFilter.ACCURACY -> data.entries // TODO: Needs backend-provided accuracy metric
+            LeaderboardFilter.PRACTICE_TIME -> data.entries // TODO: Needs backend-provided practice time metric
+            LeaderboardFilter.ACHIEVEMENTS -> data.entries.sortedWith(
+                compareByDescending<LeaderboardEntry> { it.achievements }
+                    .thenByDescending { it.score }
+            )
+            LeaderboardFilter.DAILY_XP -> data.entries.sortedByDescending { it.weeklyXp } // Kept for backward compatibility if ever selected
+            LeaderboardFilter.WEEKLY_XP -> data.entries.sortedByDescending { it.weeklyXp }
+            LeaderboardFilter.MONTHLY_XP -> data.entries.sortedByDescending { it.monthlyXp }
+        }
+        // If no change in order, keep original ranks
+        if (sorted === data.entries || sorted == data.entries) return data
+
+        // Renumber ranks for display according to the sorted order
+        val renumbered = sorted.mapIndexed { index, e -> e.copy(rank = index + 1) }
+        return data.copy(entries = renumbered)
     }
 
     private fun loadLeaderboard(refresh: Boolean = false) {
@@ -70,10 +97,13 @@ class LeaderboardViewModel @Inject constructor(
                         data.copy(entries = normalizedEntries, currentUserEntry = normalizedCurrent)
                     }
 
+                    // Apply client-side sorting based on the selected filter
+                    val sortedData = normalizedData?.let { applySorting(it, filter) }
+
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            leaderboardData = normalizedData,
+                            leaderboardData = sortedData,
                             error = null
                         )
                     }

@@ -123,7 +123,8 @@ fun SettingsScreen(
                     title = "Speaking-only Journey (beta)",
                     subtitle = "Enable the new speaking-only flow",
                     checked = viewModel.speakingOnlyEnabled.value,
-                    onCheckedChange = { viewModel.onToggleSpeakingOnly(it) }
+                    onCheckedChange = { viewModel.onToggleSpeakingOnly(it) },
+                    enabled = !com.example.voicevibe.utils.Constants.LOCK_SPEAKING_ONLY_ON
                 )
                 SettingsToggleItem(
                     icon = Icons.Default.PlayArrow,
@@ -529,7 +530,8 @@ fun SettingsToggleItem(
     title: String,
     subtitle: String,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = Modifier
@@ -572,6 +574,7 @@ fun SettingsToggleItem(
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
+            enabled = enabled,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = MaterialTheme.colorScheme.primary,
                 checkedTrackColor = MaterialTheme.colorScheme.primaryContainer

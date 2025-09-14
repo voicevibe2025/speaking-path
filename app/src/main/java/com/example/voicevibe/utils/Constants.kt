@@ -26,6 +26,9 @@ object Constants {
     const val SPEAKING_ONLY_FLOW_KEY = "speaking_only_flow_enabled"
     const val TTS_VOICE_ID_KEY = "tts_voice_id"
 
+    // Temporary feature flag: lock Speaking-only Journey to ON
+    const val LOCK_SPEAKING_ONLY_ON = true
+
     // Audio Recording
     const val AUDIO_SAMPLE_RATE = 44100
     const val AUDIO_CHANNEL_CONFIG = 1 // Mono

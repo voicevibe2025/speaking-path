@@ -368,18 +368,19 @@ private fun LeaderboardTypeTabs(
         LeaderboardType.WEEKLY to "Weekly",
         LeaderboardType.MONTHLY to "Monthly",
         LeaderboardType.ALL_TIME to "All Time",
-        LeaderboardType.FRIENDS to "Friends",
-        LeaderboardType.COUNTRY to "Country"
+        LeaderboardType.FRIENDS to "Friends"
     )
 
+    val selectedIndex = types.indexOfFirst { it.first == selectedType }.coerceAtLeast(0)
+
     ScrollableTabRow(
-        selectedTabIndex = types.indexOfFirst { it.first == selectedType },
+        selectedTabIndex = selectedIndex,
         modifier = modifier,
         edgePadding = 16.dp
     ) {
         types.forEachIndexed { index, (type, label) ->
             Tab(
-                selected = type == selectedType,
+                selected = index == selectedIndex,
                 onClick = { onTypeSelected(type) },
                 text = { Text(label) }
             )
@@ -825,7 +826,14 @@ private fun FilterDialog(
         title = { Text("Filter Leaderboard") },
         text = {
             Column {
-                LeaderboardFilter.values().forEach { filter ->
+                val filtersToShow = listOf(
+                    LeaderboardFilter.OVERALL_XP to "XP (total)",
+                    LeaderboardFilter.STREAK to "Streak",
+                    LeaderboardFilter.ACCURACY to "Accuracy",
+                    LeaderboardFilter.PRACTICE_TIME to "Practice time",
+                    LeaderboardFilter.ACHIEVEMENTS to "Proficiency (topics completed)"
+                )
+                filtersToShow.forEach { (filter, label) ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -835,8 +843,7 @@ private fun FilterDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            filter.name.replace("_", " ").lowercase()
-                                .replaceFirstChar { it.uppercase() },
+                            label,
                             style = MaterialTheme.typography.bodyLarge
                         )
                         if (filter == selectedFilter) {

@@ -66,6 +66,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -87,6 +88,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.voicevibe.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -339,6 +341,15 @@ fun FluencyPracticeScreen(
                         viewModel.dismissCongrats()
                         onNavigateBack()
                     }
+                )
+            }
+
+            // Start Practice Overlay on first entry
+            if (ui.showStartOverlay) {
+                StartPracticeOverlay(
+                    topicTitle = topic.title,
+                    prompt = ui.prompt,
+                    onBegin = { viewModel.dismissStartOverlay() }
                 )
             }
         }
@@ -1022,10 +1033,109 @@ private fun ModernResultsDialog(
 }
 
 @Composable
+private fun StartPracticeOverlay(
+    topicTitle: String,
+    prompt: String,
+    onBegin: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.6f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.RecordVoiceOver,
+                        contentDescription = null,
+                        tint = Color(0xFF64B5F6),
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Text(
+                        text = "Fluency Practice",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
+                Text(
+                    text = "Topic: $topicTitle",
+                    color = Color(0xFFB0BEC5),
+                    fontWeight = FontWeight.Medium
+                )
+
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF37474F).copy(alpha = 0.35f)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("How it works", color = Color(0xFF64B5F6), fontWeight = FontWeight.SemiBold)
+                        Text("1) Speak for ~60–90 seconds.", color = Color(0xFFE0E0E0), fontSize = 14.sp)
+                        Text("2) Keep it smooth: avoid long pauses and stutters.", color = Color(0xFFE0E0E0), fontSize = 14.sp)
+                        Text("3) Submit to see your Fluency Score.", color = Color(0xFFE0E0E0), fontSize = 14.sp)
+                    }
+                }
+
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF28323A)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(Modifier.padding(12.dp)) {
+                        Text("Your Challenge", color = Color(0xFFFFD700), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                        Spacer(Modifier.height(6.dp))
+                        Text(prompt, color = Color.White, fontSize = 14.sp, lineHeight = 20.sp, maxLines = 4, overflow = TextOverflow.Ellipsis)
+                    }
+                }
+
+                Button(
+                    onClick = onBegin,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF64B5F6))
+                ) {
+                    Icon(Icons.Default.PlayArrow, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Begin", fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun CongratsOverlay(
     ui: FluencyUiState,
     onContinue: () -> Unit
 ) {
+    val context = LocalContext.current
+    // Play celebratory sound once when this overlay appears
+    DisposableEffect(Unit) {
+        val mp = try { android.media.MediaPlayer.create(context, R.raw.win) } catch (_: Throwable) { null }
+        try { mp?.start() } catch (_: Throwable) {}
+        mp?.setOnCompletionListener { player ->
+            try { player.release() } catch (_: Throwable) {}
+        }
+        onDispose {
+            try { mp?.release() } catch (_: Throwable) {}
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()

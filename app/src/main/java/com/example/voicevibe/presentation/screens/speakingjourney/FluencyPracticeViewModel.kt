@@ -79,7 +79,7 @@ class FluencyPracticeViewModel @Inject constructor(
                 }
             }.filterIndexed { idx, _ -> idx != currentPromptIndex }.take(3)
         } else topic.material.take(3).map { "• $it" }
-        _uiState.update { it.copy(prompt = promptText, hints = hints, error = null, allPrompts = currentPrompts, currentPromptIndex = currentPromptIndex) }
+        _uiState.update { it.copy(prompt = promptText, hints = hints, error = null, allPrompts = currentPrompts, currentPromptIndex = currentPromptIndex, showStartOverlay = true) }
 
         // Load an associated PracticePrompt for submission (best-effort)
         viewModelScope.launch {
@@ -357,6 +357,10 @@ class FluencyPracticeViewModel @Inject constructor(
         _uiState.update { it.copy(showCongrats = false) }
     }
 
+    fun dismissStartOverlay() {
+        _uiState.update { it.copy(showStartOverlay = false) }
+    }
+
     fun resetRecording() {
         _uiState.update { it.copy(recordingState = RecordingState.IDLE, audioFilePath = null, recordingDuration = 0) }
     }
@@ -503,7 +507,9 @@ data class FluencyUiState(
     val completionPromptScores: List<Int> = emptyList(),
     val totalFluencyScore: Int = 0,
     val completionXpGained: Int = 0,
-    val lastAwardedXp: Int = 0
+    val lastAwardedXp: Int = 0,
+    // Start overlay shown when first entering practice for the topic
+    val showStartOverlay: Boolean = false
 )
  
 

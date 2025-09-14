@@ -2,6 +2,7 @@ package com.example.voicevibe.presentation.screens.main.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.voicevibe.data.ai.AiChatPrewarmManager
 import com.example.voicevibe.data.repository.UserRepository
 import com.example.voicevibe.data.repository.LearningPathRepository
 import com.example.voicevibe.data.repository.GamificationRepository
@@ -22,6 +23,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val prewarmManager: AiChatPrewarmManager,
     private val userRepository: UserRepository,
     private val learningPathRepository: LearningPathRepository,
     private val gamificationRepository: GamificationRepository,
@@ -37,6 +39,10 @@ class HomeViewModel @Inject constructor(
     init {
         loadUserProfileData()
         loadDashboardData()
+        // Pre-warm Vivi greeting in background so Free Practice opens instantly
+        try {
+            prewarmManager.prewarm()
+        } catch (_: Throwable) { /* best-effort */ }
     }
 
     private fun loadUserProfileData() {

@@ -7,6 +7,7 @@ import android.util.Base64
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.BuildConfig
+import com.example.voicevibe.data.ai.AiChatPrewarmManager
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
@@ -23,6 +24,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PracticeWithAIViewModel @Inject constructor(
+    private val prewarmManager: AiChatPrewarmManager,
     private val userRepository: UserRepository,
     private val aiEvaluationRepository: AiEvaluationRepository
 ) : ViewModel() {
@@ -94,6 +96,7 @@ class PracticeWithAIViewModel @Inject constructor(
     private var initializedWithUserContext: Boolean = false
     private val pendingMessages = mutableListOf<String>()
     private var greetingPlaceholderIndex: Int? = null
+    private var prewarmConsumed: Boolean = false
 
     // Voice recording for free chat
     private var recorder: MediaRecorder? = null
@@ -261,6 +264,15 @@ class PracticeWithAIViewModel @Inject constructor(
 
     private fun ensureChatInitialized() {
         if (chat != null) return
+        // Try to consume a prewarmed greeting (if any) for instant first message
+        val prewarm = prewarmManager.consumePreparedGreeting()
+        if (prewarm != null) {
+            // If our user hasn't loaded yet, adopt the prewarmed user for personalization
+            if (currentUser == null && prewarm.user != null) {
+                currentUser = prewarm.user
+            }
+        }
+
         generativeModel = GenerativeModel(
             modelName = "gemini-2.5-flash",
             apiKey = BuildConfig.GEMINI_API_KEY,
@@ -271,9 +283,27 @@ class PracticeWithAIViewModel @Inject constructor(
                 text(buildSystemPrompt())
             }
         )
-        Timber.d("[AI] ensureChatInitialized -> creating chat (hasUser=%s)", (currentUser != null).toString())
-        chat = generativeModel!!.startChat(history = listOf(buildSystemContextContent()))
+        Timber.d("[AI] ensureChatInitialized -> creating chat (hasUser=%s, prewarm=%s)", (currentUser != null).toString(), (prewarm != null).toString())
+
+        val history = mutableListOf<com.google.ai.client.generativeai.type.Content>()
+        history += buildSystemContextContent()
+        if (prewarm != null) {
+            // Replay the prewarmed interaction so the model state matches the shown greeting
+            history += content(role = "user") { text(prewarm.greetingInstruction) }
+            history += content(role = "model") { text(prewarm.text) }
+        }
+        chat = generativeModel!!.startChat(history = history)
         initializedWithUserContext = currentUser != null
+
+        // If we had a prewarmed greeting, show it instantly and mark greeting as sent
+        if (prewarm != null) {
+            prewarmConsumed = true
+            hasSentGreeting = true
+            greetingPlaceholderIndex = null
+            _uiState.value = _uiState.value.copy(
+                messages = _uiState.value.messages + ChatMessage(text = prewarm.text, isFromUser = false)
+            )
+        }
     }
 
     private fun rebuildChatWithHistory() {

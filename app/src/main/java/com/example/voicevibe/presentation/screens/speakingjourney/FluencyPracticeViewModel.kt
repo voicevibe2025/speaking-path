@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.repository.SpeakingPracticeRepository
 import com.example.voicevibe.data.repository.GamificationRepository
 import com.example.voicevibe.data.repository.SpeakingJourneyRepository
+import com.example.voicevibe.data.repository.UserRepository
 import com.example.voicevibe.domain.model.SpeakingEvaluation
 import com.example.voicevibe.domain.model.SpeakingSession
 import com.example.voicevibe.domain.model.Resource
@@ -31,7 +32,8 @@ import javax.inject.Inject
 class FluencyPracticeViewModel @Inject constructor(
     private val practiceRepo: SpeakingPracticeRepository,
     private val journeyRepo: SpeakingJourneyRepository,
-    private val gamificationRepo: GamificationRepository
+    private val gamificationRepo: GamificationRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FluencyUiState())
@@ -43,6 +45,19 @@ class FluencyPracticeViewModel @Inject constructor(
     private var currentPromptId: String? = null // backend prompt used for submission
     private var currentPromptIndex: Int = 0 // topic-specific fluency prompt index
     private var currentPrompts: List<String> = emptyList()
+
+    private var currentUserId: String? = null
+
+    init {
+        // Cache current user ID for user-scoped persistence of attempts
+        viewModelScope.launch {
+            userRepository.getCurrentUser().collectLatest { res ->
+                if (res is Resource.Success) {
+                    currentUserId = res.data?.id
+                }
+            }
+        }
+    }
 
     fun initializeForTopic(context: Context, topic: Topic) {
         if (currentTopicId == topic.id) return // already initialized
@@ -94,6 +109,13 @@ class FluencyPracticeViewModel @Inject constructor(
                 }
             }
             currentPromptId = selectedPromptId
+            // Wait briefly for current user to be known so we can scope attempts per-user
+            if (currentUserId == null) {
+                repeat(40) { // ~2s max
+                    kotlinx.coroutines.delay(50)
+                    if (currentUserId != null) return@repeat
+                }
+            }
             loadPastAttempts(context, topic.id)
         }
     }
@@ -364,14 +386,19 @@ class FluencyPracticeViewModel @Inject constructor(
         mediaPlayer = null
     }
 
-    private fun attemptsFile(context: Context, topicId: String): File {
-        val dir = File(context.filesDir, "voicevibe/fluency_attempts").apply { mkdirs() }
+    private fun attemptsFile(context: Context, topicId: String, userId: String): File {
+        val dir = File(context.filesDir, "voicevibe/fluency_attempts/${userId}").apply { mkdirs() }
         return File(dir, "${topicId}.json")
     }
 
-    private fun loadPastAttempts(context: Context, topicId: String) {
+    private suspend fun loadPastAttempts(context: Context, topicId: String) {
         try {
-            val file = attemptsFile(context, topicId)
+            val uid = currentUserId
+            if (uid.isNullOrBlank()) {
+                _uiState.update { it.copy(pastAttempts = emptyList()) }
+                return
+            }
+            val file = attemptsFile(context, topicId, uid)
             if (!file.exists()) {
                 _uiState.update { it.copy(pastAttempts = emptyList()) }
                 return
@@ -405,9 +432,10 @@ class FluencyPracticeViewModel @Inject constructor(
         }
     }
 
-    private fun persistAttempt(context: Context, topicId: String, attempt: FluencyAttempt) {
+    private suspend fun persistAttempt(context: Context, topicId: String, attempt: FluencyAttempt) {
         try {
-            val file = attemptsFile(context, topicId)
+            val uid = currentUserId ?: return
+            val file = attemptsFile(context, topicId, uid)
             val arr = if (file.exists()) JSONArray(file.readText()) else JSONArray()
             val obj = JSONObject().apply {
                 put("sessionId", attempt.sessionId)
@@ -419,6 +447,7 @@ class FluencyPracticeViewModel @Inject constructor(
                 put("pauses", JSONArray(attempt.pauses))
                 put("stutterCount", attempt.stutterCount)
                 put("mispronunciations", JSONArray(attempt.mispronunciations))
+                put("userId", uid)
             }
             arr.put(obj)
             file.writeText(arr.toString())

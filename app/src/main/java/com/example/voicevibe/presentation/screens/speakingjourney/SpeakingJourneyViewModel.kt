@@ -92,6 +92,15 @@ class SpeakingJourneyViewModel @Inject constructor(
                                     isAllPhrasesCompleted = progress.isAllPhrasesCompleted
                                 )
                             },
+                            practiceScores = dto.practiceScores?.let { scores ->
+                                PracticeScores(
+                                    pronunciation = scores.pronunciation,
+                                    fluency = scores.fluency,
+                                    vocabulary = scores.vocabulary,
+                                    average = scores.average,
+                                    meetsRequirement = scores.meetsRequirement
+                                )
+                            },
                             unlocked = dto.unlocked,
                             completed = dto.completed
                         )
@@ -167,6 +176,7 @@ class SpeakingJourneyViewModel @Inject constructor(
                                 totalPhrases = 4,
                                 isAllPhrasesCompleted = false
                             ),
+                            practiceScores = null,
                             unlocked = true,
                             completed = false
                         )

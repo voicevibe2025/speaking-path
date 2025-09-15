@@ -91,6 +91,14 @@ data class PhraseProgressDto(
     val isAllPhrasesCompleted: Boolean
 )
 
+data class PracticeScoresDto(
+    val pronunciation: Int,
+    val fluency: Int,
+    val vocabulary: Int,
+    val average: Float,
+    val meetsRequirement: Boolean
+)
+
 data class SpeakingTopicDto(
     val id: String,
     val title: String,
@@ -101,6 +109,7 @@ data class SpeakingTopicDto(
     val fluencyPracticePrompts: List<String> = emptyList(),
     val fluencyProgress: FluencyProgressDto? = null,
     val phraseProgress: PhraseProgressDto? = null,
+    val practiceScores: PracticeScoresDto? = null,
     val unlocked: Boolean,
     val completed: Boolean
 )

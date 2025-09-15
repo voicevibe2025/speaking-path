@@ -29,6 +29,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.voicevibe.presentation.components.*
 import kotlinx.coroutines.delay
 
@@ -47,6 +50,18 @@ fun TopicMasterScreen(
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
     val topic = ui.topics.firstOrNull { it.id == topicId }
+
+    // Ensure we refresh topics when returning to this screen (e.g., after practices)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.reloadTopics()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     var showContent by remember { mutableStateOf(false) }
 
@@ -124,6 +139,11 @@ fun TopicMasterScreen(
                             onNavigateToConversation = onNavigateToConversation
                         )
 
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Progress Summary Section
+                        ProgressSummarySection(topicId = topicId)
+
                         Spacer(modifier = Modifier.height(32.dp))
                     }
                 }
@@ -143,12 +163,18 @@ fun PracticeCardsSection(
     onNavigateToGrammarPractice: (String) -> Unit,
     onNavigateToConversation: (String) -> Unit
 ) {
+    val viewModel: SpeakingJourneyViewModel = hiltViewModel()
+    val ui by viewModel.uiState
+    val topic = ui.topics.firstOrNull { it.id == topicId }
+    val practiceScores = topic?.practiceScores
+    
     val practiceItems = listOf(
         PracticeItem(
             title = "Pronunciation",
             description = "Perfect your accent",
             icon = Icons.Default.Mic,
             gradient = listOf(Color(0xFFFF006E), Color(0xFFFF4081)),
+            score = practiceScores?.pronunciation ?: 0,
             onClick = { onNavigateToPronunciationPractice(topicId) }
         ),
         PracticeItem(
@@ -156,6 +182,7 @@ fun PracticeCardsSection(
             description = "Speak naturally",
             icon = Icons.Default.RecordVoiceOver,
             gradient = listOf(Color(0xFF00D9FF), Color(0xFF00B4D8)),
+            score = practiceScores?.fluency ?: 0,
             onClick = { onNavigateToFluencyPractice(topicId) }
         ),
         PracticeItem(
@@ -163,6 +190,7 @@ fun PracticeCardsSection(
             description = "Expand your words",
             icon = Icons.Default.Translate,
             gradient = listOf(Color(0xFFFFBE0B), Color(0xFFFB8500)),
+            score = practiceScores?.vocabulary ?: 0,
             onClick = { onNavigateToVocabularyPractice(topicId) }
         ),
         PracticeItem(
@@ -170,6 +198,7 @@ fun PracticeCardsSection(
             description = "Improve comprehension",
             icon = Icons.AutoMirrored.Filled.VolumeUp,
             gradient = listOf(Color(0xFF8338EC), Color(0xFF6C63FF)),
+            score = 0, // Not implemented yet
             onClick = { onNavigateToListeningPractice(topicId) }
         ),
         PracticeItem(
@@ -177,6 +206,7 @@ fun PracticeCardsSection(
             description = "Master the rules",
             icon = Icons.Default.Spellcheck,
             gradient = listOf(Color(0xFF06FFA5), Color(0xFF00C896)),
+            score = 0, // Not implemented yet
             onClick = { onNavigateToGrammarPractice(topicId) }
         ),
         PracticeItem(
@@ -184,6 +214,7 @@ fun PracticeCardsSection(
             description = "Real dialogues",
             icon = Icons.Default.School,
             gradient = listOf(Color(0xFFFF006E), Color(0xFF8338EC)),
+            score = 0, // Not implemented yet
             onClick = { onNavigateToConversation(topicId) }
         )
     )
@@ -197,6 +228,182 @@ fun PracticeCardsSection(
                 animationDelay = index * 100
             )
         }
+    }
+}
+
+@Composable
+fun ProgressSummarySection(topicId: String) {
+    val viewModel: SpeakingJourneyViewModel = hiltViewModel()
+    val ui by viewModel.uiState
+    val topic = ui.topics.firstOrNull { it.id == topicId }
+    val practiceScores = topic?.practiceScores
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.1f)
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = Color.White.copy(alpha = 0.3f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Topic Mastery Progress",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            if (practiceScores != null) {
+                // Show current scores
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    ScoreIndicator(
+                        title = "Pronunciation",
+                        score = practiceScores.pronunciation,
+                        color = Color(0xFFFF006E)
+                    )
+                    ScoreIndicator(
+                        title = "Fluency", 
+                        score = practiceScores.fluency,
+                        color = Color(0xFF00D9FF)
+                    )
+                    ScoreIndicator(
+                        title = "Vocabulary",
+                        score = practiceScores.vocabulary,
+                        color = Color(0xFFFFBE0B)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                // Average score and progress
+                val hasAllScores = practiceScores.pronunciation > 0 && 
+                                   practiceScores.fluency > 0 && 
+                                   practiceScores.vocabulary > 0
+                
+                if (hasAllScores) {
+                    Text(
+                        text = "Overall Progress: ${practiceScores.average}%",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Progress bar
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color.White.copy(alpha = 0.2f))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(fraction = (practiceScores.average / 100f).coerceIn(0f, 1f))
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(
+                                    if (practiceScores.meetsRequirement) {
+                                        Color(0xFF06FFA5)
+                                    } else {
+                                        Color(0xFFFFBE0B)
+                                    }
+                                )
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    Text(
+                        text = if (practiceScores.meetsRequirement) {
+                            "🎉 Congratulations! You've unlocked the next topic!"
+                        } else {
+                            "Unlock rule: reach at least 75% in each practice"
+                        },
+                        fontSize = 14.sp,
+                        color = if (practiceScores.meetsRequirement) {
+                            Color(0xFF06FFA5)
+                        } else {
+                            Color.White.copy(alpha = 0.7f)
+                        },
+                        textAlign = TextAlign.Center
+                    )
+                } else {
+                    Text(
+                        text = "Complete all 3 practices to see your progress",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.7f),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                Text(
+                    text = "Start practicing to track your progress",
+                    fontSize = 14.sp,
+                    color = Color.White.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ScoreIndicator(
+    title: String,
+    score: Int,
+    color: Color
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Card(
+            modifier = Modifier.size(48.dp),
+            shape = CircleShape,
+            colors = CardDefaults.cardColors(
+                containerColor = color.copy(alpha = 0.2f)
+            ),
+            border = BorderStroke(2.dp, color.copy(alpha = 0.5f))
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (score > 0) "$score" else "—",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (score > 0) color else Color.White.copy(alpha = 0.5f)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        Text(
+            text = title,
+            fontSize = 12.sp,
+            color = Color.White.copy(alpha = 0.7f),
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -312,17 +519,57 @@ fun ModernPracticeCard(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Text(
-                            text = item.title,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = item.description,
-                            fontSize = 14.sp,
-                            color = Color.White.copy(alpha = 0.7f)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = item.title,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = item.description,
+                                    fontSize = 14.sp,
+                                    color = Color.White.copy(alpha = 0.7f)
+                                )
+                            }
+                            
+                            // Score display
+                            if (item.score > 0) {
+                                Card(
+                                    modifier = Modifier
+                                        .size(40.dp),
+                                    shape = CircleShape,
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color.White.copy(alpha = 0.2f)
+                                    )
+                                ) {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "${item.score}",
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
+                                    }
+                                }
+                            } else {
+                                Text(
+                                    text = "—",
+                                    fontSize = 16.sp,
+                                    color = Color.White.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(40.dp),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                     }
                     
                     Icon(
@@ -342,5 +589,6 @@ data class PracticeItem(
     val description: String,
     val icon: ImageVector,
     val gradient: List<Color>,
+    val score: Int,
     val onClick: () -> Unit
 )

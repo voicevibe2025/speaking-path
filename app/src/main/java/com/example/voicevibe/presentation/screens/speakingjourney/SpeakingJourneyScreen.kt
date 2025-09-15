@@ -170,6 +170,14 @@ data class FluencyProgress(
     val completed: Boolean
 )
 
+data class PracticeScores(
+    val pronunciation: Int,
+    val fluency: Int,
+    val vocabulary: Int,
+    val average: Float,
+    val meetsRequirement: Boolean
+)
+
 data class Topic(
     val id: String,
     val title: String,
@@ -180,6 +188,7 @@ data class Topic(
     val fluencyPracticePrompts: List<String>,
     val fluencyProgress: FluencyProgress?,
     val phraseProgress: PhraseProgress?,
+    val practiceScores: PracticeScores?,
     val unlocked: Boolean,
     val completed: Boolean
 )

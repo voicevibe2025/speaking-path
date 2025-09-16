@@ -210,6 +210,7 @@ fun PracticeCardsSection(
             icon = Icons.Default.Mic,
             gradient = listOf(Color(0xFFFF006E), Color(0xFFFF4081)),
             score = practiceScores?.pronunciation ?: 0,
+            maxScore = practiceScores?.maxPronunciation ?: 100,
             onClick = { onNavigateToPronunciationPractice(topicId) }
         ),
         PracticeItem(
@@ -218,6 +219,7 @@ fun PracticeCardsSection(
             icon = Icons.Default.RecordVoiceOver,
             gradient = listOf(Color(0xFF00D9FF), Color(0xFF00B4D8)),
             score = practiceScores?.fluency ?: 0,
+            maxScore = practiceScores?.maxFluency ?: 100,
             onClick = { onNavigateToFluencyPractice(topicId) }
         ),
         PracticeItem(
@@ -226,6 +228,7 @@ fun PracticeCardsSection(
             icon = Icons.Default.Translate,
             gradient = listOf(Color(0xFFFFBE0B), Color(0xFFFB8500)),
             score = practiceScores?.vocabulary ?: 0,
+            maxScore = practiceScores?.maxVocabulary ?: 100,
             onClick = { onNavigateToVocabularyPractice(topicId) }
         ),
         PracticeItem(
@@ -234,6 +237,7 @@ fun PracticeCardsSection(
             icon = Icons.AutoMirrored.Filled.VolumeUp,
             gradient = listOf(Color(0xFF8338EC), Color(0xFF6C63FF)),
             score = 0, // Not implemented yet
+            maxScore = 100,
             onClick = { onNavigateToListeningPractice(topicId) }
         ),
         PracticeItem(
@@ -242,6 +246,7 @@ fun PracticeCardsSection(
             icon = Icons.Default.Spellcheck,
             gradient = listOf(Color(0xFF06FFA5), Color(0xFF00C896)),
             score = 0, // Not implemented yet
+            maxScore = 100,
             onClick = { onNavigateToGrammarPractice(topicId) }
         ),
         PracticeItem(
@@ -250,6 +255,7 @@ fun PracticeCardsSection(
             icon = Icons.Default.School,
             gradient = listOf(Color(0xFFFF006E), Color(0xFF8338EC)),
             score = 0, // Not implemented yet
+            maxScore = 100,
             onClick = { onNavigateToConversation(topicId) }
         )
     )
@@ -608,8 +614,9 @@ fun ModernPracticeCard(
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        // Progress bar indicating current score percentage to 100
-                        val progress = (item.score / 100f).coerceIn(0f, 1f)
+                        // Progress bar indicating current score percentage of max score for this practice
+                        val max = if (item.maxScore > 0) item.maxScore else 100
+                        val progress = (item.score.toFloat() / max.toFloat()).coerceIn(0f, 1f)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -647,6 +654,7 @@ data class PracticeItem(
     val icon: ImageVector,
     val gradient: List<Color>,
     val score: Int,
+    val maxScore: Int,
     val onClick: () -> Unit
 )
 

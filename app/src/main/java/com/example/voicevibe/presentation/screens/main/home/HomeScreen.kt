@@ -124,7 +124,7 @@ fun HomeScreen(
             containerColor = Color.Transparent,
             topBar = {
                 EducationalTopBar(
-                    title = "VozVibe Learning",
+                    title = "VozVibe",
                     onNavigationIconClick = onNavigateToProfile
                 )
             }
@@ -340,7 +340,7 @@ private fun WelcomeSection(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Level $level Student",
+                        text = "Level $level",
                         fontSize = 14.sp,
                         color = EduTextSecondary
                     )

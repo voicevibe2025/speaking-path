@@ -96,7 +96,11 @@ data class PracticeScoresDto(
     val fluency: Int,
     val vocabulary: Int,
     val average: Float,
-    val meetsRequirement: Boolean
+    val meetsRequirement: Boolean,
+    // Added maxima for correct percentage computation client-side
+    val maxPronunciation: Int,
+    val maxFluency: Int,
+    val maxVocabulary: Int
 )
 
 data class SpeakingTopicDto(

@@ -98,7 +98,10 @@ class SpeakingJourneyViewModel @Inject constructor(
                                     fluency = scores.fluency,
                                     vocabulary = scores.vocabulary,
                                     average = scores.average,
-                                    meetsRequirement = scores.meetsRequirement
+                                    meetsRequirement = scores.meetsRequirement,
+                                    maxPronunciation = scores.maxPronunciation,
+                                    maxFluency = scores.maxFluency,
+                                    maxVocabulary = scores.maxVocabulary
                                 )
                             },
                             unlocked = dto.unlocked,

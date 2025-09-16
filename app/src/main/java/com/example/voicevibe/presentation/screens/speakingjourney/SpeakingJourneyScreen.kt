@@ -175,7 +175,11 @@ data class PracticeScores(
     val fluency: Int,
     val vocabulary: Int,
     val average: Float,
-    val meetsRequirement: Boolean
+    val meetsRequirement: Boolean,
+    // Maxima for correct percentage calculations on the client
+    val maxPronunciation: Int,
+    val maxFluency: Int,
+    val maxVocabulary: Int
 )
 
 data class Topic(

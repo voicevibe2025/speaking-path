@@ -29,6 +29,15 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.ui.res.painterResource
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.material.icons.filled.RecordVoiceOver
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import com.example.voicevibe.R
@@ -66,140 +75,126 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun TopicConversationScreen(
     topicId: String,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
-    var currentlyPlayingId by remember { mutableStateOf<String?>(null) }
-    // Playback sequencing state
-    var isPlayingAll by remember { mutableStateOf(false) }
-    var playAllIndex by remember { mutableStateOf(-1) }
-
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
     val topic = ui.topics.firstOrNull { it.id == topicId }
-    
-    // Default voice selections: A = male, B = female
-    val maleVoiceName = "Puck"      // Upbeat (male)
-    val femaleVoiceName = "Zephyr"  // Bright (female)
-    
-    // Backend TTS helpers
-    fun playTurn(turn: ConversationTurn) {
+
+    val conversation = topic?.conversation ?: emptyList()
+
+    var currentIndex by remember(conversation) { mutableStateOf(0) }
+    var currentlyPlayingId by remember { mutableStateOf<String?>(null) }
+    var isPlayingAll by remember { mutableStateOf(false) }
+
+    val maleVoiceName = "Puck"
+    val femaleVoiceName = "Zephyr"
+
+    val infiniteTransition = rememberInfiniteTransition()
+    val gradientOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable<Float>(
+            animation = tween(durationMillis = 8000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+
+    fun resetPlaybackFlags() {
+        isPlayingAll = false
+        currentlyPlayingId = null
+    }
+
+    fun playTurn(index: Int) {
+        if (conversation.isEmpty()) return
+        val i = index.coerceIn(0, conversation.lastIndex)
+        currentIndex = i
+        val turn = conversation[i]
         val id = turn.text
         val voice = if (turn.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
-        // Count this Speaking activity towards Day Streak (idempotent server-side)
+        isPlayingAll = false
         viewModel.markSpeakingActivity()
         viewModel.speakWithBackendTts(
             text = turn.text,
             voiceName = voice,
             onStart = { currentlyPlayingId = id },
-            onDone = {
-                if (!isPlayingAll) {
-                    currentlyPlayingId = null
-                }
-            },
-            onError = { _ ->
-                isPlayingAll = false
-                playAllIndex = -1
-                currentlyPlayingId = null
-            }
+            onDone = { currentlyPlayingId = null },
+            onError = { _ -> resetPlaybackFlags() }
         )
     }
 
-    fun playAll(conversation: List<ConversationTurn>) {
+    fun playAllFrom(start: Int = 0) {
         if (conversation.isEmpty()) return
         if (isPlayingAll || currentlyPlayingId != null) return
+        val startIdx = start.coerceIn(0, conversation.lastIndex)
         isPlayingAll = true
-        playAllIndex = 0
+        currentIndex = startIdx
 
         fun playNext(i: Int) {
             if (!isPlayingAll) return
             if (i >= conversation.size) {
-                isPlayingAll = false
-                playAllIndex = -1
-                currentlyPlayingId = null
+                resetPlaybackFlags()
                 return
             }
-            val turn = conversation[i]
-            val id = turn.text
-            val voice = if (turn.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
-            // Count this Speaking activity towards Day Streak (idempotent server-side)
+            val t = conversation[i]
+            val id = t.text
+            currentIndex = i
+            val voice = if (t.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
             viewModel.markSpeakingActivity()
             viewModel.speakWithBackendTts(
-                text = turn.text,
+                text = t.text,
                 voiceName = voice,
                 onStart = { currentlyPlayingId = id },
                 onDone = { playNext(i + 1) },
-                onError = { _ ->
-                    isPlayingAll = false
-                    playAllIndex = -1
-                    currentlyPlayingId = null
-                }
+                onError = { _ -> resetPlaybackFlags() }
             )
         }
-
-        playNext(0)
+        playNext(startIdx)
     }
 
-    // Stop playback when leaving the screen and reset UI state
     DisposableEffect(Unit) {
         onDispose {
-            isPlayingAll = false
-            playAllIndex = -1
-            currentlyPlayingId = null
+            resetPlaybackFlags()
             viewModel.stopPlayback()
         }
     }
-    
-    // State for animated entry of messages
-    var showMessages by remember { mutableStateOf(false) }
-    
-    // Start animation after a brief delay
-    LaunchedEffect(topic) {
-        delay(300)
-        showMessages = true
-    }
-    
-    // Modern gradient background colors
-    val backgroundGradient = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFF0A1128), // Dark blue top
-            Color(0xFF1E2761), // Mid blue-purple
-            Color(0xFF0A1128)  // Dark blue bottom
-        )
-    )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            Icons.Default.RecordVoiceOver,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = topic?.title ?: "Conversation",
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(start = 4.dp)
+                            fontSize = 20.sp,
+                            color = Color.White
                         )
                     }
                 },
                 navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            isPlayingAll = false
-                            playAllIndex = -1
-                            currentlyPlayingId = null
-                            viewModel.stopPlayback()
-                            onNavigateBack()
-                        },
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f))
-                    ) {
+                    IconButton(onClick = {
+                        resetPlaybackFlags()
+                        viewModel.stopPlayback()
+                        onNavigateBack()
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
@@ -208,250 +203,88 @@ fun TopicConversationScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = Color.Transparent
                 )
             )
         },
-        containerColor = Color.Transparent,
-        floatingActionButton = {
-            if (topic?.conversation?.isNotEmpty() == true) {
-                FloatingActionButton(
-                    onClick = { playAll(topic.conversation) },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White,
-                    modifier = Modifier.shadow(8.dp, RoundedCornerShape(16.dp))
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.PlayArrow,
-                        contentDescription = "Play All",
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-            }
-        }
+        containerColor = Color.Transparent
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(backgroundGradient)
+                .drawBehind { drawAnimatedGradient(gradientOffset) }
                 .padding(innerPadding)
         ) {
             when {
                 topic == null && ui.isLoading -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(
-                            color = Color.White,
-                            modifier = Modifier.size(48.dp)
-                        )
+                        CircularProgressIndicator(color = Color.White, strokeWidth = 3.dp)
                     }
                 }
                 topic == null -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Card(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .shadow(8.dp, RoundedCornerShape(16.dp)),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.9f)
-                            )
-                        ) {
-                            Text(
-                                text = "Conversation not available",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onErrorContainer,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(vertical = 24.dp, horizontal = 32.dp)
-                            )
-                        }
+                        Text(text = "Conversation not available", color = Color.White, style = MaterialTheme.typography.bodyLarge)
                     }
                 }
-                topic.conversation.isEmpty() -> {
+                conversation.isEmpty() -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Card(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .shadow(8.dp, RoundedCornerShape(16.dp)),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.9f)
-                            )
-                        ) {
-                            Text(
-                                text = "No conversation example for this topic",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(vertical = 24.dp, horizontal = 32.dp)
-                            )
-                        }
+                        Text(text = "No conversation example for this topic", color = Color.White, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
                     }
                 }
                 else -> {
+                    val current = conversation.getOrNull(currentIndex)
+                    val isSpeakerA = current?.speaker.equals("A", ignoreCase = true)
+                    val playing = currentlyPlayingId == current?.text || isPlayingAll
+
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 16.dp)
+                            .padding(horizontal = 20.dp),
+                        verticalArrangement = Arrangement.SpaceBetween,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        
-                        // Conversation bubbles in a LazyColumn for better performance
-                        val listState = rememberLazyListState()
-                        
-                        LazyColumn(
-                            state = listState,
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            itemsIndexed(topic.conversation) { index, turn ->
-                                val isSpeakerA = turn.speaker.equals("A", ignoreCase = true)
-                                val isPlaying = currentlyPlayingId == turn.text
+                        ConversationProgress(
+                            currentIndex = currentIndex,
+                            totalSteps = conversation.size,
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
 
-                                val scale by animateFloatAsState(
-                                    targetValue = if (isPlaying) 1.03f else 1.0f,
-                                    animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing)
-                                )
-                                
-                                // Animated entry for each message
-                                AnimatedVisibility(
-                                    visible = showMessages,
-                                    enter = slideInVertically(
-                                        initialOffsetY = { 100 },
-                                        animationSpec = tween(
-                                            durationMillis = 300,
-                                            easing = FastOutSlowInEasing,
-                                            delayMillis = 100 * index
-                                        )
-                                    ) + fadeIn(
-                                        animationSpec = tween(
-                                            durationMillis = 300,
-                                            delayMillis = 100 * index
-                                        )
-                                    )
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = if (isSpeakerA) Arrangement.Start else Arrangement.End,
-                                        verticalAlignment = Alignment.Top
-                                    ) {
-                                        if (isSpeakerA) {
-                                            // Avatar for Speaker A
-                                            Box(
-                                                modifier = Modifier
-                                                    .padding(end = 8.dp)
-                                                    .size(40.dp)
-                                                    .background(
-                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                                        CircleShape
-                                                    )
-                                                    .padding(4.dp)
-                                            ) {
-                                                Image(
-                                                    painter = painterResource(id = R.drawable.ic_male_head),
-                                                    contentDescription = "Speaker A",
-                                                    contentScale = ContentScale.Crop,
-                                                    modifier = Modifier
-                                                        .size(32.dp)
-                                                        .clip(CircleShape)
-                                                )
-                                            }
-                                        }
+                        ModernSpeakersSection(
+                            isSpeakerA = isSpeakerA,
+                            isPlaying = playing,
+                            modifier = Modifier.padding(vertical = 24.dp)
+                        )
 
-                                        // Chat Bubble
-                                        Row(
-                                            modifier = Modifier.weight(1f, fill = false)
-                                        ) {
-                                            Card(
-                                                shape = RoundedCornerShape(
-                                                    topStart = if (isSpeakerA) 4.dp else 16.dp,
-                                                    topEnd = if (isSpeakerA) 16.dp else 4.dp,
-                                                    bottomStart = 16.dp,
-                                                    bottomEnd = 16.dp
-                                                ),
-                                                colors = CardDefaults.cardColors(
-                                                    containerColor = if (isSpeakerA)
-                                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
-                                                    else
-                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                                                ),
-                                                elevation = CardDefaults.cardElevation(defaultElevation = if (isPlaying) 8.dp else 2.dp),
-                                                modifier = Modifier
-                                                    .padding(bottom = 4.dp)
-                                                    .scale(scale)
-                                            ) {
-                                                Row(
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
-                                                ) {
-                                                    Text(
-                                                        text = turn.text,
-                                                        style = MaterialTheme.typography.bodyMedium,
-                                                        color = if (isSpeakerA)
-                                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                                        else
-                                                            Color.White,
-                                                        modifier = Modifier.weight(1f, fill = false)
-                                                    )
-
-                                                    Spacer(modifier = Modifier.width(8.dp))
-
-                                                    // Play button for this message
-                                                    IconButton(
-                                                        onClick = { playTurn(turn) },
-                                                        modifier = Modifier
-                                                            .size(32.dp)
-                                                            .clip(CircleShape)
-                                                            .background(
-                                                                if (isSpeakerA)
-                                                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                                                                else
-                                                                    Color.White.copy(alpha = 0.15f)
-                                                            )
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                                            contentDescription = "Play",
-                                                            tint = if (isSpeakerA)
-                                                                MaterialTheme.colorScheme.primary
-                                                            else
-                                                                Color.White,
-                                                            modifier = Modifier.size(16.dp)
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        if (!isSpeakerA) {
-                                            // Avatar for Speaker B
-                                            Box(
-                                                modifier = Modifier
-                                                    .padding(start = 8.dp)
-                                                    .size(40.dp)
-                                                    .background(
-                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                                        CircleShape
-                                                    )
-                                                    .padding(4.dp)
-                                            ) {
-                                                Image(
-                                                    painter = painterResource(id = R.drawable.ic_female_head),
-                                                    contentDescription = "Speaker B",
-                                                    contentScale = ContentScale.Crop,
-                                                    modifier = Modifier
-                                                        .size(32.dp)
-                                                        .clip(CircleShape)
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            // Add space at the bottom for FAB
-                            item {
-                                Spacer(modifier = Modifier.height(80.dp))
-                            }
+                        current?.let { turn ->
+                            ModernSpeechBubble(
+                                text = turn.text,
+                                isSpeakerA = isSpeakerA,
+                                isPlaying = playing,
+                                primaryGradient = listOf(Color(0xFF667EEA), Color(0xFF764BA2), Color(0xFFF093FB)),
+                                secondaryGradient = listOf(Color(0xFF4FACFE), Color(0xFF00F2FE), Color(0xFF43E97B))
+                            )
                         }
+
+                        ModernControlPanel(
+                            currentIndex = currentIndex,
+                            conversationSize = conversation.size,
+                            isPlaying = playing,
+                            onPrevious = {
+                                val newIdx = (currentIndex - 1).coerceAtLeast(0)
+                                playTurn(newIdx)
+                            },
+                            onPlay = { playTurn(currentIndex) },
+                            onPlayAll = { playAllFrom(0) },
+                            onStop = {
+                                resetPlaybackFlags()
+                                viewModel.stopPlayback()
+                            },
+                            onNext = {
+                                val newIdx = (currentIndex + 1).coerceAtMost(conversation.lastIndex)
+                                playTurn(newIdx)
+                            },
+                            modifier = Modifier.padding(bottom = 32.dp)
+                        )
                     }
                 }
             }

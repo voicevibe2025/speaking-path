@@ -3,6 +3,7 @@ package com.example.voicevibe.presentation.screens.speakingjourney
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -21,9 +22,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,8 +37,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.example.voicevibe.R
 import com.example.voicevibe.presentation.components.*
+import android.media.MediaPlayer
 import kotlinx.coroutines.delay
+import kotlin.math.PI
+import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +60,31 @@ fun TopicMasterScreen(
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
     val topic = ui.topics.firstOrNull { it.id == topicId }
+    val practiceScores = topic?.practiceScores
+
+    // Celebration state: show confetti and play win sound when unlock condition is met
+    val context = LocalContext.current
+    var showCelebration by remember { mutableStateOf(false) }
+    var celebrationTriggered by rememberSaveable(topicId) { mutableStateOf(false) }
+    LaunchedEffect(practiceScores?.meetsRequirement) {
+        val meets = practiceScores?.meetsRequirement == true
+        if (meets && !celebrationTriggered) {
+            showCelebration = true
+            try {
+                val mp = MediaPlayer.create(context, R.raw.win)
+                mp?.setOnCompletionListener { player ->
+                    try { player.release() } catch (_: Throwable) {}
+                }
+                mp?.start()
+            } catch (_: Throwable) {}
+            delay(2200)
+            showCelebration = false
+            celebrationTriggered = true
+        } else if (!meets) {
+            // Allow re-trigger if user drops below threshold and then meets it again later
+            celebrationTriggered = false
+        }
+    }
 
     // Ensure we refresh topics when returning to this screen (e.g., after practices)
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -123,10 +158,10 @@ fun TopicMasterScreen(
                     ) {
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        // Hero Section
-                        HeroSection()
+                        // Progress Summary Section (moved to top)
+                        ProgressSummarySection(topicId = topicId)
 
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
                         // Practice Cards Grid
                         PracticeCardsSection(
@@ -139,15 +174,15 @@ fun TopicMasterScreen(
                             onNavigateToConversation = onNavigateToConversation
                         )
 
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        // Progress Summary Section
-                        ProgressSummarySection(topicId = topicId)
-
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
+        }
+
+        // Celebration overlay on top of everything
+        if (showCelebration) {
+            ConfettiOverlay()
         }
     }
 }
@@ -570,6 +605,28 @@ fun ModernPracticeCard(
                                 )
                             }
                         }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Progress bar indicating current score percentage to 100
+                        val progress = (item.score / 100f).coerceIn(0f, 1f)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color.White.copy(alpha = 0.2f))
+                        ) {
+                            if (progress > 0f) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .fillMaxWidth(progress)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(Brush.horizontalGradient(colors = item.gradient))
+                                )
+                            }
+                        }
                     }
                     
                     Icon(
@@ -592,3 +649,89 @@ data class PracticeItem(
     val score: Int,
     val onClick: () -> Unit
 )
+
+@Composable
+private fun ConfettiOverlay(
+    modifier: Modifier = Modifier,
+    durationMillis: Int = 2200,
+    particleCount: Int = 60
+) {
+    BoxWithConstraints(
+        modifier = modifier
+            .fillMaxSize()
+    ) {
+        val density = LocalDensity.current
+        val widthPx = with(density) { maxWidth.toPx() }
+        val heightPx = with(density) { maxHeight.toPx() }
+
+        // Precompute particle specs so they stay stable during the animation
+        val colors = remember {
+            listOf(
+                Color(0xFF00D9FF), // Cyan
+                Color(0xFF8338EC), // Indigo
+                Color(0xFFFF006E), // Fuchsia
+                Color(0xFFFFBE0B), // Yellow
+                Color(0xFF06FFA5)  // Mint
+            )
+        }
+        val random = remember { kotlin.random.Random(1234) }
+        data class ParticleSpec(
+            val startXFrac: Float,
+            val sizePx: Float,
+            val color: Color,
+            val driftPx: Float,
+            val phase: Float,
+            val delayFrac: Float,
+            val isCircle: Boolean
+        )
+        val specs = remember(particleCount, widthPx) {
+            List(particleCount) {
+                ParticleSpec(
+                    startXFrac = random.nextFloat().coerceIn(0.05f, 0.95f),
+                    sizePx = (with(density) { (6 + random.nextInt(10)).dp.toPx() }),
+                    color = colors[random.nextInt(colors.size)],
+                    driftPx = (8 + random.nextInt(24)).toFloat(),
+                    phase = random.nextFloat() * (2f * PI.toFloat()),
+                    delayFrac = random.nextFloat() * 0.5f,
+                    isCircle = random.nextBoolean()
+                )
+            }
+        }
+
+        val progress = remember { Animatable(0f) }
+        LaunchedEffect(Unit) {
+            progress.snapTo(0f)
+            progress.animateTo(
+                1f,
+                animationSpec = tween(durationMillis = durationMillis, easing = LinearEasing)
+            )
+        }
+
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val p = progress.value
+            specs.forEach { spec ->
+                val localT = ((p * 1.2f) - spec.delayFrac).coerceIn(0f, 1f)
+                if (localT > 0f) {
+                    val x = spec.startXFrac * widthPx + sin(localT * 8f * PI.toFloat() + spec.phase) * spec.driftPx
+                    val y = -spec.sizePx + localT * (heightPx + spec.sizePx * 2f)
+                    val alpha = (1f - localT).coerceIn(0f, 1f)
+                    if (spec.isCircle) {
+                        drawCircle(
+                            color = spec.color.copy(alpha = alpha),
+                            radius = spec.sizePx / 2f,
+                            center = Offset(x, y)
+                        )
+                    } else {
+                        withTransform({ rotate(degrees = (localT * 360f) % 360f, pivot = Offset(x, y)) }) {
+                            drawRect(
+                                color = spec.color.copy(alpha = alpha),
+                                topLeft = Offset(x - spec.sizePx / 2f, y - spec.sizePx / 2f),
+                                size = Size(spec.sizePx, spec.sizePx)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

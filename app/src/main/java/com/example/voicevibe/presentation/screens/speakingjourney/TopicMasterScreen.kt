@@ -663,6 +663,8 @@ private fun ConfettiOverlay(
         val density = LocalDensity.current
         val widthPx = with(density) { maxWidth.toPx() }
         val heightPx = with(density) { maxHeight.toPx() }
+        val centerX = widthPx / 2f
+        val centerY = heightPx / 2f
 
         // Precompute particle specs so they stay stable during the animation
         val colors = remember {
@@ -676,24 +678,29 @@ private fun ConfettiOverlay(
         }
         val random = remember { kotlin.random.Random(1234) }
         data class ParticleSpec(
-            val startXFrac: Float,
+            val initialVelocityX: Float,
+            val initialVelocityY: Float,
             val sizePx: Float,
             val color: Color,
-            val driftPx: Float,
-            val phase: Float,
+            val rotationSpeed: Float,
             val delayFrac: Float,
-            val isCircle: Boolean
+            val isCircle: Boolean,
+            val airResistance: Float
         )
-        val specs = remember(particleCount, widthPx) {
+        val specs = remember(particleCount, widthPx, heightPx) {
             List(particleCount) {
+                // Create explosion effect - particles shoot out in all directions from center
+                val angle = random.nextFloat() * 2f * PI.toFloat()
+                val speed = 200f + random.nextFloat() * 400f // Explosion speed
                 ParticleSpec(
-                    startXFrac = random.nextFloat().coerceIn(0.05f, 0.95f),
+                    initialVelocityX = kotlin.math.cos(angle) * speed,
+                    initialVelocityY = kotlin.math.sin(angle) * speed - 200f, // Bias upward for explosion
                     sizePx = (with(density) { (6 + random.nextInt(10)).dp.toPx() }),
                     color = colors[random.nextInt(colors.size)],
-                    driftPx = (8 + random.nextInt(24)).toFloat(),
-                    phase = random.nextFloat() * (2f * PI.toFloat()),
-                    delayFrac = random.nextFloat() * 0.5f,
-                    isCircle = random.nextBoolean()
+                    rotationSpeed = (random.nextFloat() - 0.5f) * 720f, // -360 to +360 degrees per second
+                    delayFrac = random.nextFloat() * 0.3f, // Smaller delay for tighter explosion
+                    isCircle = random.nextBoolean(),
+                    airResistance = 0.98f + random.nextFloat() * 0.015f // 0.98 to 0.995
                 )
             }
         }
@@ -709,25 +716,65 @@ private fun ConfettiOverlay(
 
         Canvas(modifier = Modifier.fillMaxSize()) {
             val p = progress.value
+            val gravity = 800f // Pixels per second squared
+            val timeScale = durationMillis / 1000f // Convert to seconds
+            
             specs.forEach { spec ->
                 val localT = ((p * 1.2f) - spec.delayFrac).coerceIn(0f, 1f)
                 if (localT > 0f) {
-                    val x = spec.startXFrac * widthPx + sin(localT * 8f * PI.toFloat() + spec.phase) * spec.driftPx
-                    val y = -spec.sizePx + localT * (heightPx + spec.sizePx * 2f)
-                    val alpha = (1f - localT).coerceIn(0f, 1f)
-                    if (spec.isCircle) {
-                        drawCircle(
-                            color = spec.color.copy(alpha = alpha),
-                            radius = spec.sizePx / 2f,
-                            center = Offset(x, y)
-                        )
-                    } else {
-                        withTransform({ rotate(degrees = (localT * 360f) % 360f, pivot = Offset(x, y)) }) {
-                            drawRect(
+                    val time = localT * timeScale
+                    
+                    // Physics simulation: explosion + gravity + air resistance
+                    var velX = spec.initialVelocityX
+                    var velY = spec.initialVelocityY
+                    var x = centerX
+                    var y = centerY
+                    
+                    // Simulate movement with small time steps for accuracy
+                    val steps = (time * 60f).toInt() // 60 FPS simulation
+                    val dt = if (steps > 0) time / steps else 0f
+                    
+                    repeat(steps) {
+                        // Apply air resistance
+                        velX *= spec.airResistance
+                        velY *= spec.airResistance
+                        
+                        // Apply gravity
+                        velY += gravity * dt
+                        
+                        // Update position
+                        x += velX * dt
+                        y += velY * dt
+                    }
+                    
+                    // Fade out over time, more aggressive fade near the end
+                    val alpha = when {
+                        localT < 0.7f -> 1f
+                        else -> ((1f - localT) / 0.3f).coerceIn(0f, 1f)
+                    }
+                    
+                    // Only draw if particle is visible and within reasonable bounds
+                    if (alpha > 0f && x > -spec.sizePx && x < widthPx + spec.sizePx && 
+                        y > -spec.sizePx && y < heightPx + spec.sizePx * 2f) {
+                        
+                        val rotation = spec.rotationSpeed * time
+                        
+                        if (spec.isCircle) {
+                            drawCircle(
                                 color = spec.color.copy(alpha = alpha),
-                                topLeft = Offset(x - spec.sizePx / 2f, y - spec.sizePx / 2f),
-                                size = Size(spec.sizePx, spec.sizePx)
+                                radius = spec.sizePx / 2f,
+                                center = Offset(x, y)
                             )
+                        } else {
+                            withTransform({ 
+                                rotate(degrees = rotation, pivot = Offset(x, y)) 
+                            }) {
+                                drawRect(
+                                    color = spec.color.copy(alpha = alpha),
+                                    topLeft = Offset(x - spec.sizePx / 2f, y - spec.sizePx / 2f),
+                                    size = Size(spec.sizePx, spec.sizePx)
+                                )
+                            }
                         }
                     }
                 }

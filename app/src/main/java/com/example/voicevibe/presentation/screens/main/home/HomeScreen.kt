@@ -48,6 +48,17 @@ import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.*
 
+// Educational color palette
+private val EduPrimary = Color(0xFF2D3E50)
+private val EduSecondary = Color(0xFF3498DB)
+private val EduAccent = Color(0xFFE74C3C)
+private val EduSuccess = Color(0xFF27AE60)
+private val EduWarning = Color(0xFFF39C12)
+private val EduBackground = Color(0xFFF8F9FA)
+private val EduSurface = Color(0xFFFFFFFF)
+private val EduTextPrimary = Color(0xFF2C3E50)
+private val EduTextSecondary = Color(0xFF7F8C8D)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -93,37 +104,28 @@ fun HomeScreen(
         }
     }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "background")
-    val animatedOffset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(20000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "gradient"
-    )
-
     Box(modifier = Modifier.fillMaxSize()) {
-        AnimatedBackground(animatedOffset)
-        FloatingParticles()
+        // Simple gradient background
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            EduBackground,
+                            Color(0xFFECF0F1)
+                        )
+                    )
+                )
+        )
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = Color.Transparent,
             topBar = {
-                ModernTopBar(
-                    title = "VozVibe",
-                    onNavigationIconClick = onNavigateToProfile,
-                    navigationIcon = {
-                        Image(
-                            painter = painterResource(id = R.mipmap.ic_launcher_foreground),
-                            contentDescription = "VoiceVibe Logo",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape)
-                        )
-                    }
+                EducationalTopBar(
+                    title = "VozVibe Learning",
+                    onNavigationIconClick = onNavigateToProfile
                 )
             }
         ) { innerPadding ->
@@ -138,292 +140,241 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.Transparent),
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                    contentPadding = PaddingValues(vertical = 8.dp, horizontal = 4.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp)
                 ) {
-                // Animated Header Section
-                item {
-                    AnimatedVisibility(
-                        visible = isVisible,
-                        enter = fadeIn() + slideInVertically()
-                    ) {
-                        HeroSection(
-                            userName = uiState.userName ?: "Learner",
-                            level = uiState.userLevel,
-                            userInitials = uiState.userInitials ?: "VV",
-                            avatarUrl = uiState.avatarUrl,
-                            onProfileClick = onNavigateToProfile
-                        )
+                    // Welcome Section
+                    item {
+                        AnimatedVisibility(
+                            visible = isVisible,
+                            enter = fadeIn() + slideInVertically()
+                        ) {
+                            WelcomeSection(
+                                userName = uiState.userName ?: "Student",
+                                level = uiState.userLevel,
+                                userInitials = uiState.userInitials ?: "VV",
+                                avatarUrl = uiState.avatarUrl,
+                                onProfileClick = onNavigateToProfile
+                            )
+                        }
                     }
-                }
 
-                // Enhanced Stats Cards
-                item {
-                    AnimatedVisibility(
-                        visible = isVisible,
-                        enter = fadeIn(animationSpec = tween(400, 100)) + slideInVertically()
-                    ) {
-                        StatsSection(
-                            totalPoints = uiState.totalPoints,
-                            currentStreak = uiState.currentStreak,
-                            completedLessons = uiState.completedLessons,
+                    // Quick Start Actions - Highlighted
+                    item {
+                        AnimatedVisibility(
+                            visible = isVisible,
+                            enter = fadeIn(animationSpec = tween(400, 100))
+                        ) {
+                            QuickStartSection(
+                                onStartPractice = viewModel::onStartPractice,
+                                onPracticeWithAI = onNavigateToPracticeAI
+                            )
+                        }
+                    }
+
+                    // Learning Progress
+                    item {
+                        AnimatedVisibility(
+                            visible = isVisible,
+                            enter = fadeIn(animationSpec = tween(400, 200))
+                        ) {
+                            LearningProgressSection(
+                                totalPoints = uiState.totalPoints,
+                                currentStreak = uiState.currentStreak,
+                                completedLessons = uiState.completedLessons
+                            )
+                        }
+                    }
+
+                    // Study Tools
+                    item {
+                        StudyToolsSection(
+                            onViewPaths = viewModel::onViewAllPaths,
+                            onViewLeaderboard = onNavigateToLeaderboard,
                             onViewAchievements = onNavigateToAchievements
                         )
                     }
-                }
 
-                // Quick Actions
-                item {
-                    AnimatedVisibility(
-                        visible = isVisible,
-                        enter = fadeIn(animationSpec = tween(400, 200)) + slideInVertically()
-                    ) {
-                        QuickActionsSection(
-                            onStartPractice = viewModel::onStartPractice,
-                            onPracticeWithAI = onNavigateToPracticeAI,
-                            onViewPaths = viewModel::onViewAllPaths,
-                            onViewLeaderboard = onNavigateToLeaderboard
-                        )
+                    // Current Courses
+                    if (uiState.activeLearningPaths.isNotEmpty()) {
+                        item {
+                            CurrentCoursesSection(
+                                paths = uiState.activeLearningPaths,
+                                onPathClick = viewModel::onContinueLearning
+                            )
+                        }
                     }
-                }
 
-                // Active Learning Paths
-                if (uiState.activeLearningPaths.isNotEmpty()) {
+                    // Achievements
+                    if (uiState.badges.isNotEmpty()) {
+                        item {
+                            AchievementsSection(
+                                badges = uiState.badges,
+                                onViewAll = viewModel::onViewAchievements
+                            )
+                        }
+                    }
+
+                    // Bottom padding
                     item {
-                        ActivePathsSection(
-                            paths = uiState.activeLearningPaths,
-                            onPathClick = viewModel::onContinueLearning
-                        )
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
-                }
-
-                // Recent Badges
-                if (uiState.badges.isNotEmpty()) {
-                    item {
-                        RecentBadgesSection(
-                            badges = uiState.badges,
-                            onViewAll = viewModel::onViewAchievements
-                        )
-                    }
-                }
-
-                // Bottom padding
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
                 }
             }
         }
     }
 }
 
+@Composable
+private fun EducationalTopBar(
+    title: String,
+    onNavigationIconClick: () -> Unit
+) {
+    Surface(
+        color = EduSurface,
+        shadowElevation = 2.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .statusBarsPadding(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                    contentDescription = "VoiceVibe Logo",
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = title,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = EduTextPrimary
+                )
+            }
+            
+            IconButton(onClick = onNavigationIconClick) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Profile",
+                    tint = EduSecondary
+                )
+            }
+        }
+    }
+}
 
 @Composable
-private fun StatsSection(
-    totalPoints: Int,
-    currentStreak: Int,
-    completedLessons: Int,
-    onViewAchievements: () -> Unit
+private fun WelcomeSection(
+    userName: String,
+    level: Int,
+    userInitials: String,
+    avatarUrl: String?,
+    onProfileClick: () -> Unit
 ) {
-    Row(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = EduSurface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        StatCard(
-            modifier = Modifier.weight(1f),
-            icon = Icons.Default.EmojiEvents,
-            title = "Total Points",
-            value = NumberFormat.getNumberInstance(Locale.US).format(totalPoints),
-            color = Color(0xFFFFD700),
-            onClick = onViewAchievements
-        )
-        StatCard(
-            modifier = Modifier.weight(1f),
-            icon = Icons.Default.LocalFireDepartment,
-            title = "Day Streak",
-            value = "$currentStreak",
-            color = Color(0xFFFF6B6B)
-        )
-        StatCard(
-            modifier = Modifier.weight(1f),
-            icon = Icons.Default.CheckCircle,
-            title = "Completed",
-            value = "$completedLessons",
-            color = Color(0xFF4ECDC4)
-        )
-    }
-}
-
-@Composable
-private fun StatCard(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    title: String,
-    value: String,
-    color: Color,
-    onClick: (() -> Unit)? = null
-) {
-    Card(
-        modifier = modifier
-            .aspectRatio(1f)
-            .then(
-                if (onClick != null) {
-                    Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) { onClick() }
-                } else Modifier
-            ),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.05f)
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = color.copy(alpha = 0.3f)
-        )
-    ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            // Avatar
             Box(
                 modifier = Modifier
                     .size(60.dp)
-                    .align(Alignment.TopEnd)
-                    .offset(x = 20.dp, y = (-20).dp)
-                    .blur(30.dp)
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                color.copy(alpha = 0.5f),
-                                Color.Transparent
-                            )
-                        )
-                    )
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .clip(CircleShape)
+                    .background(EduSecondary.copy(alpha = 0.1f))
+                    .clickable { onProfileClick() },
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = color,
-                    modifier = Modifier.size(28.dp)
-                )
-                Spacer(modifier = Modifier.height(4.dp))
+                if (avatarUrl != null) {
+                    SubcomposeAsyncImage(
+                        model = avatarUrl,
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text(
+                        text = userInitials,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = EduSecondary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = value,
-                    fontSize = 20.sp,
+                    text = "$userName!",
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = color
+                    color = EduTextPrimary
                 )
-                Text(
-                    text = title,
-                    fontSize = 10.sp,
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontWeight = FontWeight.Normal
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.School,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = EduSuccess
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Level $level Student",
+                        fontSize = 14.sp,
+                        color = EduTextSecondary
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun QuickActionsSection(
+private fun QuickStartSection(
     onStartPractice: () -> Unit,
-    onPracticeWithAI: () -> Unit,
-    onViewPaths: () -> Unit,
-    onViewLeaderboard: () -> Unit
+    onPracticeWithAI: () -> Unit
 ) {
     Column(
         modifier = Modifier.padding(horizontal = 16.dp)
     ) {
         Text(
-            text = "Quick Actions",
-            fontSize = 22.sp,
+            text = "Start Learning",
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp),
-            color = Color.White
+            color = EduTextPrimary,
+            modifier = Modifier.padding(bottom = 12.dp)
         )
 
-        QuickActionCard(
-            title = "Start Speaking Practice",
-            description = "Practice your pronunciation now",
-            icon = Icons.Default.Mic,
-            gradient = listOf(Color(0xFF6C63FF), Color(0xFF00D9FF)),
-            onClick = onStartPractice
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        QuickActionCard(
-            title = "Practice with Vivi",
-            description = "AI-powered conversation",
-            icon = Icons.Default.Psychology,
-            gradient = listOf(Color(0xFFFF006E), Color(0xFFFF4081)),
-            onClick = onPracticeWithAI
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        // Primary Action - Speaking Practice
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onStartPractice() },
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = EduSecondary),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
-            QuickActionCard(
-                modifier = Modifier.weight(1f),
-                title = "Learning Paths",
-                icon = Icons.Outlined.School,
-                gradient = listOf(Color(0xFFFFBE0B), Color(0xFFFB8500)),
-                onClick = onViewPaths
-            )
-
-            QuickActionCard(
-                modifier = Modifier.weight(1f),
-                title = "Leaderboard",
-                icon = Icons.Outlined.Leaderboard,
-                gradient = listOf(Color(0xFF8338EC), Color(0xFF6C63FF)),
-                onClick = onViewLeaderboard
-            )
-        }
-    }
-}
-
-@Composable
-private fun QuickActionCard(
-    modifier: Modifier = Modifier,
-    title: String,
-    description: String? = null,
-    icon: ImageVector,
-    gradient: List<Color>,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.05f)
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            brush = Brush.linearGradient(
-                colors = listOf(
-                    gradient[0].copy(alpha = 0.5f),
-                    gradient[1].copy(alpha = 0.5f)
-                )
-            )
-        )
-    ) {
-        if (description != null) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -433,78 +384,96 @@ private fun QuickActionCard(
                 Box(
                     modifier = Modifier
                         .size(56.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.linearGradient(
-                                colors = gradient
-                            )
-                        ),
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = icon,
+                        imageVector = Icons.Default.Mic,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(32.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.width(20.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.Center
-                ) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = title,
+                        text = "Start Speaking Practice",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                     Text(
-                        text = description,
+                        text = "Practice pronunciation with instant feedback",
                         fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.7f)
+                        color = Color.White.copy(alpha = 0.9f)
                     )
                 }
+
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
             }
-        } else {
-            Column(
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Secondary Action - AI Practice
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onPracticeWithAI() },
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = EduAccent),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            Brush.linearGradient(
-                                colors = gradient
-                            )
-                        ),
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = icon,
+                        imageVector = Icons.Default.Psychology,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(32.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
-                Text(
-                    text = title,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Practice with Vivi",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = "AI-powered conversation partner",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                }
+
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
@@ -512,7 +481,192 @@ private fun QuickActionCard(
 }
 
 @Composable
-private fun ActivePathsSection(
+private fun LearningProgressSection(
+    totalPoints: Int,
+    currentStreak: Int,
+    completedLessons: Int
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = EduSurface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Text(
+                text = "Your Progress",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = EduTextPrimary,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                ProgressItem(
+                    icon = Icons.Default.EmojiEvents,
+                    label = "Points",
+                    value = NumberFormat.getNumberInstance(Locale.US).format(totalPoints),
+                    color = EduWarning
+                )
+                
+                ProgressItem(
+                    icon = Icons.Default.LocalFireDepartment,
+                    label = "Streak",
+                    value = "$currentStreak days",
+                    color = EduAccent
+                )
+                
+                ProgressItem(
+                    icon = Icons.Default.CheckCircle,
+                    label = "Completed",
+                    value = "$completedLessons lessons",
+                    color = EduSuccess
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProgressItem(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    color: Color
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(color.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = value,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = EduTextPrimary
+        )
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = EduTextSecondary
+        )
+    }
+}
+
+@Composable
+private fun StudyToolsSection(
+    onViewPaths: () -> Unit,
+    onViewLeaderboard: () -> Unit,
+    onViewAchievements: () -> Unit
+) {
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp)
+    ) {
+        Text(
+            text = "Study Tools",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = EduTextPrimary,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            StudyToolCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Route,
+                title = "Learning Paths",
+                color = EduSuccess,
+                onClick = onViewPaths
+            )
+
+            StudyToolCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Leaderboard,
+                title = "Leaderboard",
+                color = EduWarning,
+                onClick = onViewLeaderboard
+            )
+
+            StudyToolCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Stars,
+                title = "Achievements",
+                color = EduAccent,
+                onClick = onViewAchievements
+            )
+        }
+    }
+}
+
+@Composable
+private fun StudyToolCard(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    title: String,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier
+            .aspectRatio(1f)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = EduSurface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.2f))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = title,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = EduTextPrimary,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+private fun CurrentCoursesSection(
     paths: List<LearningPath>,
     onPathClick: (String) -> Unit
 ) {
@@ -525,30 +679,27 @@ private fun ActivePathsSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Continue Learning",
-                fontSize = 22.sp,
+                text = "Current Courses",
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = EduTextPrimary
             )
 
-            TextButton(
-                onClick = { /* Handle view all */ }
-            ) {
+            TextButton(onClick = {}) {
                 Text(
-                    text = "View All",
-                    color = BrandCyan,
+                    text = "See All",
+                    color = EduSecondary,
                     fontSize = 14.sp
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         paths.forEachIndexed { index, path ->
-            PathCard(
+            CourseCard(
                 path = path,
-                onClick = { onPathClick(path.id) },
-                index = index
+                onClick = { onPathClick(path.id) }
             )
             
             if (index < paths.size - 1) {
@@ -559,34 +710,20 @@ private fun ActivePathsSection(
 }
 
 @Composable
-private fun PathCard(
+private fun CourseCard(
     path: LearningPath,
-    onClick: () -> Unit,
-    index: Int
+    onClick: () -> Unit
 ) {
-    val colors = listOf(
-        listOf(BrandCyan, BrandIndigo),
-        listOf(BrandIndigo, BrandFuchsia),
-        listOf(BrandFuchsia, BrandCyan)
-    )
-    
-    val gradientColors = colors[index % colors.size]
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.05f)
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = gradientColors.first().copy(alpha = 0.2f)
-        )
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = EduSurface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -596,11 +733,11 @@ private fun PathCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = path.title,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        color = Color.White
+                        color = EduTextPrimary
                     )
                     
                     Spacer(modifier = Modifier.height(4.dp))
@@ -612,59 +749,49 @@ private fun PathCard(
                             Icons.AutoMirrored.Filled.MenuBook,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
-                            tint = gradientColors.first().copy(alpha = 0.8f)
+                            tint = EduTextSecondary
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "${path.completedLessons}/${path.totalLessons} lessons",
+                            text = "${path.completedLessons} of ${path.totalLessons} lessons",
                             fontSize = 13.sp,
-                            color = Color.White.copy(alpha = 0.6f)
+                            color = EduTextSecondary
                         )
                     }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            brush = Brush.linearGradient(gradientColors.map { it.copy(alpha = 0.2f) })
-                        )
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = if (path.progress >= 80) EduSuccess else EduSecondary,
+                    modifier = Modifier.padding(start = 8.dp)
                 ) {
                     Text(
                         text = "${path.progress}%",
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = gradientColors.first()
+                        color = Color.White,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Box(
+            LinearProgressIndicator(
+                progress = { path.progress / 100f },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Color.White.copy(alpha = 0.1f))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(path.progress / 100f)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(
-                            brush = Brush.horizontalGradient(gradientColors)
-                        )
-                )
-            }
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(3.dp)),
+                color = if (path.progress >= 80) EduSuccess else EduSecondary,
+                trackColor = Color(0xFFE0E0E0),
+            )
         }
     }
 }
 
 @Composable
-private fun RecentBadgesSection(
+private fun AchievementsSection(
     badges: List<String>,
     onViewAll: () -> Unit
 ) {
@@ -678,74 +805,67 @@ private fun RecentBadgesSection(
         ) {
             Text(
                 text = "Recent Achievements",
-                fontSize = 22.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = EduTextPrimary
             )
 
             TextButton(onClick = onViewAll) {
                 Text(
                     text = "View All",
-                    color = BrandCyan,
+                    color = EduSecondary,
                     fontSize = 14.sp
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             itemsIndexed(badges) { index, badge ->
-                BadgeItem(badge = badge, index = index)
+                AchievementBadge(badge = badge, index = index)
             }
         }
     }
 }
 
 @Composable
-private fun BadgeItem(
+private fun AchievementBadge(
     badge: String,
     index: Int
 ) {
     val colors = listOf(
-        BrandCyan,
-        BrandIndigo,
-        BrandFuchsia,
-        Color(0xFFFFD700)
+        EduWarning,
+        EduSuccess,
+        EduAccent,
+        EduSecondary
     )
     
     val badgeColor = colors[index % colors.size]
 
     Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.05f)
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = badgeColor.copy(alpha = 0.3f)
-        )
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = badgeColor.copy(alpha = 0.1f)),
+        border = BorderStroke(1.dp, badgeColor.copy(alpha = 0.3f))
     ) {
         Box(
             modifier = Modifier
-                .size(90.dp)
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            badgeColor.copy(alpha = 0.1f),
-                            Color.Transparent
-                        )
-                    )
-                ),
+                .size(80.dp)
+                .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.Stars,
+                imageVector = when (index % 4) {
+                    0 -> Icons.Default.EmojiEvents
+                    1 -> Icons.Default.Star
+                    2 -> Icons.Default.School
+                    else -> Icons.Default.Grade
+                },
                 contentDescription = badge,
                 tint = badgeColor,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(36.dp)
             )
         }
     }

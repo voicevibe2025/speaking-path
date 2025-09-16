@@ -267,6 +267,10 @@ fun ConversationPracticeScreen(
                             },
                             onPlay = { playTurn(currentIndex) },
                             onPlayAll = { playAllFrom(0) },
+                            onStop = {
+                                resetPlaybackFlags()
+                                viewModel.stopPlayback()
+                            },
                             onNext = {
                                 val newIdx = (currentIndex + 1).coerceAtMost(conversation.lastIndex)
                                 playTurn(newIdx)
@@ -525,7 +529,8 @@ fun ModernSpeechBubble(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Normal,
                         lineHeight = 28.sp,
-                        textAlign = TextAlign.Start
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
@@ -585,6 +590,7 @@ fun ModernControlPanel(
     onPrevious: () -> Unit,
     onPlay: () -> Unit,
     onPlayAll: () -> Unit,
+    onStop: () -> Unit,
     onNext: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -618,11 +624,10 @@ fun ModernControlPanel(
                 )
             }
 
-            // Play button with long press
+            // Play button: single tap toggles stop vs Play All from start
             Box(
-                modifier = Modifier.combinedClickable(
-                    onClick = onPlay,
-                    onLongClick = onPlayAll
+                modifier = Modifier.clickable(
+                    onClick = { if (isPlaying) onStop() else onPlayAll() }
                 )
             ) {
                 ModernPlayButton(isPlaying = isPlaying)

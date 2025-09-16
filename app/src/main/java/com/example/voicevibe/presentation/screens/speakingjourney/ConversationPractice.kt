@@ -481,6 +481,8 @@ fun ModernSpeechBubble(
         targetValue = if (isPlaying) 1.02f else 1f,
         animationSpec = spring(dampingRatio = 0.7f)
     )
+    val waveHeight = 30.dp
+    val waveGap = 10.dp
 
     Box(
         modifier = Modifier
@@ -519,8 +521,8 @@ fun ModernSpeechBubble(
                         SoundWaveAnimation(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(40.dp)
-                                .padding(bottom = 12.dp)
+                                .height(waveHeight)
+                                .padding(bottom = waveGap)
                         )
                     }
                     Text(
@@ -532,6 +534,10 @@ fun ModernSpeechBubble(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    if (isPlaying) {
+                        // Add symmetric space below equal to the wave area above, so text stays vertically centered.
+                        Spacer(modifier = Modifier.height(waveHeight + waveGap))
+                    }
                 }
             }
         }

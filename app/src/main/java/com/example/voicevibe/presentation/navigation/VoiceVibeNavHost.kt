@@ -18,6 +18,7 @@ import com.example.voicevibe.presentation.screens.auth.onboarding.OnboardingScre
 import com.example.voicevibe.presentation.screens.auth.forgotpassword.ForgotPasswordScreen
 import com.example.voicevibe.presentation.screens.main.home.HomeScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
+import com.example.voicevibe.presentation.screens.main.social.SocialFeedScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationLessonScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationPracticeScreen
@@ -131,6 +132,7 @@ fun VoiceVibeNavHost(
                 },
                 onNavigateToAchievements = { navController.navigate(Screen.Achievements.route) },
                 onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
+                onNavigateToSocialFeed = { navController.navigate(Screen.SocialFeed.route) },
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
                 onNavigateToLearningPath = { _ ->
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)

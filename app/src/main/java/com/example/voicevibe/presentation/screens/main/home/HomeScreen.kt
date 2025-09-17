@@ -1,5 +1,7 @@
 package com.example.voicevibe.presentation.screens.main.home
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -15,6 +17,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
@@ -31,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,11 +47,19 @@ import coil.compose.SubcomposeAsyncImage
 import com.example.voicevibe.R
 import com.example.voicevibe.domain.model.LearningPath
 import com.example.voicevibe.presentation.components.*
+import com.example.voicevibe.domain.model.PostComment
 import com.example.voicevibe.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.*
+import java.time.Duration
+import java.time.LocalDateTime
+import okhttp3.MultipartBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 // Educational color palette
 private val EduPrimary = Color(0xFF2D3E50)
@@ -69,6 +82,7 @@ fun HomeScreen(
     onNavigateToLeaderboard: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToLearningPath: (String) -> Unit,
+    onNavigateToSocialFeed: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -145,20 +159,9 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(vertical = 16.dp)
                 ) {
-                    // Welcome Section
+                    // Social Feed entry card
                     item {
-                        AnimatedVisibility(
-                            visible = isVisible,
-                            enter = fadeIn() + slideInVertically()
-                        ) {
-                            WelcomeSection(
-                                userName = uiState.userName ?: "Student",
-                                level = uiState.userLevel,
-                                userInitials = uiState.userInitials ?: "VV",
-                                avatarUrl = uiState.avatarUrl,
-                                onProfileClick = onNavigateToProfile
-                            )
-                        }
+                        SocialFeedEntryCard(onClick = onNavigateToSocialFeed)
                     }
 
                     // Quick Start Actions - Highlighted
@@ -222,6 +225,203 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PostCard(
+    post: com.example.voicevibe.domain.model.Post,
+    onLike: () -> Unit,
+    onUnlike: () -> Unit,
+    onAddComment: (String, () -> Unit) -> Unit,
+    fetchComments: (Int, (List<PostComment>) -> Unit) -> Unit
+) {
+    val context = LocalContext.current
+    var showComments by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = EduSurface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(EduSecondary.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val avatarUrl = post.author.avatarUrl
+                    if (avatarUrl != null) {
+                        SubcomposeAsyncImage(
+                            model = avatarUrl,
+                            contentDescription = "Author Avatar",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Text(
+                            text = post.author.displayName.take(2).uppercase(),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = EduSecondary
+                        )
+                    }
+                }
+                Spacer(Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(post.author.displayName, fontWeight = FontWeight.Bold, color = EduTextPrimary)
+                    // Simple relative time from createdAt is not available fully; show static label
+                    Text("Just now", fontSize = 12.sp, color = EduTextSecondary)
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            when {
+                !post.text.isNullOrBlank() -> {
+                    Text(post.text!!, color = EduTextPrimary)
+                }
+                !post.imageUrl.isNullOrBlank() -> {
+                    SubcomposeAsyncImage(
+                        model = post.imageUrl,
+                        contentDescription = "Post Image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 120.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                }
+                !post.linkUrl.isNullOrBlank() -> {
+                    val link = post.linkUrl!!
+                    Text(
+                        text = link,
+                        color = EduSecondary,
+                        modifier = Modifier.clickable {
+                            try {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link)))
+                            } catch (_: Throwable) {}
+                        }
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Like (icon + count)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable(
+                        enabled = post.canInteract,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        if (post.isLikedByMe) onUnlike() else onLike()
+                    }
+                ) {
+                    val likeTint = if (post.isLikedByMe) EduAccent else EduTextSecondary
+                    Icon(
+                        imageVector = if (post.isLikedByMe) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = null,
+                        tint = likeTint
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(post.likesCount.toString(), color = EduTextSecondary)
+                }
+
+                // Comment (icon + count)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable { showComments = true }
+                ) {
+                    Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, tint = EduTextSecondary)
+                    Spacer(Modifier.width(6.dp))
+                    Text(post.commentsCount.toString(), color = EduTextSecondary)
+                }
+            }
+        }
+    }
+
+    if (showComments) {
+        var comments by remember { mutableStateOf<List<PostComment>>(emptyList()) }
+        var newComment by remember { mutableStateOf("") }
+
+        LaunchedEffect(post.id, showComments) {
+            if (showComments) fetchComments(post.id) { list -> comments = list }
+        }
+
+        ModalBottomSheet(
+            onDismissRequest = { showComments = false },
+            sheetState = sheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text("Comments", fontWeight = FontWeight.Bold, color = EduTextPrimary)
+                Spacer(Modifier.height(8.dp))
+                LazyColumn(
+                    modifier = Modifier
+                        .heightIn(min = 120.dp, max = 360.dp)
+                        .fillMaxWidth()
+                ) {
+                    items(comments) { c ->
+                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                            Text(c.author.displayName, fontWeight = FontWeight.SemiBold, color = EduTextPrimary)
+                            Spacer(Modifier.height(2.dp))
+                            Text(c.text, color = EduTextPrimary)
+                        }
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    OutlinedTextField(
+                        value = newComment,
+                        onValueChange = { newComment = it },
+                        placeholder = { Text("Write a comment") },
+                        modifier = Modifier.weight(1f),
+                        enabled = post.canInteract,
+                        singleLine = true
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    IconButton(
+                        onClick = {
+                            val c = newComment.trim()
+                            if (c.isNotEmpty()) {
+                                onAddComment(c) {
+                                    // refresh after backend confirms
+                                    fetchComments(post.id) { list -> comments = list }
+                                }
+                                newComment = ""
+                            }
+                        },
+                        enabled = post.canInteract
+                    ) {
+                        Icon(Icons.Default.Send, contentDescription = "Post Comment", tint = EduSecondary)
+                    }
+                }
+                if (!post.canInteract) {
+                    Spacer(Modifier.height(6.dp))
+                    Text("Only friends can comment.", color = EduTextSecondary, fontSize = 12.sp)
+                }
+                Spacer(Modifier.height(8.dp))
             }
         }
     }
@@ -676,12 +876,8 @@ private fun StudyToolCard(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = title,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                color = EduTextPrimary,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                fontWeight = FontWeight.Bold,
+                color = EduTextPrimary
             )
         }
     }
@@ -888,6 +1084,51 @@ private fun AchievementBadge(
                 contentDescription = badge,
                 tint = badgeColor,
                 modifier = Modifier.size(36.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SocialFeedEntryCard(onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = EduSurface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(EduSecondary.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.ChatBubbleOutline,
+                    contentDescription = null,
+                    tint = EduSecondary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text("Community Feed", fontWeight = FontWeight.Bold, color = EduTextPrimary)
+                Text("Share updates and see friends' posts", color = EduTextSecondary, fontSize = 12.sp)
+            }
+            Icon(
+                imageVector = Icons.Default.ArrowForward,
+                contentDescription = null,
+                tint = EduTextSecondary
             )
         }
     }

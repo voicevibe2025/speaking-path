@@ -31,6 +31,7 @@ import com.example.voicevibe.presentation.screens.profile.ProfileScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsScreen
  import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
  import com.example.voicevibe.presentation.screens.profile.UserProfileScreen
+import com.example.voicevibe.presentation.screens.main.social.SocialFeedScreen
 import com.example.voicevibe.presentation.screens.scenarios.CulturalScenariosScreen
 import com.example.voicevibe.presentation.screens.scenarios.ScenarioDetailScreen
 import com.example.voicevibe.presentation.screens.analytics.AnalyticsDashboardScreen
@@ -190,6 +191,7 @@ fun NavGraph(
                 onNavigateToLeaderboard = {
                     navController.navigate(Screen.Leaderboard.route)
                 },
+                onNavigateToSocialFeed = { navController.navigate(Screen.SocialFeed.route) },
                 onNavigateToProfile = {
                     navController.navigate(Screen.Profile.route)
                 },
@@ -197,6 +199,11 @@ fun NavGraph(
                     navController.navigate(Screen.LearningPathDetail.createRoute(pathId))
                 }
             )
+        }
+
+        // Social feed dedicated screen
+        composable(Screen.SocialFeed.route) {
+            SocialFeedScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         composable(Screen.Practice.route) {

@@ -532,24 +532,6 @@ private fun ProfileHeader(
                     label = "Following",
                     onClick = onViewFollowing
                 )
-                Divider(
-                    modifier = Modifier
-                        .height(40.dp)
-                        .width(1.dp)
-                )
-                StatItem(
-                    value = profile.stats.achievementsUnlocked.toString(),
-                    label = "Achievements"
-                )
-                Divider(
-                    modifier = Modifier
-                        .height(40.dp)
-                        .width(1.dp)
-                )
-                StatItem(
-                    value = profile.stats.totalPracticeSessions.toString(),
-                    label = "Sessions"
-                )
             }
         }
 

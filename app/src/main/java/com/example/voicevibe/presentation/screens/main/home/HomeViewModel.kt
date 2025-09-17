@@ -6,10 +6,13 @@ import com.example.voicevibe.data.ai.AiChatPrewarmManager
 import com.example.voicevibe.data.repository.UserRepository
 import com.example.voicevibe.data.repository.LearningPathRepository
 import com.example.voicevibe.data.repository.GamificationRepository
+import com.example.voicevibe.data.repository.SocialRepository
 import com.example.voicevibe.data.repository.ProfileRepository
 import com.example.voicevibe.domain.model.Resource
 import com.example.voicevibe.domain.model.UserProfile
 import com.example.voicevibe.domain.model.LearningPath
+import com.example.voicevibe.domain.model.Post
+import com.example.voicevibe.domain.model.PostComment
 import com.example.voicevibe.domain.model.UserProgress
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -27,7 +30,8 @@ class HomeViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val learningPathRepository: LearningPathRepository,
     private val gamificationRepository: GamificationRepository,
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
+    private val socialRepository: SocialRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -39,10 +43,106 @@ class HomeViewModel @Inject constructor(
     init {
         loadUserProfileData()
         loadDashboardData()
+        loadPosts()
         // Pre-warm Vivi greeting in background so Free Practice opens instantly
         try {
             prewarmManager.prewarm()
         } catch (_: Throwable) { /* best-effort */ }
+    }
+
+    // Social posts
+    fun loadPosts() {
+        viewModelScope.launch {
+            socialRepository.getPosts().collect { res ->
+                when (res) {
+                    is com.example.voicevibe.domain.model.Resource.Success -> {
+                        _uiState.update { it.copy(posts = res.data ?: emptyList()) }
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun createTextPost(text: String, onDone: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            when (val res = socialRepository.createTextPost(text)) {
+                is com.example.voicevibe.domain.model.Resource.Success -> {
+                    res.data?.let { p -> _uiState.update { it.copy(posts = listOf(p) + it.posts) } }
+                    onDone?.invoke()
+                }
+                else -> onDone?.invoke()
+            }
+        }
+    }
+
+    fun createLinkPost(link: String, onDone: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            when (val res = socialRepository.createLinkPost(link)) {
+                is com.example.voicevibe.domain.model.Resource.Success -> {
+                    res.data?.let { p -> _uiState.update { it.copy(posts = listOf(p) + it.posts) } }
+                    onDone?.invoke()
+                }
+                else -> onDone?.invoke()
+            }
+        }
+    }
+
+    fun createImagePost(part: okhttp3.MultipartBody.Part, onDone: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            when (val res = socialRepository.createImagePost(part)) {
+                is com.example.voicevibe.domain.model.Resource.Success -> {
+                    res.data?.let { p -> _uiState.update { it.copy(posts = listOf(p) + it.posts) } }
+                    onDone?.invoke()
+                }
+                else -> onDone?.invoke()
+            }
+        }
+    }
+
+    fun likePost(postId: Int) {
+        viewModelScope.launch {
+            val current = _uiState.value.posts
+            socialRepository.likePost(postId)
+            _uiState.update { state ->
+                state.copy(posts = current.map { p -> if (p.id == postId) p.copy(likesCount = p.likesCount + (if (!p.isLikedByMe) 1 else 0), isLikedByMe = true) else p })
+            }
+        }
+    }
+
+    fun unlikePost(postId: Int) {
+        viewModelScope.launch {
+            val current = _uiState.value.posts
+            socialRepository.unlikePost(postId)
+            _uiState.update { state ->
+                state.copy(posts = current.map { p -> if (p.id == postId) p.copy(likesCount = (if (p.isLikedByMe) p.likesCount - 1 else p.likesCount).coerceAtLeast(0), isLikedByMe = false) else p })
+            }
+        }
+    }
+
+    fun addComment(postId: Int, text: String, onDone: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            val res = socialRepository.addComment(postId, text)
+            if (res is com.example.voicevibe.domain.model.Resource.Success) {
+                val current = _uiState.value.posts
+                _uiState.update { state ->
+                    state.copy(posts = current.map { p -> if (p.id == postId) p.copy(commentsCount = p.commentsCount + 1) else p })
+                }
+            }
+            onDone?.invoke()
+        }
+    }
+
+    // Load comments for a post and deliver via callback
+    fun fetchComments(postId: Int, onResult: (List<PostComment>) -> Unit) {
+        viewModelScope.launch {
+            val res = socialRepository.getComments(postId)
+            if (res is com.example.voicevibe.domain.model.Resource.Success) {
+                onResult(res.data ?: emptyList())
+            } else {
+                onResult(emptyList())
+            }
+        }
     }
 
     private fun loadUserProfileData() {
@@ -172,6 +272,7 @@ class HomeViewModel @Inject constructor(
     fun refresh() {
         loadUserProfileData()
         loadDashboardData()
+        loadPosts()
     }
 }
 
@@ -190,7 +291,8 @@ data class HomeUiState(
     val totalPoints: Int = 0,
     val currentStreak: Int = 0,
     val badges: List<String> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    val posts: List<Post> = emptyList(),
 )
 
 /**

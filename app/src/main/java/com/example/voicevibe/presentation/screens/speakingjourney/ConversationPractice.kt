@@ -59,6 +59,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -66,6 +68,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -91,7 +94,7 @@ fun ConversationPracticeScreen(
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
     val topic = ui.topics.firstOrNull { it.id == topicId }
-
+    
     // Conversation source and role selection state
     val conversation = topic?.conversation ?: emptyList()
     var selectedRole by remember(conversation) { mutableStateOf<String?>(null) }
@@ -107,6 +110,13 @@ fun ConversationPracticeScreen(
     // Voice selections
     val maleVoiceName = "Puck"
     val femaleVoiceName = "Zephyr"
+
+    // Mode: choose => overlay, review => read-only, practice => speaking (one-way)
+    var mode by rememberSaveable { mutableStateOf("choose") } // "choose" | "review" | "practice"
+    var roleLocked by rememberSaveable { mutableStateOf(false) }
+    var sessionXp by rememberSaveable { mutableStateOf(0) }
+    var sessionScoreSum by rememberSaveable { mutableStateOf(0.0) }
+    var sessionTurns by rememberSaveable { mutableStateOf(0) }
 
     // Animated background
     val infiniteTransition = rememberInfiniteTransition(label = "convPracticeBG")
@@ -297,64 +307,144 @@ fun ConversationPracticeScreen(
                             modifier = Modifier.padding(vertical = 24.dp)
                         )
 
-                        // Role selector (choose A or B to speak as)
-                        ModernRoleSelector(
-                            selectedRole = selectedRole,
-                            onSelect = { role -> selectedRole = role },
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
-
-                        // Modern speech bubble
-                        current?.let { turn ->
-                            ModernSpeechBubble(
-                                text = turn.text,
-                                isSpeakerA = isSpeakerA,
-                                isPlaying = playing,
-                                primaryGradient = listOf(Color(0xFF667EEA), Color(0xFF764BA2), Color(0xFFF093FB)),
-                                secondaryGradient = listOf(Color(0xFF4FACFE), Color(0xFF00F2FE), Color(0xFF43E97B))
+                        // Role selector (only in Practice mode). Lock once chosen.
+                        if (mode == "practice") {
+                            ModernRoleSelector(
+                                selectedRole = selectedRole,
+                                onSelect = { role ->
+                                    if (!roleLocked) {
+                                        selectedRole = role
+                                        roleLocked = true
+                                    }
+                                },
+                                modifier = Modifier.padding(bottom = 12.dp),
+                                enabled = !roleLocked
                             )
                         }
 
-                        // Modern control panel
-                        ModernControlPanel(
-                            currentIndex = currentIndex,
-                            conversationSize = conversation.size,
-                            isPlaying = playing,
-                            onPrevious = {
-                                val newIdx = (currentIndex - 1).coerceAtLeast(0)
-                                playTurn(newIdx)
-                            },
-                            onPlay = { playTurn(currentIndex) },
-                            onPlayAll = { playAllFrom(0) },
-                            onStop = {
-                                resetPlaybackFlags()
-                                viewModel.stopPlayback()
-                            },
-                            onNext = {
-                                val newIdx = (currentIndex + 1).coerceAtMost(conversation.lastIndex)
-                                playTurn(newIdx)
-                            },
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
+                        // Modern speech bubble (hidden in Practice mode)
+                        if (mode != "practice") {
+                            current?.let { turn ->
+                                ModernSpeechBubble(
+                                    text = turn.text,
+                                    isSpeakerA = isSpeakerA,
+                                    isPlaying = playing,
+                                    primaryGradient = listOf(Color(0xFF667EEA), Color(0xFF764BA2), Color(0xFFF093FB)),
+                                    secondaryGradient = listOf(Color(0xFF4FACFE), Color(0xFF00F2FE), Color(0xFF43E97B))
+                                )
+                            }
+                        }
 
-                        // Recording panel
-                        val canRecord = selectedRole != null && (
-                            (isSpeakerA && selectedRole!!.equals("A", ignoreCase = true)) ||
-                                (!isSpeakerA && selectedRole!!.equals("B", ignoreCase = true))
+                        // Controls: Review shows full controls; Practice hides manual play/pause/next/prev
+                        if (mode != "practice") {
+                            ModernControlPanel(
+                                currentIndex = currentIndex,
+                                conversationSize = conversation.size,
+                                isPlaying = playing,
+                                onPrevious = {
+                                    val newIdx = (currentIndex - 1).coerceAtLeast(0)
+                                    playTurn(newIdx)
+                                },
+                                onPlay = { playTurn(currentIndex) },
+                                onPlayAll = { playAllFrom(0) },
+                                onStop = {
+                                    resetPlaybackFlags()
+                                    viewModel.stopPlayback()
+                                },
+                                onNext = {
+                                    val newIdx = (currentIndex + 1).coerceAtMost(conversation.lastIndex)
+                                    playTurn(newIdx)
+                                },
+                                modifier = Modifier.padding(bottom = 16.dp)
                             )
-                        ModernRecordPanel(
-                            recordingState = ui.conversationRecordingState,
-                            enabled = canRecord,
-                            onStart = { viewModel.startConversationRecording(context, currentIndex) },
-                            onStop = { viewModel.stopConversationRecording(context) },
-                            modifier = Modifier.padding(bottom = 32.dp)
-                        )
+                        }
+
+                        // Bottom area: Practice => recording panel; Review => Start practice button
+                        if (mode == "practice") {
+                            val canRecord = selectedRole != null && (
+                                (isSpeakerA && selectedRole!!.equals("A", ignoreCase = true)) ||
+                                    (!isSpeakerA && selectedRole!!.equals("B", ignoreCase = true))
+                                )
+                            ModernRecordPanel(
+                                recordingState = ui.conversationRecordingState,
+                                enabled = canRecord,
+                                onStart = { viewModel.startConversationRecording(context, currentIndex) },
+                                onStop = { viewModel.stopConversationRecording(context) },
+                                modifier = Modifier.padding(bottom = 32.dp)
+                            )
+                        } else {
+                            Button(
+                                onClick = {
+                                    // Reset to beginning and stop any playback before entering practice
+                                    resetPlaybackFlags()
+                                    viewModel.stopPlayback()
+                                    currentIndex = 0
+                                    // Reset session aggregates and role state
+                                    sessionXp = 0
+                                    sessionScoreSum = 0.0
+                                    sessionTurns = 0
+                                    selectedRole = null
+                                    roleLocked = false
+                                    mode = "practice"
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 32.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF667EEA))
+                            ) {
+                                Text("Start practice", color = Color.White, fontWeight = FontWeight.Bold)
+                            }
+                        }
                     }
                 }
             }
 
-            // Result dialog
+            // Mode selection overlay on first open
+            if (mode == "choose") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF111226)),
+                        shape = RoundedCornerShape(20.dp),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("Choose a mode", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            Text(
+                                "Review lets you read and listen. Practice lets you speak your lines.",
+                                color = Color.White.copy(alpha = 0.7f),
+                                textAlign = TextAlign.Center
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Button(
+                                    onClick = { mode = "review" },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4FACFE))
+                                ) { Text("Review", color = Color.White, fontWeight = FontWeight.SemiBold) }
+                                Button(
+                                    onClick = { mode = "practice" },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF43E97B))
+                                ) { Text("Practice", color = Color.White, fontWeight = FontWeight.SemiBold) }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Result dialog + aggregate session totals
             ui.conversationSubmissionResult?.let { result ->
+                LaunchedEffect(result) {
+                    sessionXp += result.xpAwarded ?: 0
+                    sessionScoreSum += result.accuracy
+                    sessionTurns += 1
+                }
                 ConversationResultDialog(
                     result = result,
                     onDismiss = { viewModel.dismissConversationResult() },
@@ -369,11 +459,66 @@ fun ConversationPracticeScreen(
                 )
             }
 
-            // Completion dialog
+            // Completion overlay/dialog
             if (ui.showConversationCongrats) {
-                ConversationCompletionDialog(
-                    onDismiss = { viewModel.dismissConversationCongrats() }
-                )
+                if (mode == "practice") {
+                    val avg = if (sessionTurns > 0) sessionScoreSum / sessionTurns.toDouble() else 0.0
+                    PracticeCongratsOverlay(
+                        averageScore = avg,
+                        xp = sessionXp,
+                        onDismiss = {
+                            viewModel.dismissConversationCongrats()
+                            // Unlock role switching for a fresh run; reset counters and index
+                            roleLocked = false
+                            selectedRole = null
+                            currentIndex = 0
+                            sessionXp = 0
+                            sessionScoreSum = 0.0
+                            sessionTurns = 0
+                        }
+                    )
+                } else {
+                    ConversationCompletionDialog(
+                        onDismiss = { viewModel.dismissConversationCongrats() }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PracticeMinimalControls(
+    isPlaying: Boolean,
+    onPlay: () -> Unit,
+    onStop: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Play button
+        Surface(
+            onClick = onPlay,
+            shape = CircleShape,
+            color = Color.Transparent
+        ) {
+            Box(modifier = Modifier.size(72.dp), contentAlignment = Alignment.Center) {
+                ModernPlayButton(isPlaying)
+            }
+        }
+
+        // Stop button
+        Surface(
+            onClick = onStop,
+            shape = CircleShape,
+            color = Color.White.copy(alpha = 0.08f),
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+        ) {
+            Box(modifier = Modifier.size(56.dp), contentAlignment = Alignment.Center) {
+                Icon(Icons.Default.Stop, contentDescription = "Stop", tint = Color.White)
             }
         }
     }
@@ -385,7 +530,8 @@ fun ConversationPracticeScreen(
 fun ModernRoleSelector(
     selectedRole: String?,
     onSelect: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -393,16 +539,18 @@ fun ModernRoleSelector(
         verticalAlignment = Alignment.CenterVertically
     ) {
         RoleChip(
-            label = "Speak as A (Alex)",
+            label = "Speak as A",
             selected = selectedRole?.equals("A", ignoreCase = true) == true,
             onClick = { onSelect("A") },
-            leadingColor = Color(0xFF667EEA)
+            leadingColor = Color(0xFF667EEA),
+            enabled = enabled
         )
         RoleChip(
-            label = "Speak as B (Sarah)",
+            label = "Speak as B",
             selected = selectedRole?.equals("B", ignoreCase = true) == true,
             onClick = { onSelect("B") },
-            leadingColor = Color(0xFF4FACFE)
+            leadingColor = Color(0xFF4FACFE),
+            enabled = enabled
         )
     }
 }
@@ -412,15 +560,16 @@ private fun RoleChip(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
-    leadingColor: Color
+    leadingColor: Color,
+    enabled: Boolean = true
 ) {
     Surface(
-        onClick = onClick,
+        onClick = { if (enabled) onClick() },
         shape = RoundedCornerShape(20.dp),
-        color = if (selected) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.06f),
+        color = if (!enabled) Color.White.copy(alpha = 0.04f) else if (selected) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.06f),
         border = BorderStroke(
             1.dp,
-            if (selected) leadingColor else Color.White.copy(alpha = 0.12f)
+            if (!enabled) Color.White.copy(alpha = 0.06f) else if (selected) leadingColor else Color.White.copy(alpha = 0.12f)
         )
     ) {
         Row(
@@ -431,11 +580,11 @@ private fun RoleChip(
             Box(
                 modifier = Modifier
                     .size(10.dp)
-                    .background(leadingColor, CircleShape)
+                    .background(if (!enabled) Color.White.copy(alpha = 0.2f) else leadingColor, CircleShape)
             )
             Text(
                 text = label,
-                color = Color.White,
+                color = if (!enabled) Color.White.copy(alpha = 0.6f) else Color.White,
                 fontSize = 13.sp,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
             )
@@ -551,6 +700,56 @@ fun ConversationCompletionDialog(
             Text("Great job! You've completed all turns for this conversation.")
         }
     )
+}
+
+@Composable
+private fun PracticeCongratsOverlay(
+    averageScore: Double,
+    xp: Int,
+    onDismiss: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF111226)),
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Great job! 🎉", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                Text(
+                    text = "Practice session complete",
+                    color = Color.White.copy(alpha = 0.8f)
+                )
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Avg Score", color = Color.White.copy(alpha = 0.7f))
+                        Text("${"%.1f".format(averageScore)}%", color = Color(0xFF06FFA5), fontWeight = FontWeight.Bold)
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("XP", color = Color.White.copy(alpha = 0.7f))
+                        Text("+$xp", color = Color(0xFFFFBE0B), fontWeight = FontWeight.Bold)
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF667EEA))
+                ) {
+                    Text("Finish", color = Color.White, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)

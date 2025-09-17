@@ -206,8 +206,8 @@ fun PracticeCardsSection(
     val practiceItems = listOf(
         // Conversation Practice at the top
         PracticeItem(
-            title = "Conversation Practice",
-            description = "Take turns in real dialogues",
+            title = "Conversation",
+            description = "Engage in dialogues",
             icon = Icons.Default.School,
             gradient = listOf(Color(0xFFFF006E), Color(0xFF8338EC)),
             score = topic?.conversationScore ?: 0,
@@ -430,7 +430,7 @@ fun ScoreIndicator(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (score > 0) "$score" else "—",
+                    text = if (score > 0) "$score" else "0",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (score > 0) color else Color.White.copy(alpha = 0.5f)
@@ -604,7 +604,7 @@ fun ModernPracticeCard(
                                 }
                             } else {
                                 Text(
-                                    text = "—",
+                                    text = "0",
                                     fontSize = 16.sp,
                                     color = Color.White.copy(alpha = 0.5f),
                                     modifier = Modifier.size(40.dp),

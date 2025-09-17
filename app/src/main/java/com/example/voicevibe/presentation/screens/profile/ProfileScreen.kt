@@ -61,6 +61,8 @@ fun ProfileScreen(
     val lessonsCompleted by viewModel.lessonsCompleted
     val recordingsCount by viewModel.recordingsCount
     val avgScore by viewModel.avgScore
+    val followersCount by viewModel.followersCount
+    val followingCount by viewModel.followingCount
     val recentAchievements by viewModel.recentAchievements
     val recentActivities by viewModel.recentActivities
     val avatarUrl by viewModel.avatarUrl
@@ -152,7 +154,9 @@ fun ProfileScreen(
                         practiceHours = practiceHours,
                         lessonsCompleted = lessonsCompleted,
                         recordingsCount = recordingsCount,
-                        avgScore = avgScore
+                        avgScore = avgScore,
+                        followersCount = followersCount,
+                        followingCount = followingCount
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     RecentAchievements(
@@ -343,7 +347,9 @@ fun QuickStatsGrid(
     practiceHours: Float,
     lessonsCompleted: Int,
     recordingsCount: Int,
-    avgScore: Float
+    avgScore: Float,
+    followersCount: Int,
+    followingCount: Int
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -401,6 +407,28 @@ fun QuickStatsGrid(
                     label = "Avg Score",
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                StatCard(
+                    icon = Icons.Default.Group,
+                    value = followersCount.toString(),
+                    label = "Followers",
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                StatCard(
+                    icon = Icons.Default.Person,
+                    value = followingCount.toString(),
+                    label = "Following",
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.secondary
                 )
             }
         }

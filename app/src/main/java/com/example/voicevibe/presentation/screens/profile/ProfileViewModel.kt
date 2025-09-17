@@ -49,6 +49,13 @@ class ProfileViewModel @Inject constructor(
     private val _avgScore = mutableStateOf(0f)
     val avgScore: State<Float> = _avgScore
 
+    // Social counts
+    private val _followersCount = mutableStateOf(0)
+    val followersCount: State<Int> = _followersCount
+
+    private val _followingCount = mutableStateOf(0)
+    val followingCount: State<Int> = _followingCount
+
     // Avatar and initials state
     private val _avatarUrl = mutableStateOf<String?>(null)
     val avatarUrl: State<String?> = _avatarUrl
@@ -144,6 +151,10 @@ class ProfileViewModel @Inject constructor(
                 _lessonsCompleted.value = userProfile.lessonsCompleted ?: 0
                 _recordingsCount.value = userProfile.recordingsCount ?: 0
                 _avgScore.value = userProfile.avgScore ?: 0f
+
+                // Social counts
+                _followersCount.value = userProfile.followersCount ?: 0
+                _followingCount.value = userProfile.followingCount ?: 0
 
                 // Update Recent Achievements
                 _recentAchievements.value = userProfile.recentAchievements ?: emptyList()

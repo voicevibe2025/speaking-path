@@ -125,6 +125,8 @@ fun HomeScreen(
             topBar = {
                 EducationalTopBar(
                     title = "VozVibe",
+                    avatarUrl = uiState.avatarUrl,
+                    userInitials = uiState.userInitials ?: "VV",
                     onNavigationIconClick = onNavigateToProfile
                 )
             }
@@ -228,6 +230,8 @@ fun HomeScreen(
 @Composable
 private fun EducationalTopBar(
     title: String,
+    avatarUrl: String?,
+    userInitials: String,
     onNavigationIconClick: () -> Unit
 ) {
     Surface(
@@ -262,11 +266,29 @@ private fun EducationalTopBar(
             }
             
             IconButton(onClick = onNavigationIconClick) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Profile",
-                    tint = EduSecondary
-                )
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(EduSecondary.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (avatarUrl != null) {
+                        SubcomposeAsyncImage(
+                            model = avatarUrl,
+                            contentDescription = "Profile Picture",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Text(
+                            text = userInitials,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = EduSecondary
+                        )
+                    }
+                }
             }
         }
     }

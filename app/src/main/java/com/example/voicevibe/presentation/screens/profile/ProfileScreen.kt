@@ -508,9 +508,12 @@ fun RecentAchievements(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Display real achievements or placeholder message
+            // Display last two achievements (most recent first) or placeholder message
             if (achievements.isNotEmpty()) {
-                achievements.forEach { achievement ->
+                val latestTwo = achievements
+                    .sortedByDescending { it.earnedAt }
+                    .take(2)
+                latestTwo.forEach { achievement ->
                     AchievementItem(
                         icon = getIconForCategory(achievement.badge.category),
                         title = achievement.badge.name,
@@ -733,7 +736,7 @@ fun SkillProgressItem(skill: String, progress: Float, color: Color) {
         ) {
             Text(skill, fontSize = 14.sp)
             Text(
-                "${(progress * 100).toInt()}%",
+                "${(progress * 100).toInt()}",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = color

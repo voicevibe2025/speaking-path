@@ -168,9 +168,12 @@ class ProfileViewModel @Inject constructor(
                 _targetLanguage.value = formatTargetLanguage(userProfile.targetLanguage)
 
                 // Update Skill Progress (convert from 0-100 to 0.0-1.0 for progress bars)
+                // Speaking: use backend-provided speaking_score (aggregated fluency)
                 _speakingScore.value = (userProfile.speakingScore ?: 0f) / 100f
-                _listeningScore.value = (userProfile.listeningScore ?: 0f) / 100f
-                _grammarScore.value = (userProfile.grammarScore ?: 0f) / 100f
+                // Listening and Grammar currently not implemented -> force 0
+                _listeningScore.value = 0f
+                _grammarScore.value = 0f
+                // Vocabulary and Pronunciation wired to backend values
                 _vocabularyScore.value = (userProfile.vocabularyScore ?: 0f) / 100f
                 _pronunciationScore.value = (userProfile.pronunciationScore ?: 0f) / 100f
 

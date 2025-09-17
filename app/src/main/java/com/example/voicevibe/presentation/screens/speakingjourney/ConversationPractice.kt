@@ -201,15 +201,15 @@ fun ConversationPracticeScreen(
                             Icons.Default.RecordVoiceOver,
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(28.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = topic?.title ?: "Conversation Practice",
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            fontSize = 20.sp,
+                            fontSize = 18.sp,
                             color = Color.White
                         )
                     }
@@ -223,7 +223,8 @@ fun ConversationPracticeScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color.White
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 },
@@ -289,7 +290,7 @@ fun ConversationPracticeScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 20.dp),
+                            .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -297,14 +298,14 @@ fun ConversationPracticeScreen(
                         ConversationProgress(
                             currentIndex = currentIndex,
                             totalSteps = conversation.size,
-                            modifier = Modifier.padding(top = 16.dp)
+                            modifier = Modifier.padding(top = 12.dp)
                         )
 
                         // Speakers section with modern avatars
                         ModernSpeakersSection(
                             isSpeakerA = isSpeakerA,
                             isPlaying = playing,
-                            modifier = Modifier.padding(vertical = 24.dp)
+                            modifier = Modifier.padding(vertical = 16.dp)
                         )
 
                         // Role selector (only in Practice mode). Lock once chosen.
@@ -317,7 +318,7 @@ fun ConversationPracticeScreen(
                                         roleLocked = true
                                     }
                                 },
-                                modifier = Modifier.padding(bottom = 12.dp),
+                                modifier = Modifier.padding(bottom = 16.dp),
                                 enabled = !roleLocked
                             )
                         }
@@ -334,6 +335,8 @@ fun ConversationPracticeScreen(
                                 )
                             }
                         }
+
+                        Spacer(modifier = Modifier.weight(1f))
 
                         // Controls: Review shows full controls; Practice hides manual play/pause/next/prev
                         if (mode != "practice") {
@@ -355,7 +358,7 @@ fun ConversationPracticeScreen(
                                     val newIdx = (currentIndex + 1).coerceAtMost(conversation.lastIndex)
                                     playTurn(newIdx)
                                 },
-                                modifier = Modifier.padding(bottom = 16.dp)
+                                modifier = Modifier.padding(bottom = 20.dp)
                             )
                         }
 
@@ -370,7 +373,7 @@ fun ConversationPracticeScreen(
                                 enabled = canRecord,
                                 onStart = { viewModel.startConversationRecording(context, currentIndex) },
                                 onStop = { viewModel.stopConversationRecording(context) },
-                                modifier = Modifier.padding(bottom = 32.dp)
+                                modifier = Modifier.padding(bottom = 24.dp)
                             )
                         } else {
                             Button(
@@ -389,10 +392,18 @@ fun ConversationPracticeScreen(
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(bottom = 32.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF667EEA))
+                                    .height(56.dp)
+                                    .padding(horizontal = 48.dp)
+                                    .padding(bottom = 24.dp)
+                                    .shadow(8.dp, RoundedCornerShape(28.dp)),
+                                shape = RoundedCornerShape(28.dp)
                             ) {
-                                Text("Start practice", color = Color.White, fontWeight = FontWeight.Bold)
+                                Text(
+                                    "Start Practice", 
+                                    color = Color.White, 
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
                             }
                         }
                     }
@@ -404,34 +415,70 @@ fun ConversationPracticeScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.5f)),
+                        .background(Color.Black.copy(alpha = 0.7f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF111226)),
-                        shape = RoundedCornerShape(20.dp),
-                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1B2E)),
+                        shape = RoundedCornerShape(24.dp),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f)),
+                        modifier = Modifier
+                            .padding(horizontal = 32.dp)
+                            .shadow(16.dp, RoundedCornerShape(24.dp))
                     ) {
                         Column(
-                            modifier = Modifier.padding(24.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.padding(32.dp),
+                            verticalArrangement = Arrangement.spacedBy(20.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text("Choose a mode", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                            Text(
-                                "Review lets you read and listen. Practice lets you speak your lines.",
-                                color = Color.White.copy(alpha = 0.7f),
-                                textAlign = TextAlign.Center
+                            Icon(
+                                Icons.Default.RecordVoiceOver,
+                                contentDescription = null,
+                                tint = Color(0xFF667EEA),
+                                modifier = Modifier.size(48.dp)
                             )
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text(
+                                "Choose Your Mode", 
+                                color = Color.White, 
+                                fontWeight = FontWeight.Bold, 
+                                fontSize = 20.sp
+                            )
+                            Text(
+                                "Review mode lets you read and listen.\nPractice mode lets you speak your lines.",
+                                color = Color.White.copy(alpha = 0.8f),
+                                textAlign = TextAlign.Center,
+                                fontSize = 14.sp,
+                                lineHeight = 20.sp
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
                                 Button(
                                     onClick = { mode = "review" },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4FACFE))
-                                ) { Text("Review", color = Color.White, fontWeight = FontWeight.SemiBold) }
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF4FACFE)
+                                    ),
+                                    shape = RoundedCornerShape(24.dp)
+                                ) { 
+                                    Text("Review", color = Color.White, fontWeight = FontWeight.SemiBold) 
+                                }
                                 Button(
                                     onClick = { mode = "practice" },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF43E97B))
-                                ) { Text("Practice", color = Color.White, fontWeight = FontWeight.SemiBold) }
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF43E97B)
+                                    ),
+                                    shape = RoundedCornerShape(24.dp)
+                                ) { 
+                                    Text("Practice", color = Color.White, fontWeight = FontWeight.SemiBold) 
+                                }
                             }
                         }
                     }
@@ -496,29 +543,48 @@ private fun PracticeMinimalControls(
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Play button
         Surface(
             onClick = onPlay,
             shape = CircleShape,
-            color = Color.Transparent
+            color = Color(0xFF667EEA).copy(alpha = 0.15f),
+            border = BorderStroke(2.dp, Color(0xFF667EEA))
         ) {
-            Box(modifier = Modifier.size(72.dp), contentAlignment = Alignment.Center) {
-                ModernPlayButton(isPlaying)
+            Box(
+                modifier = Modifier.size(64.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Rounded.PlayArrow,
+                    contentDescription = "Play",
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
             }
         }
+
+        Spacer(modifier = Modifier.width(24.dp))
 
         // Stop button
         Surface(
             onClick = onStop,
             shape = CircleShape,
-            color = Color.White.copy(alpha = 0.08f),
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+            color = Color.White.copy(alpha = 0.1f),
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
         ) {
-            Box(modifier = Modifier.size(56.dp), contentAlignment = Alignment.Center) {
-                Icon(Icons.Default.Stop, contentDescription = "Stop", tint = Color.White)
+            Box(
+                modifier = Modifier.size(56.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Stop,
+                    contentDescription = "Stop",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }
@@ -533,25 +599,38 @@ fun ModernRoleSelector(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
-    Row(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        RoleChip(
-            label = "Speak as A",
-            selected = selectedRole?.equals("A", ignoreCase = true) == true,
-            onClick = { onSelect("A") },
-            leadingColor = Color(0xFF667EEA),
-            enabled = enabled
+        Text(
+            text = if (enabled) "Select Your Role" else "Role Selected",
+            color = Color.White.copy(alpha = 0.9f),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
         )
-        RoleChip(
-            label = "Speak as B",
-            selected = selectedRole?.equals("B", ignoreCase = true) == true,
-            onClick = { onSelect("B") },
-            leadingColor = Color(0xFF4FACFE),
-            enabled = enabled
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RoleChip(
+                label = "Speaker A",
+                selected = selectedRole?.equals("A", ignoreCase = true) == true,
+                onClick = { onSelect("A") },
+                leadingColor = Color(0xFF667EEA),
+                enabled = enabled
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            RoleChip(
+                label = "Speaker B",
+                selected = selectedRole?.equals("B", ignoreCase = true) == true,
+                onClick = { onSelect("B") },
+                leadingColor = Color(0xFF4FACFE),
+                enabled = enabled
+            )
+        }
     }
 }
 
@@ -565,27 +644,44 @@ private fun RoleChip(
 ) {
     Surface(
         onClick = { if (enabled) onClick() },
-        shape = RoundedCornerShape(20.dp),
-        color = if (!enabled) Color.White.copy(alpha = 0.04f) else if (selected) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.06f),
+        shape = RoundedCornerShape(24.dp),
+        color = when {
+            !enabled -> Color.White.copy(alpha = 0.05f)
+            selected -> leadingColor.copy(alpha = 0.2f)
+            else -> Color.White.copy(alpha = 0.08f)
+        },
         border = BorderStroke(
-            1.dp,
-            if (!enabled) Color.White.copy(alpha = 0.06f) else if (selected) leadingColor else Color.White.copy(alpha = 0.12f)
-        )
+            width = if (selected) 2.dp else 1.dp,
+            color = when {
+                !enabled -> Color.White.copy(alpha = 0.1f)
+                selected -> leadingColor
+                else -> Color.White.copy(alpha = 0.2f)
+            }
+        ),
+        modifier = Modifier
+            .shadow(
+                elevation = if (selected) 8.dp else 0.dp,
+                shape = RoundedCornerShape(24.dp),
+                spotColor = leadingColor.copy(alpha = 0.3f)
+            )
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .size(10.dp)
-                    .background(if (!enabled) Color.White.copy(alpha = 0.2f) else leadingColor, CircleShape)
+                    .size(12.dp)
+                    .background(
+                        color = if (!enabled) Color.White.copy(alpha = 0.3f) else leadingColor,
+                        shape = CircleShape
+                    )
             )
             Text(
                 text = label,
-                color = if (!enabled) Color.White.copy(alpha = 0.6f) else Color.White,
-                fontSize = 13.sp,
+                color = if (!enabled) Color.White.copy(alpha = 0.5f) else Color.White,
+                fontSize = 14.sp,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
             )
         }
@@ -602,48 +698,76 @@ fun ModernRecordPanel(
 ) {
     val isRecording = recordingState == PhraseRecordingState.RECORDING
     val isProcessing = recordingState == PhraseRecordingState.PROCESSING
+    
     Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(32.dp),
-        color = Color.White.copy(alpha = 0.08f),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+        modifier = modifier.fillMaxWidth().padding(horizontal = 24.dp),
+        shape = RoundedCornerShape(28.dp),
+        color = Color.White.copy(alpha = 0.1f),
+        border = BorderStroke(
+            width = 1.dp,
+            color = when {
+                isRecording -> Color(0xFFE53935)
+                enabled -> Color.White.copy(alpha = 0.2f)
+                else -> Color.White.copy(alpha = 0.1f)
+            }
+        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp, horizontal = 24.dp),
+                .padding(vertical = 20.dp, horizontal = 28.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Record your line",
+                    text = "Record Your Line",
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp
                 )
-                val hint = if (!enabled) "Select the matching role for this line" else if (isProcessing) "Please wait..." else "Tap to ${if (isRecording) "stop" else "start"}"
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = hint,
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 12.sp
+                    text = when {
+                        !enabled -> "Select your role first"
+                        isProcessing -> "Processing..."
+                        isRecording -> "Recording now..."
+                        else -> "Tap microphone to start"
+                    },
+                    color = Color.White.copy(alpha = 0.6f),
+                    fontSize = 13.sp
                 )
             }
-            Spacer(Modifier.width(12.dp))
-            Surface(
-                onClick = {
-                    if (!enabled || isProcessing) return@Surface
-                    if (isRecording) onStop() else onStart()
-                },
-                modifier = Modifier.size(56.dp),
-                shape = CircleShape,
-                color = if (!enabled || isProcessing) Color.White.copy(alpha = 0.05f) else Color(0xFFE53935)
+            
+            Box(
+                modifier = Modifier.padding(start = 16.dp)
             ) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    if (isRecording) {
-                        Icon(Icons.Default.Stop, contentDescription = "Stop", tint = Color.White)
-                    } else {
-                        Icon(Icons.Default.Mic, contentDescription = "Record", tint = Color.White)
+                Surface(
+                    onClick = {
+                        if (!enabled || isProcessing) return@Surface
+                        if (isRecording) onStop() else onStart()
+                    },
+                    modifier = Modifier.size(60.dp),
+                    shape = CircleShape,
+                    color = when {
+                        !enabled || isProcessing -> Color.White.copy(alpha = 0.05f)
+                        isRecording -> Color(0xFFE53935)
+                        else -> Color(0xFF667EEA)
+                    },
+                    border = if (isRecording) {
+                        BorderStroke(2.dp, Color(0xFFFF6B6B))
+                    } else null
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Icon(
+                            imageVector = if (isRecording) Icons.Default.Stop else Icons.Default.Mic,
+                            contentDescription = if (isRecording) "Stop" else "Record",
+                            tint = Color.White,
+                            modifier = Modifier.size(28.dp)
+                        )
                     }
                 }
             }
@@ -659,27 +783,79 @@ fun ConversationResultDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = Color(0xFF1A1B2E),
+        shape = RoundedCornerShape(20.dp),
         confirmButton = {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                TextButton(onClick = onDismiss) { Text("Dismiss") }
-                TextButton(onClick = onGoNext) { Text(if (result.nextTurnIndex != null) "Next" else "OK") }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text("Dismiss", color = Color.White.copy(alpha = 0.7f))
+                }
+                TextButton(onClick = onGoNext) {
+                    Text(
+                        if (result.nextTurnIndex != null) "Next" else "OK",
+                        color = Color(0xFF667EEA),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         },
-        title = { Text("Submission Result") },
+        title = {
+            Text(
+                "Submission Result",
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        },
         text = {
-            Column {
-                Text("Accuracy: ${"%.1f".format(result.accuracy)}%")
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Accuracy", color = Color.White.copy(alpha = 0.7f))
+                    Text(
+                        "${"%.1f".format(result.accuracy)}%",
+                        color = Color(0xFF06FFA5),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
                 if ((result.xpAwarded ?: 0) > 0) {
-                    Spacer(Modifier.height(6.dp))
-                    Text("+${result.xpAwarded} XP", color = Color(0xFF06FFA5), fontWeight = FontWeight.SemiBold)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("XP Earned", color = Color.White.copy(alpha = 0.7f))
+                        Text(
+                            "+${result.xpAwarded}",
+                            color = Color(0xFFFFBE0B),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
                 if (result.feedback?.isNotBlank() == true) {
-                    Spacer(Modifier.height(6.dp))
-                    Text(result.feedback!!)
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color.White.copy(alpha = 0.05f),
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        Text(
+                            result.feedback!!,
+                            color = Color.White.copy(alpha = 0.9f),
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
                 }
                 if (result.transcription.isNotBlank()) {
-                    Spacer(Modifier.height(6.dp))
-                    Text("Heard: \"${result.transcription}\"")
+                    Text(
+                        "You said: \"${result.transcription}\"",
+                        color = Color.White.copy(alpha = 0.6f),
+                        fontSize = 12.sp,
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                    )
                 }
             }
         }
@@ -692,12 +868,36 @@ fun ConversationCompletionDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = Color(0xFF1A1B2E),
+        shape = RoundedCornerShape(20.dp),
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Awesome!") }
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            ) {
+                Text(
+                    "Awesome!",
+                    color = Color(0xFF667EEA),
+                    fontWeight = FontWeight.Bold
+                )
+            }
         },
-        title = { Text("Conversation Complete 🎉") },
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "Conversation Complete",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("🎉", fontSize = 20.sp)
+            }
+        },
         text = {
-            Text("Great job! You've completed all turns for this conversation.")
+            Text(
+                "Great job! You've completed all turns for this conversation.",
+                color = Color.White.copy(alpha = 0.9f)
+            )
         }
     )
 }
@@ -711,41 +911,103 @@ private fun PracticeCongratsOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.5f)),
+            .background(Color.Black.copy(alpha = 0.7f)),
         contentAlignment = Alignment.Center
     ) {
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF111226)),
-            shape = RoundedCornerShape(20.dp),
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1B2E)),
+            shape = RoundedCornerShape(24.dp),
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f)),
+            modifier = Modifier
+                .padding(horizontal = 32.dp)
+                .shadow(16.dp, RoundedCornerShape(24.dp))
         ) {
             Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(32.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Great job! 🎉", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                Text("🎉", fontSize = 48.sp)
+                Text(
+                    "Great Job!",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
+                )
                 Text(
                     text = "Practice session complete",
-                    color = Color.White.copy(alpha = 0.8f)
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = 14.sp
                 )
-                Spacer(Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Avg Score", color = Color.White.copy(alpha = 0.7f))
-                        Text("${"%.1f".format(averageScore)}%", color = Color(0xFF06FFA5), fontWeight = FontWeight.Bold)
-                    }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("XP", color = Color.White.copy(alpha = 0.7f))
-                        Text("+$xp", color = Color(0xFFFFBE0B), fontWeight = FontWeight.Bold)
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.White.copy(alpha = 0.05f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(20.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                "Average Score",
+                                color = Color.White.copy(alpha = 0.6f),
+                                fontSize = 12.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                "${"%.1f".format(averageScore)}%",
+                                color = Color(0xFF06FFA5),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp
+                            )
+                        }
+                        
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .height(40.dp)
+                                .background(Color.White.copy(alpha = 0.1f))
+                        )
+                        
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                "XP Earned",
+                                color = Color.White.copy(alpha = 0.6f),
+                                fontSize = 12.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                "+$xp",
+                                color = Color(0xFFFFBE0B),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp
+                            )
+                        }
                     }
                 }
-                Spacer(Modifier.height(8.dp))
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
                 Button(
                     onClick = onDismiss,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF667EEA))
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF667EEA)
+                    ),
+                    shape = RoundedCornerShape(24.dp)
                 ) {
-                    Text("Finish", color = Color.White, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "Continue",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -853,15 +1115,15 @@ fun TopicConversationScreen(
                             Icons.Default.RecordVoiceOver,
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(28.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = topic?.title ?: "Conversation",
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            fontSize = 20.sp,
+                            fontSize = 18.sp,
                             color = Color.White
                         )
                     }
@@ -875,7 +1137,8 @@ fun TopicConversationScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color.White
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 },
@@ -916,20 +1179,20 @@ fun TopicConversationScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 20.dp),
+                            .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ConversationProgress(
                             currentIndex = currentIndex,
                             totalSteps = conversation.size,
-                            modifier = Modifier.padding(top = 16.dp)
+                            modifier = Modifier.padding(top = 12.dp)
                         )
 
                         ModernSpeakersSection(
                             isSpeakerA = isSpeakerA,
                             isPlaying = playing,
-                            modifier = Modifier.padding(vertical = 24.dp)
+                            modifier = Modifier.padding(vertical = 16.dp)
                         )
 
                         current?.let { turn ->
@@ -941,6 +1204,8 @@ fun TopicConversationScreen(
                                 secondaryGradient = listOf(Color(0xFF4FACFE), Color(0xFF00F2FE), Color(0xFF43E97B))
                             )
                         }
+
+                        Spacer(modifier = Modifier.weight(1f))
 
                         ModernControlPanel(
                             currentIndex = currentIndex,
@@ -960,7 +1225,7 @@ fun TopicConversationScreen(
                                 val newIdx = (currentIndex + 1).coerceAtMost(conversation.lastIndex)
                                 playTurn(newIdx)
                             },
-                            modifier = Modifier.padding(bottom = 32.dp)
+                            modifier = Modifier.padding(bottom = 24.dp)
                         )
                     }
                 }

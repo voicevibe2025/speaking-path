@@ -204,6 +204,16 @@ fun PracticeCardsSection(
     val practiceScores = topic?.practiceScores
     
     val practiceItems = listOf(
+        // Conversation Practice at the top
+        PracticeItem(
+            title = "Conversation Practice",
+            description = "Take turns in real dialogues",
+            icon = Icons.Default.School,
+            gradient = listOf(Color(0xFFFF006E), Color(0xFF8338EC)),
+            score = topic?.conversationScore ?: 0,
+            maxScore = 100,
+            onClick = { onNavigateToConversation(topicId) }
+        ),
         PracticeItem(
             title = "Pronunciation",
             description = "Perfect your accent",
@@ -248,15 +258,6 @@ fun PracticeCardsSection(
             score = 0, // Not implemented yet
             maxScore = 100,
             onClick = { onNavigateToGrammarPractice(topicId) }
-        ),
-        PracticeItem(
-            title = "Conversation",
-            description = "Real dialogues",
-            icon = Icons.Default.School,
-            gradient = listOf(Color(0xFFFF006E), Color(0xFF8338EC)),
-            score = 0, // Not implemented yet
-            maxScore = 100,
-            onClick = { onNavigateToConversation(topicId) }
         )
     )
     

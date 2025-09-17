@@ -193,6 +193,8 @@ data class Topic(
     val fluencyProgress: FluencyProgress?,
     val phraseProgress: PhraseProgress?,
     val practiceScores: PracticeScores?,
+    val conversationScore: Int? = null,
+    val conversationCompleted: Boolean? = null,
     val unlocked: Boolean,
     val completed: Boolean
 )
@@ -212,6 +214,10 @@ data class SpeakingJourneyUiState(
     val showWelcome: Boolean = false,
     val phraseRecordingState: PhraseRecordingState = PhraseRecordingState.IDLE,
     val phraseSubmissionResult: PhraseSubmissionResultUi? = null,
+    val conversationRecordingState: PhraseRecordingState = PhraseRecordingState.IDLE,
+    val conversationSubmissionResult: ConversationSubmissionResultUi? = null,
+    val showConversationCongrats: Boolean = false,
+    val conversationTurnScores: Map<Int, Int> = emptyMap(),
     val unlockedTopicInfo: UnlockedTopicInfo? = null,
     val showPronunciationCongrats: Boolean = false,
     val isLoading: Boolean = false,
@@ -236,6 +242,16 @@ data class PhraseSubmissionResultUi(
     val transcription: String,
     val feedback: String,
     val nextPhraseIndex: Int?,
+    val topicCompleted: Boolean,
+    val xpAwarded: Int = 0
+)
+
+data class ConversationSubmissionResultUi(
+    val success: Boolean,
+    val accuracy: Float,
+    val transcription: String,
+    val feedback: String?,
+    val nextTurnIndex: Int?,
     val topicCompleted: Boolean,
     val xpAwarded: Int = 0
 )

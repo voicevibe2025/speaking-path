@@ -32,6 +32,15 @@ interface SpeakingJourneyApiService {
         @Part audio: MultipartBody.Part
     ): Response<PhraseSubmissionResultDto>
 
+    @Multipart
+    @POST("speaking/topics/{topicId}/conversation/submit")
+    suspend fun submitConversationTurn(
+        @Path("topicId") topicId: String,
+        @Part("turnIndex") turnIndex: Int,
+        @Part audio: MultipartBody.Part,
+        @Part("role") role: String? = null
+    ): Response<ConversationSubmissionResultDto>
+
     @GET("speaking/topics/{topicId}/recordings")
     suspend fun getUserPhraseRecordings(
         @Path("topicId") topicId: String,
@@ -114,6 +123,8 @@ data class SpeakingTopicDto(
     val fluencyProgress: FluencyProgressDto? = null,
     val phraseProgress: PhraseProgressDto? = null,
     val practiceScores: PracticeScoresDto? = null,
+    val conversationScore: Int? = null,
+    val conversationCompleted: Boolean? = null,
     val unlocked: Boolean,
     val completed: Boolean
 )
@@ -139,6 +150,18 @@ data class PhraseSubmissionResultDto(
     val transcription: String,
     val feedback: String,
     val nextPhraseIndex: Int?,
+    val topicCompleted: Boolean,
+    val xpAwarded: Int = 0,
+    val recordingId: String? = null,
+    val audioUrl: String? = null
+)
+
+data class ConversationSubmissionResultDto(
+    val success: Boolean,
+    val accuracy: Float,
+    val transcription: String,
+    val feedback: String?,
+    val nextTurnIndex: Int?,
     val topicCompleted: Boolean,
     val xpAwarded: Int = 0,
     val recordingId: String? = null,

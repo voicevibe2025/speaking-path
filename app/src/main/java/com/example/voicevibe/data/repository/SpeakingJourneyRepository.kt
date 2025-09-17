@@ -17,6 +17,7 @@ import com.example.voicevibe.data.remote.api.SubmitVocabularyAnswerRequestDto
 import com.example.voicevibe.data.remote.api.SubmitVocabularyAnswerResponseDto
 import com.example.voicevibe.data.remote.api.CompleteVocabularyPracticeRequestDto
 import com.example.voicevibe.data.remote.api.CompleteVocabularyPracticeResponseDto
+import com.example.voicevibe.data.remote.api.ConversationSubmissionResultDto
 import okhttp3.MultipartBody
 import javax.inject.Inject
 
@@ -27,8 +28,25 @@ class SpeakingJourneyRepository @Inject constructor(
         return try {
             val res = api.getTopics()
             if (res.isSuccessful) {
-                Result.success(res.body() ?: SpeakingTopicsResponse(emptyList(), 
-                    UserProfileDto(true, null, null)))
+                Result.success(res.body() ?: SpeakingTopicsResponse(emptyList(), UserProfileDto(true, null, null)))
+            } else {
+                Result.failure(Exception("HTTP ${res.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    suspend fun submitConversationTurn(
+        topicId: String,
+        turnIndex: Int,
+        audioFile: MultipartBody.Part,
+        role: String? = null
+    ): Result<ConversationSubmissionResultDto> {
+        return try {
+            val res = api.submitConversationTurn(topicId, turnIndex, audioFile, role)
+            if (res.isSuccessful) {
+                Result.success(res.body() ?: throw Exception("Empty response"))
             } else {
                 Result.failure(Exception("HTTP ${res.code()}"))
             }

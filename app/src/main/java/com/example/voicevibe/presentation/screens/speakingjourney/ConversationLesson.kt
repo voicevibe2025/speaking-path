@@ -29,7 +29,7 @@ import com.example.voicevibe.R
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun ConversationPracticeScreen(
+fun ConversationLessonPracticePreview(
     topicId: String,
     onNavigateBack: () -> Unit
 ) {
@@ -37,9 +37,18 @@ fun ConversationPracticeScreen(
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
     val topic = ui.topics.firstOrNull { it.id == topicId }
+ 
+
+    // Conversation source and role selection state
+    val conversation = topic?.conversation ?: emptyList()
+    var selectedRole by remember(conversation) { mutableStateOf<String?>(null) }
+    LaunchedEffect(selectedRole) {
+        selectedRole?.let { viewModel.setConversationRole(it) }
+    }
+
 
  
-    val conversation = topic?.conversation ?: emptyList()
+    // State handled above
 
     // Playback state
     var currentIndex by remember(conversation) { mutableStateOf(0) }
@@ -243,6 +252,13 @@ fun ConversationPracticeScreen(
                             modifier = Modifier.padding(vertical = 24.dp)
                         )
 
+                        // Role selector (choose A or B to speak as)
+                        ModernRoleSelectorLegacy(
+                            selectedRole = selectedRole,
+                            onSelect = { role -> selectedRole = role },
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+
                         // Modern speech bubble
                         current?.let { turn ->
                             ModernSpeechBubble(
@@ -273,13 +289,46 @@ fun ConversationPracticeScreen(
                                 val newIdx = (currentIndex + 1).coerceAtMost(conversation.lastIndex)
                                 playTurn(newIdx)
                             },
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                        // Recording panel
+                        val canRecord = selectedRole != null && (
+                            (isSpeakerA && selectedRole!!.equals("A", ignoreCase = true)) ||
+                                (!isSpeakerA && selectedRole!!.equals("B", ignoreCase = true))
+                            )
+                        ModernRecordPanelLegacy(
+                            recordingState = ui.conversationRecordingState,
+                            enabled = canRecord,
+                            onStart = { viewModel.startConversationRecording(context, currentIndex) },
+                            onStop = { viewModel.stopConversationRecording(context) },
                             modifier = Modifier.padding(bottom = 32.dp)
                         )
                     }
                 }
             }
+            // Result dialog
+            ui.conversationSubmissionResult?.let { result ->
+                ConversationResultDialogLegacy(
+                    result = result,
+                    onDismiss = { viewModel.dismissConversationResult() },
+                    onGoNext = {
+                        val next = result.nextTurnIndex
+                        if (next != null) {
+                            // Move to next turn
+                            currentIndex = next
+                        }
+                        viewModel.dismissConversationResult()
+                    }
+                )
+            }
 
-            // Timed overlays removed
+            // Completion dialog
+            if (ui.showConversationCongrats) {
+                ConversationCompletionDialogLegacy(
+                    onDismiss = { viewModel.dismissConversationCongrats() }
+                )
+            }
         }
     }
 }
@@ -742,5 +791,173 @@ fun DrawScope.drawAnimatedGradient(offset: Float) {
     drawRect(
         color = Color.Black.copy(alpha = 0.4f),
         size = size
+    )
+}
+
+@Composable
+fun ModernRoleSelectorLegacy(
+    selectedRole: String?,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RoleChip(
+            label = "Speak as A (Alex)",
+            selected = selectedRole?.equals("A", ignoreCase = true) == true,
+            onClick = { onSelect("A") },
+            leadingColor = Color(0xFF667EEA)
+        )
+        RoleChip(
+            label = "Speak as B (Sarah)",
+            selected = selectedRole?.equals("B", ignoreCase = true) == true,
+            onClick = { onSelect("B") },
+            leadingColor = Color(0xFF4FACFE)
+        )
+    }
+}
+
+@Composable
+private fun RoleChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    leadingColor: Color
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(20.dp),
+        color = if (selected) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.06f),
+        border = BorderStroke(
+            1.dp,
+            if (selected) leadingColor else Color.White.copy(alpha = 0.12f)
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .background(leadingColor, CircleShape)
+            )
+            Text(
+                text = label,
+                color = Color.White,
+                fontSize = 13.sp,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+            )
+        }
+    }
+}
+
+@Composable
+fun ModernRecordPanelLegacy(
+    recordingState: PhraseRecordingState,
+    enabled: Boolean,
+    onStart: () -> Unit,
+    onStop: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isRecording = recordingState == PhraseRecordingState.RECORDING
+    val isProcessing = recordingState == PhraseRecordingState.PROCESSING
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(32.dp),
+        color = Color.White.copy(alpha = 0.08f),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp, horizontal = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Record your line",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                )
+                val hint = if (!enabled) "Select the matching role for this line" else if (isProcessing) "Please wait..." else "Tap to ${if (isRecording) "stop" else "start"}"
+                Text(
+                    text = hint,
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 12.sp
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Surface(
+                onClick = {
+                    if (!enabled || isProcessing) return@Surface
+                    if (isRecording) onStop() else onStart()
+                },
+                modifier = Modifier.size(56.dp),
+                shape = CircleShape,
+                color = if (!enabled || isProcessing) Color.White.copy(alpha = 0.05f) else Color(0xFFE53935)
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    if (isRecording) {
+                        Icon(Icons.Default.Stop, contentDescription = "Stop", tint = Color.White)
+                    } else {
+                        Icon(Icons.Default.Mic, contentDescription = "Record", tint = Color.White)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ConversationResultDialogLegacy(
+    result: ConversationSubmissionResultUi,
+    onDismiss: () -> Unit,
+    onGoNext: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                TextButton(onClick = onDismiss) { Text("Dismiss") }
+                TextButton(onClick = onGoNext) { Text(if (result.nextTurnIndex != null) "Next" else "OK") }
+            }
+        },
+        title = { Text("Submission Result") },
+        text = {
+            Column {
+                Text("Accuracy: ${"%.1f".format(result.accuracy)}%")
+                if (result.feedback?.isNotBlank() == true) {
+                    Spacer(Modifier.height(6.dp))
+                    Text(result.feedback!!)
+                }
+                if (result.transcription.isNotBlank()) {
+                    Spacer(Modifier.height(6.dp))
+                    Text("Heard: \"${result.transcription}\"")
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun ConversationCompletionDialogLegacy(
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Awesome!") }
+        },
+        title = { Text("Conversation Complete 🎉") },
+        text = {
+            Text("Great job! You've completed all turns for this conversation.")
+        }
     )
 }

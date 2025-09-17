@@ -43,6 +43,131 @@ class SpeakingJourneyViewModel @Inject constructor(
         fetchGamificationProfile()
     }
 
+    // --- Conversation Practice Recording ---
+    fun setConversationRole(role: String) {
+        conversationSelectedRole = role.trim().uppercase(Locale.US).takeIf { it == "A" || it == "B" }
+    }
+
+    fun startConversationRecording(context: Context, turnIndex: Int) {
+        try {
+            val s = _uiState.value
+            val currentTopic = s.topics.getOrNull(s.selectedTopicIdx)
+            if (currentTopic == null) {
+                _uiState.value = _uiState.value.copy(
+                    conversationRecordingState = PhraseRecordingState.IDLE,
+                    conversationSubmissionResult = ConversationSubmissionResultUi(false, 0f, "", "No topic selected.", null, false)
+                )
+                return
+            }
+            conversationRecordingTargetIndex = turnIndex
+            val dir = userRecordingsDir(context, currentTopic.id)
+            val outFile = File(dir, "conversation_turn_${turnIndex}.m4a")
+            conversationAudioFile = outFile
+            val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) MediaRecorder(context) else MediaRecorder()
+            mediaRecorder = mr
+            mr.setAudioSource(MediaRecorder.AudioSource.MIC)
+            mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            mr.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            mr.setAudioEncodingBitRate(128_000)
+            mr.setAudioSamplingRate(44_100)
+            mr.setOutputFile(outFile.absolutePath)
+            mr.prepare(); mr.start()
+            _uiState.value = _uiState.value.copy(
+                conversationRecordingState = PhraseRecordingState.RECORDING,
+                conversationSubmissionResult = null,
+                debug = "conv recording start idx=${turnIndex}"
+            )
+        } catch (t: Throwable) {
+            Log.e("SpeakingJourney", "Failed to start conv recording", t)
+            _uiState.value = _uiState.value.copy(
+                conversationRecordingState = PhraseRecordingState.IDLE,
+                conversationSubmissionResult = ConversationSubmissionResultUi(false, 0f, "", "Unable to start recording. ${t.message ?: ""}", null, false)
+            )
+            try { mediaRecorder?.release() } catch (_: Throwable) {}
+            mediaRecorder = null
+        }
+    }
+
+    fun stopConversationRecording(context: Context) {
+        val s = _uiState.value
+        val currentTopic = s.topics.getOrNull(s.selectedTopicIdx)
+        try { mediaRecorder?.stop() } catch (_: Throwable) {}
+        try { mediaRecorder?.reset() } catch (_: Throwable) {}
+        try { mediaRecorder?.release() } catch (_: Throwable) {}
+        mediaRecorder = null
+        _uiState.value = _uiState.value.copy(conversationRecordingState = PhraseRecordingState.PROCESSING)
+
+        val file = conversationAudioFile
+        val turnIndex = conversationRecordingTargetIndex
+        val role = conversationSelectedRole
+        if (currentTopic == null || file == null || !file.exists() || turnIndex == null || role.isNullOrBlank()) {
+            _uiState.value = _uiState.value.copy(
+                conversationRecordingState = PhraseRecordingState.IDLE,
+                conversationSubmissionResult = ConversationSubmissionResultUi(false, 0f, "", "Recording not available.", null, false)
+            )
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val part = MultipartBody.Part.createFormData(
+                    name = "audio",
+                    filename = file.name,
+                    body = file.asRequestBody("audio/m4a".toMediaTypeOrNull())
+                )
+                val result = repo.submitConversationTurn(currentTopic.id, turnIndex, part, role)
+                result.fold(
+                    onSuccess = { dto ->
+                        val safeAccuracy = try { dto.accuracy } catch (_: Throwable) { null } ?: 0f
+                        val newMap = _uiState.value.conversationTurnScores.toMutableMap().apply {
+                            put(turnIndex, safeAccuracy.toInt())
+                        }
+                        _uiState.value = _uiState.value.copy(
+                            conversationRecordingState = PhraseRecordingState.IDLE,
+                            conversationSubmissionResult = ConversationSubmissionResultUi(
+                                success = dto.success,
+                                accuracy = safeAccuracy,
+                                transcription = dto.transcription ?: "",
+                                feedback = dto.feedback,
+                                nextTurnIndex = dto.nextTurnIndex,
+                                topicCompleted = dto.topicCompleted,
+                                xpAwarded = dto.xpAwarded
+                            ),
+                            conversationTurnScores = newMap,
+                            debug = "conv submit ok idx=${turnIndex} next=${dto.nextTurnIndex} topicCompleted=${dto.topicCompleted} localTurns=${newMap.size}"
+                        )
+                        // Count today's activity towards Day Streak
+                        markSpeakingActivity()
+                        // If conversation ended, show congratulations and refresh topics
+                        if (dto.nextTurnIndex == null) {
+                            _uiState.value = _uiState.value.copy(showConversationCongrats = true)
+                            reloadTopics()
+                        }
+                        fetchGamificationProfile()
+                    },
+                    onFailure = { e ->
+                        Log.e("SpeakingJourney", "Submit conversation failed", e)
+                        _uiState.value = _uiState.value.copy(
+                            conversationRecordingState = PhraseRecordingState.IDLE,
+                            conversationSubmissionResult = ConversationSubmissionResultUi(false, 0f, "", "Failed to process recording. ${e.message ?: ""}", null, false),
+                            debug = "conv submit fail: ${e.message ?: "unknown"}"
+                        )
+                    }
+                )
+            } catch (t: Throwable) {
+                Log.e("SpeakingJourney", "Error submitting conversation", t)
+                _uiState.value = _uiState.value.copy(
+                    conversationRecordingState = PhraseRecordingState.IDLE,
+                    conversationSubmissionResult = ConversationSubmissionResultUi(false, 0f, "", "An error occurred. ${t.message ?: ""}", null, false),
+                    debug = "conv submit error: ${t.message ?: "unknown"}"
+                )
+            }
+        }
+    }
+
+    fun dismissConversationResult() { _uiState.value = _uiState.value.copy(conversationSubmissionResult = null) }
+    fun dismissConversationCongrats() { _uiState.value = _uiState.value.copy(showConversationCongrats = false) }
+
     /**
      * Mark that the user performed a Speaking Journey activity today to update Day Streak.
      * Safe to call multiple times per day; backend is idempotent.
@@ -104,6 +229,8 @@ class SpeakingJourneyViewModel @Inject constructor(
                                     maxVocabulary = scores.maxVocabulary
                                 )
                             },
+                            conversationScore = dto.conversationScore,
+                            conversationCompleted = dto.conversationCompleted,
                             unlocked = dto.unlocked,
                             completed = dto.completed
                         )
@@ -229,6 +356,10 @@ class SpeakingJourneyViewModel @Inject constructor(
     private var recordingTargetIndex: Int? = null
     private var currentUserKey: String = "default"
     private var userKeyInitialized: Boolean = false
+    // Conversation practice recording state
+    private var conversationAudioFile: File? = null
+    private var conversationRecordingTargetIndex: Int? = null
+    private var conversationSelectedRole: String? = null
 
     fun startPhraseRecording(context: Context) {
         try {

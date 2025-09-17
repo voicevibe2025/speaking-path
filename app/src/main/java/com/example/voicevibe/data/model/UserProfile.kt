@@ -62,5 +62,13 @@ data class UserProfile(
     @SerializedName("recent_activities")
     val recentActivities: List<Activity>?,
     @SerializedName("membership_status")
-    val membershipStatus: String?
+    val membershipStatus: String?,
+    @SerializedName("isFollowing")
+    val isFollowing: Boolean? = null,
+    @SerializedName("isFollower")
+    val isFollower: Boolean? = null,
+    @SerializedName("followersCount")
+    val followersCount: Int? = null,
+    @SerializedName("followingCount")
+    val followingCount: Int? = null
 )

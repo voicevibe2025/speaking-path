@@ -35,8 +35,8 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
         isVerified = false, // Not in data model
         isPremium = this.membershipStatus == "premium",
         isOnline = false, // Not in data model
-        isFollowing = false, // Not in data model
-        isFollower = false, // Not in data model
+        isFollowing = this.isFollowing == true,
+        isFollower = this.isFollower == true,
         isBlocked = false, // Not in data model
         stats = UserStats(
             totalPracticeSessions = 0, // Placeholder
@@ -45,8 +45,8 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
             averageFluency = 0f, // Placeholder
             completedLessons = this.lessonsCompleted ?: 0,
             achievementsUnlocked = this.recentAchievements?.size ?: 0,
-            followersCount = 0, // Not in data model
-            followingCount = 0, // Not in data model
+            followersCount = this.followersCount ?: 0,
+            followingCount = this.followingCount ?: 0,
             globalRank = null, // Not in data model
             weeklyXp = 0, // Placeholder
             monthlyXp = this.monthlyXpEarned ?: 0,

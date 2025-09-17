@@ -411,6 +411,37 @@ private fun ProfileHeader(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Action buttons (Follow/Unfollow, Challenge) for other users
+            if (!isOwnProfile) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val isFollowing = profile.isFollowing
+                    if (isFollowing) {
+                        OutlinedButton(onClick = onFollowClick) {
+                            Icon(Icons.Default.PersonRemove, contentDescription = "Unfollow")
+                            Spacer(Modifier.width(6.dp))
+                            Text("Unfollow")
+                        }
+                    } else {
+                        Button(onClick = onFollowClick) {
+                            Icon(Icons.Default.PersonAdd, contentDescription = "Follow")
+                            Spacer(Modifier.width(6.dp))
+                            Text("Follow")
+                        }
+                    }
+
+                    OutlinedButton(onClick = onChallengeClick) {
+                        Icon(Icons.Default.SportsKabaddi, contentDescription = "Challenge")
+                        Spacer(Modifier.width(6.dp))
+                        Text("Challenge")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             // Level and XP - centered
             Row(
                 verticalAlignment = Alignment.CenterVertically,

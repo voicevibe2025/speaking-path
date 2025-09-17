@@ -115,9 +115,14 @@ class UserProfileViewModel @Inject constructor(
                 when (val result = repository.followUser(id)) {
                     is Resource.Success -> {
                         _uiState.update { currentState ->
+                            val current = currentState.userProfile
+                            val newStats = current?.stats?.copy(
+                                followersCount = (current.stats.followersCount + 1).coerceAtLeast(0)
+                            )
                             currentState.copy(
-                                userProfile = currentState.userProfile?.copy(
-                                    isFollowing = true
+                                userProfile = current?.copy(
+                                    isFollowing = true,
+                                    stats = newStats ?: current.stats
                                 )
                             )
                         }
@@ -144,9 +149,14 @@ class UserProfileViewModel @Inject constructor(
                 when (val result = repository.unfollowUser(id)) {
                     is Resource.Success -> {
                         _uiState.update { currentState ->
+                            val current = currentState.userProfile
+                            val newStats = current?.stats?.copy(
+                                followersCount = (current.stats.followersCount - 1).coerceAtLeast(0)
+                            )
                             currentState.copy(
-                                userProfile = currentState.userProfile?.copy(
-                                    isFollowing = false
+                                userProfile = current?.copy(
+                                    isFollowing = false,
+                                    stats = newStats ?: current.stats
                                 )
                             )
                         }

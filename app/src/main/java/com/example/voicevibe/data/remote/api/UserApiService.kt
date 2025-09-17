@@ -38,16 +38,16 @@ interface UserApiService {
     @GET("users/search")
     suspend fun searchUsers(@Query("query") query: String): Response<List<UserProfile>>
     
-    @POST("users/follow/{id}")
+    @POST("users/follow/{id}/")
     suspend fun followUser(@Path("id") userId: String): Response<Unit>
     
-    @DELETE("users/follow/{id}")
+    @DELETE("users/follow/{id}/")
     suspend fun unfollowUser(@Path("id") userId: String): Response<Unit>
     
-    @GET("users/followers")
+    @GET("users/followers/")
     suspend fun getFollowers(): Response<List<UserProfile>>
     
-    @GET("users/following")
+    @GET("users/following/")
     suspend fun getFollowing(): Response<List<UserProfile>>
     
     @POST("users/report/{id}")

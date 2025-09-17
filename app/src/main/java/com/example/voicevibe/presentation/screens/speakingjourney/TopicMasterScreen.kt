@@ -203,6 +203,18 @@ fun PracticeCardsSection(
     val topic = ui.topics.firstOrNull { it.id == topicId }
     val practiceScores = topic?.practiceScores
     
+    // Compute live conversation progress similar to other practices (score vs max)
+    val conversationTurns = topic?.conversation ?: emptyList()
+    val conversationMax = if (conversationTurns.isNotEmpty()) conversationTurns.size * 100 else 100
+    val liveConversationScore = if (conversationTurns.isNotEmpty()) {
+        ui.conversationTurnScores
+            .filterKeys { it in 0 until conversationTurns.size }
+            .values
+            .sum()
+    } else 0
+    val serverConversationScore = topic?.conversationScore ?: 0
+    val conversationScoreForUi = maxOf(serverConversationScore, liveConversationScore)
+
     val practiceItems = listOf(
         // Conversation Practice at the top
         PracticeItem(
@@ -210,8 +222,8 @@ fun PracticeCardsSection(
             description = "Engage in dialogues",
             icon = Icons.Default.School,
             gradient = listOf(Color(0xFFFF006E), Color(0xFF8338EC)),
-            score = topic?.conversationScore ?: 0,
-            maxScore = 100,
+            score = conversationScoreForUi,
+            maxScore = conversationMax,
             onClick = { onNavigateToConversation(topicId) }
         ),
         PracticeItem(

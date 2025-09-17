@@ -19,7 +19,7 @@ import com.example.voicevibe.presentation.screens.auth.forgotpassword.ForgotPass
 import com.example.voicevibe.presentation.screens.main.home.HomeScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyScreen
-import com.example.voicevibe.presentation.screens.speakingjourney.TopicConversationScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.ConversationLessonScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
 import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeScreen
@@ -255,7 +255,7 @@ fun VoiceVibeNavHost(
             arguments = listOf(navArgument("topicId") { type = NavType.StringType })
         ) { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
-            TopicConversationScreen(
+            ConversationLessonScreen(
                 topicId = topicId,
                 onNavigateBack = { navController.popBackStack() }
             )

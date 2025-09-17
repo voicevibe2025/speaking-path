@@ -469,12 +469,12 @@ fun SpeakingJourneyScreen(
                             }
                             
                             Spacer(modifier = Modifier.height(12.dp))
-                            // Conversation Practice Button
+                            // Conversation Lesson Button
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp)
-                                    .clickable { onNavigateToConversationPractice(topic.id) },
+                                    .clickable { onNavigateToConversation(topic.id) },
                                 shape = RoundedCornerShape(20.dp),
                                 colors = CardDefaults.cardColors(
                                     containerColor = Color.White.copy(alpha = 0.05f)
@@ -498,20 +498,20 @@ fun SpeakingJourneyScreen(
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = "Conversation",
+                                            text = "Conversation Lesson",
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.SemiBold,
                                             color = Color.White
                                         )
                                         Text(
-                                            text = "Listen with Start / Prev / Next, or play all",
+                                            text = "Listen with Start / Prev / Next, or Play All",
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = Color(0xFFB0BEC5)
                                         )
                                     }
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                        contentDescription = "Go to conversation practice",
+                                        contentDescription = "Go to conversation lesson",
                                         tint = BrandIndigo
                                     )
                                 }

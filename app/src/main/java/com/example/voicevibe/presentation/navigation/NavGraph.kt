@@ -35,7 +35,7 @@ import com.example.voicevibe.presentation.screens.scenarios.CulturalScenariosScr
 import com.example.voicevibe.presentation.screens.scenarios.ScenarioDetailScreen
 import com.example.voicevibe.presentation.screens.analytics.AnalyticsDashboardScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyScreen
-import com.example.voicevibe.presentation.screens.speakingjourney.TopicConversationScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.ConversationLessonScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.TopicMasterScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.PronunciationPracticeScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.PlaceholderPracticeScreen
@@ -310,7 +310,7 @@ fun NavGraph(
             arguments = listOf(navArgument("topicId") { type = NavType.StringType })
         ) { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
-            TopicConversationScreen(
+            ConversationLessonScreen(
                 topicId = topicId,
                 onNavigateBack = { navController.popBackStack() }
             )

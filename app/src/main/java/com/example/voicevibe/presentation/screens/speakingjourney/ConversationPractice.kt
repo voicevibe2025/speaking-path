@@ -2,6 +2,7 @@ package com.example.voicevibe.presentation.screens.speakingjourney
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,6 +33,9 @@ import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.ui.res.painterResource
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -74,6 +79,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -236,7 +244,7 @@ fun ConversationPracticeScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .drawBehind { drawAnimatedGradient(gradientOffset) }
+                .drawBehind { drawPracticeAnimatedGradient(gradientOffset) }
                 .padding(innerPadding)
         ) {
             when {
@@ -295,14 +303,14 @@ fun ConversationPracticeScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         // Progress indicator
-                        ConversationProgress(
+                        PracticeConversationProgress(
                             currentIndex = currentIndex,
                             totalSteps = conversation.size,
                             modifier = Modifier.padding(top = 12.dp)
                         )
 
                         // Speakers section with modern avatars
-                        ModernSpeakersSection(
+                        PracticeSpeakersSection(
                             isSpeakerA = isSpeakerA,
                             isPlaying = playing,
                             modifier = Modifier.padding(vertical = 16.dp)
@@ -326,7 +334,7 @@ fun ConversationPracticeScreen(
                         // Modern speech bubble (hidden in Practice mode)
                         if (mode != "practice") {
                             current?.let { turn ->
-                                ModernSpeechBubble(
+                                PracticeSpeechBubble(
                                     text = turn.text,
                                     isSpeakerA = isSpeakerA,
                                     isPlaying = playing,
@@ -340,7 +348,7 @@ fun ConversationPracticeScreen(
 
                         // Controls: Review shows full controls; Practice hides manual play/pause/next/prev
                         if (mode != "practice") {
-                            ModernControlPanel(
+                            PracticeControlPanel(
                                 currentIndex = currentIndex,
                                 conversationSize = conversation.size,
                                 isPlaying = playing,
@@ -532,6 +540,431 @@ fun ConversationPracticeScreen(
             }
         }
     }
+}
+
+@Composable
+fun PracticeConversationProgress(
+    currentIndex: Int,
+    totalSteps: Int,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            for (i in 0 until totalSteps) {
+                val isActive = i <= currentIndex
+                val width by animateFloatAsState(
+                    targetValue = if (isActive) 1f else 0.25f,
+                    animationSpec = spring(dampingRatio = 0.7f),
+                    label = "practiceProgressWidth"
+                )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(4.dp)
+                        .padding(horizontal = 2.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(
+                            if (isActive) {
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF4FACFE), Color(0xFF43E97B))
+                                )
+                            } else {
+                                Brush.horizontalGradient(
+                                    listOf(Color(0x33FFFFFF), Color(0x33FFFFFF))
+                                )
+                            }
+                        )
+                ) {
+                    // scale effect
+                    Box(modifier = Modifier.graphicsLayer { scaleX = width })
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Step ${currentIndex + 1} of $totalSteps",
+            color = Color.White.copy(alpha = 0.7f),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+fun PracticeSpeakersSection(
+    isSpeakerA: Boolean,
+    isPlaying: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val pulseAnimation = rememberInfiniteTransition(label = "practicePulse")
+    val pulseScale by pulseAnimation.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.12f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "practicePulseScale"
+    )
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        PracticeSpeakerAvatar(
+            imageRes = R.drawable.ic_male_head,
+            label = "Alex",
+            isActive = isSpeakerA,
+            isPlaying = isPlaying && isSpeakerA,
+            pulseScale = if (isPlaying && isSpeakerA) pulseScale else 1f,
+            glowColor = Color(0xFF667EEA)
+        )
+        Text(
+            text = "×",
+            color = Color.White.copy(alpha = 0.3f),
+            fontSize = 32.sp,
+            fontWeight = FontWeight.ExtraLight
+        )
+        PracticeSpeakerAvatar(
+            imageRes = R.drawable.ic_female_head,
+            label = "Sarah",
+            isActive = !isSpeakerA,
+            isPlaying = isPlaying && !isSpeakerA,
+            pulseScale = if (isPlaying && !isSpeakerA) pulseScale else 1f,
+            glowColor = Color(0xFF4FACFE)
+        )
+    }
+}
+
+@Composable
+fun PracticeSpeakerAvatar(
+    imageRes: Int,
+    label: String,
+    isActive: Boolean,
+    isPlaying: Boolean,
+    pulseScale: Float,
+    glowColor: Color
+) {
+    val scale by animateFloatAsState(
+        targetValue = if (isActive) 1.08f else 1f,
+        animationSpec = spring(dampingRatio = 0.6f),
+        label = "practiceAvatarScale"
+    )
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        }
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            if (isPlaying) {
+                Box(
+                    modifier = Modifier
+                        .size(96.dp)
+                        .graphicsLayer {
+                            scaleX = pulseScale
+                            scaleY = pulseScale
+                            alpha = 0.3f
+                        }
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(glowColor.copy(alpha = 0.4f), Color.Transparent)
+                            ),
+                            shape = CircleShape
+                        )
+                )
+            }
+            Surface(
+                modifier = Modifier.size(76.dp),
+                shape = CircleShape,
+                border = BorderStroke(
+                    width = if (isActive) 3.dp else 1.dp,
+                    brush = if (isActive) {
+                        Brush.linearGradient(listOf(glowColor, glowColor.copy(alpha = 0.5f)))
+                    } else {
+                        Brush.linearGradient(listOf(Color.White.copy(alpha = 0.2f), Color.White.copy(alpha = 0.1f)))
+                    }
+                ),
+                color = Color.Transparent
+            ) {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = label,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = label,
+            color = if (isActive) Color.White else Color.White.copy(alpha = 0.5f),
+            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
+            fontSize = 13.sp
+        )
+    }
+}
+
+@Composable
+fun PracticeSpeechBubble(
+    text: String,
+    isSpeakerA: Boolean,
+    isPlaying: Boolean,
+    primaryGradient: List<Color>,
+    secondaryGradient: List<Color>
+) {
+    val scale by animateFloatAsState(
+        targetValue = if (isPlaying) 1.02f else 1f,
+        animationSpec = spring(dampingRatio = 0.7f),
+        label = "practiceBubbleScale"
+    )
+    val waveHeight = 28.dp
+    val waveGap = 8.dp
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            color = Color.White.copy(alpha = 0.1f),
+            border = BorderStroke(
+                width = 1.dp,
+                brush = Brush.linearGradient(
+                    if (isSpeakerA) primaryGradient else secondaryGradient
+                )
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.05f),
+                                Color.White.copy(alpha = 0.02f)
+                            )
+                        )
+                    )
+                    .padding(24.dp)
+            ) {
+                Column {
+                    if (isPlaying) {
+                        PracticeSoundWaveAnimation(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(waveHeight)
+                                .padding(bottom = waveGap)
+                        )
+                    }
+                    Text(
+                        text = text,
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Normal,
+                        lineHeight = 28.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (isPlaying) {
+                        Spacer(modifier = Modifier.height(waveHeight + waveGap))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PracticeSoundWaveAnimation(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition(label = "practiceWaves")
+    val waves = List(5) { index ->
+        infiniteTransition.animateFloat(
+            initialValue = 0.3f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 600,
+                    delayMillis = index * 100,
+                    easing = FastOutSlowInEasing
+                ),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "practiceWave$index"
+        )
+    }
+
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        waves.forEach { animatedHeight ->
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .fillMaxHeight(animatedHeight.value)
+                    .padding(horizontal = 2.dp)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(Color(0xFF667EEA), Color(0xFFF093FB))
+                        ),
+                        shape = RoundedCornerShape(2.dp)
+                    )
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun PracticeControlPanel(
+    currentIndex: Int,
+    conversationSize: Int,
+    isPlaying: Boolean,
+    onPrevious: () -> Unit,
+    onPlay: () -> Unit,
+    onPlayAll: () -> Unit,
+    onStop: () -> Unit,
+    onNext: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(32.dp),
+        color = Color.White.copy(alpha = 0.08f),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp, horizontal = 24.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            PracticeControlButton(
+                onClick = onPrevious,
+                enabled = currentIndex > 0,
+                size = 48.dp
+            ) {
+                Icon(
+                    Icons.Filled.SkipPrevious,
+                    contentDescription = "Previous",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            Surface(onClick = { if (isPlaying) onStop() else onPlayAll() }, shape = CircleShape, color = Color.Transparent) {
+                PracticePlayButton(isPlaying = isPlaying)
+            }
+
+            PracticeControlButton(
+                onClick = onNext,
+                enabled = currentIndex < conversationSize - 1,
+                size = 48.dp
+            ) {
+                Icon(
+                    Icons.Filled.SkipNext,
+                    contentDescription = "Next",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PracticeControlButton(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    size: androidx.compose.ui.unit.Dp,
+    content: @Composable () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.size(size).clip(CircleShape),
+        color = if (enabled) Color.White.copy(alpha = 0.1f) else Color.White.copy(alpha = 0.03f),
+        shape = CircleShape
+    ) {
+        Box(contentAlignment = Alignment.Center) { content() }
+    }
+}
+
+@Composable
+fun PracticePlayButton(isPlaying: Boolean) {
+    val rotation by animateFloatAsState(
+        targetValue = if (isPlaying) 360f else 0f,
+        animationSpec = if (isPlaying) {
+            infiniteRepeatable(
+                animation = tween(2000, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            )
+        } else {
+            tween(0)
+        },
+        label = "practicePlayRotation"
+    )
+    Surface(
+        modifier = Modifier.size(72.dp),
+        shape = CircleShape,
+        color = Color.Transparent
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(Color(0xFF667EEA), Color(0xFFF093FB))
+                    ),
+                    shape = CircleShape
+                )
+                .graphicsLayer { rotationZ = rotation },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Rounded.PlayArrow,
+                contentDescription = if (isPlaying) "Pause" else "Play",
+                tint = Color.White,
+                modifier = Modifier.size(36.dp)
+            )
+        }
+    }
+}
+
+fun DrawScope.drawPracticeAnimatedGradient(offset: Float) {
+    val colors = listOf(
+        Color(0xFF0C1024),
+        Color(0xFF141A33),
+        Color(0xFF0C2740),
+        Color(0xFF16213E),
+        Color(0xFF141A33),
+        Color(0xFF0C1024)
+    )
+    val gradientBrush = Brush.linearGradient(
+        colors = colors,
+        start = Offset(0f + offset * 2, 0f),
+        end = Offset(size.width + offset * 2, size.height)
+    )
+    drawRect(gradientBrush)
+    drawRect(color = Color.Black.copy(alpha = 0.35f), size = size)
 }
 
 @Composable

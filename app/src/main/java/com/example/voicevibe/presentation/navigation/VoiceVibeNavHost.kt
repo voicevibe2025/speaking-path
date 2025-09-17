@@ -25,6 +25,7 @@ import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScre
 import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeChatScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLessonScreen
+import com.example.voicevibe.presentation.screens.gamification.AchievementScreen
 
 /**
  * Main navigation host for the VoiceVibe app
@@ -186,26 +187,7 @@ fun VoiceVibeNavHost(
         }
 
         composable(route = Screen.Achievements.route) {
-            val settingsVM: SettingsViewModel = hiltViewModel()
-            val speakingOnly = settingsVM.speakingOnlyEnabled.value
-            HomeScreen(
-                onNavigateToPractice = {
-                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
-                    else navController.navigate(Screen.Practice.route)
-                },
-                onNavigateToPracticeAI = { navController.navigate(Screen.PracticeWithAI.route) },
-                onNavigateToLearningPaths = {
-                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
-                    else navController.navigate(Screen.LearningPaths.route)
-                },
-                onNavigateToAchievements = { navController.navigate(Screen.Achievements.route) },
-                onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
-                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
-                onNavigateToLearningPath = { _ ->
-                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
-                    else navController.navigate(Screen.LearningPaths.route)
-                }
-            )
+            AchievementScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         composable(route = Screen.Profile.route) {

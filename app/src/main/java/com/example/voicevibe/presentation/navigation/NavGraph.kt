@@ -25,7 +25,7 @@ import com.example.voicevibe.presentation.screens.evaluation.EvaluationResultScr
 import com.example.voicevibe.presentation.screens.learning.LearningPathsScreen
 import com.example.voicevibe.presentation.screens.learning.LearningPathDetailScreen
 import com.example.voicevibe.presentation.screens.learning.LessonDetailScreen
-import com.example.voicevibe.presentation.screens.gamification.AchievementsScreen
+import com.example.voicevibe.presentation.screens.gamification.AchievementScreen
 import com.example.voicevibe.presentation.screens.gamification.LeaderboardScreen
 import com.example.voicevibe.presentation.screens.profile.ProfileScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsScreen
@@ -468,7 +468,7 @@ fun NavGraph(
 
         // Achievements & Gamification
         composable(Screen.Achievements.route) {
-            AchievementsScreen(
+            AchievementScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 }

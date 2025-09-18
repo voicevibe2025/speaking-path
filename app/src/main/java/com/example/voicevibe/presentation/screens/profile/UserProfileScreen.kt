@@ -136,6 +136,7 @@ fun UserProfileScreen(
             userProfile != null -> {
                 ProfileContent(
                     profile = userProfile,
+                    speakingOverview = uiState.speakingOverview,
                     activities = uiState.activities,
                     selectedTab = uiState.selectedTab,
                     isOwnProfile = uiState.isOwnProfile,
@@ -202,6 +203,7 @@ fun UserProfileScreen(
 @Composable
 private fun ProfileContent(
     profile: UserProfile,
+    speakingOverview: SpeakingOverview?,
     activities: List<UserActivity>,
     selectedTab: ProfileTab,
     isOwnProfile: Boolean,
@@ -265,7 +267,7 @@ private fun ProfileContent(
             modifier = Modifier.fillMaxSize()
         ) { page ->
             when (ProfileTab.values()[page]) {
-                ProfileTab.OVERVIEW -> OverviewTab(profile, onViewAchievements)
+                ProfileTab.OVERVIEW -> OverviewTab(profile, speakingOverview, onViewAchievements)
                 ProfileTab.ACTIVITY -> ActivityTab(activities)
                 ProfileTab.ACHIEVEMENTS -> AchievementsTab(profile.badges, onViewAchievements)
                 ProfileTab.STATISTICS -> StatisticsTab(profile.stats)

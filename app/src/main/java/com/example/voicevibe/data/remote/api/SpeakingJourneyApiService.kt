@@ -9,6 +9,7 @@ import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
+import java.time.LocalDateTime
 
 interface SpeakingJourneyApiService {
     @GET("speaking/topics")
@@ -75,6 +76,12 @@ interface SpeakingJourneyApiService {
         @Path("topicId") topicId: String,
         @Body body: CompleteVocabularyPracticeRequestDto
     ): Response<CompleteVocabularyPracticeResponseDto>
+
+    // --- Activities ---
+    @GET("speaking/activities")
+    suspend fun getActivities(
+        @Query("limit") limit: Int = 50
+    ): Response<List<JourneyActivityDto>>
 }
 
 data class SpeakingTopicsResponse(
@@ -256,5 +263,15 @@ data class CompleteVocabularyPracticeResponseDto(
     val xpAwarded: Int,
     val vocabularyTotalScore: Int,
     val topicCompleted: Boolean
+)
+
+// --- Activities DTO ---
+data class JourneyActivityDto(
+    val id: String,
+    val type: String,
+    val title: String,
+    val description: String?,
+    val timestamp: LocalDateTime,
+    val xpEarned: Int? = null
 )
 

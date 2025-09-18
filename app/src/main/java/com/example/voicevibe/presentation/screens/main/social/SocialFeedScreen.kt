@@ -106,9 +106,9 @@ fun SocialFeedScreen(
                         StatusComposer(
                             avatarUrl = uiState.avatarUrl,
                             userInitials = uiState.userInitials ?: "VV",
-                            onPostText = { text -> viewModel.createTextPost(text) { viewModel.loadPosts() } },
-                            onPostLink = { link -> viewModel.createLinkPost(link) { viewModel.loadPosts() } },
-                            onPostImage = { part -> viewModel.createImagePost(part) { viewModel.loadPosts() } }
+                            onPostText = { text -> viewModel.createTextPost(text) },
+                            onPostLink = { link -> viewModel.createLinkPost(link) },
+                            onPostImage = { part -> viewModel.createImagePost(part) }
                         )
                     }
 

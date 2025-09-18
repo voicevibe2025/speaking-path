@@ -18,6 +18,9 @@ import com.example.voicevibe.data.remote.api.SubmitVocabularyAnswerResponseDto
 import com.example.voicevibe.data.remote.api.CompleteVocabularyPracticeRequestDto
 import com.example.voicevibe.data.remote.api.CompleteVocabularyPracticeResponseDto
 import com.example.voicevibe.data.remote.api.ConversationSubmissionResultDto
+import com.example.voicevibe.data.remote.api.JourneyActivityDto
+import com.example.voicevibe.domain.model.ActivityType
+import com.example.voicevibe.domain.model.UserActivity
 import okhttp3.MultipartBody
 import javax.inject.Inject
 
@@ -208,5 +211,34 @@ class SpeakingJourneyRepository @Inject constructor(
         } catch (t: Throwable) {
             Result.failure(t)
         }
+    }
+
+    // --- Activities ---
+    suspend fun getActivities(limit: Int = 50): Result<List<UserActivity>> {
+        return try {
+            val res = api.getActivities(limit)
+            if (res.isSuccessful) {
+                val body = res.body() ?: emptyList()
+                Result.success(body.map { it.toDomain() })
+            } else {
+                Result.failure(Exception("HTTP ${res.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    private fun JourneyActivityDto.toDomain(): UserActivity {
+        val t = try { ActivityType.valueOf(type) } catch (_: Exception) { ActivityType.PRACTICE_SESSION }
+        return UserActivity(
+            id = id,
+            type = t,
+            title = title,
+            description = description ?: "",
+            timestamp = timestamp,
+            xpEarned = xpEarned,
+            achievementId = null,
+            sessionId = null
+        )
     }
 }

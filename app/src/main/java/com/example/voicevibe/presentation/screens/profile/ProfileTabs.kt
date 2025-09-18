@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,12 +20,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.voicevibe.domain.model.*
+import com.example.voicevibe.presentation.screens.gamification.AchievementItemType
+import com.example.voicevibe.presentation.screens.gamification.AchievementsSimpleViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.Duration
 
 @Composable
 fun OverviewTab(
     profile: UserProfile,
+    overview: SpeakingOverview?,
     onViewAchievements: () -> Unit
 ) {
     LazyColumn(
@@ -79,17 +87,17 @@ fun OverviewTab(
 
                     PerformanceMetric(
                         label = "Average Accuracy",
-                        value = profile.stats.averageAccuracy,
+                        value = overview?.averagePronunciation ?: 0f,
                         color = MaterialTheme.colorScheme.primary
                     )
                     PerformanceMetric(
                         label = "Average Fluency",
-                        value = profile.stats.averageFluency,
+                        value = overview?.averageFluency ?: 0f,
                         color = MaterialTheme.colorScheme.secondary
                     )
                     PerformanceMetric(
                         label = "Improvement Rate",
-                        value = profile.stats.improvementRate,
+                        value = overview?.improvementRate ?: 0f,
                         color = MaterialTheme.colorScheme.tertiary
                     )
                 }
@@ -114,17 +122,17 @@ fun OverviewTab(
                     ) {
                         ProgressStat(
                             icon = Icons.Default.School,
-                            value = profile.stats.completedLessons.toString(),
+                            value = (overview?.completedTopics ?: 0).toString(),
                             label = "Lessons"
                         )
                         ProgressStat(
                             icon = Icons.Default.Timer,
-                            value = "${profile.stats.totalPracticeMinutes / 60}h",
+                            value = "${(overview?.totalPracticeMinutes ?: 0) / 60}h",
                             label = "Practice"
                         )
                         ProgressStat(
                             icon = Icons.Default.Abc,
-                            value = profile.stats.totalWords.toString(),
+                            value = (overview?.totalWordsLearned ?: 0).toString(),
                             label = "Words"
                         )
                     }
@@ -237,7 +245,7 @@ fun ActivityCard(activity: UserActivity) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    activity.timestamp.format(DateTimeFormatter.ofPattern("MMM dd, HH:mm")),
+                    relativeTime(activity.timestamp),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -267,34 +275,123 @@ fun AchievementsTab(
     badges: List<UserBadge>,
     onViewAll: () -> Unit
 ) {
+    val vm: AchievementsSimpleViewModel = hiltViewModel()
+    val state = vm.uiState
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        if (badges.isEmpty()) {
-            EmptyStateMessage(
-                icon = Icons.Default.EmojiEvents,
-                message = "No achievements yet"
-            )
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                contentPadding = PaddingValues(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(badges) { badge ->
-                    BadgeItem(badge)
+        when {
+            state.isLoading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
             }
-
-            if (badges.size >= 9) {
-                Button(
-                    onClick = onViewAll,
+            state.error != null -> {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("View All Achievements")
+                    Text(state.error ?: "Failed to load achievements")
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedButton(onClick = { vm.load() }) {
+                        Icon(Icons.Default.Refresh, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Retry")
+                    }
+                }
+            }
+            state.items.isEmpty() -> {
+                EmptyStateMessage(
+                    icon = Icons.Default.EmojiEvents,
+                    message = "No achievements yet"
+                )
+            }
+            else -> {
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(state.items) { item ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Icon
+                                Surface(
+                                    shape = CircleShape,
+                                    color = when (item.type) {
+                                        AchievementItemType.PROFICIENCY -> MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                                        AchievementItemType.LEVEL -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.12f)
+                                    },
+                                    modifier = Modifier.size(40.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = when (item.type) {
+                                            AchievementItemType.PROFICIENCY -> Icons.Default.WorkspacePremium
+                                            AchievementItemType.LEVEL -> Icons.Default.School
+                                        },
+                                        contentDescription = null,
+                                        tint = when (item.type) {
+                                            AchievementItemType.PROFICIENCY -> MaterialTheme.colorScheme.primary
+                                            AchievementItemType.LEVEL -> MaterialTheme.colorScheme.tertiary
+                                        },
+                                        modifier = Modifier
+                                            .padding(8.dp)
+                                            .fillMaxSize()
+                                    )
+                                }
+
+                                Spacer(Modifier.width(12.dp))
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        item.title,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            Icons.Outlined.Schedule,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(14.dp),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(
+                                            item.timeAgo,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+
+                                Icon(
+                                    Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        Button(
+                            onClick = onViewAll,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("View All Achievements")
+                        }
+                    }
                 }
             }
         }
@@ -520,6 +617,33 @@ fun EmptyStateMessage(
                 textAlign = TextAlign.Center
             )
         }
+    }
+}
+
+private fun relativeTime(ts: LocalDateTime): String {
+    return try {
+        val now = LocalDateTime.now(ZoneOffset.UTC)
+        val duration = Duration.between(ts, now)
+        if (duration.isNegative) return "just now"
+        val seconds = duration.seconds
+        when {
+            seconds < 60 -> "just now"
+            seconds < 3600 -> {
+                val m = seconds / 60
+                if (m == 1L) "1 minute ago" else "$m minutes ago"
+            }
+            seconds < 86400 -> {
+                val h = seconds / 3600
+                if (h == 1L) "1 hour ago" else "$h hours ago"
+            }
+            seconds < 172800 -> "yesterday"
+            else -> {
+                val d = seconds / 86400
+                if (d == 1L) "1 day ago" else "$d days ago"
+            }
+        }
+    } catch (_: Exception) {
+        ts.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
     }
 }
 

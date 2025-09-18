@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.repository.UserRepository
+import com.example.voicevibe.data.repository.SpeakingJourneyRepository
 import com.example.voicevibe.domain.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -16,6 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class UserProfileViewModel @Inject constructor(
     private val repository: UserRepository,
+    private val speakingJourneyRepository: SpeakingJourneyRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -31,6 +33,7 @@ class UserProfileViewModel @Inject constructor(
     init {
         loadUserProfile()
         loadUserActivities()
+        loadSpeakingOverview()
     }
 
     private fun loadUserProfile() {
@@ -96,15 +99,97 @@ class UserProfileViewModel @Inject constructor(
 
     private fun loadUserActivities() {
         viewModelScope.launch {
-            val targetUserId = userId ?: repository.getCurrentUserId()
+            // For now, backend activities endpoint returns current user's journey events only
+            if (userId == null) {
+                val result = speakingJourneyRepository.getActivities(limit = 50)
+                result.onSuccess { list ->
+                    _uiState.update { it.copy(activities = list) }
+                }.onFailure {
+                    _uiState.update { it.copy(activities = emptyList()) }
+                }
+            } else {
+                // Viewing another user's profile: activities not available yet
+                _uiState.update { it.copy(activities = emptyList()) }
+            }
+        }
+    }
 
-            when (val result = repository.getUserActivities(targetUserId)) {
-                is Resource.Success -> {
-                    _uiState.update {
-                        it.copy(activities = result.data ?: emptyList())
+    private fun loadSpeakingOverview() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(speakingOverviewLoading = true, speakingOverviewError = null) }
+            val result = speakingJourneyRepository.getTopics()
+            result.onSuccess { resp ->
+                val topics = resp.topics
+                // Normalize per-topic practice scores to 0..100 where possible
+                var pronSum = 0f
+                var pronCount = 0
+                var fluencySum = 0f
+                var fluencyCount = 0
+                var vocabSum = 0f
+                var vocabCount = 0
+
+                val perTopicAverages = mutableListOf<Float>()
+
+                topics.forEach { t ->
+                    val ps = t.practiceScores
+                    if (ps != null) {
+                        // Pronunciation
+                        if (ps.maxPronunciation > 0) {
+                            val v = (ps.pronunciation.toFloat() / ps.maxPronunciation.toFloat()) * 100f
+                            pronSum += v
+                            pronCount++
+                        }
+                        // Fluency
+                        if (ps.maxFluency > 0) {
+                            val v = (ps.fluency.toFloat() / ps.maxFluency.toFloat()) * 100f
+                            fluencySum += v
+                            fluencyCount++
+                        }
+                        // Vocabulary
+                        if (ps.maxVocabulary > 0) {
+                            val v = (ps.vocabulary.toFloat() / ps.maxVocabulary.toFloat()) * 100f
+                            vocabSum += v
+                            vocabCount++
+                        }
+
+                        // Per-topic overall average (only include available metrics)
+                        val metrics = buildList<Float> {
+                            if (ps.maxPronunciation > 0) add((ps.pronunciation.toFloat() / ps.maxPronunciation.toFloat()) * 100f)
+                            if (ps.maxFluency > 0) add((ps.fluency.toFloat() / ps.maxFluency.toFloat()) * 100f)
+                            if (ps.maxVocabulary > 0) add((ps.vocabulary.toFloat() / ps.maxVocabulary.toFloat()) * 100f)
+                        }
+                        if (metrics.isNotEmpty()) {
+                            perTopicAverages.add(metrics.average().toFloat())
+                        }
                     }
                 }
-                else -> {}
+
+                val avgPron = if (pronCount > 0) pronSum / pronCount else 0f
+                val avgFlu = if (fluencyCount > 0) fluencySum / fluencyCount else 0f
+                val avgVocab = if (vocabCount > 0) vocabSum / vocabCount else 0f
+
+                // Improvement rate: recent avg (last 3) - early avg (first 3)
+                val window = kotlin.math.max(1, kotlin.math.min(3, perTopicAverages.size / 2))
+                val earlyAvg = if (perTopicAverages.size >= window) perTopicAverages.take(window).average().toFloat() else 0f
+                val recentAvg = if (perTopicAverages.size >= window) perTopicAverages.takeLast(window).average().toFloat() else 0f
+                val improvement = (recentAvg - earlyAvg)
+
+                val completedTopics = topics.count { it.completed }
+                val totalWords = topics.filter { it.completed }.flatMap { it.vocabulary }.toSet().size
+
+                val overview = SpeakingOverview(
+                    averagePronunciation = avgPron.coerceIn(0f, 100f),
+                    averageFluency = avgFlu.coerceIn(0f, 100f),
+                    averageVocabulary = avgVocab.coerceIn(0f, 100f),
+                    improvementRate = improvement,
+                    completedTopics = completedTopics,
+                    totalPracticeMinutes = 0, // Not available from speaking_journey endpoints yet
+                    totalWordsLearned = totalWords
+                )
+
+                _uiState.update { it.copy(speakingOverviewLoading = false, speakingOverview = overview) }
+            }.onFailure { err ->
+                _uiState.update { it.copy(speakingOverviewLoading = false, speakingOverviewError = err.message) }
             }
         }
     }
@@ -278,6 +363,7 @@ class UserProfileViewModel @Inject constructor(
     fun refreshProfile() {
         loadUserProfile()
         loadUserActivities()
+        loadSpeakingOverview()
     }
 }
 
@@ -290,7 +376,11 @@ data class UserProfileUiState(
     val activities: List<UserActivity> = emptyList(),
     val isOwnProfile: Boolean = false,
     val selectedTab: ProfileTab = ProfileTab.OVERVIEW,
-    val error: String? = null
+    val error: String? = null,
+    // Speaking Journey derived overview metrics for Overview tab
+    val speakingOverview: SpeakingOverview? = null,
+    val speakingOverviewLoading: Boolean = false,
+    val speakingOverviewError: String? = null
 )
 
 /**

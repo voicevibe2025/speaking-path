@@ -31,6 +31,10 @@ import com.example.voicevibe.presentation.screens.profile.ProfileScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsScreen
  import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
  import com.example.voicevibe.presentation.screens.profile.UserProfileScreen
+import com.example.voicevibe.presentation.screens.profile.AccountSettingsScreen
+import com.example.voicevibe.presentation.screens.profile.NotificationSettingsScreen
+import com.example.voicevibe.presentation.screens.profile.LanguageSettingsScreen
+import com.example.voicevibe.presentation.screens.profile.AboutScreen
 import com.example.voicevibe.presentation.screens.main.social.SocialFeedScreen
 import com.example.voicevibe.presentation.screens.scenarios.CulturalScenariosScreen
 import com.example.voicevibe.presentation.screens.scenarios.ScenarioDetailScreen
@@ -552,6 +556,20 @@ fun NavGraph(
                 },
                 viewModel = settingsViewModel
             )
+        }
+
+        // Settings sub-screens
+        composable(Screen.AccountSettings.route) {
+            AccountSettingsScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(Screen.NotificationSettings.route) {
+            NotificationSettingsScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(Screen.LanguageSettings.route) {
+            LanguageSettingsScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(Screen.About.route) {
+            AboutScreen(onNavigateBack = { navController.popBackStack() })
         }
     }
 }

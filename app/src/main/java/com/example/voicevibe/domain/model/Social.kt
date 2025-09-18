@@ -31,5 +31,8 @@ data class PostComment(
     val post: Int,
     val author: PostAuthor,
     val text: String,
+    val parent: Int? = null,
     val createdAt: LocalDateTime,
+    val likesCount: Int = 0,
+    val isLikedByMe: Boolean = false,
 )

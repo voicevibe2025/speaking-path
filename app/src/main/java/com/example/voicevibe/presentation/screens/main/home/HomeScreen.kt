@@ -240,7 +240,10 @@ fun PostCard(
     onLike: () -> Unit,
     onUnlike: () -> Unit,
     onAddComment: (String, () -> Unit) -> Unit,
-    fetchComments: (Int, (List<PostComment>) -> Unit) -> Unit
+    fetchComments: (Int, (List<PostComment>) -> Unit) -> Unit,
+    likeComment: (Int) -> Unit,
+    unlikeComment: (Int) -> Unit,
+    replyToComment: (parentId: Int, text: String, () -> Unit) -> Unit,
 ) {
     val context = LocalContext.current
     var showComments by remember { mutableStateOf(false) }
@@ -363,6 +366,7 @@ fun PostCard(
     if (showComments) {
         var comments by remember { mutableStateOf<List<PostComment>>(emptyList()) }
         var newComment by remember { mutableStateOf("") }
+        var replyToId by remember { mutableStateOf<Int?>(null) }
 
         LaunchedEffect(post.id, showComments) {
             if (showComments) fetchComments(post.id) { list -> comments = list }
@@ -380,25 +384,130 @@ fun PostCard(
             ) {
                 Text("Comments", fontWeight = FontWeight.Bold, color = EduTextPrimary)
                 Spacer(Modifier.height(8.dp))
+                // Build parent -> replies grouping for nested view
+                val repliesByParent = remember(comments) { comments.filter { it.parent != null }.groupBy { it.parent!! } }
+                val parentComments = remember(comments) { comments.filter { it.parent == null }.sortedByDescending { it.createdAt } }
+
                 LazyColumn(
                     modifier = Modifier
                         .heightIn(min = 120.dp, max = 360.dp)
                         .fillMaxWidth()
                 ) {
-                    items(comments) { c ->
+                    items(parentComments, key = { it.id }) { parent ->
                         Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                            Text(c.author.displayName, fontWeight = FontWeight.SemiBold, color = EduTextPrimary)
+                            // Parent comment row
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(parent.author.displayName, fontWeight = FontWeight.SemiBold, color = EduTextPrimary)
+                                Spacer(Modifier.width(8.dp))
+                                Text(relativeTime(parent.createdAt), fontSize = 11.sp, color = EduTextSecondary)
+                            }
                             Spacer(Modifier.height(2.dp))
-                            Text(c.text, color = EduTextPrimary)
+                            Text(parent.text, color = EduTextPrimary)
+                            Spacer(Modifier.height(6.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.clickable(enabled = post.canInteract) {
+                                        val currentlyLiked = parent.isLikedByMe
+                                        val updated = comments.map { item ->
+                                            if (item.id == parent.id) item.copy(
+                                                isLikedByMe = !currentlyLiked,
+                                                likesCount = if (!currentlyLiked) item.likesCount + 1 else (item.likesCount - 1).coerceAtLeast(0)
+                                            ) else item
+                                        }
+                                        comments = updated
+                                        if (currentlyLiked) unlikeComment(parent.id) else likeComment(parent.id)
+                                    }
+                                ) {
+                                    val likeTint = if (parent.isLikedByMe) EduAccent else EduTextSecondary
+                                    Icon(
+                                        imageVector = if (parent.isLikedByMe) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                                        contentDescription = null,
+                                        tint = likeTint
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(parent.likesCount.toString(), color = EduTextSecondary)
+                                }
+                                Text(
+                                    text = "Reply",
+                                    color = EduSecondary,
+                                    modifier = Modifier.clickable(enabled = post.canInteract) { replyToId = parent.id }
+                                )
+                            }
+
+                            // Replies nested under parent (newest first)
+                            val replies = (repliesByParent[parent.id] ?: emptyList()).sortedByDescending { it.createdAt }
+                            if (replies.isNotEmpty()) {
+                                Spacer(Modifier.height(6.dp))
+                                Column(modifier = Modifier.padding(start = 36.dp)) {
+                                    replies.forEach { child ->
+                                        Column(modifier = Modifier.padding(vertical = 6.dp)) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(child.author.displayName, fontWeight = FontWeight.Medium, color = EduTextPrimary)
+                                                Spacer(Modifier.width(8.dp))
+                                                Text(relativeTime(child.createdAt), fontSize = 11.sp, color = EduTextSecondary)
+                                            }
+                                            Spacer(Modifier.height(2.dp))
+                                            Text(child.text, color = EduTextPrimary)
+                                            Spacer(Modifier.height(4.dp))
+                                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    modifier = Modifier.clickable(enabled = post.canInteract) {
+                                                        val currentlyLiked = child.isLikedByMe
+                                                        val updated = comments.map { item ->
+                                                            if (item.id == child.id) item.copy(
+                                                                isLikedByMe = !currentlyLiked,
+                                                                likesCount = if (!currentlyLiked) item.likesCount + 1 else (item.likesCount - 1).coerceAtLeast(0)
+                                                            ) else item
+                                                        }
+                                                        comments = updated
+                                                        if (currentlyLiked) unlikeComment(child.id) else likeComment(child.id)
+                                                    }
+                                                ) {
+                                                    val likeTint = if (child.isLikedByMe) EduAccent else EduTextSecondary
+                                                    Icon(
+                                                        imageVector = if (child.isLikedByMe) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                                                        contentDescription = null,
+                                                        tint = likeTint
+                                                    )
+                                                    Spacer(Modifier.width(6.dp))
+                                                    Text(child.likesCount.toString(), color = EduTextSecondary)
+                                                }
+                                                Text(
+                                                    text = "Reply",
+                                                    color = EduSecondary,
+                                                    modifier = Modifier.clickable(enabled = post.canInteract) { replyToId = parent.id }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
                 Spacer(Modifier.height(12.dp))
+
+                replyToId?.let { pid ->
+                    val name = comments.firstOrNull { it.id == pid }?.author?.displayName ?: "comment"
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Replying to $name", color = EduSecondary, fontSize = 12.sp)
+                        Text(
+                            text = "Cancel",
+                            color = EduAccent,
+                            fontSize = 12.sp,
+                            modifier = Modifier.clickable { replyToId = null }
+                        )
+                    }
+                    Spacer(Modifier.height(6.dp))
+                }
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
                         value = newComment,
                         onValueChange = { newComment = it },
-                        placeholder = { Text("Write a comment") },
+                        placeholder = { Text(if (replyToId != null) "Write a reply" else "Write a comment") },
                         modifier = Modifier.weight(1f),
                         enabled = post.canInteract,
                         singleLine = true
@@ -408,11 +517,17 @@ fun PostCard(
                         onClick = {
                             val c = newComment.trim()
                             if (c.isNotEmpty()) {
-                                onAddComment(c) {
-                                    // refresh after backend confirms
+                                val done: () -> Unit = {
                                     fetchComments(post.id) { list -> comments = list }
                                 }
+                                val parent = replyToId
+                                if (parent != null) {
+                                    replyToComment(parent, c, done)
+                                } else {
+                                    onAddComment(c, done)
+                                }
                                 newComment = ""
+                                replyToId = null
                             }
                         },
                         enabled = post.canInteract

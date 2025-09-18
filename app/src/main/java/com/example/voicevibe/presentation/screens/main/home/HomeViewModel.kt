@@ -121,8 +121,12 @@ class HomeViewModel @Inject constructor(
     }
 
     fun addComment(postId: Int, text: String, onDone: (() -> Unit)? = null) {
+        addComment(postId, text, parentCommentId = null, onDone = onDone)
+    }
+
+    fun addComment(postId: Int, text: String, parentCommentId: Int?, onDone: (() -> Unit)? = null) {
         viewModelScope.launch {
-            val res = socialRepository.addComment(postId, text)
+            val res = socialRepository.addComment(postId, text, parent = parentCommentId)
             if (res is com.example.voicevibe.domain.model.Resource.Success) {
                 val current = _uiState.value.posts
                 _uiState.update { state ->
@@ -138,10 +142,23 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val res = socialRepository.getComments(postId)
             if (res is com.example.voicevibe.domain.model.Resource.Success) {
-                onResult(res.data ?: emptyList())
+                val list = res.data ?: emptyList()
+                onResult(list.sortedByDescending { it.createdAt })
             } else {
                 onResult(emptyList())
             }
+        }
+    }
+
+    fun likeComment(commentId: Int) {
+        viewModelScope.launch {
+            socialRepository.likeComment(commentId)
+        }
+    }
+
+    fun unlikeComment(commentId: Int) {
+        viewModelScope.launch {
+            socialRepository.unlikeComment(commentId)
         }
     }
 

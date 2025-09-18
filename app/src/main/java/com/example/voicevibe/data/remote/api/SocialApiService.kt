@@ -47,4 +47,18 @@ interface SocialApiService {
         @Path("id") postId: Int,
         @Field("text") text: String
     ): Response<PostComment>
+
+    @FormUrlEncoded
+    @POST("social/posts/{id}/comments/")
+    suspend fun replyToComment(
+        @Path("id") postId: Int,
+        @Field("text") text: String,
+        @Field("parent") parent: Int
+    ): Response<PostComment>
+
+    @POST("social/comments/{id}/like/")
+    suspend fun likeComment(@Path("id") commentId: Int): Response<Map<String, Any>>
+
+    @DELETE("social/comments/{id}/like/")
+    suspend fun unlikeComment(@Path("id") commentId: Int): Response<Map<String, Any>>
 }

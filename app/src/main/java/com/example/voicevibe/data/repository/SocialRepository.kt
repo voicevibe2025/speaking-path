@@ -76,12 +76,26 @@ class SocialRepository @Inject constructor(
         } catch (e: Exception) { Resource.Error(e.message ?: "Unknown error") }
     }
 
-    suspend fun addComment(id: Int, text: String): Resource<PostComment> {
+    suspend fun addComment(id: Int, text: String, parent: Int? = null): Resource<PostComment> {
         return try {
-            val resp = api.addComment(id, text)
+            val resp = if (parent != null) api.replyToComment(id, text, parent) else api.addComment(id, text)
             if (resp.isSuccessful) {
                 resp.body()?.let { Resource.Success(it) } ?: Resource.Error("Empty response")
             } else Resource.Error("Failed to add comment")
+        } catch (e: Exception) { Resource.Error(e.message ?: "Unknown error") }
+    }
+
+    suspend fun likeComment(id: Int): Resource<Unit> {
+        return try {
+            val resp = api.likeComment(id)
+            if (resp.isSuccessful) Resource.Success(Unit) else Resource.Error("Failed to like comment")
+        } catch (e: Exception) { Resource.Error(e.message ?: "Unknown error") }
+    }
+
+    suspend fun unlikeComment(id: Int): Resource<Unit> {
+        return try {
+            val resp = api.unlikeComment(id)
+            if (resp.isSuccessful) Resource.Success(Unit) else Resource.Error("Failed to unlike comment")
         } catch (e: Exception) { Resource.Error(e.message ?: "Unknown error") }
     }
 }

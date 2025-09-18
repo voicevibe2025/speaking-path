@@ -119,7 +119,10 @@ fun SocialFeedScreen(
                                 onLike = { viewModel.likePost(post.id) },
                                 onUnlike = { viewModel.unlikePost(post.id) },
                                 onAddComment = { text, done -> viewModel.addComment(post.id, text) { done() } },
-                                fetchComments = { id, cb -> viewModel.fetchComments(id, cb) }
+                                fetchComments = { id, cb -> viewModel.fetchComments(id, cb) },
+                                likeComment = { commentId -> viewModel.likeComment(commentId) },
+                                unlikeComment = { commentId -> viewModel.unlikeComment(commentId) },
+                                replyToComment = { parentId, text, done -> viewModel.addComment(post.id, text, parentId) { done() } }
                             )
                         }
                     } else {

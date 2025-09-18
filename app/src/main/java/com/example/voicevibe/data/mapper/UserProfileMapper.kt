@@ -7,11 +7,25 @@ import com.example.voicevibe.domain.model.UserPreferences
 import com.example.voicevibe.domain.model.PrivacySettings
 import com.example.voicevibe.domain.model.ProfileVisibility
 import com.example.voicevibe.domain.model.DifficultyLevel
+import com.example.voicevibe.domain.model.UserBadge
 import java.time.LocalDateTime
 import com.example.voicevibe.data.model.Achievement as DataAchievement
 import com.example.voicevibe.data.model.Activity as DataActivity
 
 fun DataUserProfile.toDomain(): DomainUserProfile {
+    // Map recent achievements' badges (from data model) into domain UserBadge list for profile tabs
+    val mappedBadges: List<UserBadge> = (this.recentAchievements ?: emptyList()).mapNotNull { ach ->
+        val b = ach.badge
+        val id = b.badgeId.ifBlank { return@mapNotNull null }
+        val colorHex = normalizeColorHex(b.patternColor)
+        UserBadge(
+            id = id,
+            name = b.name,
+            icon = b.icon,
+            color = colorHex
+        )
+    }.distinctBy { it.id }
+
     return DomainUserProfile(
         id = this.userName,
         username = this.userName,
@@ -53,7 +67,7 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
             totalWords = 0, // Placeholder
             improvementRate = 0f // Placeholder
         ),
-        badges = emptyList(), // Not in data model
+        badges = mappedBadges,
         preferences = UserPreferences(
             dailyGoalMinutes = this.dailyPracticeGoal ?: 15,
             privacy = PrivacySettings(
@@ -63,6 +77,21 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
         ),
         socialLinks = null // Not in data model
     )
+}
+
+/**
+ * Normalize color hex into 8-digit ARGB string without leading '#', expected by BadgeItem parser.
+ */
+private fun normalizeColorHex(input: String): String {
+    var hex = input.trim()
+    if (hex.startsWith("#")) hex = hex.substring(1)
+    // If only RGB provided, prefix with full alpha
+    if (hex.length == 6) return "FF$hex"
+    // If already ARGB (8), return as-is
+    return when (hex.length) {
+        8 -> hex
+        else -> "FF6200EE" // fallback to a primary-like color
+    }
 }
 
 fun DomainUserProfile.toData(): DataUserProfile {

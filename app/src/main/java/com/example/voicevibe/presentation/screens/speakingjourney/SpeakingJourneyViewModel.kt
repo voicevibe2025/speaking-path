@@ -736,6 +736,162 @@ class SpeakingJourneyViewModel @Inject constructor(
         }
     }
 
+    fun playConversationAudioOrTts(
+        context: Context,
+        topicKey: String,
+        turnIndex: Int,
+        text: String,
+        voiceName: String? = null,
+        onStart: (() -> Unit)? = null,
+        onDone: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
+    ) {
+        try {
+            // Release any existing player before starting a new one
+            try { mediaPlayer?.release() } catch (_: Throwable) {}
+
+            // Build asset path: conversation_audios/<topic-slug>/turn_<n>.wav
+            val slug = topicKey.trim().lowercase(Locale.US).replace(Regex("[^a-z0-9]+"), "_").trim('_')
+            val turnNumber = (turnIndex + 1).coerceAtLeast(1)
+            val assetPath = "conversation_audios/$slug/turn_${turnNumber}.wav"
+
+            try {
+                val afd = context.assets.openFd(assetPath)
+                afd.use { desc ->
+                    val mp = MediaPlayer().apply {
+                        setDataSource(desc.fileDescriptor, desc.startOffset, desc.length)
+                        setOnPreparedListener {
+                            it.start()
+                            onStart?.invoke()
+                        }
+                        setOnCompletionListener {
+                            try { it.release() } catch (_: Throwable) {}
+                            if (mediaPlayer === it) mediaPlayer = null
+                            onDone?.invoke()
+                        }
+                        setOnErrorListener { player, what, extra ->
+                            try { player.release() } catch (_: Throwable) {}
+                            if (mediaPlayer === player) mediaPlayer = null
+                            // If local asset playback fails at runtime, fallback to TTS
+                            speakWithBackendTts(
+                                text = text,
+                                voiceName = voiceName,
+                                onStart = onStart,
+                                onDone = onDone,
+                                onError = onError
+                            )
+                            true
+                        }
+                    }
+                    mediaPlayer = mp
+                    mp.prepareAsync()
+                    return
+                }
+            } catch (_: Throwable) {
+                // Asset not found or compressed; try stream -> cache file fallback
+                try {
+                    val ins = context.assets.open(assetPath)
+                    ins.use { input ->
+                        val outFile = File(context.cacheDir, "conv_${slug}_turn_${turnNumber}.wav")
+                        outFile.outputStream().use { out ->
+                            input.copyTo(out)
+                        }
+                        val mp = MediaPlayer().apply {
+                            setDataSource(outFile.absolutePath)
+                            setOnPreparedListener {
+                                it.start()
+                                onStart?.invoke()
+                            }
+                            setOnCompletionListener {
+                                try { it.release() } catch (_: Throwable) {}
+                                if (mediaPlayer === it) mediaPlayer = null
+                                onDone?.invoke()
+                            }
+                            setOnErrorListener { player, what, extra ->
+                                try { player.release() } catch (_: Throwable) {}
+                                if (mediaPlayer === player) mediaPlayer = null
+                                // If local playback fails at runtime, fallback to TTS
+                                speakWithBackendTts(
+                                    text = text,
+                                    voiceName = voiceName,
+                                    onStart = onStart,
+                                    onDone = onDone,
+                                    onError = onError
+                                )
+                                true
+                            }
+                        }
+                        mediaPlayer = mp
+                        mp.prepareAsync()
+                        return
+                    }
+                } catch (_: Throwable) {
+                    // proceed to res/raw fallback next
+                }
+            }
+
+            // Try res/raw fallback with common naming patterns
+            val candidates = listOf(
+                "conv_${slug}_turn_${turnNumber}",
+                "${slug}_turn_${turnNumber}",
+                "turn_${turnNumber}"
+            )
+            val resId = candidates
+                .map { name -> context.resources.getIdentifier(name, "raw", context.packageName) }
+                .firstOrNull { it != 0 } ?: 0
+            if (resId != 0) {
+                try {
+                    try { mediaPlayer?.release() } catch (_: Throwable) {}
+                    val mp = MediaPlayer.create(context, resId)
+                    if (mp != null) {
+                        mediaPlayer = mp
+                        onStart?.invoke()
+                        mp.setOnCompletionListener {
+                            try { it.release() } catch (_: Throwable) {}
+                            if (mediaPlayer === it) mediaPlayer = null
+                            onDone?.invoke()
+                        }
+                        mp.setOnErrorListener { player, what, extra ->
+                            try { player.release() } catch (_: Throwable) {}
+                            if (mediaPlayer === player) mediaPlayer = null
+                            speakWithBackendTts(
+                                text = text,
+                                voiceName = voiceName,
+                                onStart = onStart,
+                                onDone = onDone,
+                                onError = onError
+                            )
+                            true
+                        }
+                        mp.start()
+                        return
+                    }
+                } catch (_: Throwable) {
+                    // fall through to TTS
+                }
+            }
+
+            // Finally, TTS fallback
+            speakWithBackendTts(
+                text = text,
+                voiceName = voiceName,
+                onStart = onStart,
+                onDone = onDone,
+                onError = onError
+            )
+        } catch (t: Throwable) {
+            // As a last resort, try TTS and report error
+            Log.e("SpeakingJourney", "Local audio playback failed, using TTS", t)
+            speakWithBackendTts(
+                text = text,
+                voiceName = voiceName,
+                onStart = onStart,
+                onDone = onDone,
+                onError = onError
+            )
+        }
+    }
+
     fun speakWithBackendTts(
         text: String,
         voiceName: String? = null,

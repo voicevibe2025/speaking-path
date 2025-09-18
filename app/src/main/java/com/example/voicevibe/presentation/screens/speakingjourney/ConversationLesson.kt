@@ -93,7 +93,11 @@ fun ConversationLessonScreen(
         val voice = if (turn.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
         isPlayingAll = false
         viewModel.markSpeakingActivity()
-        viewModel.speakWithBackendTts(
+        val topicKey = topic?.title ?: topicId
+        viewModel.playConversationAudioOrTts(
+            context = context,
+            topicKey = topicKey,
+            turnIndex = i,
             text = turn.text,
             voiceName = voice,
             onStart = { currentlyPlayingId = id },
@@ -120,7 +124,11 @@ fun ConversationLessonScreen(
             currentIndex = i
             val voice = if (t.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
             viewModel.markSpeakingActivity()
-            viewModel.speakWithBackendTts(
+            val topicKey = topic?.title ?: topicId
+            viewModel.playConversationAudioOrTts(
+                context = context,
+                topicKey = topicKey,
+                turnIndex = i,
                 text = t.text,
                 voiceName = voice,
                 onStart = { currentlyPlayingId = id },

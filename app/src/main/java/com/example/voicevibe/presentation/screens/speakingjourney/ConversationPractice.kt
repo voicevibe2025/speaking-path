@@ -152,7 +152,11 @@ fun ConversationPracticeScreen(
         val voice = if (turn.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
         isPlayingAll = false
         viewModel.markSpeakingActivity()
-        viewModel.speakWithBackendTts(
+        val topicKey = topic?.title ?: topicId
+        viewModel.playConversationAudioOrTts(
+            context = context,
+            topicKey = topicKey,
+            turnIndex = i,
             text = turn.text,
             voiceName = voice,
             onStart = { currentlyPlayingId = id },
@@ -179,7 +183,11 @@ fun ConversationPracticeScreen(
             currentIndex = i
             val voice = if (t.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
             viewModel.markSpeakingActivity()
-            viewModel.speakWithBackendTts(
+            val topicKey = topic?.title ?: topicId
+            viewModel.playConversationAudioOrTts(
+                context = context,
+                topicKey = topicKey,
+                turnIndex = i,
                 text = t.text,
                 voiceName = voice,
                 onStart = { currentlyPlayingId = id },
@@ -268,7 +276,7 @@ fun ConversationPracticeScreen(
                     val isSpeakerA = current?.speaker.equals("A", ignoreCase = true)
                     val playing = currentlyPlayingId == current?.text || isPlayingAll
 
-                    // Auto-play the other turn (non-user role) using TTS
+                    // Auto-play the other turn (non-user role) using local audio first, then TTS fallback
                     LaunchedEffect(currentIndex, selectedRole, ui.conversationRecordingState) {
                         val role = selectedRole
                         val turn = conversation.getOrNull(currentIndex)
@@ -280,7 +288,11 @@ fun ConversationPracticeScreen(
                             if (canAutoPlayOther) {
                                 val id = turn.text
                                 val voice = if (turn.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
-                                viewModel.speakWithBackendTts(
+                                val topicKey = topic?.title ?: topicId
+                                viewModel.playConversationAudioOrTts(
+                                    context = context,
+                                    topicKey = topicKey,
+                                    turnIndex = currentIndex,
                                     text = turn.text,
                                     voiceName = voice,
                                     onStart = { currentlyPlayingId = id },
@@ -1491,7 +1503,11 @@ fun TopicConversationScreen(
         val voice = if (turn.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
         isPlayingAll = false
         viewModel.markSpeakingActivity()
-        viewModel.speakWithBackendTts(
+        val topicKey = topic?.title ?: topicId
+        viewModel.playConversationAudioOrTts(
+            context = context,
+            topicKey = topicKey,
+            turnIndex = i,
             text = turn.text,
             voiceName = voice,
             onStart = { currentlyPlayingId = id },
@@ -1518,7 +1534,11 @@ fun TopicConversationScreen(
             currentIndex = i
             val voice = if (t.speaker.equals("A", ignoreCase = true)) maleVoiceName else femaleVoiceName
             viewModel.markSpeakingActivity()
-            viewModel.speakWithBackendTts(
+            val topicKey = topic?.title ?: topicId
+            viewModel.playConversationAudioOrTts(
+                context = context,
+                topicKey = topicKey,
+                turnIndex = i,
                 text = t.text,
                 voiceName = voice,
                 onStart = { currentlyPlayingId = id },

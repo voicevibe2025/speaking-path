@@ -55,6 +55,9 @@ import java.text.NumberFormat
 import java.util.*
 import java.time.Duration
 import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import okhttp3.MultipartBody
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -280,8 +283,8 @@ fun PostCard(
                 Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(post.author.displayName, fontWeight = FontWeight.Bold, color = EduTextPrimary)
-                    // Simple relative time from createdAt is not available fully; show static label
-                    Text("Just now", fontSize = 12.sp, color = EduTextSecondary)
+                    // Relative time from createdAt
+                    Text(relativeTime(post.createdAt), fontSize = 12.sp, color = EduTextSecondary)
                 }
             }
 
@@ -424,6 +427,33 @@ fun PostCard(
                 Spacer(Modifier.height(8.dp))
             }
         }
+    }
+}
+
+private fun relativeTime(ts: LocalDateTime): String {
+    return try {
+        val now = LocalDateTime.now(ZoneOffset.UTC)
+        val duration = java.time.Duration.between(ts, now)
+        if (duration.isNegative) return "just now"
+        val seconds = duration.seconds
+        when {
+            seconds < 60 -> "just now"
+            seconds < 3600 -> {
+                val m = seconds / 60
+                if (m == 1L) "1 minute ago" else "$m minutes ago"
+            }
+            seconds < 86400 -> {
+                val h = seconds / 3600
+                if (h == 1L) "1 hour ago" else "$h hours ago"
+            }
+            seconds < 172800 -> "yesterday"
+            else -> {
+                val d = seconds / 86400
+                if (d == 1L) "1 day ago" else "$d days ago"
+            }
+        }
+    } catch (_: Exception) {
+        ts.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
     }
 }
 

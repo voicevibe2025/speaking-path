@@ -65,16 +65,17 @@ class SpeakingPracticeViewModel @Inject constructor(
         try {
             audioFile = outputFile
 
-            mediaRecorder = MediaRecorder().apply {
-                setAudioSource(MediaRecorder.AudioSource.MIC)
-                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                setAudioSamplingRate(44100)
-                setAudioEncodingBitRate(128000)
-                setOutputFile(outputFile.absolutePath)
-                prepare()
-                start()
-            }
+            @Suppress("DEPRECATION")
+            val mr = MediaRecorder()
+            mediaRecorder = mr
+            mr.setAudioSource(MediaRecorder.AudioSource.MIC)
+            mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            mr.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            mr.setAudioSamplingRate(44100)
+            mr.setAudioEncodingBitRate(128000)
+            mr.setOutputFile(outputFile.absolutePath)
+            mr.prepare()
+            mr.start()
 
             _uiState.update {
                 it.copy(

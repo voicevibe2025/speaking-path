@@ -14,6 +14,7 @@ import com.google.ai.client.generativeai.type.generationConfig
 import com.example.voicevibe.data.repository.UserRepository
 import com.example.voicevibe.data.repository.AiEvaluationRepository
 import com.example.voicevibe.domain.model.Resource
+import com.example.voicevibe.utils.TranscriptUtils
 import timber.log.Timber
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -391,7 +392,12 @@ class PracticeWithAIViewModel @Inject constructor(
 
             val outFile = java.io.File(context.cacheDir, "free_chat_${System.currentTimeMillis()}.m4a")
             audioFile = outFile
-            val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) MediaRecorder(context) else MediaRecorder()
+            val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                MediaRecorder(context)
+            } else {
+                @Suppress("DEPRECATION")
+                MediaRecorder()
+            }
             recorder = mr
             mr.setAudioSource(MediaRecorder.AudioSource.MIC)
             mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
@@ -429,7 +435,8 @@ class PracticeWithAIViewModel @Inject constructor(
                     is Resource.Success -> {
                         val text = res.data ?: ""
                         if (text.isNotBlank()) {
-                            sendMessage(text)
+                            val clean = TranscriptUtils.collapseRepeats(text, force = true)
+                            sendMessage(clean)
                         } else {
                             _uiState.value = _uiState.value.copy(error = "Empty transcription returned.")
                         }

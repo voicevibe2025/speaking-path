@@ -63,7 +63,12 @@ class SpeakingJourneyViewModel @Inject constructor(
             val dir = userRecordingsDir(context, currentTopic.id)
             val outFile = File(dir, "conversation_turn_${turnIndex}.m4a")
             conversationAudioFile = outFile
-            val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) MediaRecorder(context) else MediaRecorder()
+            val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                MediaRecorder(context)
+            } else {
+                @Suppress("DEPRECATION")
+                MediaRecorder()
+            }
             mediaRecorder = mr
             mr.setAudioSource(MediaRecorder.AudioSource.MIC)
             mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
@@ -386,7 +391,12 @@ class SpeakingJourneyViewModel @Inject constructor(
             val dir = userRecordingsDir(context, currentTopic.id)
             val outFile = File(dir, "phrase_${phraseIndex}.m4a")
             phraseAudioFile = outFile
-            val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) MediaRecorder(context) else MediaRecorder()
+            val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                MediaRecorder(context)
+            } else {
+                @Suppress("DEPRECATION")
+                MediaRecorder()
+            }
             mediaRecorder = mr
             mr.setAudioSource(MediaRecorder.AudioSource.MIC)
             mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)

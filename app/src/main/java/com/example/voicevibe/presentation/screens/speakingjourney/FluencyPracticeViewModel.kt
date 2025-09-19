@@ -162,7 +162,12 @@ class FluencyPracticeViewModel @Inject constructor(
             val topicId = currentTopicId ?: return
             val dir = File(context.filesDir, "voicevibe/fluency/$topicId").apply { mkdirs() }
             val file = File(dir, "attempt_${System.currentTimeMillis()}.m4a")
-            val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) MediaRecorder(context) else MediaRecorder()
+            val mr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                MediaRecorder(context)
+            } else {
+                @Suppress("DEPRECATION")
+                MediaRecorder()
+            }
             mediaRecorder = mr
             mr.setAudioSource(MediaRecorder.AudioSource.MIC)
             mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)

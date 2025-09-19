@@ -10,6 +10,7 @@ import com.example.voicevibe.BuildConfig
 import com.example.voicevibe.data.repository.GamificationRepository
 import com.example.voicevibe.data.repository.AiEvaluationRepository
 import com.example.voicevibe.domain.model.Resource
+import com.example.voicevibe.utils.TranscriptUtils
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationTurn
 import com.example.voicevibe.presentation.screens.speakingjourney.Topic
 import com.google.ai.client.generativeai.GenerativeModel
@@ -550,7 +551,12 @@ class TopicPracticeChatViewModel @Inject constructor(
 
             val outFile = java.io.File(context.cacheDir, "practice_turn_${System.currentTimeMillis()}.m4a")
             practiceAudioFile = outFile
-            val mr = if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) MediaRecorder(context) else MediaRecorder()
+            val mr = if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                MediaRecorder(context)
+            } else {
+                @Suppress("DEPRECATION")
+                MediaRecorder()
+            }
             practiceRecorder = mr
             mr.setAudioSource(MediaRecorder.AudioSource.MIC)
             mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
@@ -588,7 +594,8 @@ class TopicPracticeChatViewModel @Inject constructor(
                     is Resource.Success -> {
                         val text = res.data ?: ""
                         if (text.isNotBlank()) {
-                            onUserRecordingComplete(text)
+                            val clean = TranscriptUtils.collapseRepeats(text)
+                            onUserRecordingComplete(clean)
                         } else {
                             _uiState.value = _uiState.value.copy(error = "Empty transcription returned.")
                         }

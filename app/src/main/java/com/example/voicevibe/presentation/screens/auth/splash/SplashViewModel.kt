@@ -4,11 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.local.TokenManager
 import com.example.voicevibe.data.repository.AuthRepository
+import com.example.voicevibe.data.repository.AiEvaluationRepository
 import com.example.voicevibe.domain.model.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import timber.log.Timber
+import com.example.voicevibe.utils.WarmupUtils
 import javax.inject.Inject
 
 /**
@@ -18,7 +21,8 @@ import javax.inject.Inject
 class SplashViewModel @Inject constructor(
     private val tokenManager: TokenManager,
     private val authRepository: AuthRepository,
-    private val splashScreenStateFlow: MutableStateFlow<Boolean>
+    private val splashScreenStateFlow: MutableStateFlow<Boolean>,
+    private val aiEvalRepo: AiEvaluationRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SplashUiState())
@@ -30,6 +34,8 @@ class SplashViewModel @Inject constructor(
     init {
         checkAuthenticationState()
     }
+
+    private var hasPrewarmed = false
 
     private fun checkAuthenticationState() {
         viewModelScope.launch {
@@ -67,6 +73,8 @@ class SplashViewModel @Inject constructor(
         val isLoggedIn = tokenManager.isLoggedIn()
         if (isLoggedIn) {
             _uiState.update { it.copy(isLoading = false) }
+            // Fire-and-forget ASR prewarm so first transcription is fast
+            prewarmAsr()
             _navigationEvent.emit(SplashNavigationEvent.NavigateToHome)
             splashScreenStateFlow.value = false
         } else {
@@ -90,6 +98,8 @@ class SplashViewModel @Inject constructor(
             }
             is Resource.Success -> {
                 _uiState.update { it.copy(isLoading = false) }
+                // Fire-and-forget ASR prewarm after successful refresh
+                prewarmAsr()
                 _navigationEvent.emit(SplashNavigationEvent.NavigateToHome)
                 splashScreenStateFlow.value = false
             }
@@ -99,6 +109,22 @@ class SplashViewModel @Inject constructor(
                 tokenManager.clearAll()
                 _navigationEvent.emit(SplashNavigationEvent.NavigateToLogin)
                 splashScreenStateFlow.value = false
+            }
+        }
+    }
+
+    private fun prewarmAsr() {
+        if (hasPrewarmed) return
+        hasPrewarmed = true
+        viewModelScope.launch {
+            try {
+                val b64 = WarmupUtils.generateSilentWavBase64()
+                // We don't care about the result; this primes server-side models and ffmpeg
+                aiEvalRepo.transcribeBase64(b64)
+                Timber.d("ASR prewarm request sent")
+            } catch (t: Throwable) {
+                // Ignore errors — do not block UI
+                Timber.d(t, "ASR prewarm failed (ignored)")
             }
         }
     }

@@ -244,6 +244,7 @@ fun PostCard(
     likeComment: (Int) -> Unit,
     unlikeComment: (Int) -> Unit,
     replyToComment: (parentId: Int, text: String, () -> Unit) -> Unit,
+    onUserClick: (String) -> Unit,
 ) {
     val context = LocalContext.current
     var showComments by remember { mutableStateOf(false) }
@@ -263,7 +264,8 @@ fun PostCard(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(EduSecondary.copy(alpha = 0.1f)),
+                        .background(EduSecondary.copy(alpha = 0.1f))
+                        .clickable { onUserClick(post.author.id.toString()) },
                     contentAlignment = Alignment.Center
                 ) {
                     val avatarUrl = post.author.avatarUrl
@@ -397,9 +399,36 @@ fun PostCard(
                         Column(modifier = Modifier.padding(vertical = 8.dp)) {
                             // Parent comment row
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(parent.author.displayName, fontWeight = FontWeight.SemiBold, color = EduTextPrimary)
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(CircleShape)
+                                        .background(EduSecondary.copy(alpha = 0.1f))
+                                        .clickable { onUserClick(parent.author.id.toString()) },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    val cAvatar = parent.author.avatarUrl
+                                    if (cAvatar != null) {
+                                        SubcomposeAsyncImage(
+                                            model = cAvatar,
+                                            contentDescription = "Commenter Avatar",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    } else {
+                                        Text(
+                                            text = parent.author.displayName.take(2).uppercase(),
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = EduSecondary
+                                        )
+                                    }
+                                }
                                 Spacer(Modifier.width(8.dp))
-                                Text(relativeTime(parent.createdAt), fontSize = 11.sp, color = EduTextSecondary)
+                                Column {
+                                    Text(parent.author.displayName, fontWeight = FontWeight.SemiBold, color = EduTextPrimary)
+                                    Text(relativeTime(parent.createdAt), fontSize = 11.sp, color = EduTextSecondary)
+                                }
                             }
                             Spacer(Modifier.height(2.dp))
                             Text(parent.text, color = EduTextPrimary)
@@ -443,9 +472,36 @@ fun PostCard(
                                     replies.forEach { child ->
                                         Column(modifier = Modifier.padding(vertical = 6.dp)) {
                                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Text(child.author.displayName, fontWeight = FontWeight.Medium, color = EduTextPrimary)
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(24.dp)
+                                                        .clip(CircleShape)
+                                                        .background(EduSecondary.copy(alpha = 0.1f))
+                                                        .clickable { onUserClick(child.author.id.toString()) },
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    val rAvatar = child.author.avatarUrl
+                                                    if (rAvatar != null) {
+                                                        SubcomposeAsyncImage(
+                                                            model = rAvatar,
+                                                            contentDescription = "Reply Avatar",
+                                                            contentScale = ContentScale.Crop,
+                                                            modifier = Modifier.fillMaxSize()
+                                                        )
+                                                    } else {
+                                                        Text(
+                                                            text = child.author.displayName.take(2).uppercase(),
+                                                            fontSize = 9.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = EduSecondary
+                                                        )
+                                                    }
+                                                }
                                                 Spacer(Modifier.width(8.dp))
-                                                Text(relativeTime(child.createdAt), fontSize = 11.sp, color = EduTextSecondary)
+                                                Column {
+                                                    Text(child.author.displayName, fontWeight = FontWeight.Medium, color = EduTextPrimary)
+                                                    Text(relativeTime(child.createdAt), fontSize = 11.sp, color = EduTextSecondary)
+                                                }
                                             }
                                             Spacer(Modifier.height(2.dp))
                                             Text(child.text, color = EduTextPrimary)

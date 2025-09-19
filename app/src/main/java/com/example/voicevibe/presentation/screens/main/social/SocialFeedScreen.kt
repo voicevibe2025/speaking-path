@@ -46,6 +46,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 @Composable
 fun SocialFeedScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToUserProfile: (String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -122,7 +123,8 @@ fun SocialFeedScreen(
                                 fetchComments = { id, cb -> viewModel.fetchComments(id, cb) },
                                 likeComment = { commentId -> viewModel.likeComment(commentId) },
                                 unlikeComment = { commentId -> viewModel.unlikeComment(commentId) },
-                                replyToComment = { parentId, text, done -> viewModel.addComment(post.id, text, parentId) { done() } }
+                                replyToComment = { parentId, text, done -> viewModel.addComment(post.id, text, parentId) { done() } },
+                                onUserClick = onNavigateToUserProfile
                             )
                         }
                     } else {

@@ -207,7 +207,12 @@ fun NavGraph(
 
         // Social feed dedicated screen
         composable(Screen.SocialFeed.route) {
-            SocialFeedScreen(onNavigateBack = { navController.popBackStack() })
+            SocialFeedScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToUserProfile = { userId ->
+                    navController.navigate(Screen.UserProfile.createRoute(userId))
+                }
+            )
         }
 
         composable(Screen.Practice.route) {

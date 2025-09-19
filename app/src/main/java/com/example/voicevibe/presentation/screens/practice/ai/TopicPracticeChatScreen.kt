@@ -1,5 +1,6 @@
 package com.example.voicevibe.presentation.screens.practice.ai
 
+import android.Manifest
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -69,6 +70,9 @@ import com.example.voicevibe.presentation.screens.practice.ai.*
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationTurn
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
 import androidx.compose.ui.platform.LocalContext
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -170,6 +174,7 @@ fun TopicPracticeChatScreen(
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun TopicChatBody(
     modifier: Modifier = Modifier,
@@ -180,6 +185,7 @@ private fun TopicChatBody(
     var messageText by remember { mutableStateOf("") }
     var currentlyPlayingId by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
+    val audioPermission = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
 
     val maleVoiceName = "Puck"
     val femaleVoiceName = "Zephyr"
@@ -269,7 +275,13 @@ private fun TopicChatBody(
                     is TopicChatItem.RecordingPrompt -> RecordingPromptCard(
                         expectedText = item.expectedText,
                         isProcessing = state.isLoading,
-                        onStartRecording = { vm.startUserRecording(context) },
+                        onStartRecording = {
+                            if (audioPermission.status.isGranted) {
+                                vm.startUserRecording(context)
+                            } else {
+                                audioPermission.launchPermissionRequest()
+                            }
+                        },
                         onStopRecording = { vm.stopUserRecordingAndTranscribe(context) }
                     )
                     is TopicChatItem.PracticeHint -> PracticeHintCard(

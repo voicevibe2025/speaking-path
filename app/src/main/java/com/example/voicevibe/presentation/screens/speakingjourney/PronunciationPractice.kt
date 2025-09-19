@@ -243,6 +243,95 @@ fun PronunciationPracticeScreen(
 
                     Spacer(Modifier.height(8.dp))
 
+                    // Inline latest recording result (no overlay)
+                    run {
+                        val latestEntry = remember(ui.currentTopicTranscripts) {
+                            ui.currentTopicTranscripts.maxByOrNull { it.timestamp }
+                        }
+                        latestEntry?.let { entry ->
+                            val pct = (entry.accuracy * 100).toInt().coerceIn(0, 100)
+                            val pass = pct >= 80
+                            val scoreEarned = if (pass) 10 else 0
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .shadow(8.dp, RoundedCornerShape(16.dp)),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a))
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Latest recording result",
+                                            color = Color.White,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            text = "Phrase ${entry.index + 1}",
+                                            color = Color(0xFFB0BEC5),
+                                            fontSize = 12.sp
+                                        )
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                            Text(
+                                                text = "Accuracy",
+                                                color = Color(0xFFB0BEC5),
+                                                fontSize = 13.sp
+                                            )
+                                            Text(
+                                                text = "$pct%",
+                                                color = if (pass) Color(0xFF4CAF50) else Color(0xFFFFB74D),
+                                                fontSize = 20.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                        Column(verticalArrangement = Arrangement.spacedBy(2.dp), horizontalAlignment = Alignment.End) {
+                                            Text(
+                                                text = "Score",
+                                                color = Color(0xFFB0BEC5),
+                                                fontSize = 13.sp
+                                            )
+                                            Text(
+                                                text = "+$scoreEarned",
+                                                color = if (pass) Color(0xFF4CAF50) else Color(0xFFE0E0E0),
+                                                fontSize = 20.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = if (pass) "Great job! Keep it up." else "Aim for 80% to earn +10 score.",
+                                            color = Color(0xFFB0BEC5),
+                                            fontSize = 12.sp
+                                        )
+                                        TextButton(onClick = { analysisFor = entry }) {
+                                            Text("View analysis")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     // Helper text about rewards
                     Text(
                         text = "Complete a phrase (≥80% accuracy) to earn +10 score and +20 XP. Complete all modes to earn +50 XP Topic Mastery.",

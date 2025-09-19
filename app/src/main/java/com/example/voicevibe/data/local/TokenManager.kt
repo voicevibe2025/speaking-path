@@ -41,6 +41,7 @@ class TokenManager @Inject constructor(
     private val onboardingCompletedKey = booleanPreferencesKey(Constants.ONBOARDING_COMPLETED_KEY)
     private val speakingOnlyFlowKey = booleanPreferencesKey(Constants.SPEAKING_ONLY_FLOW_KEY)
     private val ttsVoiceIdKey = stringPreferencesKey(Constants.TTS_VOICE_ID_KEY)
+    private val micPermissionAskedKey = booleanPreferencesKey("mic_permission_asked")
 
     /**
      * Save authentication tokens
@@ -153,6 +154,25 @@ class TokenManager @Inject constructor(
     suspend fun clearAll() {
         dataStore.edit { preferences ->
             preferences.clear()
+        }
+    }
+
+    /**
+     * Mic permission prompt tracking
+     */
+    fun micPermissionAskedFlow(): Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[micPermissionAskedKey] ?: false
+    }
+
+    fun wasMicPermissionAsked(): Boolean = runBlocking {
+        dataStore.data.map { preferences ->
+            preferences[micPermissionAskedKey] ?: false
+        }.first()
+    }
+
+    suspend fun setMicPermissionAsked(value: Boolean = true) {
+        dataStore.edit { preferences ->
+            preferences[micPermissionAskedKey] = value
         }
     }
 

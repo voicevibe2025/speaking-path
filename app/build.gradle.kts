@@ -35,6 +35,30 @@ android {
             )
         }
     }
+    // Signing config from keystore.properties (optional)
+    val keystoreProps = Properties()
+    val keystorePropsFile = rootProject.file("keystore.properties")
+    if (keystorePropsFile.exists()) {
+        try {
+            keystoreProps.load(FileInputStream(keystorePropsFile))
+            signingConfigs {
+                create("release") {
+                    storeFile = rootProject.file(keystoreProps["storeFile"] as String)
+                    storePassword = keystoreProps["storePassword"] as String
+                    keyAlias = keystoreProps["keyAlias"] as String
+                    keyPassword = keystoreProps["keyPassword"] as String
+                }
+            }
+            buildTypes.getByName("release") {
+                signingConfig = signingConfigs.getByName("release")
+            }
+            logger.lifecycle("Loaded release signing config from keystore.properties")
+        } catch (e: Exception) {
+            logger.warn("Failed to load keystore.properties: ${e.message}")
+        }
+    } else {
+        logger.lifecycle("keystore.properties not found at project root. Release build will be unsigned.")
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

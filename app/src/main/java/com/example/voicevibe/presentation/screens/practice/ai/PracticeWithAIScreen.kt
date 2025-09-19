@@ -1,5 +1,6 @@
 package com.example.voicevibe.presentation.screens.practice.ai
 
+import android.Manifest
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -33,6 +34,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -362,6 +366,7 @@ fun ComingSoonScreen() {
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ChatScreen(viewModel: PracticeWithAIViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -369,6 +374,7 @@ fun ChatScreen(viewModel: PracticeWithAIViewModel) {
     val context = LocalContext.current
     var messageText by remember { mutableStateOf("") }
     var lastSpokenIndex by remember { mutableStateOf(-1) }
+    val audioPermission = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
 
     // Auto-play latest AI message when voice mode is ON
     LaunchedEffect(uiState.messages.size, uiState.aiVoiceMode) {
@@ -451,8 +457,15 @@ fun ChatScreen(viewModel: PracticeWithAIViewModel) {
             // Mic record button
             IconButton(
                 onClick = {
-                    if (uiState.isRecording) viewModel.stopRecordingAndTranscribe(context)
-                    else viewModel.startVoiceRecording(context)
+                    if (uiState.isRecording) {
+                        viewModel.stopRecordingAndTranscribe(context)
+                    } else {
+                        if (audioPermission.status.isGranted) {
+                            viewModel.startVoiceRecording(context)
+                        } else {
+                            audioPermission.launchPermissionRequest()
+                        }
+                    }
                 },
                 enabled = !uiState.isLoading
             ) {

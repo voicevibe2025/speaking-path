@@ -1,5 +1,6 @@
 package com.example.voicevibe.presentation.screens.speakingjourney
 
+import android.Manifest
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.spring
@@ -90,9 +91,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalPermissionsApi::class)
 @Composable
 fun ConversationPracticeScreen(
     topicId: String,
@@ -109,6 +113,9 @@ fun ConversationPracticeScreen(
     LaunchedEffect(selectedRole) {
         selectedRole?.let { viewModel.setConversationRole(it) }
     }
+
+    // Microphone permission state (fallback if global request was denied)
+    val audioPermission = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
 
     // Playback state
     var currentIndex by remember(conversation) { mutableStateOf(0) }
@@ -391,7 +398,13 @@ fun ConversationPracticeScreen(
                             ModernRecordPanel(
                                 recordingState = ui.conversationRecordingState,
                                 enabled = canRecord,
-                                onStart = { viewModel.startConversationRecording(context, currentIndex) },
+                                onStart = {
+                                    if (audioPermission.status.isGranted) {
+                                        viewModel.startConversationRecording(context, currentIndex)
+                                    } else {
+                                        audioPermission.launchPermissionRequest()
+                                    }
+                                },
                                 onStop = { viewModel.stopConversationRecording(context) },
                                 modifier = Modifier.padding(bottom = 24.dp)
                             )

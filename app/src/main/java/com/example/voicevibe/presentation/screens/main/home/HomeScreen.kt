@@ -1022,7 +1022,8 @@ private fun StudyToolCard(
             Text(
                 text = title,
                 fontWeight = FontWeight.Bold,
-                color = EduTextPrimary
+                color = EduTextPrimary,
+                fontSize = 12.sp
             )
         }
     }

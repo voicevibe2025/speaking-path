@@ -1020,7 +1020,7 @@ private fun StudyToolsSection(
             StudyToolCard(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Route,
-                title = "Learning Paths",
+                title = "Quest",
                 color = EduSuccess,
                 onClick = onViewPaths
             )

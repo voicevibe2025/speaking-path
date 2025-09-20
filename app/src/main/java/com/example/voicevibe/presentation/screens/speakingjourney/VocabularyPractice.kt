@@ -94,7 +94,7 @@ fun VocabularyPracticeScreen(
     // Timed practice state
     var showStartOverlay by remember(topic?.id, ui.totalQuestions) { mutableStateOf(true) }
     var isTimeUp by remember { mutableStateOf(false) }
-    val totalSeconds = ui.totalQuestions * Constants.CONVERSATION_SECONDS_PER_TURN
+    val totalSeconds = ui.totalQuestions * Constants.PRACTICE_SECONDS_PER_TURN
     var remainingSeconds by remember(totalSeconds) { mutableStateOf(totalSeconds) }
 
     val isTimerRunning = !showStartOverlay && !isTimeUp && totalSeconds > 0 && !ui.isLoading && !ui.showCongrats
@@ -355,7 +355,7 @@ fun VocabularyPracticeScreen(
             if (showStartOverlay && topic != null && !ui.isLoading && ui.totalQuestions > 0) {
                 StartOverlay(
                     totalSeconds = totalSeconds,
-                    perQuestionSeconds = Constants.CONVERSATION_SECONDS_PER_TURN,
+                    perQuestionSeconds = Constants.PRACTICE_SECONDS_PER_TURN,
                     totalQuestions = ui.totalQuestions,
                     onStart = {
                         remainingSeconds = totalSeconds

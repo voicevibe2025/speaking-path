@@ -227,11 +227,13 @@ class SpeakingJourneyViewModel @Inject constructor(
                                     pronunciation = scores.pronunciation,
                                     fluency = scores.fluency,
                                     vocabulary = scores.vocabulary,
+                                    listening = scores.listening ?: 0,
                                     average = scores.average,
                                     meetsRequirement = scores.meetsRequirement,
                                     maxPronunciation = scores.maxPronunciation,
                                     maxFluency = scores.maxFluency,
-                                    maxVocabulary = scores.maxVocabulary
+                                    maxVocabulary = scores.maxVocabulary,
+                                    maxListening = scores.maxListening ?: 100
                                 )
                             },
                             conversationScore = dto.conversationScore,

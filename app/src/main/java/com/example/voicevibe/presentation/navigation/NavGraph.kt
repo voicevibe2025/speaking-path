@@ -300,10 +300,8 @@ fun NavGraph(
             arguments = listOf(navArgument("topicId") { type = NavType.StringType })
         ) { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
-            PlaceholderPracticeScreen(
+            com.example.voicevibe.presentation.screens.speakingjourney.ListeningPracticeScreen(
                 topicId = topicId,
-                practiceType = "Listening",
-                icon = Icons.Default.Hearing,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

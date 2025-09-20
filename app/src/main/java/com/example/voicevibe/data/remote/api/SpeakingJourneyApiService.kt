@@ -82,6 +82,24 @@ interface SpeakingJourneyApiService {
     suspend fun getActivities(
         @Query("limit") limit: Int = 50
     ): Response<List<JourneyActivityDto>>
+
+    // --- Listening Practice ---
+    @POST("speaking/topics/{topicId}/listening/start")
+    suspend fun startListeningPractice(
+        @Path("topicId") topicId: String
+    ): Response<StartListeningPracticeResponseDto>
+
+    @POST("speaking/topics/{topicId}/listening/answer")
+    suspend fun submitListeningAnswer(
+        @Path("topicId") topicId: String,
+        @Body body: SubmitListeningAnswerRequestDto
+    ): Response<SubmitListeningAnswerResponseDto>
+
+    @POST("speaking/topics/{topicId}/listening/complete")
+    suspend fun completeListeningPractice(
+        @Path("topicId") topicId: String,
+        @Body body: CompleteListeningPracticeRequestDto
+    ): Response<CompleteListeningPracticeResponseDto>
 }
 
 data class SpeakingTopicsResponse(
@@ -111,12 +129,14 @@ data class PracticeScoresDto(
     val pronunciation: Int,
     val fluency: Int,
     val vocabulary: Int,
+    val listening: Int? = null,
     val average: Float,
     val meetsRequirement: Boolean,
     // Added maxima for correct percentage computation client-side
     val maxPronunciation: Int,
     val maxFluency: Int,
-    val maxVocabulary: Int
+    val maxVocabulary: Int,
+    val maxListening: Int? = null
 )
 
 data class SpeakingTopicDto(
@@ -265,6 +285,47 @@ data class CompleteVocabularyPracticeResponseDto(
     val topicCompleted: Boolean
 )
 
+// --- Listening Practice DTOs ---
+data class ListeningQuestionDto(
+    val id: String,
+    val question: String,
+    val options: List<String>
+)
+
+data class StartListeningPracticeResponseDto(
+    val sessionId: String,
+    val totalQuestions: Int,
+    val questions: List<ListeningQuestionDto>
+)
+
+data class SubmitListeningAnswerRequestDto(
+    val sessionId: String,
+    val questionId: String,
+    val selected: String
+)
+
+data class SubmitListeningAnswerResponseDto(
+    val correct: Boolean,
+    val xpAwarded: Int,
+    val nextIndex: Int?,
+    val completed: Boolean,
+    val totalScore: Int
+)
+
+data class CompleteListeningPracticeRequestDto(
+    val sessionId: String
+)
+
+data class CompleteListeningPracticeResponseDto(
+    val success: Boolean,
+    val totalQuestions: Int,
+    val correctCount: Int,
+    val totalScore: Int,
+    val xpAwarded: Int,
+    val listeningTotalScore: Int,
+    val topicCompleted: Boolean
+)
+
 // --- Activities DTO ---
 data class JourneyActivityDto(
     val id: String,
@@ -274,4 +335,3 @@ data class JourneyActivityDto(
     val timestamp: LocalDateTime,
     val xpEarned: Int? = null
 )
-

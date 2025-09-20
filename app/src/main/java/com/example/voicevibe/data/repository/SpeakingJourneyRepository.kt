@@ -17,6 +17,11 @@ import com.example.voicevibe.data.remote.api.SubmitVocabularyAnswerRequestDto
 import com.example.voicevibe.data.remote.api.SubmitVocabularyAnswerResponseDto
 import com.example.voicevibe.data.remote.api.CompleteVocabularyPracticeRequestDto
 import com.example.voicevibe.data.remote.api.CompleteVocabularyPracticeResponseDto
+import com.example.voicevibe.data.remote.api.StartListeningPracticeResponseDto
+import com.example.voicevibe.data.remote.api.SubmitListeningAnswerRequestDto
+import com.example.voicevibe.data.remote.api.SubmitListeningAnswerResponseDto
+import com.example.voicevibe.data.remote.api.CompleteListeningPracticeRequestDto
+import com.example.voicevibe.data.remote.api.CompleteListeningPracticeResponseDto
 import com.example.voicevibe.data.remote.api.ConversationSubmissionResultDto
 import com.example.voicevibe.data.remote.api.JourneyActivityDto
 import com.example.voicevibe.domain.model.ActivityType
@@ -240,5 +245,64 @@ class SpeakingJourneyRepository @Inject constructor(
             achievementId = null,
             sessionId = null
         )
+    }
+
+    // --- Listening Practice ---
+    suspend fun startListeningPractice(
+        topicId: String
+    ): Result<StartListeningPracticeResponseDto> {
+        return try {
+            val res = api.startListeningPractice(topicId)
+            if (res.isSuccessful) {
+                val body = res.body() ?: return Result.failure(Exception("Empty response"))
+                Result.success(body)
+            } else {
+                Result.failure(Exception("HTTP ${res.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    suspend fun submitListeningAnswer(
+        topicId: String,
+        sessionId: String,
+        questionId: String,
+        selected: String
+    ): Result<SubmitListeningAnswerResponseDto> {
+        return try {
+            val res = api.submitListeningAnswer(
+                topicId,
+                SubmitListeningAnswerRequestDto(sessionId = sessionId, questionId = questionId, selected = selected)
+            )
+            if (res.isSuccessful) {
+                val body = res.body() ?: return Result.failure(Exception("Empty response"))
+                Result.success(body)
+            } else {
+                Result.failure(Exception("HTTP ${res.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    suspend fun completeListeningPractice(
+        topicId: String,
+        sessionId: String
+    ): Result<CompleteListeningPracticeResponseDto> {
+        return try {
+            val res = api.completeListeningPractice(
+                topicId,
+                CompleteListeningPracticeRequestDto(sessionId = sessionId)
+            )
+            if (res.isSuccessful) {
+                val body = res.body() ?: return Result.failure(Exception("Empty response"))
+                Result.success(body)
+            } else {
+                Result.failure(Exception("HTTP ${res.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
     }
 }

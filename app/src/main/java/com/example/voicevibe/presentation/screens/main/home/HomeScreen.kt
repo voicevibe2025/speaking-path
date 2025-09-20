@@ -122,18 +122,11 @@ fun HomeScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Simple gradient background
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            EduBackground,
-                            Color(0xFFECF0F1)
-                        )
-                    )
-                )
+        Image(
+            painter = painterResource(id = R.drawable.background_green),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
         )
 
         Scaffold(

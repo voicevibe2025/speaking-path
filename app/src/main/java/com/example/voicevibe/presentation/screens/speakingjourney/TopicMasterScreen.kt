@@ -70,6 +70,7 @@ fun TopicMasterScreen(
     LaunchedEffect(ui.selectedTopicIdx, ui.topics) {
         viewModel.loadTranscriptsForCurrentTopic(context)
     }
+    // Confetti follows server unlock criteria (three completions + ≥75% per-practice)
     LaunchedEffect(
         practiceScores?.meetsRequirement,
         topic?.phraseProgress?.isAllPhrasesCompleted,
@@ -80,7 +81,8 @@ fun TopicMasterScreen(
         val allCompleted = (topic?.phraseProgress?.isAllPhrasesCompleted == true) &&
                            (topic?.fluencyProgress?.completed == true) &&
                            ((practiceScores?.vocabulary ?: 0) > 0)
-        if (meets && allCompleted && !celebrationTriggered) {
+        val unlockedNow = meets && allCompleted
+        if (unlockedNow && !celebrationTriggered) {
             showCelebration = true
             try {
                 val mp = MediaPlayer.create(context, R.raw.win)
@@ -92,7 +94,7 @@ fun TopicMasterScreen(
             delay(2200)
             showCelebration = false
             celebrationTriggered = true
-        } else if (!(meets && allCompleted)) {
+        } else if (!unlockedNow) {
             // Allow re-trigger if user later satisfies both the threshold and completion
             celebrationTriggered = false
         }
@@ -412,7 +414,7 @@ fun ProgressSummarySection(topicId: String) {
                                 .fillMaxWidth(fraction = (localCombinedPercent / 100f).coerceIn(0f, 1f))
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(
-                                    if (practiceScores.meetsRequirement &&
+                                    if ((practiceScores.meetsRequirement) &&
                                         (topic?.phraseProgress?.isAllPhrasesCompleted == true) &&
                                         (topic?.fluencyProgress?.completed == true) &&
                                         (practiceScores.vocabulary > 0)
@@ -427,7 +429,7 @@ fun ProgressSummarySection(topicId: String) {
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    val showCongrats = practiceScores.meetsRequirement &&
+                    val showCongrats = (practiceScores.meetsRequirement) &&
                         (topic?.phraseProgress?.isAllPhrasesCompleted == true) &&
                         (topic?.fluencyProgress?.completed == true) &&
                         (practiceScores.vocabulary > 0)
@@ -436,7 +438,7 @@ fun ProgressSummarySection(topicId: String) {
                         text = if (showCongrats) {
                             "🎉 Congratulations! You've unlocked the next topic!"
                         } else {
-                            "Unlock rule: reach at least 75% in each practice"
+                            "Unlock rule: finish all phrases and prompts, and reach ≥75% in Pronunciation, Fluency, and Vocabulary"
                         },
                         fontSize = 14.sp,
                         color = if (showCongrats) {
@@ -446,6 +448,27 @@ fun ProgressSummarySection(topicId: String) {
                         },
                         textAlign = TextAlign.Center
                     )
+
+                    if (!showCongrats) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        // Show remaining steps to unlock for clarity
+                        val phrasesDone = topic?.phraseProgress?.completedPhrases?.size ?: 0
+                        val phrasesTotal = topic?.phraseProgress?.totalPhrases ?: 0
+                        val promptsDone = topic?.fluencyProgress?.promptScores?.size ?: 0
+                        val promptsTotal = topic?.fluencyProgress?.promptsCount ?: 0
+                        val parts = mutableListOf<String>()
+                        if (phrasesTotal > 0 && phrasesDone < phrasesTotal) parts += "Pronunciation: ${phrasesDone}/${phrasesTotal} phrases"
+                        if (promptsTotal > 0 && promptsDone < promptsTotal) parts += "Fluency: ${promptsDone}/${promptsTotal} prompts"
+                        if ((practiceScores.vocabulary <= 0)) parts += "Vocabulary: complete one quiz"
+                        if (parts.isNotEmpty()) {
+                            Text(
+                                text = "Remaining: " + parts.joinToString(", "),
+                                fontSize = 12.sp,
+                                color = Color.White.copy(alpha = 0.7f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 } else {
                     Text(
                         text = "Start practicing to track your progress",

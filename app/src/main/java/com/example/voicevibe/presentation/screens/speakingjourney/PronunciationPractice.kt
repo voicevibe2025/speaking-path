@@ -404,7 +404,7 @@ fun PronunciationPracticeScreen(
                     .groupBy { it.index }
                     .mapValues { (_, list) -> list.maxByOrNull { it.timestamp }!! }
                 val avgPct: Int = if (latestByPhrase.isNotEmpty()) {
-                    val sum = latestByPhrase.values.sumOf { (it.accuracy * 100f).toInt().coerceIn(0, 100) }
+                    val sum = latestByPhrase.values.sumOf { it.accuracy.toInt().coerceIn(0, 100) }
                     (sum.toFloat() / latestByPhrase.size.toFloat()).toInt()
                 } else 0
                 // Estimate XP as +20 per phrase (≥80% accuracy). Topic Mastery (+50) is awarded when all modes complete.

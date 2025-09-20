@@ -480,6 +480,8 @@ class SpeakingJourneyViewModel @Inject constructor(
                             currentTopicTranscripts = updatedTranscripts.sortedBy { it.index },
                             debug = "submit ok idx=$phraseIndex next=${dto.nextPhraseIndex} topicCompleted=${dto.topicCompleted} localRecs=${updatedTranscripts.size}"
                         )
+                        // Refresh topics to pull updated server-side practice scores
+                        reloadTopics()
                         // Count today's activity towards Day Streak
                         markSpeakingActivity()
                         // Exit review mode so hero follows current progress

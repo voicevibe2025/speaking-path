@@ -66,6 +66,10 @@ fun TopicMasterScreen(
     val context = LocalContext.current
     var showCelebration by remember { mutableStateOf(false) }
     var celebrationTriggered by rememberSaveable(topicId) { mutableStateOf(false) }
+    // Ensure local transcripts are loaded so live pronunciation score can display immediately
+    LaunchedEffect(ui.selectedTopicIdx, ui.topics) {
+        viewModel.loadTranscriptsForCurrentTopic(context)
+    }
     LaunchedEffect(practiceScores?.meetsRequirement) {
         val meets = practiceScores?.meetsRequirement == true
         if (meets && !celebrationTriggered) {
@@ -215,6 +219,16 @@ fun PracticeCardsSection(
     val serverConversationScore = topic?.conversationScore ?: 0
     val conversationScoreForUi = maxOf(serverConversationScore, liveConversationScore)
 
+    // Live Pronunciation score from local transcripts (average of latest per phrase, 0–100)
+    val latestByPhrase: Map<Int, PhraseTranscriptEntry> = ui.currentTopicTranscripts
+        .groupBy { it.index }
+        .mapValues { (_, list) -> list.maxByOrNull { it.timestamp }!! }
+    val livePronunciationScore: Int = if (latestByPhrase.isNotEmpty()) {
+        val sum = latestByPhrase.values.sumOf { it.accuracy.toInt().coerceIn(0, 100) }
+        (sum.toFloat() / latestByPhrase.size.toFloat()).toInt()
+    } else 0
+    val pronScoreForUi = maxOf(practiceScores?.pronunciation ?: 0, livePronunciationScore)
+
     val practiceItems = listOf(
         // Conversation Practice at the top
         PracticeItem(
@@ -231,7 +245,7 @@ fun PracticeCardsSection(
             description = "Perfect your accent",
             icon = Icons.Default.Mic,
             gradient = listOf(Color(0xFFFF006E), Color(0xFFFF4081)),
-            score = practiceScores?.pronunciation ?: 0,
+            score = pronScoreForUi,
             maxScore = practiceScores?.maxPronunciation ?: 100,
             onClick = { onNavigateToPronunciationPractice(topicId) }
         ),
@@ -291,6 +305,15 @@ fun ProgressSummarySection(topicId: String) {
     val ui by viewModel.uiState
     val topic = ui.topics.firstOrNull { it.id == topicId }
     val practiceScores = topic?.practiceScores
+    // Live Pronunciation score from local transcripts (average 0–100 across latest per-phrase)
+    val latestByPhrase: Map<Int, PhraseTranscriptEntry> = ui.currentTopicTranscripts
+        .groupBy { it.index }
+        .mapValues { (_, list) -> list.maxByOrNull { it.timestamp }!! }
+    val livePronunciationScore: Int = if (latestByPhrase.isNotEmpty()) {
+        val sum = latestByPhrase.values.sumOf { it.accuracy.toInt().coerceIn(0, 100) }
+        (sum.toFloat() / latestByPhrase.size.toFloat()).toInt()
+    } else 0
+    val pronScoreForUi = maxOf(practiceScores?.pronunciation ?: 0, livePronunciationScore)
     
     Card(
         modifier = Modifier
@@ -329,7 +352,7 @@ fun ProgressSummarySection(topicId: String) {
                 ) {
                     ScoreIndicator(
                         title = "Pronunciation",
-                        score = practiceScores.pronunciation,
+                        score = pronScoreForUi,
                         color = Color(0xFFFF006E)
                     )
                     ScoreIndicator(
@@ -347,13 +370,15 @@ fun ProgressSummarySection(topicId: String) {
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 // Average score and progress
-                val hasAllScores = practiceScores.pronunciation > 0 && 
+                val hasAllScores = pronScoreForUi > 0 && 
                                    practiceScores.fluency > 0 && 
                                    practiceScores.vocabulary > 0
+                // Recompute local average to reflect live pronunciation
+                val localAverage = ((pronScoreForUi + practiceScores.fluency + practiceScores.vocabulary) / 3f)
                 
                 if (hasAllScores) {
                     Text(
-                        text = "Overall Progress: ${practiceScores.average}%",
+                        text = "Overall Progress: ${localAverage.toInt()}%",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White
@@ -372,7 +397,7 @@ fun ProgressSummarySection(topicId: String) {
                         Box(
                             modifier = Modifier
                                 .fillMaxHeight()
-                                .fillMaxWidth(fraction = (practiceScores.average / 100f).coerceIn(0f, 1f))
+                                .fillMaxWidth(fraction = (localAverage / 100f).coerceIn(0f, 1f))
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(
                                     if (practiceScores.meetsRequirement) {

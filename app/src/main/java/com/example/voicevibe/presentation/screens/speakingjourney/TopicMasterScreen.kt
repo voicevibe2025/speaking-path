@@ -258,8 +258,8 @@ fun PracticeCardsSection(
             description = "Improve comprehension",
             icon = Icons.AutoMirrored.Filled.VolumeUp,
             gradient = listOf(Color(0xFF8338EC), Color(0xFF6C63FF)),
-            score = 0, // Not implemented yet
-            maxScore = 100,
+            score = practiceScores?.listening ?: 0,
+            maxScore = practiceScores?.maxListening ?: 100,
             onClick = { onNavigateToListeningPractice(topicId) }
         ),
         PracticeItem(

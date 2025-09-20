@@ -351,6 +351,8 @@ fun ListeningPracticeScreen(
                 CongratsOverlayListening(ui = ui, onContinue = {
                     if (sfxWin != 0) soundPool.play(sfxWin, 1f, 1f, 1, 0, 1f)
                     viewModel.dismissCongrats()
+                    // Proactively refresh topics so TopicMaster shows updated Listening score
+                    sjVM.reloadTopics()
                     onNavigateBack()
                 })
             }

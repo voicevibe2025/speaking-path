@@ -399,12 +399,19 @@ fun PronunciationPracticeScreen(
             // Topic completion congratulations overlay
             if (ui.showPronunciationCongrats) {
                 val phraseCount = topic.material.size
-                val totalScore = phraseCount * 10
+                // Compute average accuracy (0–100) across latest per-phrase recordings
+                val latestByPhrase: Map<Int, PhraseTranscriptEntry> = ui.currentTopicTranscripts
+                    .groupBy { it.index }
+                    .mapValues { (_, list) -> list.maxByOrNull { it.timestamp }!! }
+                val avgPct: Int = if (latestByPhrase.isNotEmpty()) {
+                    val sum = latestByPhrase.values.sumOf { (it.accuracy * 100f).toInt().coerceIn(0, 100) }
+                    (sum.toFloat() / latestByPhrase.size.toFloat()).toInt()
+                } else 0
                 // Estimate XP as +20 per phrase (≥80% accuracy). Topic Mastery (+50) is awarded when all modes complete.
                 val totalXp = phraseCount * 20
                 PronunciationCongratsDialog(
                     topicTitle = topic.title,
-                    score = totalScore,
+                    score = avgPct,
                     xp = totalXp,
                     onContinue = {
                         viewModel.dismissPronunciationCongrats()

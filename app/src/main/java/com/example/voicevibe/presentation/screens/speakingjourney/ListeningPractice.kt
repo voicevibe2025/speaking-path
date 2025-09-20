@@ -64,7 +64,8 @@ fun ListeningPracticeScreen(
     var isTimeUp by remember { mutableStateOf(false) }
     val totalSeconds = ui.totalQuestions * Constants.PRACTICE_SECONDS_PER_TURN
     var remainingSeconds by remember(totalSeconds) { mutableStateOf(totalSeconds) }
-    val isTimerRunning = !showStartOverlay && !isTimeUp && totalSeconds > 0 && !ui.isLoading && !ui.showCongrats && ui.showQuestions
+    var isTtsPreparing by remember { mutableStateOf(false) }
+    val isTimerRunning = !showStartOverlay && !isTimeUp && totalSeconds > 0 && !ui.isLoading && !ui.showCongrats && ui.showQuestions && !isTtsPreparing
 
     val context = LocalContext.current
     val soundPool = remember {
@@ -84,6 +85,8 @@ fun ListeningPracticeScreen(
 
     val toneGen = remember { runCatching { ToneGenerator(AudioManager.STREAM_NOTIFICATION, 60) }.getOrNull() }
     DisposableEffect(Unit) { onDispose { toneGen?.release() } }
+    // Stop any ongoing playback when leaving screen
+    DisposableEffect(Unit) { onDispose { sjVM.stopPlayback() } }
 
     // Intro conversation playback
     var introPlaying by remember { mutableStateOf(false) }
@@ -150,10 +153,18 @@ fun ListeningPracticeScreen(
         }
     }
 
-    // Speak each question when first shown
+    // Speak each question when first shown; show loader and pause timer until TTS actually starts
     LaunchedEffect(ui.question, ui.showQuestions) {
         if (ui.showQuestions && ui.question.isNotBlank()) {
-            sjVM.speakWithBackendTts(ui.question, onStart = {}, onDone = {}, onError = {})
+            isTtsPreparing = true
+            sjVM.speakWithBackendTts(
+                ui.question,
+                onStart = { isTtsPreparing = false },
+                onDone = {},
+                onError = { isTtsPreparing = false }
+            )
+        } else {
+            isTtsPreparing = false
         }
     }
 
@@ -184,7 +195,7 @@ fun ListeningPracticeScreen(
                     }
                 },
                 actions = {
-                    if (!showStartOverlay && !isTimeUp && totalSeconds > 0 && !ui.isLoading && !ui.showCongrats && ui.showQuestions) {
+                    if (!showStartOverlay && !isTimeUp && totalSeconds > 0 && !ui.isLoading && !ui.showCongrats && ui.showQuestions && !isTtsPreparing) {
                         TimerChip(remainingSeconds = remainingSeconds)
                     }
                 },
@@ -278,38 +289,57 @@ fun ListeningPracticeScreen(
 
                         // Question and options
                         if (ui.showQuestions) {
-                            Card(
-                                modifier = Modifier.fillMaxWidth().shadow(12.dp, RoundedCornerShape(24.dp)),
-                                shape = RoundedCornerShape(24.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a))
-                            ) {
-                                Column(Modifier.fillMaxWidth().padding(24.dp)) {
-                                    Text("Listen & Choose", color = Color(0xFFFFD700), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                                    Spacer(Modifier.height(10.dp))
-                                    Text(ui.question, color = Color.White, fontSize = 20.sp, lineHeight = 28.sp)
+                            if (isTtsPreparing) {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth().shadow(12.dp, RoundedCornerShape(24.dp)),
+                                    shape = RoundedCornerShape(24.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a))
+                                ) {
+                                    Column(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(24.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        CircularProgressIndicator(color = Color(0xFF90CAF9), strokeWidth = 3.dp)
+                                        Spacer(Modifier.height(12.dp))
+                                        Text("Preparing next question…", color = Color.White)
+                                    }
                                 }
-                            }
-
-                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                ui.options.forEach { option ->
-                                    OptionItem(
-                                        text = option,
-                                        enabled = !ui.isSubmitting && !ui.revealedAnswer,
-                                        selected = ui.selectedOption == option,
-                                        reveal = ui.revealedAnswer,
-                                        answerCorrect = ui.answerCorrect,
-                                    ) { viewModel.selectOption(option) }
+                            } else {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth().shadow(12.dp, RoundedCornerShape(24.dp)),
+                                    shape = RoundedCornerShape(24.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a))
+                                ) {
+                                    Column(Modifier.fillMaxWidth().padding(24.dp)) {
+                                        Text("Listen & Choose", color = Color(0xFFFFD700), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                                        Spacer(Modifier.height(10.dp))
+                                        Text(ui.question, color = Color.White, fontSize = 20.sp, lineHeight = 28.sp)
+                                    }
                                 }
-                            }
 
-                            Spacer(Modifier.height(4.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("Score: ${ui.score}", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                                Text("XP +${ui.lastAwardedXp} (Total ${ui.totalXp})", color = Color(0xFF81C784), fontSize = 14.sp)
+                                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    ui.options.forEach { option ->
+                                        OptionItem(
+                                            text = option,
+                                            enabled = !ui.isSubmitting && !ui.revealedAnswer,
+                                            selected = ui.selectedOption == option,
+                                            reveal = ui.revealedAnswer,
+                                            answerCorrect = ui.answerCorrect,
+                                        ) { viewModel.selectOption(option) }
+                                    }
+                                }
+
+                                Spacer(Modifier.height(4.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Score: ${ui.score}", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                                    Text("XP +${ui.lastAwardedXp} (Total ${ui.totalXp})", color = Color(0xFF81C784), fontSize = 14.sp)
+                                }
                             }
                         }
                     }
@@ -333,6 +363,8 @@ fun ListeningPracticeScreen(
                         isTimeUp = false
                         showStartOverlay = false
                         introPlayed = false
+                        // Ensure no lingering audio before starting intro
+                        sjVM.stopPlayback()
                         // Start intro audio
                         playConversationAll()
                     }
@@ -342,12 +374,14 @@ fun ListeningPracticeScreen(
             if (isTimeUp && topic != null && !ui.showCongrats) {
                 TimeUpOverlay(
                     onRestart = {
-                        remainingSeconds = totalSeconds
+                        // Reset state, reload questions, and return to Start overlay; do NOT auto-play audio while loading
+                        sjVM.stopPlayback()
                         isTimeUp = false
-                        showStartOverlay = false
+                        showStartOverlay = true
                         introPlayed = false
+                        isTtsPreparing = false
+                        remainingSeconds = totalSeconds
                         viewModel.restart(topic)
-                        playConversationAll()
                     },
                     onExit = onNavigateBack
                 )

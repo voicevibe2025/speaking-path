@@ -70,9 +70,17 @@ fun TopicMasterScreen(
     LaunchedEffect(ui.selectedTopicIdx, ui.topics) {
         viewModel.loadTranscriptsForCurrentTopic(context)
     }
-    LaunchedEffect(practiceScores?.meetsRequirement) {
+    LaunchedEffect(
+        practiceScores?.meetsRequirement,
+        topic?.phraseProgress?.isAllPhrasesCompleted,
+        topic?.fluencyProgress?.completed,
+        practiceScores?.vocabulary
+    ) {
         val meets = practiceScores?.meetsRequirement == true
-        if (meets && !celebrationTriggered) {
+        val allCompleted = (topic?.phraseProgress?.isAllPhrasesCompleted == true) &&
+                           (topic?.fluencyProgress?.completed == true) &&
+                           ((practiceScores?.vocabulary ?: 0) > 0)
+        if (meets && allCompleted && !celebrationTriggered) {
             showCelebration = true
             try {
                 val mp = MediaPlayer.create(context, R.raw.win)
@@ -84,8 +92,8 @@ fun TopicMasterScreen(
             delay(2200)
             showCelebration = false
             celebrationTriggered = true
-        } else if (!meets) {
-            // Allow re-trigger if user drops below threshold and then meets it again later
+        } else if (!(meets && allCompleted)) {
+            // Allow re-trigger if user later satisfies both the threshold and completion
             celebrationTriggered = false
         }
     }
@@ -369,23 +377,27 @@ fun ProgressSummarySection(topicId: String) {
                 
                 Spacer(modifier = Modifier.height(20.dp))
                 
-                // Average score and progress
-                val hasAllScores = pronScoreForUi > 0 && 
-                                   practiceScores.fluency > 0 && 
-                                   practiceScores.vocabulary > 0
-                // Recompute local average to reflect live pronunciation
-                val localAverage = ((pronScoreForUi + practiceScores.fluency + practiceScores.vocabulary) / 3f)
-                
-                if (hasAllScores) {
+                // Dynamic combined progress using available scores and maxima
+                val pronMax = practiceScores.maxPronunciation
+                val fluMax = practiceScores.maxFluency
+                val vocabMax = practiceScores.maxVocabulary
+                val pronEff = pronScoreForUi.coerceAtMost(pronMax)
+                val fluEff = practiceScores.fluency.coerceAtMost(fluMax)
+                val vocabEff = practiceScores.vocabulary.coerceAtMost(vocabMax)
+                val totalEff = pronEff + fluEff + vocabEff
+                val totalMax = (pronMax + fluMax + vocabMax).coerceAtLeast(1)
+                val localCombinedPercent = (totalEff.toFloat() / totalMax.toFloat()) * 100f
+
+                if (totalEff > 0) {
                     Text(
-                        text = "Overall Progress: ${localAverage.toInt()}%",
+                        text = "Overall Progress: ${localCombinedPercent.toInt()}%",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White
                     )
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     // Progress bar
                     Box(
                         modifier = Modifier
@@ -397,10 +409,14 @@ fun ProgressSummarySection(topicId: String) {
                         Box(
                             modifier = Modifier
                                 .fillMaxHeight()
-                                .fillMaxWidth(fraction = (localAverage / 100f).coerceIn(0f, 1f))
+                                .fillMaxWidth(fraction = (localCombinedPercent / 100f).coerceIn(0f, 1f))
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(
-                                    if (practiceScores.meetsRequirement) {
+                                    if (practiceScores.meetsRequirement &&
+                                        (topic?.phraseProgress?.isAllPhrasesCompleted == true) &&
+                                        (topic?.fluencyProgress?.completed == true) &&
+                                        (practiceScores.vocabulary > 0)
+                                    ) {
                                         Color(0xFF06FFA5)
                                     } else {
                                         Color(0xFFFFBE0B)
@@ -408,17 +424,22 @@ fun ProgressSummarySection(topicId: String) {
                                 )
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(12.dp))
-                    
+
+                    val showCongrats = practiceScores.meetsRequirement &&
+                        (topic?.phraseProgress?.isAllPhrasesCompleted == true) &&
+                        (topic?.fluencyProgress?.completed == true) &&
+                        (practiceScores.vocabulary > 0)
+
                     Text(
-                        text = if (practiceScores.meetsRequirement) {
+                        text = if (showCongrats) {
                             "🎉 Congratulations! You've unlocked the next topic!"
                         } else {
                             "Unlock rule: reach at least 75% in each practice"
                         },
                         fontSize = 14.sp,
-                        color = if (practiceScores.meetsRequirement) {
+                        color = if (showCongrats) {
                             Color(0xFF06FFA5)
                         } else {
                             Color.White.copy(alpha = 0.7f)
@@ -427,7 +448,7 @@ fun ProgressSummarySection(topicId: String) {
                     )
                 } else {
                     Text(
-                        text = "Complete all 3 practices to see your progress",
+                        text = "Start practicing to track your progress",
                         fontSize = 14.sp,
                         color = Color.White.copy(alpha = 0.7f),
                         textAlign = TextAlign.Center

@@ -162,6 +162,29 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun deletePost(postId: Int, onDone: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            socialRepository.deletePost(postId)
+            _uiState.update { state ->
+                state.copy(posts = state.posts.filterNot { it.id == postId })
+            }
+            onDone?.let { it() }
+        }
+    }
+
+    fun deleteComment(commentId: Int, postId: Int, onDone: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            socialRepository.deleteComment(commentId)
+            // Optimistically decrement comments count for the post
+            _uiState.update { state ->
+                state.copy(posts = state.posts.map { p ->
+                    if (p.id == postId) p.copy(commentsCount = (p.commentsCount - 1).coerceAtLeast(0)) else p
+                })
+            }
+            onDone?.let { it() }
+        }
+    }
+
     private fun loadUserProfileData() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }

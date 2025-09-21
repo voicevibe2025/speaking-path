@@ -23,6 +23,7 @@ data class Post(
     val commentsCount: Int,
     val isLikedByMe: Boolean,
     val canInteract: Boolean,
+    val canDelete: Boolean = false,
 )
 
 /** Comment on a post */
@@ -35,4 +36,5 @@ data class PostComment(
     val createdAt: LocalDateTime,
     val likesCount: Int = 0,
     val isLikedByMe: Boolean = false,
+    val canDelete: Boolean = false,
 )

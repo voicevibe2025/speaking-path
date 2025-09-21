@@ -124,7 +124,9 @@ fun SocialFeedScreen(
                                 likeComment = { commentId -> viewModel.likeComment(commentId) },
                                 unlikeComment = { commentId -> viewModel.unlikeComment(commentId) },
                                 replyToComment = { parentId, text, done -> viewModel.addComment(post.id, text, parentId) { done() } },
-                                onUserClick = onNavigateToUserProfile
+                                onUserClick = onNavigateToUserProfile,
+                                onDeletePost = { viewModel.deletePost(post.id) },
+                                onDeleteComment = { commentId, done -> viewModel.deleteComment(commentId, post.id) { done() } }
                             )
                         }
                     } else {

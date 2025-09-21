@@ -38,6 +38,9 @@ interface SocialApiService {
     @DELETE("social/posts/{id}/like/")
     suspend fun unlikePost(@Path("id") postId: Int): Response<Map<String, Any>>
 
+    @DELETE("social/posts/{id}/")
+    suspend fun deletePost(@Path("id") postId: Int): Response<Unit>
+
     @GET("social/posts/{id}/comments/")
     suspend fun getComments(@Path("id") postId: Int): Response<List<PostComment>>
 
@@ -61,4 +64,7 @@ interface SocialApiService {
 
     @DELETE("social/comments/{id}/like/")
     suspend fun unlikeComment(@Path("id") commentId: Int): Response<Map<String, Any>>
+
+    @DELETE("social/comments/{id}/")
+    suspend fun deleteComment(@Path("id") commentId: Int): Response<Unit>
 }

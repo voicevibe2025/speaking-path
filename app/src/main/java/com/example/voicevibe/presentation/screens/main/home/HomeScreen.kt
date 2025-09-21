@@ -111,6 +111,8 @@ fun HomeScreen(
         }
     }
 
+    
+
     // Handle refresh
     fun onRefresh() {
         coroutineScope.launch {
@@ -238,10 +240,14 @@ fun PostCard(
     unlikeComment: (Int) -> Unit,
     replyToComment: (parentId: Int, text: String, () -> Unit) -> Unit,
     onUserClick: (String) -> Unit,
+    onDeletePost: () -> Unit,
+    onDeleteComment: (Int, () -> Unit) -> Unit,
 ) {
     val context = LocalContext.current
     var showComments by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showMenu by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -283,6 +289,22 @@ fun PostCard(
                     Text(post.author.displayName, fontWeight = FontWeight.Bold, color = EduTextPrimary)
                     // Relative time from createdAt
                     Text(relativeTime(post.createdAt), fontSize = 12.sp, color = EduTextSecondary)
+                }
+                if (post.canDelete) {
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = null, tint = EduTextSecondary)
+                        }
+                        DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                            DropdownMenuItem(
+                                text = { Text("Delete") },
+                                onClick = {
+                                    showMenu = false
+                                    showDeleteConfirm = true
+                                }
+                            )
+                        }
+                    }
                 }
             }
 
@@ -455,6 +477,17 @@ fun PostCard(
                                     color = EduSecondary,
                                     modifier = Modifier.clickable(enabled = post.canInteract) { replyToId = parent.id }
                                 )
+                                if (parent.canDelete) {
+                                    Text(
+                                        text = "Delete",
+                                        color = EduAccent,
+                                        modifier = Modifier.clickable {
+                                            onDeleteComment(parent.id) {
+                                                fetchComments(post.id) { list -> comments = list }
+                                            }
+                                        }
+                                    )
+                                }
                             }
 
                             // Replies nested under parent (newest first)
@@ -528,6 +561,17 @@ fun PostCard(
                                                     color = EduSecondary,
                                                     modifier = Modifier.clickable(enabled = post.canInteract) { replyToId = parent.id }
                                                 )
+                                                if (child.canDelete) {
+                                                    Text(
+                                                        text = "Delete",
+                                                        color = EduAccent,
+                                                        modifier = Modifier.clickable {
+                                                            onDeleteComment(child.id) {
+                                                                fetchComments(post.id) { list -> comments = list }
+                                                            }
+                                                        }
+                                                    )
+                                                }
                                             }
                                         }
                                     }

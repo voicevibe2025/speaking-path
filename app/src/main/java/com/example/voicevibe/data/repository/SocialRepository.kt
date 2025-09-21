@@ -98,4 +98,18 @@ class SocialRepository @Inject constructor(
             if (resp.isSuccessful) Resource.Success(Unit) else Resource.Error("Failed to unlike comment")
         } catch (e: Exception) { Resource.Error(e.message ?: "Unknown error") }
     }
+
+    suspend fun deletePost(id: Int): Resource<Unit> {
+        return try {
+            val resp = api.deletePost(id)
+            if (resp.isSuccessful) Resource.Success(Unit) else Resource.Error("Failed to delete post")
+        } catch (e: Exception) { Resource.Error(e.message ?: "Unknown error") }
+    }
+
+    suspend fun deleteComment(id: Int): Resource<Unit> {
+        return try {
+            val resp = api.deleteComment(id)
+            if (resp.isSuccessful) Resource.Success(Unit) else Resource.Error("Failed to delete comment")
+        } catch (e: Exception) { Resource.Error(e.message ?: "Unknown error") }
+    }
 }

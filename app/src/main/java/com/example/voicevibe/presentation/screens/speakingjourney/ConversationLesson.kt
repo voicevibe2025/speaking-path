@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.voicevibe.R
 
@@ -238,36 +239,58 @@ fun ConversationLessonScreen(
                     val isSpeakerA = current?.speaker.equals("A", ignoreCase = true)
                     val playing = currentlyPlayingId == current?.text
 
+                    val compact = embedded
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 20.dp),
-                        verticalArrangement = Arrangement.SpaceBetween,
+                            .padding(horizontal = if (compact) 16.dp else 20.dp),
+                        verticalArrangement = if (compact) Arrangement.Top else Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         // Progress indicator
                         ConversationProgress(
                             currentIndex = currentIndex,
                             totalSteps = conversation.size,
-                            modifier = Modifier.padding(top = 16.dp)
+                            modifier = Modifier.padding(top = if (compact) 8.dp else 16.dp),
+                            compact = compact
                         )
 
                         // Speakers section with modern avatars
                         ModernSpeakersSection(
                             isSpeakerA = isSpeakerA,
                             isPlaying = playing,
-                            modifier = Modifier.padding(vertical = 24.dp)
+                            modifier = Modifier.padding(vertical = if (compact) 12.dp else 24.dp),
+                            compact = compact
                         )
 
-                        // Modern speech bubble
+                        // Modern speech bubble (flexes to fill remaining space when compact)
                         current?.let { turn ->
-                            ModernSpeechBubble(
-                                text = turn.text,
-                                isSpeakerA = isSpeakerA,
-                                isPlaying = playing,
-                                primaryGradient = primaryGradient,
-                                secondaryGradient = secondaryGradient
-                            )
+                            if (compact) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f, fill = true)
+                                ) {
+                                    ModernSpeechBubble(
+                                        text = turn.text,
+                                        isSpeakerA = isSpeakerA,
+                                        isPlaying = playing,
+                                        primaryGradient = primaryGradient,
+                                        secondaryGradient = secondaryGradient,
+                                        compact = true
+                                    )
+                                }
+                            } else {
+                                ModernSpeechBubble(
+                                    text = turn.text,
+                                    isSpeakerA = isSpeakerA,
+                                    isPlaying = playing,
+                                    primaryGradient = primaryGradient,
+                                    secondaryGradient = secondaryGradient,
+                                    compact = false
+                                )
+                            }
                         }
 
                         // Modern control panel
@@ -289,7 +312,8 @@ fun ConversationLessonScreen(
                                 val newIdx = (currentIndex + 1).coerceAtMost(conversation.lastIndex)
                                 playTurn(newIdx)
                             },
-                            modifier = Modifier.padding(bottom = 16.dp)
+                            modifier = Modifier.padding(bottom = if (compact) 8.dp else 16.dp),
+                            compact = compact
                         )
                     }
                 }
@@ -302,7 +326,8 @@ fun ConversationLessonScreen(
 fun ConversationProgress(
     currentIndex: Int,
     totalSteps: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    compact: Boolean = false
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -312,6 +337,7 @@ fun ConversationProgress(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
+            val barHeight = if (compact) 3.dp else 4.dp
             for (i in 0 until totalSteps) {
                 val isActive = i <= currentIndex
                 val width by animateFloatAsState(
@@ -321,7 +347,7 @@ fun ConversationProgress(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(4.dp)
+                        .height(barHeight)
                         .padding(horizontal = 2.dp)
                         .clip(RoundedCornerShape(2.dp))
                         .background(
@@ -339,11 +365,11 @@ fun ConversationProgress(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(if (compact) 6.dp else 8.dp))
         Text(
             text = "Step ${currentIndex + 1} of $totalSteps",
             color = Color.White.copy(alpha = 0.7f),
-            fontSize = 12.sp,
+            fontSize = if (compact) 11.sp else 12.sp,
             fontWeight = FontWeight.Medium
         )
     }
@@ -353,7 +379,8 @@ fun ConversationProgress(
 fun ModernSpeakersSection(
     isSpeakerA: Boolean,
     isPlaying: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    compact: Boolean = false
 ) {
     val pulseAnimation = rememberInfiniteTransition()
     val pulseScale by pulseAnimation.animateFloat(
@@ -370,6 +397,9 @@ fun ModernSpeakersSection(
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        val avatarSize = if (compact) 56.dp else 80.dp
+        val glowSize = if (compact) 76.dp else 100.dp
+        val nameSize = if (compact) 12.sp else 14.sp
         // Speaker A
         SpeakerAvatar(
             imageRes = R.drawable.ic_male_head,
@@ -377,7 +407,10 @@ fun ModernSpeakersSection(
             isActive = isSpeakerA,
             isPlaying = isPlaying && isSpeakerA,
             pulseScale = if (isPlaying && isSpeakerA) pulseScale else 1f,
-            glowColor = Color(0xFF667EEA)
+            glowColor = Color(0xFF667EEA),
+            avatarSize = avatarSize,
+            glowSize = glowSize,
+            nameFontSize = nameSize
         )
 
         // VS indicator
@@ -395,7 +428,10 @@ fun ModernSpeakersSection(
             isActive = !isSpeakerA,
             isPlaying = isPlaying && !isSpeakerA,
             pulseScale = if (isPlaying && !isSpeakerA) pulseScale else 1f,
-            glowColor = Color(0xFF4FACFE)
+            glowColor = Color(0xFF4FACFE),
+            avatarSize = avatarSize,
+            glowSize = glowSize,
+            nameFontSize = nameSize
         )
     }
 }
@@ -407,7 +443,10 @@ fun SpeakerAvatar(
     isActive: Boolean,
     isPlaying: Boolean,
     pulseScale: Float,
-    glowColor: Color
+    glowColor: Color,
+    avatarSize: Dp = 80.dp,
+    glowSize: Dp = 100.dp,
+    nameFontSize: androidx.compose.ui.unit.TextUnit = 14.sp
 ) {
     val scale by animateFloatAsState(
         targetValue = if (isActive) 1.1f else 1f,
@@ -428,7 +467,7 @@ fun SpeakerAvatar(
             if (isPlaying) {
                 Box(
                     modifier = Modifier
-                        .size(100.dp)
+                        .size(glowSize)
                         .graphicsLayer {
                             scaleX = pulseScale
                             scaleY = pulseScale
@@ -448,7 +487,7 @@ fun SpeakerAvatar(
             
             // Avatar
             Surface(
-                modifier = Modifier.size(80.dp),
+                modifier = Modifier.size(avatarSize),
                 shape = CircleShape,
                 border = BorderStroke(
                     width = if (isActive) 3.dp else 1.dp,
@@ -476,7 +515,7 @@ fun SpeakerAvatar(
             text = label,
             color = if (isActive) Color.White else Color.White.copy(alpha = 0.5f),
             fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
-            fontSize = 14.sp
+            fontSize = nameFontSize
         )
     }
 }
@@ -487,14 +526,15 @@ fun ModernSpeechBubble(
     isSpeakerA: Boolean,
     isPlaying: Boolean,
     primaryGradient: List<Color>,
-    secondaryGradient: List<Color>
+    secondaryGradient: List<Color>,
+    compact: Boolean = false
 ) {
     val scale by animateFloatAsState(
         targetValue = if (isPlaying) 1.02f else 1f,
         animationSpec = spring(dampingRatio = 0.7f)
     )
-    val waveHeight = 30.dp
-    val waveGap = 10.dp
+    val waveHeight = if (compact) 20.dp else 30.dp
+    val waveGap = if (compact) 8.dp else 10.dp
 
     Box(
         modifier = Modifier
@@ -526,7 +566,7 @@ fun ModernSpeechBubble(
                             )
                         )
                     )
-                    .padding(24.dp)
+                    .padding(if (compact) 12.dp else 24.dp)
             ) {
                 Column {
                     if (isPlaying) {
@@ -540,9 +580,9 @@ fun ModernSpeechBubble(
                     Text(
                         text = text,
                         color = Color.White,
-                        fontSize = 18.sp,
+                        fontSize = if (compact) 16.sp else 18.sp,
                         fontWeight = FontWeight.Normal,
-                        lineHeight = 28.sp,
+                        lineHeight = if (compact) 24.sp else 28.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -610,7 +650,8 @@ fun ModernControlPanel(
     onPlayAll: () -> Unit,
     onStop: () -> Unit,
     onNext: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    compact: Boolean = false
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -624,7 +665,7 @@ fun ModernControlPanel(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp, horizontal = 24.dp),
+                .padding(vertical = if (compact) 10.dp else 16.dp, horizontal = if (compact) 16.dp else 24.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -632,13 +673,13 @@ fun ModernControlPanel(
             ModernControlButton(
                 onClick = onPrevious,
                 enabled = currentIndex > 0,
-                size = 48.dp
+                size = if (compact) 40.dp else 48.dp
             ) {
                 Icon(
                     Icons.Default.SkipPrevious,
                     contentDescription = "Previous",
                     tint = Color.White,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(if (compact) 24.dp else 28.dp)
                 )
             }
 
@@ -648,20 +689,24 @@ fun ModernControlPanel(
                     onClick = { if (isPlaying) onStop() else onPlayAll() }
                 )
             ) {
-                ModernPlayButton(isPlaying = isPlaying)
+                ModernPlayButton(
+                    isPlaying = isPlaying,
+                    size = if (compact) 56.dp else 72.dp,
+                    iconSize = if (compact) 28.dp else 36.dp
+                )
             }
 
             // Next button
             ModernControlButton(
                 onClick = onNext,
                 enabled = currentIndex < conversationSize - 1,
-                size = 48.dp
+                size = if (compact) 40.dp else 48.dp
             ) {
                 Icon(
                     Icons.Default.SkipNext,
                     contentDescription = "Next",
                     tint = Color.White,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(if (compact) 24.dp else 28.dp)
                 )
             }
         }
@@ -690,7 +735,11 @@ fun ModernControlButton(
 }
 
 @Composable
-fun ModernPlayButton(isPlaying: Boolean) {
+fun ModernPlayButton(
+    isPlaying: Boolean,
+    size: Dp = 72.dp,
+    iconSize: Dp = 36.dp
+) {
     val rotation by animateFloatAsState(
         targetValue = if (isPlaying) 360f else 0f,
         animationSpec = if (isPlaying) {
@@ -704,7 +753,7 @@ fun ModernPlayButton(isPlaying: Boolean) {
     )
 
     Surface(
-        modifier = Modifier.size(72.dp),
+        modifier = Modifier.size(size),
         shape = CircleShape,
         color = Color.Transparent
     ) {
@@ -727,7 +776,7 @@ fun ModernPlayButton(isPlaying: Boolean) {
                 imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                 contentDescription = if (isPlaying) "Pause" else "Play",
                 tint = Color.White,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(iconSize)
             )
         }
     }

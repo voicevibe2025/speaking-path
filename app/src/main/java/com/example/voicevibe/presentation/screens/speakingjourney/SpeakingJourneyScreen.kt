@@ -108,6 +108,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -381,6 +382,13 @@ fun SpeakingJourneyScreen(
                         onDismiss = { viewModel.dismissWelcome() }
                     )
                 } else {
+                    // Compute a dynamic height for the Conversation area so the rest fits on screen
+                    val configuration = LocalConfiguration.current
+                    val conversationAreaHeight = remember(configuration) {
+                        val h = configuration.screenHeightDp.toFloat()
+                        // Target ~36% of screen height, bounded between 260dp and 360dp
+                        ((h * 0.55f).coerceIn(305f, 425f)).dp
+                    }
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -402,7 +410,7 @@ fun SpeakingJourneyScreen(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .heightIn(min = 420.dp, max = 680.dp)
+                                        .height(conversationAreaHeight)
                                 ) {
                                     ConversationLessonScreen(
                                         topicId = topic.id,
@@ -410,7 +418,7 @@ fun SpeakingJourneyScreen(
                                         embedded = true,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .heightIn(min = 420.dp, max = 680.dp)
+                                            .height(conversationAreaHeight)
                                     )
                                 }
                             }
@@ -470,10 +478,11 @@ fun SpeakingJourneyScreen(
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(100.dp))
+                            // Keep minimal space at bottom to avoid clipping shadows
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
-                        
-                        Spacer(modifier = Modifier.height(100.dp))
+                        // Reduce extra bottom space so everything fits
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
 
@@ -687,8 +696,9 @@ private fun CompactTopicSelector(
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
+        val headerTitle = topics.getOrNull(selectedTopicIdx)?.title ?: "Topics"
         Text(
-            text = "Topics",
+            text = headerTitle,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -741,8 +751,8 @@ private fun ModernTopicCard(
 
     Card(
         modifier = Modifier
-            .width(140.dp)
-            .height(180.dp) // Increased height for better image visibility
+            .width(100.dp)
+            .height(136.dp) // More compact to fit without scrolling
             .scale(scale)
             .clickable { if (topic.unlocked) onClick() },
         shape = RoundedCornerShape(16.dp),
@@ -791,7 +801,7 @@ private fun ModernTopicCard(
                 // Topic Title
                 Text(
                     text = topic.title,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     maxLines = 2,
@@ -807,8 +817,8 @@ private fun ModernTopicCard(
                     LinearProgressIndicator(
                         progress = progress.coerceIn(0f, 1f),
                         modifier = Modifier
-                            .height(6.dp)
-                            .fillMaxWidth(0.8f)
+                            .height(4.dp)
+                            .fillMaxWidth(0.7f)
                             .clip(RoundedCornerShape(3.dp)),
                         color = if (progress >= 1f) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary,
                         trackColor = Color.White.copy(alpha = 0.3f)

@@ -111,8 +111,6 @@ fun HomeScreen(
         }
     }
 
-    
-
     // Handle refresh
     fun onRefresh() {
         coroutineScope.launch {
@@ -125,7 +123,7 @@ fun HomeScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.background_green),
+            painter = painterResource(id = R.drawable.background),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -378,6 +376,24 @@ fun PostCard(
                 }
             }
         }
+    }
+
+    // Confirm deletion dialog inside PostCard scope
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Delete post?") },
+            text = { Text("This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteConfirm = false
+                    onDeletePost()
+                }) { Text("Delete", color = EduAccent) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) { Text("Cancel") }
+            }
+        )
     }
 
     if (showComments) {

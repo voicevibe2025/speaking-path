@@ -114,7 +114,7 @@ fun SocialFeedScreen(
                     }
 
                     if (uiState.posts.isNotEmpty()) {
-                        items(uiState.posts) { post ->
+                        items(uiState.posts, key = { it.id }) { post ->
                             PostCard(
                                 post = post,
                                 onLike = { viewModel.likePost(post.id) },
@@ -125,7 +125,7 @@ fun SocialFeedScreen(
                                 unlikeComment = { commentId -> viewModel.unlikeComment(commentId) },
                                 replyToComment = { parentId, text, done -> viewModel.addComment(post.id, text, parentId) { done() } },
                                 onUserClick = onNavigateToUserProfile,
-                                onDeletePost = { viewModel.deletePost(post.id) },
+                                onDeletePost = { viewModel.deletePost(post.id) { success -> if (success) viewModel.refresh() } },
                                 onDeleteComment = { commentId, done -> viewModel.deleteComment(commentId, post.id) { done() } }
                             )
                         }

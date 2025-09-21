@@ -162,26 +162,36 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun deletePost(postId: Int, onDone: (() -> Unit)? = null) {
+    fun deletePost(postId: Int, onDone: ((Boolean) -> Unit)? = null) {
         viewModelScope.launch {
-            socialRepository.deletePost(postId)
-            _uiState.update { state ->
-                state.copy(posts = state.posts.filterNot { it.id == postId })
+            // Optimistic removal
+            val previous = _uiState.value.posts
+            val updated = previous.filterNot { it.id == postId }
+            _uiState.update { it.copy(posts = updated) }
+
+            val result = socialRepository.deletePost(postId)
+            val success = result is com.example.voicevibe.domain.model.Resource.Success
+            if (!success) {
+                // Restore on failure
+                _uiState.update { it.copy(posts = previous) }
             }
-            onDone?.let { it() }
+            onDone?.let { it(success) }
         }
     }
 
-    fun deleteComment(commentId: Int, postId: Int, onDone: (() -> Unit)? = null) {
+    fun deleteComment(commentId: Int, postId: Int, onDone: ((Boolean) -> Unit)? = null) {
         viewModelScope.launch {
-            socialRepository.deleteComment(commentId)
+            val result = socialRepository.deleteComment(commentId)
+            val success = result is com.example.voicevibe.domain.model.Resource.Success
             // Optimistically decrement comments count for the post
-            _uiState.update { state ->
-                state.copy(posts = state.posts.map { p ->
-                    if (p.id == postId) p.copy(commentsCount = (p.commentsCount - 1).coerceAtLeast(0)) else p
-                })
+            if (success) {
+                _uiState.update { state ->
+                    state.copy(posts = state.posts.map { p ->
+                        if (p.id == postId) p.copy(commentsCount = (p.commentsCount - 1).coerceAtLeast(0)) else p
+                    })
+                }
             }
-            onDone?.let { it() }
+            onDone?.let { it(success) }
         }
     }
 

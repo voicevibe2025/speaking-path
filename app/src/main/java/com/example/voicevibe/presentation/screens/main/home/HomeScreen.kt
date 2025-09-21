@@ -64,16 +64,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-// Educational color palette
-private val EduPrimary = Color(0xFF2D3E50)
-private val EduSecondary = Color(0xFF3498DB)
-private val EduAccent = Color(0xFFE74C3C)
-private val EduSuccess = Color(0xFF27AE60)
-private val EduWarning = Color(0xFFF39C12)
-private val EduBackground = Color(0xFFF8F9FA)
-private val EduSurface = Color(0xFFFFFFFF)
-private val EduTextPrimary = Color(0xFF2C3E50)
-private val EduTextSecondary = Color(0xFF7F8C8D)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -123,7 +113,7 @@ fun HomeScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.background),
+            painter = painterResource(id = R.drawable.background_purple),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -252,7 +242,7 @@ fun PostCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = EduSurface),
+        colors = CardDefaults.cardColors(containerColor = NeutralWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -261,7 +251,7 @@ fun PostCard(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(EduSecondary.copy(alpha = 0.1f))
+                        .background(BrandIndigo.copy(alpha = 0.1f))
                         .clickable { onUserClick(post.author.id.toString()) },
                     contentAlignment = Alignment.Center
                 ) {
@@ -278,20 +268,20 @@ fun PostCard(
                             text = post.author.displayName.take(2).uppercase(),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = EduSecondary
+                            color = BrandIndigo
                         )
                     }
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(post.author.displayName, fontWeight = FontWeight.Bold, color = EduTextPrimary)
+                    Text(post.author.displayName, fontWeight = FontWeight.Bold, color = NeutralDarkGray)
                     // Relative time from createdAt
-                    Text(relativeTime(post.createdAt), fontSize = 12.sp, color = EduTextSecondary)
+                    Text(relativeTime(post.createdAt), fontSize = 12.sp, color = AccentBlueGray)
                 }
                 if (post.canDelete) {
                     Box {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = null, tint = EduTextSecondary)
+                            Icon(Icons.Default.MoreVert, contentDescription = null, tint = AccentBlueGray)
                         }
                         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                             DropdownMenuItem(
@@ -310,7 +300,7 @@ fun PostCard(
 
             when {
                 !post.text.isNullOrBlank() -> {
-                    Text(post.text!!, color = EduTextPrimary)
+                    Text(post.text!!, color = NeutralDarkGray)
                 }
                 !post.imageUrl.isNullOrBlank() -> {
                     SubcomposeAsyncImage(
@@ -327,7 +317,7 @@ fun PostCard(
                     val link = post.linkUrl!!
                     Text(
                         text = link,
-                        color = EduSecondary,
+                        color = BrandIndigo,
                         modifier = Modifier.clickable {
                             try {
                                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link)))
@@ -355,14 +345,14 @@ fun PostCard(
                         if (post.isLikedByMe) onUnlike() else onLike()
                     }
                 ) {
-                    val likeTint = if (post.isLikedByMe) EduAccent else EduTextSecondary
+                    val likeTint = if (post.isLikedByMe) BrandFuchsia else AccentBlueGray
                     Icon(
                         imageVector = if (post.isLikedByMe) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = null,
                         tint = likeTint
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text(post.likesCount.toString(), color = EduTextSecondary)
+                    Text(post.likesCount.toString(), color = AccentBlueGray)
                 }
 
                 // Comment (icon + count)
@@ -370,9 +360,9 @@ fun PostCard(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable { showComments = true }
                 ) {
-                    Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, tint = EduTextSecondary)
+                    Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, tint = AccentBlueGray)
                     Spacer(Modifier.width(6.dp))
-                    Text(post.commentsCount.toString(), color = EduTextSecondary)
+                    Text(post.commentsCount.toString(), color = AccentBlueGray)
                 }
             }
         }
@@ -388,7 +378,7 @@ fun PostCard(
                 TextButton(onClick = {
                     showDeleteConfirm = false
                     onDeletePost()
-                }) { Text("Delete", color = EduAccent) }
+                }) { Text("Delete", color = BrandFuchsia) }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirm = false }) { Text("Cancel") }
@@ -415,7 +405,7 @@ fun PostCard(
                     .navigationBarsPadding()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Text("Comments", fontWeight = FontWeight.Bold, color = EduTextPrimary)
+                Text("Comments", fontWeight = FontWeight.Bold, color = NeutralDarkGray)
                 Spacer(Modifier.height(8.dp))
                 // Build parent -> replies grouping for nested view
                 val repliesByParent = remember(comments) { comments.filter { it.parent != null }.groupBy { it.parent!! } }
@@ -434,7 +424,7 @@ fun PostCard(
                                     modifier = Modifier
                                         .size(28.dp)
                                         .clip(CircleShape)
-                                        .background(EduSecondary.copy(alpha = 0.1f))
+                                        .background(BrandIndigo.copy(alpha = 0.1f))
                                         .clickable { onUserClick(parent.author.id.toString()) },
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -451,18 +441,18 @@ fun PostCard(
                                             text = parent.author.displayName.take(2).uppercase(),
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = EduSecondary
+                                            color = BrandIndigo
                                         )
                                     }
                                 }
                                 Spacer(Modifier.width(8.dp))
                                 Column {
-                                    Text(parent.author.displayName, fontWeight = FontWeight.SemiBold, color = EduTextPrimary)
-                                    Text(relativeTime(parent.createdAt), fontSize = 11.sp, color = EduTextSecondary)
+                                    Text(parent.author.displayName, fontWeight = FontWeight.SemiBold, color = NeutralDarkGray)
+                                    Text(relativeTime(parent.createdAt), fontSize = 11.sp, color = AccentBlueGray)
                                 }
                             }
                             Spacer(Modifier.height(2.dp))
-                            Text(parent.text, color = EduTextPrimary)
+                            Text(parent.text, color = NeutralDarkGray)
                             Spacer(Modifier.height(6.dp))
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                 Row(
@@ -479,24 +469,24 @@ fun PostCard(
                                         if (currentlyLiked) unlikeComment(parent.id) else likeComment(parent.id)
                                     }
                                 ) {
-                                    val likeTint = if (parent.isLikedByMe) EduAccent else EduTextSecondary
+                                    val likeTint = if (parent.isLikedByMe) BrandFuchsia else AccentBlueGray
                                     Icon(
                                         imageVector = if (parent.isLikedByMe) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                                         contentDescription = null,
                                         tint = likeTint
                                     )
                                     Spacer(Modifier.width(6.dp))
-                                    Text(parent.likesCount.toString(), color = EduTextSecondary)
+                                    Text(parent.likesCount.toString(), color = AccentBlueGray)
                                 }
                                 Text(
                                     text = "Reply",
-                                    color = EduSecondary,
+                                    color = BrandIndigo,
                                     modifier = Modifier.clickable(enabled = post.canInteract) { replyToId = parent.id }
                                 )
                                 if (parent.canDelete) {
                                     Text(
                                         text = "Delete",
-                                        color = EduAccent,
+                                        color = BrandFuchsia,
                                         modifier = Modifier.clickable {
                                             onDeleteComment(parent.id) {
                                                 fetchComments(post.id) { list -> comments = list }
@@ -518,7 +508,7 @@ fun PostCard(
                                                     modifier = Modifier
                                                         .size(24.dp)
                                                         .clip(CircleShape)
-                                                        .background(EduSecondary.copy(alpha = 0.1f))
+                                                        .background(BrandIndigo.copy(alpha = 0.1f))
                                                         .clickable { onUserClick(child.author.id.toString()) },
                                                     contentAlignment = Alignment.Center
                                                 ) {
@@ -535,18 +525,18 @@ fun PostCard(
                                                             text = child.author.displayName.take(2).uppercase(),
                                                             fontSize = 9.sp,
                                                             fontWeight = FontWeight.Bold,
-                                                            color = EduSecondary
+                                                            color = BrandIndigo
                                                         )
                                                     }
                                                 }
                                                 Spacer(Modifier.width(8.dp))
                                                 Column {
-                                                    Text(child.author.displayName, fontWeight = FontWeight.Medium, color = EduTextPrimary)
-                                                    Text(relativeTime(child.createdAt), fontSize = 11.sp, color = EduTextSecondary)
+                                                    Text(child.author.displayName, fontWeight = FontWeight.Medium, color = NeutralDarkGray)
+                                                    Text(relativeTime(child.createdAt), fontSize = 11.sp, color = AccentBlueGray)
                                                 }
                                             }
                                             Spacer(Modifier.height(2.dp))
-                                            Text(child.text, color = EduTextPrimary)
+                                            Text(child.text, color = NeutralDarkGray)
                                             Spacer(Modifier.height(4.dp))
                                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                                 Row(
@@ -563,24 +553,24 @@ fun PostCard(
                                                         if (currentlyLiked) unlikeComment(child.id) else likeComment(child.id)
                                                     }
                                                 ) {
-                                                    val likeTint = if (child.isLikedByMe) EduAccent else EduTextSecondary
+                                                    val likeTint = if (child.isLikedByMe) BrandFuchsia else AccentBlueGray
                                                     Icon(
                                                         imageVector = if (child.isLikedByMe) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                                                         contentDescription = null,
                                                         tint = likeTint
                                                     )
                                                     Spacer(Modifier.width(6.dp))
-                                                    Text(child.likesCount.toString(), color = EduTextSecondary)
+                                                    Text(child.likesCount.toString(), color = AccentBlueGray)
                                                 }
                                                 Text(
                                                     text = "Reply",
-                                                    color = EduSecondary,
+                                                    color = BrandIndigo,
                                                     modifier = Modifier.clickable(enabled = post.canInteract) { replyToId = parent.id }
                                                 )
                                                 if (child.canDelete) {
                                                     Text(
                                                         text = "Delete",
-                                                        color = EduAccent,
+                                                        color = BrandFuchsia,
                                                         modifier = Modifier.clickable {
                                                             onDeleteComment(child.id) {
                                                                 fetchComments(post.id) { list -> comments = list }
@@ -601,10 +591,10 @@ fun PostCard(
                 replyToId?.let { pid ->
                     val name = comments.firstOrNull { it.id == pid }?.author?.displayName ?: "comment"
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Replying to $name", color = EduSecondary, fontSize = 12.sp)
+                        Text("Replying to $name", color = BrandIndigo, fontSize = 12.sp)
                         Text(
                             text = "Cancel",
-                            color = EduAccent,
+                            color = BrandFuchsia,
                             fontSize = 12.sp,
                             modifier = Modifier.clickable { replyToId = null }
                         )
@@ -641,12 +631,12 @@ fun PostCard(
                         },
                         enabled = post.canInteract
                     ) {
-                        Icon(Icons.Default.Send, contentDescription = "Post Comment", tint = EduSecondary)
+                        Icon(Icons.Default.Send, contentDescription = "Post Comment", tint = BrandIndigo)
                     }
                 }
                 if (!post.canInteract) {
                     Spacer(Modifier.height(6.dp))
-                    Text("Only friends can comment.", color = EduTextSecondary, fontSize = 12.sp)
+                    Text("Only friends can comment.", color = AccentBlueGray, fontSize = 12.sp)
                 }
                 Spacer(Modifier.height(8.dp))
             }
@@ -689,8 +679,8 @@ private fun EducationalTopBar(
     onNavigationIconClick: () -> Unit
 ) {
     Surface(
-        color = EduSurface,
-        shadowElevation = 2.dp
+        color = Color.Transparent,
+        shadowElevation = 0.dp
     ) {
         Row(
             modifier = Modifier
@@ -715,7 +705,7 @@ private fun EducationalTopBar(
                     text = title,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = EduTextPrimary
+                    color = NeutralDarkGray
                 )
             }
             
@@ -724,7 +714,7 @@ private fun EducationalTopBar(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(EduSecondary.copy(alpha = 0.1f)),
+                        .background(BrandIndigo.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
                 ) {
                     if (avatarUrl != null) {
@@ -739,7 +729,7 @@ private fun EducationalTopBar(
                             text = userInitials,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = EduSecondary
+                            color = BrandIndigo
                         )
                     }
                 }
@@ -761,7 +751,7 @@ private fun WelcomeSection(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = EduSurface),
+        colors = CardDefaults.cardColors(containerColor = NeutralWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -775,7 +765,7 @@ private fun WelcomeSection(
                 modifier = Modifier
                     .size(60.dp)
                     .clip(CircleShape)
-                    .background(EduSecondary.copy(alpha = 0.1f))
+                        .background(BrandIndigo.copy(alpha = 0.1f))
                     .clickable { onProfileClick() },
                 contentAlignment = Alignment.Center
             ) {
@@ -791,7 +781,7 @@ private fun WelcomeSection(
                         text = userInitials,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = EduSecondary
+                        color = BrandIndigo
                     )
                 }
             }
@@ -803,7 +793,7 @@ private fun WelcomeSection(
                     text = "$userName!",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = EduTextPrimary
+                    color = NeutralDarkGray
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -812,13 +802,13 @@ private fun WelcomeSection(
                         imageVector = Icons.Default.School,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = EduSuccess
+                        tint = PracticeAccuracyGreen
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "Level $level",
                         fontSize = 14.sp,
-                        color = EduTextSecondary
+                        color = AccentBlueGray
                     )
                 }
             }
@@ -838,7 +828,7 @@ private fun QuickStartSection(
             text = "Start Learning",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = EduTextPrimary,
+            color = NeutralDarkGray,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
@@ -848,7 +838,7 @@ private fun QuickStartSection(
                 .fillMaxWidth()
                 .clickable { onStartPractice() },
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = EduSecondary),
+            colors = CardDefaults.cardColors(containerColor = BrandIndigo),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
@@ -861,13 +851,13 @@ private fun QuickStartSection(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f)),
+                        .background(NeutralWhite.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Mic,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = NeutralWhite,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -879,19 +869,19 @@ private fun QuickStartSection(
                         text = "Start Speaking Practice",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = NeutralWhite
                     )
                     Text(
                         text = "Practice pronunciation with instant feedback",
                         fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.9f)
+                        color = NeutralWhite.copy(alpha = 0.9f)
                     )
                 }
 
                 Icon(
                     imageVector = Icons.Default.ArrowForward,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = NeutralWhite,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -905,7 +895,7 @@ private fun QuickStartSection(
                 .fillMaxWidth()
                 .clickable { onPracticeWithAI() },
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = EduAccent),
+            colors = CardDefaults.cardColors(containerColor = BrandFuchsia),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
@@ -918,13 +908,13 @@ private fun QuickStartSection(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f)),
+                        .background(NeutralWhite.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Psychology,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = NeutralWhite,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -936,19 +926,19 @@ private fun QuickStartSection(
                         text = "Practice with Vivi",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = NeutralWhite
                     )
                     Text(
                         text = "AI-powered conversation partner",
                         fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.9f)
+                        color = NeutralWhite.copy(alpha = 0.9f)
                     )
                 }
 
                 Icon(
                     imageVector = Icons.Default.ArrowForward,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = NeutralWhite,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -967,7 +957,7 @@ private fun LearningProgressSection(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = EduSurface),
+        colors = CardDefaults.cardColors(containerColor = NeutralWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -977,7 +967,7 @@ private fun LearningProgressSection(
                 text = "Your Progress",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = EduTextPrimary,
+                color = NeutralDarkGray,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -989,21 +979,21 @@ private fun LearningProgressSection(
                     icon = Icons.Default.EmojiEvents,
                     label = "Points",
                     value = NumberFormat.getNumberInstance(Locale.US).format(totalPoints),
-                    color = EduWarning
+                    color = PracticeXPYellow
                 )
                 
                 ProgressItem(
                     icon = Icons.Default.LocalFireDepartment,
                     label = "Streak",
                     value = "$currentStreak days",
-                    color = EduAccent
+                    color = BrandFuchsia
                 )
                 
                 ProgressItem(
                     icon = Icons.Default.CheckCircle,
                     label = "Completed",
                     value = "$completedLessons lessons",
-                    color = EduSuccess
+                    color = PracticeAccuracyGreen
                 )
             }
         }
@@ -1039,12 +1029,12 @@ private fun ProgressItem(
             text = value,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = EduTextPrimary
+            color = NeutralDarkGray
         )
         Text(
             text = label,
             fontSize = 12.sp,
-            color = EduTextSecondary
+            color = AccentBlueGray
         )
     }
 }
@@ -1062,7 +1052,7 @@ private fun StudyToolsSection(
             text = "Study Tools",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = EduTextPrimary,
+            color = NeutralDarkGray,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
@@ -1074,7 +1064,7 @@ private fun StudyToolsSection(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Route,
                 title = "Quest",
-                color = EduSuccess,
+                color = PracticeAccuracyGreen,
                 onClick = onViewPaths
             )
 
@@ -1082,7 +1072,7 @@ private fun StudyToolsSection(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Leaderboard,
                 title = "Leaderboard",
-                color = EduWarning,
+                color = PracticeXPYellow,
                 onClick = onViewLeaderboard
             )
 
@@ -1090,7 +1080,7 @@ private fun StudyToolsSection(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Stars,
                 title = "Achievements",
-                color = EduAccent,
+                color = BrandFuchsia,
                 onClick = onViewAchievements
             )
         }
@@ -1110,7 +1100,7 @@ private fun StudyToolCard(
             .aspectRatio(1f)
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = EduSurface),
+        colors = CardDefaults.cardColors(containerColor = NeutralWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         border = BorderStroke(1.dp, color.copy(alpha = 0.2f))
     ) {
@@ -1131,7 +1121,7 @@ private fun StudyToolCard(
             Text(
                 text = title,
                 fontWeight = FontWeight.Bold,
-                color = EduTextPrimary,
+                color = NeutralDarkGray,
                 fontSize = 12.sp
             )
         }
@@ -1155,13 +1145,13 @@ private fun CurrentCoursesSection(
                 text = "Current Courses",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = EduTextPrimary
+                color = NeutralDarkGray
             )
 
             TextButton(onClick = {}) {
                 Text(
                     text = "See All",
-                    color = EduSecondary,
+                    color = BrandIndigo,
                     fontSize = 14.sp
                 )
             }
@@ -1192,7 +1182,7 @@ private fun CourseCard(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = EduSurface),
+        colors = CardDefaults.cardColors(containerColor = NeutralWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -1210,7 +1200,7 @@ private fun CourseCard(
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        color = EduTextPrimary
+                        color = NeutralDarkGray
                     )
                     
                     Spacer(modifier = Modifier.height(4.dp))
@@ -1222,27 +1212,27 @@ private fun CourseCard(
                             Icons.AutoMirrored.Filled.MenuBook,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
-                            tint = EduTextSecondary
+                            tint = AccentBlueGray
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "${path.completedLessons} of ${path.totalLessons} lessons",
                             fontSize = 13.sp,
-                            color = EduTextSecondary
+                            color = AccentBlueGray
                         )
                     }
                 }
 
                 Surface(
                     shape = RoundedCornerShape(20.dp),
-                    color = if (path.progress >= 80) EduSuccess else EduSecondary,
+                    color = if (path.progress >= 80) PracticeAccuracyGreen else BrandIndigo,
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
                     Text(
                         text = "${path.progress}%",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White,
+                        color = NeutralWhite,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                     )
                 }
@@ -1256,8 +1246,8 @@ private fun CourseCard(
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
-                color = if (path.progress >= 80) EduSuccess else EduSecondary,
-                trackColor = Color(0xFFE0E0E0),
+                color = if (path.progress >= 80) PracticeAccuracyGreen else BrandIndigo,
+                trackColor = NeutralGray,
             )
         }
     }
@@ -1280,13 +1270,13 @@ private fun AchievementsSection(
                 text = "Recent Achievements",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = EduTextPrimary
+                color = NeutralDarkGray
             )
 
             TextButton(onClick = onViewAll) {
                 Text(
                     text = "View All",
-                    color = EduSecondary,
+                    color = BrandIndigo,
                     fontSize = 14.sp
                 )
             }
@@ -1310,10 +1300,10 @@ private fun AchievementBadge(
     index: Int
 ) {
     val colors = listOf(
-        EduWarning,
-        EduSuccess,
-        EduAccent,
-        EduSecondary
+        PracticeXPYellow,
+        PracticeAccuracyGreen,
+        BrandFuchsia,
+        BrandIndigo
     )
     
     val badgeColor = colors[index % colors.size]
@@ -1352,7 +1342,7 @@ private fun SocialFeedEntryCard(onClick: () -> Unit) {
             .padding(horizontal = 16.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = EduSurface),
+        colors = CardDefaults.cardColors(containerColor = NeutralWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -1365,25 +1355,25 @@ private fun SocialFeedEntryCard(onClick: () -> Unit) {
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(EduSecondary.copy(alpha = 0.1f)),
+                    .background(BrandIndigo.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Outlined.ChatBubbleOutline,
                     contentDescription = null,
-                    tint = EduSecondary,
+                    tint = BrandIndigo,
                     modifier = Modifier.size(24.dp)
                 )
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text("Community Feed", fontWeight = FontWeight.Bold, color = EduTextPrimary)
-                Text("Share updates and see friends' posts", color = EduTextSecondary, fontSize = 12.sp)
+                Text("Community Feed", fontWeight = FontWeight.Bold, color = NeutralDarkGray)
+                Text("Share updates and see friends' posts", color = AccentBlueGray, fontSize = 12.sp)
             }
             Icon(
                 imageVector = Icons.Default.ArrowForward,
                 contentDescription = null,
-                tint = EduTextSecondary
+                tint = AccentBlueGray
             )
         }
     }

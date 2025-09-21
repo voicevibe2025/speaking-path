@@ -94,6 +94,7 @@ import kotlinx.coroutines.delay
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.example.voicevibe.ui.theme.*
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalPermissionsApi::class)
@@ -357,8 +358,8 @@ fun ConversationPracticeScreen(
                                     text = turn.text,
                                     isSpeakerA = isSpeakerA,
                                     isPlaying = playing,
-                                    primaryGradient = listOf(Color(0xFF667EEA), Color(0xFF764BA2), Color(0xFFF093FB)),
-                                    secondaryGradient = listOf(Color(0xFF4FACFE), Color(0xFF00F2FE), Color(0xFF43E97B))
+                                    primaryGradient = listOf(PracticeBlue, PracticePurple, PracticePink),
+                                    secondaryGradient = listOf(PracticeLightBlue, PracticeCyan, PracticeGreen)
                                 )
                             }
                         }
@@ -452,7 +453,7 @@ fun ConversationPracticeScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1B2E)),
+                        colors = CardDefaults.cardColors(containerColor = PracticeCardBackground),
                         shape = RoundedCornerShape(24.dp),
                         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f)),
                         modifier = Modifier
@@ -467,7 +468,7 @@ fun ConversationPracticeScreen(
                             Icon(
                                 Icons.Default.RecordVoiceOver,
                                 contentDescription = null,
-                                tint = Color(0xFF667EEA),
+                                tint = PracticeBlue,
                                 modifier = Modifier.size(48.dp)
                             )
                             Text(
@@ -494,7 +495,7 @@ fun ConversationPracticeScreen(
                                         .weight(1f)
                                         .height(48.dp),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF4FACFE)
+                                        containerColor = PracticeLightBlue
                                     ),
                                     shape = RoundedCornerShape(24.dp)
                                 ) { 
@@ -506,7 +507,7 @@ fun ConversationPracticeScreen(
                                         .weight(1f)
                                         .height(48.dp),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF43E97B)
+                                        containerColor = PracticeGreen
                                     ),
                                     shape = RoundedCornerShape(24.dp)
                                 ) { 
@@ -649,7 +650,7 @@ fun PracticeSpeakersSection(
             isActive = isSpeakerA,
             isPlaying = isPlaying && isSpeakerA,
             pulseScale = if (isPlaying && isSpeakerA) pulseScale else 1f,
-            glowColor = Color(0xFF667EEA)
+            glowColor = PracticeBlue
         )
         Text(
             text = "×",
@@ -663,7 +664,7 @@ fun PracticeSpeakersSection(
             isActive = !isSpeakerA,
             isPlaying = isPlaying && !isSpeakerA,
             pulseScale = if (isPlaying && !isSpeakerA) pulseScale else 1f,
-            glowColor = Color(0xFF4FACFE)
+            glowColor = PracticeLightBlue
         )
     }
 }
@@ -847,7 +848,7 @@ fun PracticeSoundWaveAnimation(modifier: Modifier = Modifier) {
                     .padding(horizontal = 2.dp)
                     .background(
                         brush = Brush.verticalGradient(
-                            colors = listOf(Color(0xFF667EEA), Color(0xFFF093FB))
+                            colors = listOf(PracticeBlue, PracticePink)
                         ),
                         shape = RoundedCornerShape(2.dp)
                     )
@@ -957,7 +958,7 @@ fun PracticePlayButton(isPlaying: Boolean) {
                 .fillMaxSize()
                 .background(
                     brush = Brush.radialGradient(
-                        colors = listOf(Color(0xFF667EEA), Color(0xFFF093FB))
+                        colors = listOf(PracticeBlue, PracticePink)
                     ),
                     shape = CircleShape
                 )
@@ -976,12 +977,12 @@ fun PracticePlayButton(isPlaying: Boolean) {
 
 fun DrawScope.drawPracticeAnimatedGradient(offset: Float) {
     val colors = listOf(
-        Color(0xFF0C1024),
-        Color(0xFF141A33),
-        Color(0xFF0C2740),
-        Color(0xFF16213E),
-        Color(0xFF141A33),
-        Color(0xFF0C1024)
+        PracticeGradientDarkBlue1,
+        PracticeGradientDarkBlue2,
+        PracticeGradientDarkBlue3,
+        PracticeGradientDarkBlue4,
+        PracticeGradientDarkBlue2,
+        PracticeGradientDarkBlue1
     )
     val gradientBrush = Brush.linearGradient(
         colors = colors,
@@ -1008,8 +1009,8 @@ private fun PracticeMinimalControls(
         Surface(
             onClick = onPlay,
             shape = CircleShape,
-            color = Color(0xFF667EEA).copy(alpha = 0.15f),
-            border = BorderStroke(2.dp, Color(0xFF667EEA))
+            color = PracticeBlue.copy(alpha = 0.15f),
+            border = BorderStroke(2.dp, PracticeBlue)
         ) {
             Box(
                 modifier = Modifier.size(64.dp),
@@ -1163,11 +1164,11 @@ fun ModernRecordPanel(
         color = Color.White.copy(alpha = 0.1f),
         border = BorderStroke(
             width = 1.dp,
-            color = when {
-                isRecording -> Color(0xFFE53935)
-                enabled -> Color.White.copy(alpha = 0.2f)
-                else -> Color.White.copy(alpha = 0.1f)
-            }
+                    color = when {
+                        isRecording -> PracticeRed
+                        enabled -> Color.White.copy(alpha = 0.2f)
+                        else -> Color.White.copy(alpha = 0.1f)
+                    }
         )
     ) {
         Row(
@@ -1209,11 +1210,11 @@ fun ModernRecordPanel(
                     shape = CircleShape,
                     color = when {
                         !enabled || isProcessing -> Color.White.copy(alpha = 0.05f)
-                        isRecording -> Color(0xFFE53935)
-                        else -> Color(0xFF667EEA)
+                        isRecording -> PracticeRed
+                        else -> PracticeBlue
                     },
                     border = if (isRecording) {
-                        BorderStroke(2.dp, Color(0xFFFF6B6B))
+                        BorderStroke(2.dp, PracticeLightRed)
                     } else null
                 ) {
                     Box(
@@ -1254,7 +1255,7 @@ fun ConversationResultDialog(
                 TextButton(onClick = onGoNext) {
                     Text(
                         if (result.nextTurnIndex != null) "Next" else "OK",
-                        color = Color(0xFF667EEA),
+                        color = PracticeBlue,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -1276,7 +1277,7 @@ fun ConversationResultDialog(
                     Text("Accuracy", color = Color.White.copy(alpha = 0.7f))
                     Text(
                         "${"%.1f".format(result.accuracy)}%",
-                        color = Color(0xFF06FFA5),
+                        color = PracticeAccuracyGreen,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -1288,7 +1289,7 @@ fun ConversationResultDialog(
                         Text("XP Earned", color = Color.White.copy(alpha = 0.7f))
                         Text(
                             "+${result.xpAwarded}",
-                            color = Color(0xFFFFBE0B),
+                            color = PracticeXPYellow,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -1329,16 +1330,16 @@ fun ConversationCompletionDialog(
         containerColor = Color(0xFF1A1B2E),
         shape = RoundedCornerShape(20.dp),
         confirmButton = {
-            TextButton(
-                onClick = onDismiss,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            ) {
-                Text(
-                    "Awesome!",
-                    color = Color(0xFF667EEA),
-                    fontWeight = FontWeight.Bold
-                )
-            }
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                ) {
+                    Text(
+                        "Awesome!",
+                        color = PracticeBlue,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
         },
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1457,7 +1458,7 @@ private fun PracticeCongratsOverlay(
                         .fillMaxWidth()
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF667EEA)
+                        containerColor = PracticeBlue
                     ),
                     shape = RoundedCornerShape(24.dp)
                 ) {

@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -386,15 +387,34 @@ fun SpeakingJourneyScreen(
                             .verticalScroll(rememberScrollState()),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Compact topic selector at the top
-                        CompactTopicSelector(
-                            topics = ui.topics,
-                            selectedTopicIdx = ui.selectedTopicIdx,
-                            onTopicSelect = { idx -> 
-                                if (ui.topics.getOrNull(idx)?.unlocked == true) 
-                                    viewModel.selectTopic(idx) 
+                        // Conversation Lesson area first
+                        ui.topics.getOrNull(ui.selectedTopicIdx)?.let { topic ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                                shape = RoundedCornerShape(24.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color.White.copy(alpha = 0.03f)
+                                ),
+                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 420.dp, max = 680.dp)
+                                ) {
+                                    ConversationLessonScreen(
+                                        topicId = topic.id,
+                                        onNavigateBack = {},
+                                        embedded = true,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .heightIn(min = 420.dp, max = 680.dp)
+                                    )
+                                }
                             }
-                        )
+                        }
                         
                         // Loading/Error states
                         if (ui.isLoading) {
@@ -415,161 +435,41 @@ fun SpeakingJourneyScreen(
                             )
                         }
                         
-                        // Main Hero Content Area
+                        // Main Content Area (topic-dependent)
                         ui.topics.getOrNull(ui.selectedTopicIdx)?.let { topic ->
-                            // Master Topic Button
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 16.dp, start = 16.dp, end = 16.dp)
-                                    .clickable { onNavigateToTopicMaster(topic.id) },
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color.Transparent // container is transparent to show background
-                                ),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(
-                                            Brush.horizontalGradient(
-                                                colors = listOf(
-                                                    BrandCyan,
-                                                    BrandIndigo
-                                                )
-                                            )
-                                        )
-                                        .padding(16.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                text = "Master ${topic.title}",
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Bold, // Bolder
-                                                color = Color.White
-                                            )
-                                            Text(
-                                                text = "Practice pronunciation, fluency, vocabulary and more",
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                color = Color.White.copy(alpha = 0.9f)
-                                            )
-                                        }
-                                        Icon(
-                                            imageVector = Icons.Default.ChevronRight,
-                                            contentDescription = "Go to practice",
-                                            tint = Color.White,
-                                            modifier = Modifier.size(32.dp) // Bigger icon
-                                        )
-                                    }
-                                }
-                            }
-                            
-                            Spacer(modifier = Modifier.height(12.dp))
-                            // Conversation Lesson Button
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
-                                    .clickable { onNavigateToConversation(topic.id) },
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color.White.copy(alpha = 0.05f)
-                                ),
-                                border = BorderStroke(
-                                    width = 1.dp,
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(
-                                            BrandIndigo.copy(alpha = 0.5f),
-                                            BrandFuchsia.copy(alpha = 0.5f)
-                                        )
-                                    )
-                                )
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = "Conversation Lesson",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = Color.White
-                                        )
-                                        Text(
-                                            text = "Listen with Start / Prev / Next, or Play All",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = Color(0xFFB0BEC5)
-                                        )
-                                    }
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                        contentDescription = "Go to conversation lesson",
-                                        tint = BrandIndigo
-                                    )
-                                }
-                            }
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                            Spacer(modifier = Modifier.height(12.dp))
-                            // Vocabulary Lesson Button
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
-                                    .clickable { onNavigateToVocabularyLesson(topic.id) },
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color.White.copy(alpha = 0.05f)
-                                ),
-                                border = BorderStroke(
-                                    width = 1.dp,
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(
-                                            BrandCyan.copy(alpha = 0.5f),
-                                            BrandIndigo.copy(alpha = 0.5f)
-                                        )
-                                    )
-                                )
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = "Vocabulary",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = Color.White
-                                        )
-                                        Text(
-                                            text = "Learn key words with AI explanations and TTS",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = Color(0xFFB0BEC5)
-                                        )
-                                    }
-                                    Icon(
-                                        imageVector = Icons.Filled.School,
-                                        contentDescription = "Go to vocabulary",
-                                        tint = BrandCyan
-                                    )
+                            // Topic selector moved below conversation area
+                            CompactTopicSelector(
+                                topics = ui.topics,
+                                selectedTopicIdx = ui.selectedTopicIdx,
+                                onTopicSelect = { idx ->
+                                    if (ui.topics.getOrNull(idx)?.unlocked == true)
+                                        viewModel.selectTopic(idx)
                                 }
-                            }
+                            )
 
                             Spacer(modifier = Modifier.height(16.dp))
-                            
+
+                            // Master [TOPIC] button at the bottom
+                            Button(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                onClick = { onNavigateToTopicMaster(topic.id) },
+                                shape = RoundedCornerShape(20.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = BrandIndigo,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text(
+                                    text = "Master ${topic.title}",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
                             Spacer(modifier = Modifier.height(100.dp))
                         }
                         
@@ -811,11 +711,7 @@ private fun CompactTopicSelector(
             }
         }
         
-        // Selected topic details
-        topics.getOrNull(selectedTopicIdx)?.let { selectedTopic ->
-            Spacer(modifier = Modifier.height(15.dp))
-            SelectedTopicDetails(selectedTopic)
-        }
+        // Selected topic details removed for the simplified layout
     }
 }
 

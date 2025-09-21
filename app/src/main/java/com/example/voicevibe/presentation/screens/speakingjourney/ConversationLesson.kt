@@ -31,7 +31,9 @@ import com.example.voicevibe.R
 @Composable
 fun ConversationLessonScreen(
     topicId: String,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    embedded: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
@@ -148,48 +150,51 @@ fun ConversationLessonScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            Icons.Default.RecordVoiceOver,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = topic?.title?.let { "$it: Conversation Lesson" } ?: "Conversation Lesson",
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            fontSize = 20.sp,
-                            color = Color.White
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        resetPlaybackFlags()
-                        viewModel.stopPlayback()
-                        onNavigateBack()
-                    }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
+            if (!embedded) {
+                TopAppBar(
+                    title = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                Icons.Default.RecordVoiceOver,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = topic?.title?.let { "$it: Conversation Lesson" } ?: "Conversation Lesson",
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                fontSize = 20.sp,
+                                color = Color.White
+                            )
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            resetPlaybackFlags()
+                            viewModel.stopPlayback()
+                            onNavigateBack()
+                        }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    )
                 )
-            )
+            }
         },
-        containerColor = Color.Transparent
+        containerColor = Color.Transparent,
+        modifier = modifier
     ) { innerPadding ->
         Box(
             modifier = Modifier

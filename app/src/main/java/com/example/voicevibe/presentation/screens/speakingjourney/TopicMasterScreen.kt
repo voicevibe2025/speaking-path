@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -82,6 +83,16 @@ fun TopicMasterScreen(
                            (topic?.fluencyProgress?.completed == true) &&
                            ((practiceScores?.vocabulary ?: 0) > 0)
         val unlockedNow = meets && allCompleted
+        
+        // Debug logging
+        Log.d("TopicMaster", "Debug unlock check for topic ${topic?.title}:")
+        Log.d("TopicMaster", "  meetsRequirement: ${practiceScores?.meetsRequirement}")
+        Log.d("TopicMaster", "  phraseProgress.isAllPhrasesCompleted: ${topic?.phraseProgress?.isAllPhrasesCompleted}")
+        Log.d("TopicMaster", "  fluencyProgress.completed: ${topic?.fluencyProgress?.completed}")
+        Log.d("TopicMaster", "  vocabulary score: ${practiceScores?.vocabulary}")
+        Log.d("TopicMaster", "  meets: $meets, allCompleted: $allCompleted, unlockedNow: $unlockedNow")
+        Log.d("TopicMaster", "  celebrationTriggered: $celebrationTriggered")
+        
         if (unlockedNow && !celebrationTriggered) {
             showCelebration = true
             try {
@@ -219,15 +230,35 @@ fun PracticeCardsSection(
     
     // Compute live conversation progress similar to other practices (score vs max)
     val conversationTurns = topic?.conversation ?: emptyList()
-    val conversationMax = if (conversationTurns.isNotEmpty()) conversationTurns.size * 100 else 100
-    val liveConversationScore = if (conversationTurns.isNotEmpty()) {
+    val totalTurns = conversationTurns.size
+    val recordedIndices = ui.conversationTurnScores.keys.filter { it in 0 until totalTurns }
+    val userSpeaker: String? = recordedIndices.minOrNull()?.let { idx ->
+        conversationTurns.getOrNull(idx)?.let { turn ->
+            turn.speaker
+        }
+    }
+    // Count how many turns belong to the user's chosen role (A or B). If unknown yet, assume half rounded up.
+    val expectedUserTurns = if (totalTurns > 0) {
+        if (!userSpeaker.isNullOrBlank()) {
+            conversationTurns.count { it.speaker.equals(userSpeaker, ignoreCase = true) }
+        } else {
+            (totalTurns + 1) / 2
+        }
+    } else 0
+    val liveConversationSum = if (totalTurns > 0) {
         ui.conversationTurnScores
-            .filterKeys { it in 0 until conversationTurns.size }
+            .filterKeys { it in 0 until totalTurns }
             .values
             .sum()
     } else 0
-    val serverConversationScore = topic?.conversationScore ?: 0
-    val conversationScoreForUi = maxOf(serverConversationScore, liveConversationScore)
+    // Normalize live progress to 0–100 based on the number of turns the user is expected to speak (A or B)
+    val liveConversationNormalized = if (expectedUserTurns > 0) {
+        (liveConversationSum.toFloat() / expectedUserTurns.toFloat()).toInt().coerceIn(0, 100)
+    } else 0
+    val serverConversationScore = topic?.conversationScore ?: 0 // already 0–100 average of recorded turns
+    // Prefer normalized local progress if we have any local recordings; otherwise fall back to server's 0–100 average
+    val conversationScoreForUi = if (recordedIndices.isNotEmpty()) liveConversationNormalized else serverConversationScore.coerceIn(0, 100)
+    val conversationMax = 100
 
     // Live Pronunciation score from local transcripts (average of latest per phrase, 0–100)
     val latestByPhrase: Map<Int, PhraseTranscriptEntry> = ui.currentTopicTranscripts

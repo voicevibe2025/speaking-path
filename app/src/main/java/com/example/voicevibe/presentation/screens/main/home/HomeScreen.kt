@@ -694,18 +694,11 @@ private fun EducationalTopBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                    painter = painterResource(id = R.drawable.vozvibe_text_logo),
                     contentDescription = "VoiceVibe Logo",
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = title,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                        .height(40.dp)
+
                 )
             }
             
@@ -872,18 +865,12 @@ private fun QuickStartSection(
                         color = NeutralWhite
                     )
                     Text(
-                        text = "Practice pronunciation with instant feedback",
+                        text = "Practice speaking with instant feedback",
                         fontSize = 14.sp,
                         color = NeutralWhite.copy(alpha = 0.9f)
                     )
                 }
 
-                Icon(
-                    imageVector = Icons.Default.ArrowForward,
-                    contentDescription = null,
-                    tint = NeutralWhite,
-                    modifier = Modifier.size(24.dp)
-                )
             }
         }
 
@@ -934,13 +921,6 @@ private fun QuickStartSection(
                         color = NeutralWhite.copy(alpha = 0.9f)
                     )
                 }
-
-                Icon(
-                    imageVector = Icons.Default.ArrowForward,
-                    contentDescription = null,
-                    tint = NeutralWhite,
-                    modifier = Modifier.size(24.dp)
-                )
             }
         }
     }

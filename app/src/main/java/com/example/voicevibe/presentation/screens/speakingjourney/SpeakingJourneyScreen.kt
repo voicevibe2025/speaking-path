@@ -137,7 +137,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 
-import com.example.voicevibe.presentation.components.AnimatedBackground
 import com.example.voicevibe.presentation.components.FloatingParticles
 import com.example.voicevibe.presentation.components.ModernTopBar
 import com.example.voicevibe.ui.theme.BrandCyan
@@ -361,7 +360,12 @@ fun SpeakingJourneyScreen(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        AnimatedBackground(animatedOffset)
+        Image(
+            painter = painterResource(id = R.drawable.background_blue),
+            contentDescription = "Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
         FloatingParticles()
 
         Scaffold(

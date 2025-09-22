@@ -1,5 +1,6 @@
 import java.util.Properties
 import java.io.FileInputStream
+import java.io.File
 
 plugins {
     alias(libs.plugins.android.application)
@@ -37,13 +38,25 @@ android {
     }
     // Signing config from keystore.properties (optional)
     val keystoreProps = Properties()
-    val keystorePropsFile = rootProject.file("keystore.properties")
-    if (keystorePropsFile.exists()) {
+    // Try both <projectRoot>/keystore.properties and <module>/../keystore.properties (e.g., VoiceVibe2/jetpack/keystore.properties)
+    val rootKeystorePropsFile = rootProject.file("keystore.properties")
+    val moduleKeystorePropsFile = project.file("../keystore.properties")
+    val resolvedKeystorePropsFile = when {
+        rootKeystorePropsFile.exists() -> rootKeystorePropsFile
+        moduleKeystorePropsFile.exists() -> moduleKeystorePropsFile
+        else -> null
+    }
+
+    if (resolvedKeystorePropsFile != null && resolvedKeystorePropsFile.exists()) {
         try {
-            keystoreProps.load(FileInputStream(keystorePropsFile))
+            keystoreProps.load(FileInputStream(resolvedKeystorePropsFile))
+            val storeFilePath = keystoreProps["storeFile"] as String
+            // Resolve the JKS path relative to the keystore.properties location for robustness
+            val storeFileResolved = File(resolvedKeystorePropsFile.parentFile, storeFilePath)
+
             signingConfigs {
                 create("release") {
-                    storeFile = rootProject.file(keystoreProps["storeFile"] as String)
+                    storeFile = storeFileResolved
                     storePassword = keystoreProps["storePassword"] as String
                     keyAlias = keystoreProps["keyAlias"] as String
                     keyPassword = keystoreProps["keyPassword"] as String
@@ -52,12 +65,12 @@ android {
             buildTypes.getByName("release") {
                 signingConfig = signingConfigs.getByName("release")
             }
-            logger.lifecycle("Loaded release signing config from keystore.properties")
+            logger.lifecycle("Loaded release signing config from ${resolvedKeystorePropsFile.absolutePath}")
         } catch (e: Exception) {
-            logger.warn("Failed to load keystore.properties: ${e.message}")
+            logger.warn("Failed to load keystore.properties from ${resolvedKeystorePropsFile.absolutePath}: ${e.message}")
         }
     } else {
-        logger.lifecycle("keystore.properties not found at project root. Release build will be unsigned.")
+        logger.lifecycle("keystore.properties not found. Release builds may be unsigned; Google Sign-In may fail if SHA-1 is not registered.")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

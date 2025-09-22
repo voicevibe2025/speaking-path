@@ -48,7 +48,7 @@ fun ForgotPasswordScreen(
             when (event) {
                 is ForgotPasswordEvent.EmailSentSuccess -> {
                     snackbarHostState.showSnackbar(
-                        message = "Reset link sent successfully!",
+                        message = "If an account exists for that email, you'll receive a reset link.",
                         duration = SnackbarDuration.Short
                     )
                 }
@@ -238,9 +238,9 @@ fun ForgotPasswordScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Success message
+                    // Success message (avoid user enumeration)
                     Text(
-                        text = "We've sent a password reset link to",
+                        text = "If an account exists for this email, a reset link has been sent to",
                         fontSize = 16.sp,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)

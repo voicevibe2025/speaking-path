@@ -39,6 +39,13 @@ interface GamificationApiService {
     @GET("gamification/leaderboards/friends")
     suspend fun getFriendsLeaderboard(): Response<LeaderboardData>
 
+    // Lingo League (Speaking Journey category rankings)
+    @GET("speaking/lingo-league")
+    suspend fun getLingoLeague(
+        @Query("category") category: String,
+        @Query("limit") limit: Int = 50
+    ): Response<LeaderboardData>
+
     @GET("gamification/achievements/stats")
     suspend fun getAchievementStats(): Response<AchievementStats>
 

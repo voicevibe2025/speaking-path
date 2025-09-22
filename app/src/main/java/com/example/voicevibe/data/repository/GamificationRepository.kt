@@ -119,6 +119,7 @@ class GamificationRepository @Inject constructor(
                 LeaderboardType.MONTHLY -> apiService.getMonthlyLeaderboard(refresh)
                 LeaderboardType.ALL_TIME -> apiService.getAllTimeLeaderboard(refresh)
                 LeaderboardType.FRIENDS -> apiService.getFriendsLeaderboard()
+                LeaderboardType.LINGO_LEAGUE -> apiService.getLingoLeague(category = filter.name, limit = 50)
                 else -> return Resource.Error("Unsupported leaderboard type: $type")
             }
 

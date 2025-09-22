@@ -55,7 +55,8 @@ enum class LeaderboardType {
     DAILY,
     WEEKLY,
     MONTHLY,
-    ALL_TIME
+    ALL_TIME,
+    LINGO_LEAGUE
 }
 
 /**
@@ -69,7 +70,11 @@ enum class LeaderboardFilter {
     STREAK,
     ACCURACY,
     PRACTICE_TIME,
-    ACHIEVEMENTS
+    ACHIEVEMENTS,
+    PRONUNCIATION,
+    FLUENCY,
+    VOCABULARY,
+    TOPICS_COMPLETED
 }
 
 /**

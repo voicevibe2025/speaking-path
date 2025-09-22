@@ -113,7 +113,7 @@ fun HomeScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.background_lightblue),
+            painter = painterResource(id = R.drawable.background_radiant_blue),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -338,7 +338,6 @@ fun PostCard(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable(
-                        enabled = post.canInteract,
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) {
@@ -457,7 +456,7 @@ fun PostCard(
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.clickable(enabled = post.canInteract) {
+                                    modifier = Modifier.clickable {
                                         val currentlyLiked = parent.isLikedByMe
                                         val updated = comments.map { item ->
                                             if (item.id == parent.id) item.copy(
@@ -481,7 +480,7 @@ fun PostCard(
                                 Text(
                                     text = "Reply",
                                     color = BrandIndigo,
-                                    modifier = Modifier.clickable(enabled = post.canInteract) { replyToId = parent.id }
+                                    modifier = Modifier.clickable { replyToId = parent.id }
                                 )
                                 if (parent.canDelete) {
                                     Text(
@@ -541,7 +540,7 @@ fun PostCard(
                                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                                 Row(
                                                     verticalAlignment = Alignment.CenterVertically,
-                                                    modifier = Modifier.clickable(enabled = post.canInteract) {
+                                                    modifier = Modifier.clickable {
                                                         val currentlyLiked = child.isLikedByMe
                                                         val updated = comments.map { item ->
                                                             if (item.id == child.id) item.copy(
@@ -565,7 +564,7 @@ fun PostCard(
                                                 Text(
                                                     text = "Reply",
                                                     color = BrandIndigo,
-                                                    modifier = Modifier.clickable(enabled = post.canInteract) { replyToId = parent.id }
+                                                    modifier = Modifier.clickable { replyToId = parent.id }
                                                 )
                                                 if (child.canDelete) {
                                                     Text(
@@ -608,7 +607,6 @@ fun PostCard(
                         onValueChange = { newComment = it },
                         placeholder = { Text(if (replyToId != null) "Write a reply" else "Write a comment") },
                         modifier = Modifier.weight(1f),
-                        enabled = post.canInteract,
                         singleLine = true
                     )
                     Spacer(Modifier.width(8.dp))
@@ -628,15 +626,10 @@ fun PostCard(
                                 newComment = ""
                                 replyToId = null
                             }
-                        },
-                        enabled = post.canInteract
+                        }
                     ) {
                         Icon(Icons.Default.Send, contentDescription = "Post Comment", tint = BrandIndigo)
                     }
-                }
-                if (!post.canInteract) {
-                    Spacer(Modifier.height(6.dp))
-                    Text("Only friends can comment.", color = AccentBlueGray, fontSize = 12.sp)
                 }
                 Spacer(Modifier.height(8.dp))
             }

@@ -47,6 +47,11 @@ class LeaderboardViewModel @Inject constructor(
             LeaderboardFilter.DAILY_XP -> data.entries.sortedByDescending { it.weeklyXp } // Kept for backward compatibility if ever selected
             LeaderboardFilter.WEEKLY_XP -> data.entries.sortedByDescending { it.weeklyXp }
             LeaderboardFilter.MONTHLY_XP -> data.entries.sortedByDescending { it.monthlyXp }
+            // Lingo League categories are already ranked server-side
+            LeaderboardFilter.PRONUNCIATION -> data.entries
+            LeaderboardFilter.FLUENCY -> data.entries
+            LeaderboardFilter.VOCABULARY -> data.entries
+            LeaderboardFilter.TOPICS_COMPLETED -> data.entries
         }
         // If no change in order, keep original ranks
         if (sorted === data.entries || sorted == data.entries) return data
@@ -136,8 +141,19 @@ class LeaderboardViewModel @Inject constructor(
 
     fun selectLeaderboardType(type: LeaderboardType) {
         if (_uiState.value.selectedType != type) {
+            val currentFilter = _uiState.value.selectedFilter
+            val leagueFilters = setOf(
+                LeaderboardFilter.PRONUNCIATION,
+                LeaderboardFilter.FLUENCY,
+                LeaderboardFilter.VOCABULARY,
+                LeaderboardFilter.TOPICS_COMPLETED
+            )
+            val newFilter = when (type) {
+                LeaderboardType.LINGO_LEAGUE -> if (currentFilter in leagueFilters) currentFilter else LeaderboardFilter.PRONUNCIATION
+                else -> if (currentFilter in leagueFilters) LeaderboardFilter.OVERALL_XP else currentFilter
+            }
             _uiState.update {
-                it.copy(selectedType = type)
+                it.copy(selectedType = type, selectedFilter = newFilter)
             }
             loadLeaderboard(refresh = false)
         }

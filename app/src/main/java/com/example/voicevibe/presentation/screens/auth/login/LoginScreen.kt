@@ -399,11 +399,11 @@ fun LoginScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        // Placeholder icon; replace with Google G if you add an asset
                         Icon(
-                            imageVector = Icons.Filled.Visibility,
-                            contentDescription = null,
-                            tint = BrandCyan
+                            painter = painterResource(id = R.drawable.ic_google_logo),
+                            contentDescription = "Google",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(text = "Continue with Google")

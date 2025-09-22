@@ -555,15 +555,15 @@ fun RegisterScreen(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.CheckCircle,
-                            contentDescription = null,
-                            tint = BrandCyan
+                            painter = painterResource(id = R.drawable.ic_google_logo),
+                            contentDescription = "Google",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(text = "Continue with Google")
                     }
                 }
-
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Login Link

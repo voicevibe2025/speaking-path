@@ -223,6 +223,7 @@ fun LeaderboardScreen(
     // Filter Dialog
     if (showFilterDialog) {
         FilterDialog(
+            selectedType = uiState.selectedType,
             selectedFilter = uiState.selectedFilter,
             onFilterSelected = { filter ->
                 viewModel.selectFilter(filter)
@@ -368,7 +369,8 @@ private fun LeaderboardTypeTabs(
         LeaderboardType.WEEKLY to "Weekly",
         LeaderboardType.MONTHLY to "Monthly",
         LeaderboardType.ALL_TIME to "All Time",
-        LeaderboardType.FRIENDS to "Friends"
+        LeaderboardType.FRIENDS to "Friends",
+        LeaderboardType.LINGO_LEAGUE to "Lingo League"
     )
 
     val selectedIndex = types.indexOfFirst { it.first == selectedType }.coerceAtLeast(0)
@@ -817,6 +819,7 @@ private fun LeagueInfoDialog(
 
 @Composable
 private fun FilterDialog(
+    selectedType: LeaderboardType,
     selectedFilter: LeaderboardFilter,
     onFilterSelected: (LeaderboardFilter) -> Unit,
     onDismiss: () -> Unit
@@ -826,13 +829,22 @@ private fun FilterDialog(
         title = { Text("Filter Leaderboard") },
         text = {
             Column {
-                val filtersToShow = listOf(
-                    LeaderboardFilter.OVERALL_XP to "XP (total)",
-                    LeaderboardFilter.STREAK to "Streak",
-                    LeaderboardFilter.ACCURACY to "Accuracy",
-                    LeaderboardFilter.PRACTICE_TIME to "Practice time",
-                    LeaderboardFilter.ACHIEVEMENTS to "Proficiency (topics completed)"
-                )
+                val filtersToShow = if (selectedType == LeaderboardType.LINGO_LEAGUE) {
+                    listOf(
+                        LeaderboardFilter.PRONUNCIATION to "Pronunciation",
+                        LeaderboardFilter.FLUENCY to "Fluency",
+                        LeaderboardFilter.VOCABULARY to "Vocabulary",
+                        LeaderboardFilter.TOPICS_COMPLETED to "Topics Completed"
+                    )
+                } else {
+                    listOf(
+                        LeaderboardFilter.OVERALL_XP to "XP (total)",
+                        LeaderboardFilter.STREAK to "Streak",
+                        LeaderboardFilter.ACCURACY to "Accuracy",
+                        LeaderboardFilter.PRACTICE_TIME to "Practice time",
+                        LeaderboardFilter.ACHIEVEMENTS to "Proficiency (topics completed)"
+                    )
+                }
                 filtersToShow.forEach { (filter, label) ->
                     Row(
                         modifier = Modifier

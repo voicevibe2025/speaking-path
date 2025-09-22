@@ -448,7 +448,13 @@ fun SpeakingJourneyScreen(
                                 val tIdx = segs.indexOfFirst { it.equals("topic", ignoreCase = true) }
                                 val linkTopicId = if (tIdx != -1 && tIdx + 1 < segs.size) segs[tIdx + 1] else "current"
                                 val mode = if (tIdx != -1 && tIdx + 2 < segs.size) segs[tIdx + 2] else "master"
-                                val targetId = if (linkTopicId == "current") currentTopicId else linkTopicId
+                                val requestedId = if (linkTopicId == "current") currentTopicId else linkTopicId
+                                // Validate against loaded topics and provide a safe fallback
+                                val targetId = when {
+                                    requestedId != null && ui.topics.any { it.id == requestedId } -> requestedId
+                                    ui.topics.getOrNull(ui.selectedTopicIdx)?.id != null -> ui.topics[ui.selectedTopicIdx].id
+                                    else -> ui.topics.firstOrNull()?.id
+                                }
                                 if (targetId == null) return
                                 when (mode.lowercase(Locale.ROOT)) {
                                     "conversation" -> onNavigateToConversationPractice(targetId)

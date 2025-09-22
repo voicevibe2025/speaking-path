@@ -113,7 +113,7 @@ fun HomeScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.background_orange),
+            painter = painterResource(id = R.drawable.background_blue),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -705,7 +705,7 @@ private fun EducationalTopBar(
                     text = title,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = NeutralDarkGray
+                    color = Color.White
                 )
             }
             
@@ -828,7 +828,7 @@ private fun QuickStartSection(
             text = "Start Learning",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = NeutralDarkGray,
+            color = Color.White,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
@@ -964,7 +964,7 @@ private fun LearningProgressSection(
             modifier = Modifier.padding(20.dp)
         ) {
             Text(
-                text = "Your Progress",
+                text = "Progress",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = NeutralDarkGray,
@@ -1052,7 +1052,7 @@ private fun StudyToolsSection(
             text = "Study Tools",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = NeutralDarkGray,
+            color = Color.White,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 

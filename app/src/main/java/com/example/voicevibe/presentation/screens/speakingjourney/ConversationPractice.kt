@@ -105,8 +105,12 @@ fun ConversationPracticeScreen(
 ) {
     val context = LocalContext.current
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
+    val coachVM: CoachViewModel = hiltViewModel()
     val ui by viewModel.uiState
+    // Fallback to selected/first topic if the provided topicId is unknown (e.g., AI Coach deeplink)
     val topic = ui.topics.firstOrNull { it.id == topicId }
+        ?: ui.topics.getOrNull(ui.selectedTopicIdx)
+        ?: ui.topics.firstOrNull()
     
     // Conversation source and role selection state
     val conversation = topic?.conversation ?: emptyList()
@@ -525,6 +529,10 @@ fun ConversationPracticeScreen(
                     sessionXp += result.xpAwarded ?: 0
                     sessionScoreSum += result.accuracy
                     sessionTurns += 1
+                    // If the conversation reached its end or the topic was completed, refresh AI Coach analysis
+                    if (result.success && (result.topicCompleted == true || result.nextTurnIndex == null)) {
+                        coachVM.loadAnalysis(force = true)
+                    }
                 }
                 ConversationResultDialog(
                     result = result,

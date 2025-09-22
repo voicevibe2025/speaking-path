@@ -82,6 +82,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -141,6 +142,8 @@ import com.example.voicevibe.presentation.components.ModernTopBar
 import com.example.voicevibe.ui.theme.BrandCyan
 import com.example.voicevibe.ui.theme.BrandIndigo
 import com.example.voicevibe.ui.theme.BrandFuchsia
+import com.example.voicevibe.data.remote.api.CoachAnalysisDto
+import com.example.voicevibe.presentation.screens.speakingjourney.CoachViewModel
 
 @DrawableRes
 private fun getTopicDrawableId(context: Context, topicTitle: String): Int {
@@ -423,6 +426,46 @@ fun SpeakingJourneyScreen(
                                 }
                             }
                         }
+
+                        // AI Coach Card (Gemini-as-GRU)
+                        val coachVM: CoachViewModel = hiltViewModel()
+                        val coachUi by coachVM.ui
+                        LaunchedEffect(Unit) { coachVM.refreshIfNeeded() }
+
+                        fun handleNextBestAction(analysis: CoachAnalysisDto) {
+                            val nba = analysis.nextBestActions.firstOrNull()
+                            val currentTopicId = ui.topics.getOrNull(ui.selectedTopicIdx)?.id
+                            if (nba == null) {
+                                currentTopicId?.let { onNavigateToTopicMaster(it) }
+                                return
+                            }
+                            val link = nba.deeplink
+                            try {
+                                val uri = Uri.parse(link)
+                                val segs = uri.pathSegments
+                                // Expecting /speaking/topic/<topicId>/<mode>
+                                val tIdx = segs.indexOfFirst { it.equals("topic", ignoreCase = true) }
+                                val linkTopicId = if (tIdx != -1 && tIdx + 1 < segs.size) segs[tIdx + 1] else "current"
+                                val mode = if (tIdx != -1 && tIdx + 2 < segs.size) segs[tIdx + 2] else "master"
+                                val targetId = if (linkTopicId == "current") currentTopicId else linkTopicId
+                                if (targetId == null) return
+                                when (mode.lowercase(Locale.ROOT)) {
+                                    "conversation" -> onNavigateToConversationPractice(targetId)
+                                    "vocab", "vocabulary" -> onNavigateToVocabularyLesson(targetId)
+                                    else -> onNavigateToTopicMaster(targetId)
+                                }
+                            } catch (_: Throwable) {
+                                currentTopicId?.let { onNavigateToTopicMaster(it) }
+                            }
+                        }
+
+                        coachUi.analysis?.let { analysis: CoachAnalysisDto ->
+                            Spacer(modifier = Modifier.height(12.dp))
+                            AiCoachCard(
+                                analysis = analysis,
+                                onActionClick = { handleNextBestAction(analysis) }
+                            )
+                        }
                         
                         // Loading/Error states
                         if (ui.isLoading) {
@@ -526,6 +569,118 @@ fun SpeakingJourneyScreen(
     }
 }
 
+@Composable
+private fun AiCoachCard(
+    analysis: CoachAnalysisDto,
+    onActionClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.04f)),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            var expanded by remember { mutableStateOf(false) }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.TrendingUp,
+                    contentDescription = null,
+                    tint = BrandCyan
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "AI Coach",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                TextButton(onClick = { expanded = !expanded }) {
+                    Text(if (expanded) "Hide" else "Details")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = analysis.coachMessage,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White.copy(alpha = 0.9f),
+                maxLines = if (expanded) Int.MAX_VALUE else 3,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            if (expanded) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        if (analysis.strengths.isNotEmpty()) {
+                            Text(
+                                text = "Strengths",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = BrandCyan
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                analysis.strengths.take(2).forEach { s: String ->
+                                    AssistChip(
+                                        onClick = {},
+                                        label = { Text(s.replaceFirstChar { it.titlecase(Locale.ROOT) }) },
+                                        colors = AssistChipDefaults.assistChipColors(
+                                            containerColor = Color.White.copy(alpha = 0.06f),
+                                            labelColor = Color.White
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        if (analysis.weaknesses.isNotEmpty()) {
+                            Text(
+                                text = "Focus",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = BrandFuchsia
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                analysis.weaknesses.take(2).forEach { w: String ->
+                                    AssistChip(
+                                        onClick = {},
+                                        label = { Text(w.replaceFirstChar { it.titlecase(Locale.ROOT) }) },
+                                        colors = AssistChipDefaults.assistChipColors(
+                                            containerColor = Color.White.copy(alpha = 0.06f),
+                                            labelColor = Color.White
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            } else {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            val actionTitle = analysis.nextBestActions.firstOrNull()?.title ?: "Start Recommended Practice"
+            Button(
+                onClick = onActionClick,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = BrandIndigo, contentColor = Color.White)
+            ) {
+                Text(actionTitle, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(imageVector = Icons.Default.ChevronRight, contentDescription = null)
+            }
+        }
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CongratulationScreen(

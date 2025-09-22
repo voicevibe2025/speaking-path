@@ -178,4 +178,9 @@ object NetworkModule {
     fun provideSocialApi(retrofit: Retrofit): com.example.voicevibe.data.remote.api.SocialApiService =
         retrofit.create(com.example.voicevibe.data.remote.api.SocialApiService::class.java)
 
+    @Provides
+    @Singleton
+    fun provideCoachApi(retrofit: Retrofit): com.example.voicevibe.data.remote.api.CoachApiService =
+        retrofit.create(com.example.voicevibe.data.remote.api.CoachApiService::class.java)
+
 }

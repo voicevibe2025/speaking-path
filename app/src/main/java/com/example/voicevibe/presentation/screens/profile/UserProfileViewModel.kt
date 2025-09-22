@@ -117,79 +117,100 @@ class UserProfileViewModel @Inject constructor(
     private fun loadSpeakingOverview() {
         viewModelScope.launch {
             _uiState.update { it.copy(speakingOverviewLoading = true, speakingOverviewError = null) }
-            val result = speakingJourneyRepository.getTopics()
-            result.onSuccess { resp ->
-                val topics = resp.topics
-                // Normalize per-topic practice scores to 0..100 where possible
-                var pronSum = 0f
-                var pronCount = 0
-                var fluencySum = 0f
-                var fluencyCount = 0
-                var vocabSum = 0f
-                var vocabCount = 0
+            
+            if (userId == null) {
+                // Current user: calculate from topics
+                val result = speakingJourneyRepository.getTopics()
+                result.onSuccess { resp ->
+                    val topics = resp.topics
+                    // Normalize per-topic practice scores to 0..100 where possible
+                    var pronSum = 0f
+                    var pronCount = 0
+                    var fluencySum = 0f
+                    var fluencyCount = 0
+                    var vocabSum = 0f
+                    var vocabCount = 0
 
-                val perTopicAverages = mutableListOf<Float>()
+                    val perTopicAverages = mutableListOf<Float>()
 
-                topics.forEach { t ->
-                    val ps = t.practiceScores
-                    if (ps != null) {
-                        // Pronunciation
-                        if (ps.maxPronunciation > 0) {
-                            val v = (ps.pronunciation.toFloat() / ps.maxPronunciation.toFloat()) * 100f
-                            pronSum += v
-                            pronCount++
-                        }
-                        // Fluency
-                        if (ps.maxFluency > 0) {
-                            val v = (ps.fluency.toFloat() / ps.maxFluency.toFloat()) * 100f
-                            fluencySum += v
-                            fluencyCount++
-                        }
-                        // Vocabulary
-                        if (ps.maxVocabulary > 0) {
-                            val v = (ps.vocabulary.toFloat() / ps.maxVocabulary.toFloat()) * 100f
-                            vocabSum += v
-                            vocabCount++
-                        }
+                    topics.forEach { t ->
+                        val ps = t.practiceScores
+                        if (ps != null) {
+                            // Pronunciation
+                            if (ps.maxPronunciation > 0) {
+                                val v = (ps.pronunciation.toFloat() / ps.maxPronunciation.toFloat()) * 100f
+                                pronSum += v
+                                pronCount++
+                            }
+                            // Fluency
+                            if (ps.maxFluency > 0) {
+                                val v = (ps.fluency.toFloat() / ps.maxFluency.toFloat()) * 100f
+                                fluencySum += v
+                                fluencyCount++
+                            }
+                            // Vocabulary
+                            if (ps.maxVocabulary > 0) {
+                                val v = (ps.vocabulary.toFloat() / ps.maxVocabulary.toFloat()) * 100f
+                                vocabSum += v
+                                vocabCount++
+                            }
 
-                        // Per-topic overall average (only include available metrics)
-                        val metrics = buildList<Float> {
-                            if (ps.maxPronunciation > 0) add((ps.pronunciation.toFloat() / ps.maxPronunciation.toFloat()) * 100f)
-                            if (ps.maxFluency > 0) add((ps.fluency.toFloat() / ps.maxFluency.toFloat()) * 100f)
-                            if (ps.maxVocabulary > 0) add((ps.vocabulary.toFloat() / ps.maxVocabulary.toFloat()) * 100f)
-                        }
-                        if (metrics.isNotEmpty()) {
-                            perTopicAverages.add(metrics.average().toFloat())
+                            // Per-topic overall average (only include available metrics)
+                            val metrics = buildList<Float> {
+                                if (ps.maxPronunciation > 0) add((ps.pronunciation.toFloat() / ps.maxPronunciation.toFloat()) * 100f)
+                                if (ps.maxFluency > 0) add((ps.fluency.toFloat() / ps.maxFluency.toFloat()) * 100f)
+                                if (ps.maxVocabulary > 0) add((ps.vocabulary.toFloat() / ps.maxVocabulary.toFloat()) * 100f)
+                            }
+                            if (metrics.isNotEmpty()) {
+                                perTopicAverages.add(metrics.average().toFloat())
+                            }
                         }
                     }
+
+                    val avgPron = if (pronCount > 0) pronSum / pronCount else 0f
+                    val avgFlu = if (fluencyCount > 0) fluencySum / fluencyCount else 0f
+                    val avgVocab = if (vocabCount > 0) vocabSum / vocabCount else 0f
+
+                    // Improvement rate: recent avg (last 3) - early avg (first 3)
+                    val window = kotlin.math.max(1, kotlin.math.min(3, perTopicAverages.size / 2))
+                    val earlyAvg = if (perTopicAverages.size >= window) perTopicAverages.take(window).average().toFloat() else 0f
+                    val recentAvg = if (perTopicAverages.size >= window) perTopicAverages.takeLast(window).average().toFloat() else 0f
+                    val improvement = (recentAvg - earlyAvg)
+
+                    val completedTopics = topics.count { it.completed }
+                    val totalWords = topics.filter { it.completed }.flatMap { it.vocabulary }.toSet().size
+
+                    val overview = SpeakingOverview(
+                        averagePronunciation = avgPron.coerceIn(0f, 100f),
+                        averageFluency = avgFlu.coerceIn(0f, 100f),
+                        averageVocabulary = avgVocab.coerceIn(0f, 100f),
+                        improvementRate = improvement,
+                        completedTopics = completedTopics,
+                        totalPracticeMinutes = 0, // Not available from speaking_journey endpoints yet
+                        totalWordsLearned = totalWords
+                    )
+
+                    _uiState.update { it.copy(speakingOverviewLoading = false, speakingOverview = overview) }
+                }.onFailure { err ->
+                    _uiState.update { it.copy(speakingOverviewLoading = false, speakingOverviewError = err.message) }
                 }
-
-                val avgPron = if (pronCount > 0) pronSum / pronCount else 0f
-                val avgFlu = if (fluencyCount > 0) fluencySum / fluencyCount else 0f
-                val avgVocab = if (vocabCount > 0) vocabSum / vocabCount else 0f
-
-                // Improvement rate: recent avg (last 3) - early avg (first 3)
-                val window = kotlin.math.max(1, kotlin.math.min(3, perTopicAverages.size / 2))
-                val earlyAvg = if (perTopicAverages.size >= window) perTopicAverages.take(window).average().toFloat() else 0f
-                val recentAvg = if (perTopicAverages.size >= window) perTopicAverages.takeLast(window).average().toFloat() else 0f
-                val improvement = (recentAvg - earlyAvg)
-
-                val completedTopics = topics.count { it.completed }
-                val totalWords = topics.filter { it.completed }.flatMap { it.vocabulary }.toSet().size
-
-                val overview = SpeakingOverview(
-                    averagePronunciation = avgPron.coerceIn(0f, 100f),
-                    averageFluency = avgFlu.coerceIn(0f, 100f),
-                    averageVocabulary = avgVocab.coerceIn(0f, 100f),
-                    improvementRate = improvement,
-                    completedTopics = completedTopics,
-                    totalPracticeMinutes = 0, // Not available from speaking_journey endpoints yet
-                    totalWordsLearned = totalWords
-                )
-
-                _uiState.update { it.copy(speakingOverviewLoading = false, speakingOverview = overview) }
-            }.onFailure { err ->
-                _uiState.update { it.copy(speakingOverviewLoading = false, speakingOverviewError = err.message) }
+            } else {
+                // Target user: use data from profile stats
+                _uiState.value.userProfile?.let { profile ->
+                    val overview = SpeakingOverview(
+                        averagePronunciation = profile.stats.averageAccuracy,
+                        averageFluency = profile.stats.averageFluency,
+                        averageVocabulary = 0f, // Not available in stats, set to 0
+                        improvementRate = profile.stats.improvementRate,
+                        completedTopics = profile.stats.completedLessons,
+                        totalPracticeMinutes = profile.stats.totalPracticeMinutes,
+                        totalWordsLearned = profile.stats.totalWords
+                    )
+                    _uiState.update { it.copy(speakingOverviewLoading = false, speakingOverview = overview) }
+                } ?: run {
+                    // If profile not loaded yet, wait for it and retry
+                    _uiState.update { it.copy(speakingOverviewLoading = false) }
+                }
             }
         }
     }

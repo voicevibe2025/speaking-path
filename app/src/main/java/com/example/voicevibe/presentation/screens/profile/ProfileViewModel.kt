@@ -91,6 +91,9 @@ class ProfileViewModel @Inject constructor(
     private val _grammarScore = mutableStateOf(0f)
     val grammarScore: State<Float> = _grammarScore
 
+    private val _fluencyScore = mutableStateOf(0f)
+    val fluencyScore: State<Float> = _fluencyScore
+
     private val _vocabularyScore = mutableStateOf(0f)
     val vocabularyScore: State<Float> = _vocabularyScore
 
@@ -168,12 +171,10 @@ class ProfileViewModel @Inject constructor(
                 _targetLanguage.value = formatTargetLanguage(userProfile.targetLanguage)
 
                 // Update Skill Progress (convert from 0-100 to 0.0-1.0 for progress bars)
-                // Speaking: use backend-provided speaking_score (aggregated fluency)
                 _speakingScore.value = (userProfile.speakingScore ?: 0f) / 100f
-                // Listening and Grammar currently not implemented -> force 0
-                _listeningScore.value = 0f
-                _grammarScore.value = 0f
-                // Vocabulary and Pronunciation wired to backend values
+                _fluencyScore.value = (userProfile.fluencyScore ?: 0f) / 100f
+                _listeningScore.value = (userProfile.listeningScore ?: 0f) / 100f
+                _grammarScore.value = 0f // Grammar not implemented yet
                 _vocabularyScore.value = (userProfile.vocabularyScore ?: 0f) / 100f
                 _pronunciationScore.value = (userProfile.pronunciationScore ?: 0f) / 100f
 

@@ -557,18 +557,22 @@ fun ConversationPracticeScreen(
                         xp = sessionXp,
                         onDismiss = {
                             viewModel.dismissConversationCongrats()
-                            // Unlock role switching for a fresh run; reset counters and index
+                            // Optionally reset local state, then return to Topic Master
                             roleLocked = false
                             selectedRole = null
                             currentIndex = 0
                             sessionXp = 0
                             sessionScoreSum = 0.0
                             sessionTurns = 0
+                            onNavigateBack()
                         }
                     )
                 } else {
                     ConversationCompletionDialog(
-                        onDismiss = { viewModel.dismissConversationCongrats() }
+                        onDismiss = {
+                            viewModel.dismissConversationCongrats()
+                            onNavigateBack()
+                        }
                     )
                 }
             }

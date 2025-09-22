@@ -143,10 +143,25 @@ class SpeakingJourneyViewModel @Inject constructor(
                         )
                         // Count today's activity towards Day Streak
                         markSpeakingActivity()
-                        // If conversation ended, show congratulations and refresh topics
-                        if (dto.nextTurnIndex == null) {
-                            _uiState.value = _uiState.value.copy(showConversationCongrats = true)
-                            reloadTopics()
+                        // If the conversation ended globally OR the user has no remaining turns for their selected role,
+                        // show congratulations and refresh topics. This ensures the congrats appears even when the
+                        // final turn belongs to the other speaker.
+                        runCatching {
+                            val sNow = _uiState.value
+                            val topicNow = sNow.topics.getOrNull(sNow.selectedTopicIdx)
+                            val roleUpper = role.trim().uppercase(Locale.US)
+                            val conv = topicNow?.conversation ?: emptyList()
+                            val hasMoreUserTurns = conv.drop(turnIndex + 1).any { it.speaker.equals(roleUpper, ignoreCase = true) }
+                            if (dto.nextTurnIndex == null || !hasMoreUserTurns) {
+                                _uiState.value = _uiState.value.copy(showConversationCongrats = true)
+                                reloadTopics()
+                            }
+                        }.onFailure { _ ->
+                            // If any issue computing remaining turns, fall back to the original condition
+                            if (dto.nextTurnIndex == null) {
+                                _uiState.value = _uiState.value.copy(showConversationCongrats = true)
+                                reloadTopics()
+                            }
                         }
                         fetchGamificationProfile()
                     },

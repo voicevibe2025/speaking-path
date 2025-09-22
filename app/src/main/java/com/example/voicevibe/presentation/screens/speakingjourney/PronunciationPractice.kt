@@ -1,6 +1,7 @@
 package com.example.voicevibe.presentation.screens.speakingjourney
 
 import android.Manifest
+import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -112,6 +113,32 @@ fun PronunciationPracticeScreen(
         (ui.inspectedPhraseIndex ?: baseIndex).coerceIn(0, totalPhrases - 1)
     } else 0
     val phraseText = topic?.material?.getOrNull(displayedIndex) ?: ""
+
+    // --- SFX: next-phrase and completion sounds ---
+    // Helper to play a raw sound resource by name; returns true if played
+    val playSoundRaw: (String) -> Boolean = remember(context) {
+        { name ->
+            try {
+                val resId = context.resources.getIdentifier(name, "raw", context.packageName)
+                if (resId != 0) {
+                    val mp = MediaPlayer.create(context, resId)
+                    mp?.setOnCompletionListener { it.release() }
+                    mp?.start()
+                    true
+                } else false
+            } catch (_: Throwable) { false }
+        }
+    }
+
+    // Play a soft cue each time the user advances to the next phrase (only when index increases)
+    // Initialize to the current index so the first advance (increase) triggers sound
+    var lastDisplayedIndex by remember(topic?.id) { mutableStateOf(displayedIndex) }
+    LaunchedEffect(displayedIndex) {
+        if (displayedIndex > lastDisplayedIndex) {
+            playSoundRaw("nice") // expects res/raw/nice.mp3
+        }
+        lastDisplayedIndex = displayedIndex
+    }
 
     Scaffold(
         topBar = {
@@ -398,6 +425,14 @@ fun PronunciationPracticeScreen(
 
             // Topic completion congratulations overlay
             if (ui.showPronunciationCongrats) {
+                // Play completion SFX when the overlay appears; try vin, then fallback to win
+                LaunchedEffect(ui.showPronunciationCongrats) {
+                    if (ui.showPronunciationCongrats) {
+                        if (!playSoundRaw("vin")) {
+                            playSoundRaw("win")
+                        }
+                    }
+                }
                 val phraseCount = topic.material.size
                 // Compute average accuracy (0–100) across latest per-phrase recordings
                 val latestByPhrase: Map<Int, PhraseTranscriptEntry> = ui.currentTopicTranscripts

@@ -8,6 +8,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -77,6 +79,7 @@ fun ProfileScreen(
 
     // Skill Progress data
     val speakingScore by viewModel.speakingScore
+    val fluencyScore by viewModel.fluencyScore
     val listeningScore by viewModel.listeningScore
     val grammarScore by viewModel.grammarScore
     val vocabularyScore by viewModel.vocabularyScore
@@ -173,6 +176,7 @@ fun ProfileScreen(
                 }
                 1 -> ProgressTab(
                     speakingScore = speakingScore,
+                    fluencyScore = fluencyScore,
                     listeningScore = listeningScore,
                     grammarScore = grammarScore,
                     vocabularyScore = vocabularyScore,
@@ -659,6 +663,7 @@ fun PreferenceChip(text: String, icon: ImageVector) {
 @Composable
 fun ProgressTab(
     speakingScore: Float,
+    fluencyScore: Float,
     listeningScore: Float,
     grammarScore: Float,
     vocabularyScore: Float,
@@ -674,6 +679,7 @@ fun ProgressTab(
         // Skills Progress
         SkillsProgressCard(
             speakingScore = speakingScore,
+            fluencyScore = fluencyScore,
             listeningScore = listeningScore,
             grammarScore = grammarScore,
             vocabularyScore = vocabularyScore,
@@ -692,6 +698,7 @@ fun ProgressTab(
 @Composable
 fun SkillsProgressCard(
     speakingScore: Float,
+    fluencyScore: Float,
     listeningScore: Float,
     grammarScore: Float,
     vocabularyScore: Float,
@@ -707,18 +714,49 @@ fun SkillsProgressCard(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Skills Progress",
+                text = "Performance",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            SkillProgressItem("Speaking", speakingScore, MaterialTheme.colorScheme.primary)
-            SkillProgressItem("Listening", listeningScore, MaterialTheme.colorScheme.secondary)
-            SkillProgressItem("Grammar", grammarScore, MaterialTheme.colorScheme.tertiary)
-            SkillProgressItem("Vocabulary", vocabularyScore, MaterialTheme.colorScheme.error)
-            SkillProgressItem("Pronunciation", pronunciationScore, Color(0xFF4CAF50))
+            // Conversation (Speaking)
+            com.example.voicevibe.presentation.screens.profile.PerformanceMetric(
+                label = "Conversation",
+                value = speakingScore * 100f,
+                color = MaterialTheme.colorScheme.primary
+            )
+            // Pronunciation
+            com.example.voicevibe.presentation.screens.profile.PerformanceMetric(
+                label = "Pronunciation",
+                value = pronunciationScore * 100f,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            // Fluency
+            com.example.voicevibe.presentation.screens.profile.PerformanceMetric(
+                label = "Fluency",
+                value = fluencyScore * 100f,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+            // Vocabulary
+            com.example.voicevibe.presentation.screens.profile.PerformanceMetric(
+                label = "Vocabulary",
+                value = vocabularyScore * 100f,
+                color = MaterialTheme.colorScheme.primary
+            )
+            // Listening
+            com.example.voicevibe.presentation.screens.profile.PerformanceMetric(
+                label = "Listening",
+                value = listeningScore * 100f,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            // Grammar
+            com.example.voicevibe.presentation.screens.profile.PerformanceMetric(
+                label = "Grammar",
+                value = grammarScore * 100f,
+                color = MaterialTheme.colorScheme.tertiary
+            )
         }
     }
 }
@@ -824,12 +862,67 @@ fun MonthStatItem(label: String, value: String, icon: ImageVector) {
 
 @Composable
 fun ActivityTab(recentActivities: List<com.example.voicevibe.data.model.Activity>) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    if (recentActivities.isEmpty()) {
+        EmptyStateMessage(
+            icon = Icons.Default.Timeline,
+            message = "No recent activity"
+        )
+    } else {
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(recentActivities) { activity ->
+                CurrentUserActivityCard(activity)
+            }
+        }
+    }
+}
+
+@Composable
+fun CurrentUserActivityCard(activity: com.example.voicevibe.data.model.Activity) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        // Recent Activity
-        RecentActivityCard(activities = recentActivities)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Activity Icon
+            Surface(
+                shape = CircleShape,
+                color = parseColor(activity.color).copy(alpha = 0.1f),
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    imageVector = getIconFromString(activity.icon),
+                    contentDescription = activity.type,
+                    tint = parseColor(activity.color),
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxSize()
+                )
+            }
+
+            // Activity Details
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    activity.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    activity.relativeTime,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }
 

@@ -116,7 +116,6 @@ fun ProfileScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
             // Profile Header
@@ -153,38 +152,44 @@ fun ProfileScreen(
             // Tab Content
             when (selectedTab) {
                 0 -> {
-                    QuickStatsGrid(
-                        practiceHours = practiceHours,
-                        lessonsCompleted = lessonsCompleted,
-                        recordingsCount = recordingsCount,
-                        avgScore = avgScore,
-                        followersCount = followersCount,
-                        followingCount = followingCount
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    RecentAchievements(
-                        achievements = recentAchievements,
-                        onNavigateToAchievements = onNavigateToAchievements
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    LearningPreferences(
-                        dailyGoal = dailyPracticeGoal,
-                        focus = learningGoal,
-                        difficulty = proficiency,
-                        language = targetLanguage
-                    )
+                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                        QuickStatsGrid(
+                            practiceHours = practiceHours,
+                            lessonsCompleted = lessonsCompleted,
+                            recordingsCount = recordingsCount,
+                            avgScore = avgScore,
+                            followersCount = followersCount,
+                            followingCount = followingCount
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        RecentAchievements(
+                            achievements = recentAchievements,
+                            onNavigateToAchievements = onNavigateToAchievements
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        LearningPreferences(
+                            dailyGoal = dailyPracticeGoal,
+                            focus = learningGoal,
+                            difficulty = proficiency,
+                            language = targetLanguage
+                        )
+                    }
                 }
-                1 -> ProgressTab(
-                    speakingScore = speakingScore,
-                    fluencyScore = fluencyScore,
-                    listeningScore = listeningScore,
-                    grammarScore = grammarScore,
-                    vocabularyScore = vocabularyScore,
-                    pronunciationScore = pronunciationScore,
-                    monthlyDaysActive = monthlyDaysActive,
-                    monthlyXpEarned = monthlyXpEarned,
-                    monthlyLessonsCompleted = monthlyLessonsCompleted
-                )
+                1 -> {
+                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                        ProgressTab(
+                            speakingScore = speakingScore,
+                            fluencyScore = fluencyScore,
+                            listeningScore = listeningScore,
+                            grammarScore = grammarScore,
+                            vocabularyScore = vocabularyScore,
+                            pronunciationScore = pronunciationScore,
+                            monthlyDaysActive = monthlyDaysActive,
+                            monthlyXpEarned = monthlyXpEarned,
+                            monthlyLessonsCompleted = monthlyLessonsCompleted
+                        )
+                    }
+                }
                 2 -> ActivityTab(activities = activities)
             }
         }

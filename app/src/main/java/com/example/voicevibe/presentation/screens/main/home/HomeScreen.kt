@@ -113,7 +113,7 @@ fun HomeScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.background_blue),
+            painter = painterResource(id = R.drawable.background_lightblue),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -697,7 +697,7 @@ private fun EducationalTopBar(
                     painter = painterResource(id = R.drawable.vozvibe_text_logo),
                     contentDescription = "VoiceVibe Logo",
                     modifier = Modifier
-                        .height(40.dp)
+                        .height(32.dp)
 
                 )
             }

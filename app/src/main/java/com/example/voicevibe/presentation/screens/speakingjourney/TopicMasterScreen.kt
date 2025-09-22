@@ -465,21 +465,6 @@ fun ProgressSummarySection(topicId: String) {
                         (topic?.fluencyProgress?.completed == true) &&
                         (practiceScores.vocabulary > 0)
 
-                    Text(
-                        text = if (showCongrats) {
-                            "🎉 Congratulations! You've unlocked the next topic!"
-                        } else {
-                            "Unlock rule: finish all phrases and prompts, and reach ≥75% in Pronunciation, Fluency, and Vocabulary"
-                        },
-                        fontSize = 14.sp,
-                        color = if (showCongrats) {
-                            Color(0xFF06FFA5)
-                        } else {
-                            Color.White.copy(alpha = 0.7f)
-                        },
-                        textAlign = TextAlign.Center
-                    )
-
                     if (!showCongrats) {
                         Spacer(modifier = Modifier.height(6.dp))
                         // Show remaining steps to unlock for clarity

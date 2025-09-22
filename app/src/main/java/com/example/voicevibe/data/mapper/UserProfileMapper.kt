@@ -66,8 +66,9 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
             followersCount = this.followersCount ?: 0,
             followingCount = this.followingCount ?: 0,
             globalRank = null, // Not in data model
-            weeklyXp = 0, // Placeholder
+            weeklyXp = this.weeklyXpEarned ?: 0,
             monthlyXp = this.monthlyXpEarned ?: 0,
+            dailyXp = this.dailyXpEarned ?: 0,
             totalWords = this.wordsLearned ?: 0,
             improvementRate = 0f // Placeholder
         ),
@@ -164,6 +165,8 @@ fun DomainUserProfile.toData(): DataUserProfile {
         wordsLearned = null, // Not in domain model
         monthlyDaysActive = null, // Not in domain model
         monthlyXpEarned = this.stats.monthlyXp,
+        weeklyXpEarned = null, // Not in domain model
+        dailyXpEarned = null, // Not in domain model
         monthlyLessonsCompleted = null, // Not in domain model
         recentActivities = emptyList(), // Complex mapping, handle separately if needed
         membershipStatus = if (this.isPremium) "premium" else "free"

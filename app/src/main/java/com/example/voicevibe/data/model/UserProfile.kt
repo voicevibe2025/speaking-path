@@ -67,6 +67,10 @@ data class UserProfile(
     val monthlyDaysActive: Int?,
     @SerializedName("monthly_xp_earned")
     val monthlyXpEarned: Int?,
+    @SerializedName("weekly_xp_earned")
+    val weeklyXpEarned: Int?,
+    @SerializedName("daily_xp_earned")
+    val dailyXpEarned: Int?,
     @SerializedName("monthly_lessons_completed")
     val monthlyLessonsCompleted: Int?,
     @SerializedName("recent_activities")

@@ -59,6 +59,7 @@ data class UserStats(
     val followersCount: Int,
     val followingCount: Int,
     val globalRank: Int? = null,
+    val dailyXp: Int = 0,
     val weeklyXp: Int,
     val monthlyXp: Int,
     val totalWords: Int,

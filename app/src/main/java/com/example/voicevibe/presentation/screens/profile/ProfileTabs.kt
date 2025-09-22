@@ -412,6 +412,7 @@ fun StatisticsTab(stats: UserStats) {
 
                     Spacer(modifier = Modifier.height(12.dp))
 
+                    StatRow("Daily XP", stats.dailyXp.toString())
                     StatRow("Weekly XP", stats.weeklyXp.toString())
                     StatRow("Monthly XP", stats.monthlyXp.toString())
                     stats.globalRank?.let {
@@ -435,7 +436,6 @@ fun StatisticsTab(stats: UserStats) {
 
                     StatRow("Followers", stats.followersCount.toString())
                     StatRow("Following", stats.followingCount.toString())
-                    StatRow("Achievements", stats.achievementsUnlocked.toString())
                 }
             }
         }

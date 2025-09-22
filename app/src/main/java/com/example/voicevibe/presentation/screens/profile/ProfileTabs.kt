@@ -175,7 +175,7 @@ fun LazyListScope.OverviewTabContent(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            "${'$'}{profile.longestStreak} days",
+                            "${profile.longestStreak} days",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFFFF6B35)
@@ -255,7 +255,7 @@ fun LazyListScope.AchievementsTabContent(
                         Icon(Icons.Default.TrendingUp, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            text = "Level ${'$'}level",
+                            text = "Level $level",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -324,7 +324,7 @@ fun LazyListScope.StatisticsTabContent(stats: UserStats) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 StatRow("Total Sessions", stats.totalPracticeSessions.toString())
-                StatRow("Practice Time", "${'$'}{stats.totalPracticeMinutes / 60}h ${'$'}{stats.totalPracticeMinutes % 60}m")
+                StatRow("Practice Time", "${stats.totalPracticeMinutes / 60}h ${stats.totalPracticeMinutes % 60}m")
                 StatRow("Words Learned", stats.totalWords.toString())
                 StatRow("Lessons Completed", stats.completedLessons.toString())
             }
@@ -347,7 +347,7 @@ fun LazyListScope.StatisticsTabContent(stats: UserStats) {
                 StatRow("Weekly XP", stats.weeklyXp.toString())
                 StatRow("Monthly XP", stats.monthlyXp.toString())
                 stats.globalRank?.let {
-                    StatRow("Global Rank", "#${'$'}it")
+                    StatRow("Global Rank", "#$it")
                 }
             }
         }

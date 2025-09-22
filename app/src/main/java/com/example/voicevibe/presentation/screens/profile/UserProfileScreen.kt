@@ -269,7 +269,12 @@ private fun ProfileContent(
             when (ProfileTab.values()[page]) {
                 ProfileTab.OVERVIEW -> OverviewTab(profile, speakingOverview, onViewAchievements)
                 ProfileTab.ACTIVITY -> ActivityTab(activities)
-                ProfileTab.ACHIEVEMENTS -> AchievementsTab(profile.badges, onViewAchievements)
+                ProfileTab.ACHIEVEMENTS -> AchievementsTab(
+                    badges = profile.badges,
+                    proficiency = profile.proficiency,
+                    level = profile.level,
+                    onViewAll = onViewAchievements
+                )
                 ProfileTab.STATISTICS -> StatisticsTab(profile.stats)
             }
         }

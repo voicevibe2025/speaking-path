@@ -23,6 +23,10 @@ data class UserProfile(
     val experiencePoints: Int?,
     @SerializedName("total_points_earned")
     val totalPointsEarned: Int?,
+    @SerializedName("joinedDate")
+    val joinedDate: String?,
+    @SerializedName("lastActiveDate")
+    val lastActiveDate: String?,
     @SerializedName("xpToNextLevel")
     val xpToNextLevel: Int?,
     @SerializedName("streak_days")

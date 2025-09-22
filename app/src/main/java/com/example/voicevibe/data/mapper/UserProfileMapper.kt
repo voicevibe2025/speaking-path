@@ -9,6 +9,10 @@ import com.example.voicevibe.domain.model.ProfileVisibility
 import com.example.voicevibe.domain.model.DifficultyLevel
 import com.example.voicevibe.domain.model.UserBadge
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import com.example.voicevibe.data.model.Achievement as DataAchievement
 import com.example.voicevibe.data.model.Activity as DataActivity
 
@@ -39,9 +43,9 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
         totalXp = this.totalPointsEarned ?: (this.experiencePoints ?: 0),
         xpToNextLevel = this.xpToNextLevel ?: 100,
         streakDays = this.streakDays ?: 0,
-        longestStreak = 0, // Not in data model
-        joinedDate = LocalDateTime.now(), // Placeholder
-        lastActiveDate = LocalDateTime.now(), // Placeholder
+        longestStreak = this.streakDays ?: 0,
+        joinedDate = parseToLocalDateTime(this.joinedDate),
+        lastActiveDate = parseToLocalDateTime(this.lastActiveDate),
         country = null, // Not in data model
         countryCode = null, // Not in data model
         language = this.targetLanguage ?: "English",
@@ -76,6 +80,7 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
             difficulty = DifficultyLevel.INTERMEDIATE // Placeholder
         ),
         socialLinks = null, // Not in data model
+        proficiency = this.currentProficiency ?: "",
         // Per-skill scores from backend Speaking Journey aggregations
         speakingScore = this.speakingScore ?: 0f,
         pronunciationScore = this.pronunciationScore ?: 0f,
@@ -84,6 +89,27 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
         listeningScore = this.listeningScore ?: 0f,
         grammarScore = this.grammarScore ?: 0f
     )
+}
+
+private fun parseToLocalDateTime(input: String?): LocalDateTime {
+    if (input.isNullOrBlank()) return LocalDateTime.now()
+    return try {
+        // Try ISO instant (e.g., 2025-09-22T13:00:00Z)
+        val ins = Instant.parse(input)
+        LocalDateTime.ofInstant(ins, ZoneOffset.UTC)
+    } catch (_: Exception) {
+        try {
+            // Try offset datetime (e.g., 2025-09-22T13:00:00+00:00)
+            val odt = OffsetDateTime.parse(input, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            odt.toLocalDateTime()
+        } catch (_: Exception) {
+            try {
+                LocalDateTime.parse(input, DateTimeFormatter.ISO_DATE_TIME)
+            } catch (_: Exception) {
+                LocalDateTime.now()
+            }
+        }
+    }
 }
 
 /**
@@ -116,6 +142,8 @@ fun DomainUserProfile.toData(): DataUserProfile {
         currentLevel = this.level,
         experiencePoints = this.xp,
         totalPointsEarned = null, // Domain model doesn't track lifetime XP; let server compute
+        joinedDate = null, // read-only on server
+        lastActiveDate = null, // read-only on server
         xpToNextLevel = this.xpToNextLevel,
         streakDays = this.streakDays,
         totalPracticeHours = this.stats.totalPracticeMinutes / 60f,

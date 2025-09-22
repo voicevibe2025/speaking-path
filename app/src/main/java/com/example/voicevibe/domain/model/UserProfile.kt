@@ -36,6 +36,7 @@ data class UserProfile(
     val badges: List<UserBadge>,
     val preferences: UserPreferences,
     val socialLinks: SocialLinks? = null,
+    val proficiency: String = "",
     // Speaking Journey skill scores (0..100), aggregated server-side for target users
     val speakingScore: Float = 0f,         // conversation_total_score average
     val pronunciationScore: Float = 0f,    // pronunciation_total_score normalized average

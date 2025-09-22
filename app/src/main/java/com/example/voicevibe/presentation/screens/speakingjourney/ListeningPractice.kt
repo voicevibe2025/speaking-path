@@ -147,7 +147,7 @@ fun ListeningPracticeScreen(
 
     // SFX on answer reveal
     LaunchedEffect(ui.questionIndex, ui.revealedAnswer, ui.answerCorrect) {
-        if (ui.revealedAnswer) {
+        if (ui.revealedAnswer && !ui.isCompletionPending && !ui.showCongrats) {
             val soundId = if (ui.answerCorrect == true) sfxCorrect else sfxIncorrect
             if (soundId != 0) soundPool.play(soundId, 1f, 1f, 1, 0, 1f)
         }
@@ -165,6 +165,13 @@ fun ListeningPracticeScreen(
             )
         } else {
             isTtsPreparing = false
+        }
+    }
+
+    // Play win SFX when the congrats overlay appears
+    LaunchedEffect(ui.showCongrats) {
+        if (ui.showCongrats) {
+            if (sfxWin != 0) soundPool.play(sfxWin, 1f, 1f, 1, 0, 1f)
         }
     }
 
@@ -349,7 +356,6 @@ fun ListeningPracticeScreen(
             // Congrats overlay
             if (ui.showCongrats) {
                 CongratsOverlayListening(ui = ui, onContinue = {
-                    if (sfxWin != 0) soundPool.play(sfxWin, 1f, 1f, 1, 0, 1f)
                     viewModel.dismissCongrats()
                     // Proactively refresh topics so TopicMaster shows updated Listening score
                     sjVM.reloadTopics()

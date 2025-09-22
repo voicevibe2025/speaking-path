@@ -66,7 +66,7 @@ fun ProfileScreen(
     val followersCount by viewModel.followersCount
     val followingCount by viewModel.followingCount
     val recentAchievements by viewModel.recentAchievements
-    val recentActivities by viewModel.recentActivities
+    val activities by viewModel.activities
     val avatarUrl by viewModel.avatarUrl
     val userInitials by viewModel.userInitials
     val nextLevelXp by viewModel.nextLevelXp
@@ -185,7 +185,7 @@ fun ProfileScreen(
                     monthlyXpEarned = monthlyXpEarned,
                     monthlyLessonsCompleted = monthlyLessonsCompleted
                 )
-                2 -> ActivityTab(recentActivities = recentActivities)
+                2 -> ActivityTab(activities = activities)
             }
         }
     }
@@ -860,71 +860,7 @@ fun MonthStatItem(label: String, value: String, icon: ImageVector) {
     }
 }
 
-@Composable
-fun ActivityTab(recentActivities: List<com.example.voicevibe.data.model.Activity>) {
-    if (recentActivities.isEmpty()) {
-        EmptyStateMessage(
-            icon = Icons.Default.Timeline,
-            message = "No recent activity"
-        )
-    } else {
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(recentActivities) { activity ->
-                CurrentUserActivityCard(activity)
-            }
-        }
-    }
-}
-
-@Composable
-fun CurrentUserActivityCard(activity: com.example.voicevibe.data.model.Activity) {
-    Card(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Activity Icon
-            Surface(
-                shape = CircleShape,
-                color = parseColor(activity.color).copy(alpha = 0.1f),
-                modifier = Modifier.size(40.dp)
-            ) {
-                Icon(
-                    imageVector = getIconFromString(activity.icon),
-                    contentDescription = activity.type,
-                    tint = parseColor(activity.color),
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxSize()
-                )
-            }
-
-            // Activity Details
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    activity.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    activity.relativeTime,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
+ 
 
 @Composable
 fun RecentActivityCard(activities: List<com.example.voicevibe.data.model.Activity>) {

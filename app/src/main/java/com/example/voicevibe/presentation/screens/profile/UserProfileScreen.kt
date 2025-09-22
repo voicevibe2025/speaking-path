@@ -4,7 +4,6 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
-import androidx.compose.foundation.pager.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -215,67 +214,69 @@ private fun ProfileContent(
     onViewFollowing: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val pagerState = rememberPagerState(pageCount = { ProfileTab.values().size })
+    val listState = rememberLazyListState()
 
-    LaunchedEffect(selectedTab) {
-        pagerState.animateScrollToPage(selectedTab.ordinal)
-    }
-
-    Column(
-        modifier = modifier.fillMaxSize()
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        state = listState
     ) {
         // Profile Header
-        ProfileHeader(
-            profile = profile,
-            isOwnProfile = isOwnProfile,
-            onFollowClick = onFollowClick,
-            onChallengeClick = onChallengeClick,
-            onViewFollowers = onViewFollowers,
-            onViewFollowing = onViewFollowing
-        )
+        item {
+            ProfileHeader(
+                profile = profile,
+                isOwnProfile = isOwnProfile,
+                onFollowClick = onFollowClick,
+                onChallengeClick = onChallengeClick,
+                onViewFollowers = onViewFollowers,
+                onViewFollowing = onViewFollowing
+            )
+        }
 
-        // Tab Row
-        TabRow(
-            selectedTabIndex = pagerState.currentPage,
-            containerColor = MaterialTheme.colorScheme.surface
-        ) {
-            ProfileTab.values().forEach { tab ->
-                Tab(
-                    selected = pagerState.currentPage == tab.ordinal,
-                    onClick = {
-                        onTabSelected(tab)
-                    },
-                    text = { Text(tab.name.lowercase().replaceFirstChar { it.uppercase() }) },
-                    icon = {
-                        Icon(
-                            imageVector = when (tab) {
-                                ProfileTab.OVERVIEW -> Icons.Default.Dashboard
-                                ProfileTab.ACTIVITY -> Icons.Default.Timeline
-                                ProfileTab.ACHIEVEMENTS -> Icons.Default.EmojiEvents
-                                ProfileTab.STATISTICS -> Icons.Default.Analytics
-                            },
-                            contentDescription = tab.name
-                        )
-                    }
-                )
+        // Tabs Row
+        item {
+            TabRow(
+                selectedTabIndex = selectedTab.ordinal,
+                containerColor = MaterialTheme.colorScheme.surface
+            ) {
+                ProfileTab.values().forEach { tab ->
+                    Tab(
+                        selected = selectedTab == tab,
+                        onClick = { onTabSelected(tab) },
+                        text = { Text(tab.name.lowercase().replaceFirstChar { it.uppercase() }) },
+                        icon = {
+                            Icon(
+                                imageVector = when (tab) {
+                                    ProfileTab.OVERVIEW -> Icons.Default.Dashboard
+                                    ProfileTab.ACTIVITY -> Icons.Default.Timeline
+                                    ProfileTab.ACHIEVEMENTS -> Icons.Default.EmojiEvents
+                                    ProfileTab.STATISTICS -> Icons.Default.Analytics
+                                },
+                                contentDescription = tab.name
+                            )
+                        }
+                    )
+                }
             }
         }
 
-        // Tab Content
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize()
-        ) { page ->
-            when (ProfileTab.values()[page]) {
-                ProfileTab.OVERVIEW -> OverviewTab(profile, speakingOverview, onViewAchievements)
-                ProfileTab.ACTIVITY -> ActivityTab(activities)
-                ProfileTab.ACHIEVEMENTS -> AchievementsTab(
+        // Selected Tab Content (flattened into parent list to avoid nested scrolling)
+        when (selectedTab) {
+            ProfileTab.OVERVIEW -> {
+                OverviewTabContent(profile, speakingOverview, onViewAchievements)
+            }
+            ProfileTab.ACTIVITY -> {
+                ActivityTabContent(activities)
+            }
+            ProfileTab.ACHIEVEMENTS -> {
+                AchievementsTabContent(
                     badges = profile.badges,
                     proficiency = profile.proficiency,
                     level = profile.level,
                     onViewAll = onViewAchievements
                 )
-                ProfileTab.STATISTICS -> StatisticsTab(profile.stats)
+            }
+            ProfileTab.STATISTICS -> {
+                StatisticsTabContent(profile.stats)
             }
         }
     }

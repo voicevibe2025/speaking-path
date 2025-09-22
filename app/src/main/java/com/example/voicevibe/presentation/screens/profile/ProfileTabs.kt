@@ -25,6 +25,352 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.Duration
 
+// New: Flattened content builders to be used inside a parent LazyColumn
+fun LazyListScope.OverviewTabContent(
+    profile: UserProfile,
+    overview: SpeakingOverview?,
+    onViewAchievements: () -> Unit
+) {
+    // Spacing matches original LazyColumn(contentPadding = 16.dp, spacedBy = 16.dp)
+    if (profile.badges.isNotEmpty()) {
+        item {
+            Card(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Recent Badges",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        TextButton(onClick = onViewAchievements) {
+                            Text("View All")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(profile.badges.take(5)) { badge ->
+                            BadgeItem(badge)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    item {
+        Card(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    "Performance",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                PerformanceMetric(
+                    label = "Conversation",
+                    value = profile.speakingScore,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                PerformanceMetric(
+                    label = "Pronunciation",
+                    value = profile.pronunciationScore,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                PerformanceMetric(
+                    label = "Fluency",
+                    value = profile.fluencyScore,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+                PerformanceMetric(
+                    label = "Vocabulary",
+                    value = profile.vocabularyScore,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                PerformanceMetric(
+                    label = "Listening",
+                    value = profile.listeningScore,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                PerformanceMetric(
+                    label = "Grammar",
+                    value = profile.grammarScore,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+            }
+        }
+    }
+
+    item {
+        Card(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    "Learning Progress",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    ProgressStat(
+                        icon = Icons.Default.School,
+                        value = profile.stats.completedLessons.toString(),
+                        label = "Lessons"
+                    )
+                    ProgressStat(
+                        icon = Icons.Default.Timer,
+                        value = profile.stats.totalPracticeSessions.toString(),
+                        label = "Practice"
+                    )
+                    ProgressStat(
+                        icon = Icons.Default.Abc,
+                        value = profile.stats.totalWords.toString(),
+                        label = "Words"
+                    )
+                }
+            }
+        }
+    }
+
+    item {
+        Card(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        "Member Since",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        profile.joinedDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                if (profile.longestStreak > 0) {
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            "Longest Streak",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            "${'$'}{profile.longestStreak} days",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFFFF6B35)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun LazyListScope.ActivityTabContent(activities: List<UserActivity>) {
+    if (activities.isEmpty()) {
+        item {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)) {
+                EmptyStateMessage(
+                    icon = Icons.Default.Timeline,
+                    message = "No recent activity"
+                )
+            }
+        }
+    } else {
+        // top padding
+        item { Spacer(modifier = Modifier.height(16.dp)) }
+        items(activities) { activity ->
+            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                ActivityCard(activity)
+            }
+        }
+        // bottom padding
+        item { Spacer(modifier = Modifier.height(12.dp)) }
+    }
+}
+
+fun LazyListScope.AchievementsTabContent(
+    badges: List<UserBadge>,
+    proficiency: String,
+    level: Int,
+    onViewAll: () -> Unit
+) {
+    // Summary card
+    item {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Proficiency",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = proficiency.ifBlank { "—" },
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.TrendingUp, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = "Level ${'$'}level",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    if (badges.isEmpty()) {
+        item {
+            EmptyStateMessage(
+                icon = Icons.Default.EmojiEvents,
+                message = "No achievements yet"
+            )
+        }
+    } else {
+        // Manual 3-column grid to avoid nested lazy grids
+        val rows = badges.chunked(3)
+        items(rows) { rowBadges ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                rowBadges.forEach { badge ->
+                    Box(modifier = Modifier.weight(1f)) {
+                        BadgeItem(badge)
+                    }
+                }
+                // Fill remaining spaces to keep 3 columns layout
+                repeat(3 - rowBadges.size) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+
+        if (badges.size >= 9) {
+            item {
+                Button(
+                    onClick = onViewAll,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text("View All Achievements")
+                }
+            }
+        }
+    }
+}
+
+fun LazyListScope.StatisticsTabContent(stats: UserStats) {
+    // Performance Stats
+    item {
+        Card(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    "Performance Statistics",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                StatRow("Total Sessions", stats.totalPracticeSessions.toString())
+                StatRow("Practice Time", "${'$'}{stats.totalPracticeMinutes / 60}h ${'$'}{stats.totalPracticeMinutes % 60}m")
+                StatRow("Words Learned", stats.totalWords.toString())
+                StatRow("Lessons Completed", stats.completedLessons.toString())
+            }
+        }
+    }
+
+    // XP Stats
+    item {
+        Card(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    "Experience Points",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                StatRow("Daily XP", stats.dailyXp.toString())
+                StatRow("Weekly XP", stats.weeklyXp.toString())
+                StatRow("Monthly XP", stats.monthlyXp.toString())
+                stats.globalRank?.let {
+                    StatRow("Global Rank", "#${'$'}it")
+                }
+            }
+        }
+    }
+
+    // Social Stats
+    item {
+        Card(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    "Social",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                StatRow("Followers", stats.followersCount.toString())
+                StatRow("Following", stats.followingCount.toString())
+            }
+        }
+    }
+}
 @Composable
 fun OverviewTab(
     profile: UserProfile,

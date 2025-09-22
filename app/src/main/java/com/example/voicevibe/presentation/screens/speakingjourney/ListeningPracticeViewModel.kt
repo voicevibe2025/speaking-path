@@ -56,6 +56,7 @@ class ListeningPracticeViewModel @Inject constructor(
                                 lastAwardedXp = 0,
                                 totalXp = 0,
                                 showCongrats = false,
+                                isCompletionPending = false,
                                 question = rawQuestions[0].question,
                                 options = rawQuestions[0].options,
                                 showQuestions = false,
@@ -116,7 +117,8 @@ class ListeningPracticeViewModel @Inject constructor(
                 answerCorrect = body.correct,
                 score = newScore,
                 lastAwardedXp = body.xpAwarded,
-                totalXp = xpFromAnswers
+                totalXp = xpFromAnswers,
+                isCompletionPending = body.completed
             )
         }
 
@@ -134,7 +136,8 @@ class ListeningPracticeViewModel @Inject constructor(
                         options = q?.options ?: emptyList(),
                         selectedOption = null,
                         revealedAnswer = false,
-                        answerCorrect = null
+                        answerCorrect = null,
+                        isCompletionPending = false
                     )
                 }
             }
@@ -153,6 +156,7 @@ class ListeningPracticeViewModel @Inject constructor(
                         it.copy(
                             isSubmitting = false,
                             showCongrats = true,
+                            isCompletionPending = false,
                             score = dto.totalScore,
                             totalQuestions = dto.totalQuestions,
                             questionIndex = dto.totalQuestions,
@@ -213,4 +217,5 @@ data class ListeningUiState(
     val selectedOption: String? = null,
     val revealedAnswer: Boolean = false,
     val answerCorrect: Boolean? = null,
+    val isCompletionPending: Boolean = false,
 )

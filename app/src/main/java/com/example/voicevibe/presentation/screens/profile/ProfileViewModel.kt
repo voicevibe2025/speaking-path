@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.repository.ProfileRepository
+import com.example.voicevibe.data.repository.SpeakingJourneyRepository
+import com.example.voicevibe.domain.model.UserActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
@@ -13,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
+    private val speakingJourneyRepository: SpeakingJourneyRepository
 ) : ViewModel() {
 
     private val _userName = mutableStateOf("Loading...")
@@ -67,9 +70,9 @@ class ProfileViewModel @Inject constructor(
     private val _recentAchievements = mutableStateOf<List<com.example.voicevibe.data.model.Achievement>>(emptyList())
     val recentAchievements: State<List<com.example.voicevibe.data.model.Achievement>> = _recentAchievements
 
-    // Recent Activities state
-    private val _recentActivities = mutableStateOf<List<com.example.voicevibe.data.model.Activity>>(emptyList())
-    val recentActivities: State<List<com.example.voicevibe.data.model.Activity>> = _recentActivities
+    // Activities feed (current user)
+    private val _activities = mutableStateOf<List<UserActivity>>(emptyList())
+    val activities: State<List<UserActivity>> = _activities
 
     // Learning Preferences state
     private val _dailyPracticeGoal = mutableStateOf(15)
@@ -162,8 +165,10 @@ class ProfileViewModel @Inject constructor(
                 // Update Recent Achievements
                 _recentAchievements.value = userProfile.recentAchievements ?: emptyList()
 
-                // Update Recent Activities
-                _recentActivities.value = userProfile.recentActivities ?: emptyList()
+                // Load Speaking Journey activities for current user (domain model)
+                speakingJourneyRepository.getActivities(limit = 50, userId = null)
+                    .onSuccess { list -> _activities.value = list }
+                    .onFailure { /* keep empty on failure */ }
 
                 // Update Learning Preferences
                 _dailyPracticeGoal.value = userProfile.dailyPracticeGoal ?: 15

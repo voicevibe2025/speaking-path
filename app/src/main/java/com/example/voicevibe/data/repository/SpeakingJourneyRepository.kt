@@ -219,9 +219,9 @@ class SpeakingJourneyRepository @Inject constructor(
     }
 
     // --- Activities ---
-    suspend fun getActivities(limit: Int = 50): Result<List<UserActivity>> {
+    suspend fun getActivities(limit: Int = 50, userId: String? = null): Result<List<UserActivity>> {
         return try {
-            val res = api.getActivities(limit)
+            val res = api.getActivities(limit, userId)
             if (res.isSuccessful) {
                 val body = res.body() ?: emptyList()
                 Result.success(body.map { it.toDomain() })

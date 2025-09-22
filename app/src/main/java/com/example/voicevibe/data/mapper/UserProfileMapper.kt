@@ -75,7 +75,14 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
             ),
             difficulty = DifficultyLevel.INTERMEDIATE // Placeholder
         ),
-        socialLinks = null // Not in data model
+        socialLinks = null, // Not in data model
+        // Per-skill scores from backend Speaking Journey aggregations
+        speakingScore = this.speakingScore ?: 0f,
+        pronunciationScore = this.pronunciationScore ?: 0f,
+        fluencyScore = this.fluencyScore ?: 0f,
+        vocabularyScore = this.vocabularyScore ?: 0f,
+        listeningScore = this.listeningScore ?: 0f,
+        grammarScore = this.grammarScore ?: 0f
     )
 }
 
@@ -120,6 +127,7 @@ fun DomainUserProfile.toData(): DataUserProfile {
         learningGoal = null, // Not in domain model
         targetLanguage = this.language,
         speakingScore = null, // Not in domain model
+        fluencyScore = null, // Not in domain model
         listeningScore = null, // Not in domain model
         grammarScore = null, // Not in domain model
         vocabularyScore = null, // Not in domain model

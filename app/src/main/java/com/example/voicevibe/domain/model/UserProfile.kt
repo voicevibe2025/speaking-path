@@ -35,7 +35,14 @@ data class UserProfile(
     val stats: UserStats,
     val badges: List<UserBadge>,
     val preferences: UserPreferences,
-    val socialLinks: SocialLinks? = null
+    val socialLinks: SocialLinks? = null,
+    // Speaking Journey skill scores (0..100), aggregated server-side for target users
+    val speakingScore: Float = 0f,         // conversation_total_score average
+    val pronunciationScore: Float = 0f,    // pronunciation_total_score normalized average
+    val fluencyScore: Float = 0f,          // fluency_total_score average
+    val vocabularyScore: Float = 0f,       // vocabulary_total_score average
+    val listeningScore: Float = 0f,        // listening_total_score average
+    val grammarScore: Float = 0f           // not implemented yet
 )
 
 /**

@@ -69,7 +69,7 @@ fun OverviewTab(
             }
         }
 
-        // Quick Stats
+        // Performance (per-skill scores)
         item {
             Card {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -81,19 +81,40 @@ fun OverviewTab(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
+                    // Conversation (Speaking)
                     PerformanceMetric(
-                        label = "Average Accuracy",
-                        value = overview?.averagePronunciation ?: 0f,
+                        label = "Conversation",
+                        value = profile.speakingScore,
                         color = MaterialTheme.colorScheme.primary
                     )
+                    // Pronunciation
                     PerformanceMetric(
-                        label = "Average Fluency",
-                        value = overview?.averageFluency ?: 0f,
+                        label = "Pronunciation",
+                        value = profile.pronunciationScore,
                         color = MaterialTheme.colorScheme.secondary
                     )
+                    // Fluency
                     PerformanceMetric(
-                        label = "Improvement Rate",
-                        value = overview?.improvementRate ?: 0f,
+                        label = "Fluency",
+                        value = profile.fluencyScore,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                    // Vocabulary
+                    PerformanceMetric(
+                        label = "Vocabulary",
+                        value = profile.vocabularyScore,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    // Listening
+                    PerformanceMetric(
+                        label = "Listening",
+                        value = profile.listeningScore,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    // Grammar (not implemented yet)
+                    PerformanceMetric(
+                        label = "Grammar",
+                        value = profile.grammarScore,
                         color = MaterialTheme.colorScheme.tertiary
                     )
                 }

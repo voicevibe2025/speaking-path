@@ -80,7 +80,8 @@ interface SpeakingJourneyApiService {
     // --- Activities ---
     @GET("speaking/activities")
     suspend fun getActivities(
-        @Query("limit") limit: Int = 50
+        @Query("limit") limit: Int = 50,
+        @Query("userId") userId: String? = null
     ): Response<List<JourneyActivityDto>>
 
     // --- Listening Practice ---

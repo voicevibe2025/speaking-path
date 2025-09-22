@@ -99,16 +99,10 @@ class UserProfileViewModel @Inject constructor(
 
     private fun loadUserActivities() {
         viewModelScope.launch {
-            // For now, backend activities endpoint returns current user's journey events only
-            if (userId == null) {
-                val result = speakingJourneyRepository.getActivities(limit = 50)
-                result.onSuccess { list ->
-                    _uiState.update { it.copy(activities = list) }
-                }.onFailure {
-                    _uiState.update { it.copy(activities = emptyList()) }
-                }
-            } else {
-                // Viewing another user's profile: activities not available yet
+            val result = speakingJourneyRepository.getActivities(limit = 50, userId = userId)
+            result.onSuccess { list ->
+                _uiState.update { it.copy(activities = list) }
+            }.onFailure {
                 _uiState.update { it.copy(activities = emptyList()) }
             }
         }

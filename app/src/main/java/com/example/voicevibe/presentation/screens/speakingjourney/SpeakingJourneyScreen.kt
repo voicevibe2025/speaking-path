@@ -6,6 +6,7 @@ import android.net.Uri
 import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -577,7 +578,8 @@ private fun AiCoachCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .animateContentSize(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.04f)),
         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
@@ -615,54 +617,67 @@ private fun AiCoachCard(
 
             if (expanded) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        if (analysis.strengths.isNotEmpty()) {
-                            Text(
-                                text = "Strengths",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = BrandCyan
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                analysis.strengths.take(2).forEach { s: String ->
-                                    AssistChip(
-                                        onClick = {},
-                                        label = { Text(s.replaceFirstChar { it.titlecase(Locale.ROOT) }) },
-                                        colors = AssistChipDefaults.assistChipColors(
-                                            containerColor = Color.White.copy(alpha = 0.06f),
-                                            labelColor = Color.White
-                                        )
+                // Cap expanded content height and allow internal scroll to avoid huge card height
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 220.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                if (analysis.strengths.isNotEmpty()) {
+                                    Text(
+                                        text = "Strengths",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = BrandCyan
                                     )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        analysis.strengths.take(2).forEach { s: String ->
+                                            AssistChip(
+                                                onClick = {},
+                                                label = { Text(s.replaceFirstChar { it.titlecase(Locale.ROOT) }) },
+                                                colors = AssistChipDefaults.assistChipColors(
+                                                    containerColor = Color.White.copy(alpha = 0.06f),
+                                                    labelColor = Color.White
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                if (analysis.weaknesses.isNotEmpty()) {
+                                    Text(
+                                        text = "Focus",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = BrandFuchsia
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        analysis.weaknesses.take(2).forEach { w: String ->
+                                            AssistChip(
+                                                onClick = {},
+                                                label = { Text(w.replaceFirstChar { it.titlecase(Locale.ROOT) }) },
+                                                colors = AssistChipDefaults.assistChipColors(
+                                                    containerColor = Color.White.copy(alpha = 0.06f),
+                                                    labelColor = Color.White
+                                                )
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        if (analysis.weaknesses.isNotEmpty()) {
-                            Text(
-                                text = "Focus",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = BrandFuchsia
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                analysis.weaknesses.take(2).forEach { w: String ->
-                                    AssistChip(
-                                        onClick = {},
-                                        label = { Text(w.replaceFirstChar { it.titlecase(Locale.ROOT) }) },
-                                        colors = AssistChipDefaults.assistChipColors(
-                                            containerColor = Color.White.copy(alpha = 0.06f),
-                                            labelColor = Color.White
-                                        )
-                                    )
-                                }
-                            }
-                        }
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
             } else {
                 Spacer(modifier = Modifier.height(8.dp))
             }

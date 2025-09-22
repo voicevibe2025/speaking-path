@@ -53,7 +53,7 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
         isFollower = this.isFollower == true,
         isBlocked = false, // Not in data model
         stats = UserStats(
-            totalPracticeSessions = 0, // Placeholder
+            totalPracticeSessions = this.practiceCount ?: 0,
             totalPracticeMinutes = (this.totalPracticeHours?.times(60))?.toInt() ?: 0,
             averageAccuracy = this.avgScore ?: 0f,
             averageFluency = 0f, // Placeholder
@@ -64,7 +64,7 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
             globalRank = null, // Not in data model
             weeklyXp = 0, // Placeholder
             monthlyXp = this.monthlyXpEarned ?: 0,
-            totalWords = 0, // Placeholder
+            totalWords = this.wordsLearned ?: 0,
             improvementRate = 0f // Placeholder
         ),
         badges = mappedBadges,
@@ -132,6 +132,8 @@ fun DomainUserProfile.toData(): DataUserProfile {
         grammarScore = null, // Not in domain model
         vocabularyScore = null, // Not in domain model
         pronunciationScore = null, // Not in domain model
+        practiceCount = null, // Not in domain model
+        wordsLearned = null, // Not in domain model
         monthlyDaysActive = null, // Not in domain model
         monthlyXpEarned = this.stats.monthlyXp,
         monthlyLessonsCompleted = null, // Not in domain model

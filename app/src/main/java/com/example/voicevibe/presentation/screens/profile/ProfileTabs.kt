@@ -139,17 +139,17 @@ fun OverviewTab(
                     ) {
                         ProgressStat(
                             icon = Icons.Default.School,
-                            value = (overview?.completedTopics ?: 0).toString(),
+                            value = profile.stats.completedLessons.toString(),
                             label = "Lessons"
                         )
                         ProgressStat(
                             icon = Icons.Default.Timer,
-                            value = "${(overview?.totalPracticeMinutes ?: 0) / 60}h",
+                            value = profile.stats.totalPracticeSessions.toString(),
                             label = "Practice"
                         )
                         ProgressStat(
                             icon = Icons.Default.Abc,
-                            value = (overview?.totalWordsLearned ?: 0).toString(),
+                            value = profile.stats.totalWords.toString(),
                             label = "Words"
                         )
                     }

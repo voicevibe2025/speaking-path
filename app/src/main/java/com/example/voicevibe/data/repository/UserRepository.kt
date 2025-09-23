@@ -71,6 +71,27 @@ class UserRepository @Inject constructor(
     }
 
     /**
+     * Search users by name or username
+     */
+    suspend fun searchUsers(query: String): Resource<List<DomainUserProfile>> {
+        return try {
+            val response = apiService.searchUsers(query)
+            if (response.isSuccessful) {
+                val list = response.body()?.map { data ->
+                    data.toDomain().copy(
+                        avatarUrl = data.avatarUrl?.let { normalizeUrl(it) }
+                    )
+                } ?: emptyList()
+                Resource.Success(list)
+            } else {
+                Resource.Error("Failed to search users")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
      * Get current user ID
      */
     suspend fun getCurrentUserId(): String {

@@ -31,7 +31,7 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
     }.distinctBy { it.id }
 
     return DomainUserProfile(
-        id = this.userName,
+        id = (this.userId?.toString() ?: this.userName),
         username = this.userName,
         email = this.userEmail,
         displayName = "${this.firstName ?: ""} ${this.lastName ?: ""}".trim(),
@@ -135,6 +135,7 @@ fun DomainUserProfile.toData(): DataUserProfile {
 
     return DataUserProfile(
         userName = this.username,
+        userId = this.id.toIntOrNull(),
         userEmail = this.email,
         avatarUrl = this.avatarUrl,
         firstName = firstName,

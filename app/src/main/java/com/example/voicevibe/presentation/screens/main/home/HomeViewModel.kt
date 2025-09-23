@@ -90,9 +90,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun createImagePost(part: okhttp3.MultipartBody.Part, onDone: (() -> Unit)? = null) {
+    fun createImagePost(part: okhttp3.MultipartBody.Part, text: String? = null, onDone: (() -> Unit)? = null) {
         viewModelScope.launch {
-            when (val res = socialRepository.createImagePost(part)) {
+            when (val res = socialRepository.createImagePost(part, text)) {
                 is com.example.voicevibe.domain.model.Resource.Success -> {
                     res.data?.let { p -> _uiState.update { it.copy(posts = listOf(p) + it.posts) } }
                     onDone?.invoke()

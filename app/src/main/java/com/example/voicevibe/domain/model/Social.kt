@@ -10,7 +10,7 @@ data class PostAuthor(
     val avatarUrl: String? = null,
 )
 
-/** A social post: exactly one of text, imageUrl, or linkUrl will be present */
+/** A social post: can have text and/or imageUrl, or a linkUrl (link is exclusive) */
 data class Post(
     val id: Int,
     val author: PostAuthor,

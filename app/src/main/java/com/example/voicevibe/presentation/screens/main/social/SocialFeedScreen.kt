@@ -116,7 +116,7 @@ fun SocialFeedScreen(
                             userInitials = uiState.userInitials ?: "VV",
                             onPostText = { text -> viewModel.createTextPost(text) },
                             onPostLink = { link -> viewModel.createLinkPost(link) },
-                            onPostImage = { part -> viewModel.createImagePost(part) }
+                            onPostImage = { part, text -> viewModel.createImagePost(part, text) }
                         )
                     }
 
@@ -161,7 +161,7 @@ private fun StatusComposer(
     userInitials: String,
     onPostText: (String) -> Unit,
     onPostLink: (String) -> Unit,
-    onPostImage: (MultipartBody.Part) -> Unit
+    onPostImage: (MultipartBody.Part, String?) -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -232,12 +232,7 @@ private fun StatusComposer(
 
             OutlinedTextField(
                 value = text,
-                onValueChange = { new ->
-                    text = new
-                    if (new.isNotBlank()) {
-                        selectedImageUri = null
-                    }
-                },
+                onValueChange = { new -> text = new },
                 placeholder = { Text("Write a status...") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = false,
@@ -264,32 +259,27 @@ private fun StatusComposer(
                 AssistChip(
                     onClick = {
                         imagePickerLauncher.launch("image/*")
-                        text = ""
                     },
                     label = { Text("Photo") },
                     leadingIcon = { Icon(Icons.Default.Image, contentDescription = null) }
                 )
 
-                val canPost = (!isPosting) && (
-                    (selectedImageUri != null && text.isBlank()) ||
-                        (selectedImageUri == null && text.isNotBlank())
-                )
+                val canPost = (!isPosting) && ((selectedImageUri != null) || text.isNotBlank())
                 Button(
                     onClick = {
                         if (isPosting) return@Button
                         isPosting = true
-                        if (selectedImageUri != null) {
-                            val uri = selectedImageUri
-                            if (uri != null) {
-                                scope.launch {
-                                    val part = buildImagePart(uri)
-                                    if (part != null) onPostImage(part)
-                                    selectedImageUri = null
-                                    isPosting = false
-                                }
+                        val uri = selectedImageUri
+                        val content = text.trim()
+                        if (uri != null) {
+                            scope.launch {
+                                val part = buildImagePart(uri)
+                                if (part != null) onPostImage(part, content.ifBlank { null })
+                                selectedImageUri = null
+                                text = ""
+                                isPosting = false
                             }
-                        } else if (text.isNotBlank()) {
-                            val content = text.trim()
+                        } else if (content.isNotBlank()) {
                             val isLinkOnly = (content.startsWith("http://") || content.startsWith("https://")) && !content.contains(" ")
                             if (isLinkOnly) onPostLink(content) else onPostText(content)
                             text = ""

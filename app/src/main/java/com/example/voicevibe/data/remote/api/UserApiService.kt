@@ -35,7 +35,7 @@ interface UserApiService {
     @GET("users/{id}/")
     suspend fun getUserById(@Path("id") userId: String): Response<UserProfile>
     
-    @GET("users/search")
+    @GET("users/search/")
     suspend fun searchUsers(@Query("query") query: String): Response<List<UserProfile>>
     
     @POST("users/follow/{id}/")

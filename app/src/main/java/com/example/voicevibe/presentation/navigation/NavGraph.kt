@@ -36,6 +36,7 @@ import com.example.voicevibe.presentation.screens.profile.NotificationSettingsSc
 import com.example.voicevibe.presentation.screens.profile.LanguageSettingsScreen
 import com.example.voicevibe.presentation.screens.profile.AboutScreen
 import com.example.voicevibe.presentation.screens.main.social.SocialFeedScreen
+import com.example.voicevibe.presentation.screens.main.search.UserSearchResultsScreen
 import com.example.voicevibe.presentation.screens.scenarios.CulturalScenariosScreen
 import com.example.voicevibe.presentation.screens.scenarios.ScenarioDetailScreen
 import com.example.voicevibe.presentation.screens.analytics.AnalyticsDashboardScreen
@@ -197,6 +198,7 @@ fun NavGraph(
                 },
                 onNavigateToSocialFeed = { navController.navigate(Screen.SocialFeed.createRoute()) },
                 onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
+                onNavigateToUserSearch = { navController.navigate(Screen.UserSearch.route) },
                 onNavigateToProfile = {
                     navController.navigate(Screen.Profile.route)
                 },
@@ -527,6 +529,16 @@ fun NavGraph(
                 },
                 onNavigateToFollowers = { _: String -> },
                 onNavigateToFollowing = { _: String -> }
+            )
+        }
+
+        // User Search
+        composable(Screen.UserSearch.route) {
+            UserSearchResultsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onOpenUserProfile = { userId ->
+                    navController.navigate(Screen.UserProfile.createRoute(userId))
+                }
             )
         }
         composable(Screen.Profile.route) {

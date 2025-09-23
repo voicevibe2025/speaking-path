@@ -8,6 +8,8 @@ import com.example.voicevibe.domain.model.SocialNotification
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import okhttp3.MultipartBody
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -47,9 +49,13 @@ class SocialRepository @Inject constructor(
         } catch (e: Exception) { Resource.Error(e.message ?: "Unknown error") }
     }
 
-    suspend fun createImagePost(image: MultipartBody.Part): Resource<Post> {
+    suspend fun createImagePost(image: MultipartBody.Part, text: String? = null): Resource<Post> {
         return try {
-            val resp = api.createImagePost(image)
+            val resp = if (!text.isNullOrBlank()) {
+                api.createImagePostWithText(image, text.trim().toRequestBody("text/plain".toMediaType()))
+            } else {
+                api.createImagePost(image)
+            }
             if (resp.isSuccessful) {
                 resp.body()?.let { Resource.Success(it) } ?: Resource.Error("Empty response")
             } else Resource.Error("Failed to upload image post")

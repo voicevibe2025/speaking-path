@@ -4,6 +4,7 @@ import com.example.voicevibe.domain.model.Post
 import com.example.voicevibe.domain.model.PostComment
 import com.example.voicevibe.domain.model.SocialNotification
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -34,6 +35,13 @@ interface SocialApiService {
     @POST("social/posts/")
     suspend fun createImagePost(
         @Part image: MultipartBody.Part
+    ): Response<Post>
+
+    @Multipart
+    @POST("social/posts/")
+    suspend fun createImagePostWithText(
+        @Part image: MultipartBody.Part,
+        @Part("text") text: RequestBody
     ): Response<Post>
 
     @POST("social/posts/{id}/like/")

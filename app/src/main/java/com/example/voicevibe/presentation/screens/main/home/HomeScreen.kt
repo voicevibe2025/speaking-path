@@ -79,6 +79,7 @@ fun HomeScreen(
     onNavigateToLearningPath: (String) -> Unit,
     onNavigateToSocialFeed: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
+    onNavigateToUserSearch: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -134,7 +135,8 @@ fun HomeScreen(
                     onNotificationsClick = {
                         onNavigateToNotifications()
                     },
-                    onNavigationIconClick = onNavigateToProfile
+                    onNavigationIconClick = onNavigateToProfile,
+                    onSearchClick = onNavigateToUserSearch
                 )
             }
         ) { innerPadding ->
@@ -306,11 +308,23 @@ fun PostCard(
 
             Spacer(Modifier.height(8.dp))
 
-            when {
-                !post.text.isNullOrBlank() -> {
+            if (!post.linkUrl.isNullOrBlank()) {
+                val link = post.linkUrl!!
+                Text(
+                    text = link,
+                    color = BrandIndigo,
+                    modifier = Modifier.clickable {
+                        try {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link)))
+                        } catch (_: Throwable) {}
+                    }
+                )
+            } else {
+                if (!post.text.isNullOrBlank()) {
                     Text(post.text!!, color = NeutralDarkGray)
                 }
-                !post.imageUrl.isNullOrBlank() -> {
+                if (!post.imageUrl.isNullOrBlank()) {
+                    if (!post.text.isNullOrBlank()) Spacer(Modifier.height(6.dp))
                     SubcomposeAsyncImage(
                         model = post.imageUrl,
                         contentDescription = "Post Image",
@@ -319,18 +333,6 @@ fun PostCard(
                             .fillMaxWidth()
                             .heightIn(min = 120.dp)
                             .clip(RoundedCornerShape(8.dp))
-                    )
-                }
-                !post.linkUrl.isNullOrBlank() -> {
-                    val link = post.linkUrl!!
-                    Text(
-                        text = link,
-                        color = BrandIndigo,
-                        modifier = Modifier.clickable {
-                            try {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link)))
-                            } catch (_: Throwable) {}
-                        }
                     )
                 }
             }
@@ -679,7 +681,8 @@ private fun EducationalTopBar(
     userInitials: String,
     unreadCount: Int,
     onNotificationsClick: () -> Unit,
-    onNavigationIconClick: () -> Unit
+    onNavigationIconClick: () -> Unit,
+    onSearchClick: () -> Unit
 ) {
     Surface(
         color = Color.Transparent,
@@ -719,6 +722,14 @@ private fun EducationalTopBar(
                             tint = BrandIndigo
                         )
                     }
+                }
+                // Search button
+                IconButton(onClick = onSearchClick) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search Users",
+                        tint = BrandIndigo
+                    )
                 }
                 // Profile avatar
                 IconButton(onClick = onNavigationIconClick) {

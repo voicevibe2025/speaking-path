@@ -115,14 +115,10 @@ fun HomeScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            painter = painterResource(id = R.drawable.background_radiant_blue),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(Color(0xFF322048))
+    ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = Color.Transparent,
@@ -252,9 +248,9 @@ fun PostCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = NeutralWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
+            colors = CardDefaults.cardColors(containerColor = NeutralWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -862,7 +858,7 @@ private fun QuickStartSection(
                 .fillMaxWidth()
                 .clickable { onStartPractice() },
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = BrandIndigo),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFEE8844)),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
@@ -913,7 +909,7 @@ private fun QuickStartSection(
                 .fillMaxWidth()
                 .clickable { onPracticeWithAI() },
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = BrandFuchsia),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFB87DE8)),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
@@ -968,7 +964,7 @@ private fun LearningProgressSection(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = NeutralWhite),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8EEDD)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(

@@ -18,7 +18,17 @@ sealed class Screen(val route: String) {
     object Achievements : Screen("achievements")
     object Profile : Screen("profile")
     // Social feed dedicated screen
-    object SocialFeed : Screen("social_feed")
+    object SocialFeed : Screen("social_feed?postId={postId}&commentId={commentId}") {
+        fun createRoute(postId: Int? = null, commentId: Int? = null): String {
+            val base = "social_feed"
+            val query = buildList {
+                if (postId != null) add("postId=$postId")
+                if (commentId != null) add("commentId=$commentId")
+            }.joinToString("&")
+            return if (query.isNotEmpty()) "$base?$query" else base
+        }
+    }
+    object Notifications : Screen("notifications")
     object UserProfile : Screen("profile/{userId}") {
         fun createRoute(userId: String) = "profile/$userId"
     }

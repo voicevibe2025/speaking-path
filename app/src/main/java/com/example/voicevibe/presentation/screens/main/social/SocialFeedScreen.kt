@@ -13,7 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
@@ -47,7 +47,9 @@ import okhttp3.RequestBody.Companion.toRequestBody
 fun SocialFeedScreen(
     onNavigateBack: () -> Unit,
     onNavigateToUserProfile: (String) -> Unit,
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    postId: Int? = null,
+    commentId: Int? = null,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var isRefreshing by remember { mutableStateOf(false) }
@@ -57,6 +59,11 @@ fun SocialFeedScreen(
     // Ensure posts are loaded when entering the screen
     LaunchedEffect(Unit) {
         viewModel.loadPosts()
+    }
+
+    // If a specific postId is provided, ensure it's loaded
+    LaunchedEffect(postId) {
+        postId?.let { viewModel.ensurePostLoaded(it) }
     }
 
     // Simple gradient background
@@ -76,7 +83,7 @@ fun SocialFeedScreen(
                 title = { Text("Community") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -126,7 +133,8 @@ fun SocialFeedScreen(
                                 replyToComment = { parentId, text, done -> viewModel.addComment(post.id, text, parentId) { done() } },
                                 onUserClick = onNavigateToUserProfile,
                                 onDeletePost = { viewModel.deletePost(post.id) { success -> if (success) viewModel.refresh() } },
-                                onDeleteComment = { commentId, done -> viewModel.deleteComment(commentId, post.id) { done() } }
+                                onDeleteComment = { commentId, done -> viewModel.deleteComment(commentId, post.id) { done() } },
+                                initialOpenComments = (postId != null && post.id == postId)
                             )
                         }
                     } else {

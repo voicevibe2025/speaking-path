@@ -14,6 +14,7 @@ import com.example.voicevibe.domain.model.LearningPath
 import com.example.voicevibe.domain.model.Post
 import com.example.voicevibe.domain.model.PostComment
 import com.example.voicevibe.domain.model.UserProgress
+import com.example.voicevibe.domain.model.SocialNotification
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -44,6 +45,7 @@ class HomeViewModel @Inject constructor(
         loadUserProfileData()
         loadDashboardData()
         loadPosts()
+        loadUnreadNotificationsCount()
         // Pre-warm Vivi greeting in background so Free Practice opens instantly
         try {
             prewarmManager.prewarm()
@@ -195,6 +197,60 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // Notifications
+    fun loadUnreadNotificationsCount() {
+        viewModelScope.launch {
+            when (val res = socialRepository.getUnreadNotificationCount()) {
+                is Resource.Success -> _uiState.update { it.copy(unreadNotifications = res.data ?: 0) }
+                else -> {}
+            }
+        }
+    }
+
+    fun loadNotifications(limit: Int? = 50, unreadOnly: Boolean? = null) {
+        viewModelScope.launch {
+            socialRepository.getNotifications(limit = limit, unread = unreadOnly).collect { res ->
+                when (res) {
+                    is Resource.Success -> _uiState.update { it.copy(notifications = res.data ?: emptyList()) }
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun markNotificationRead(id: Int) {
+        viewModelScope.launch {
+            socialRepository.markNotificationRead(id)
+            _uiState.update { state ->
+                val updated = state.notifications.map { if (it.id == id) it.copy(read = true) else it }
+                val newCount = (state.unreadNotifications - 1).coerceAtLeast(0)
+                state.copy(notifications = updated, unreadNotifications = newCount)
+            }
+        }
+    }
+
+    fun markAllNotificationsRead() {
+        viewModelScope.launch {
+            socialRepository.markAllNotificationsRead()
+            _uiState.update { it.copy(unreadNotifications = 0, notifications = it.notifications.map { n -> n.copy(read = true) }) }
+        }
+    }
+
+    fun ensurePostLoaded(postId: Int, onDone: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            val exists = _uiState.value.posts.any { it.id == postId }
+            if (!exists) {
+                val res = socialRepository.getPost(postId)
+                if (res is Resource.Success) {
+                    res.data?.let { post ->
+                        _uiState.update { it.copy(posts = listOf(post) + it.posts) }
+                    }
+                }
+            }
+            onDone?.invoke()
+        }
+    }
+
     private fun loadUserProfileData() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
@@ -343,6 +399,8 @@ data class HomeUiState(
     val badges: List<String> = emptyList(),
     val error: String? = null,
     val posts: List<Post> = emptyList(),
+    val unreadNotifications: Int = 0,
+    val notifications: List<SocialNotification> = emptyList(),
 )
 
 /**

@@ -4,6 +4,7 @@ import com.example.voicevibe.data.remote.api.SocialApiService
 import com.example.voicevibe.domain.model.Post
 import com.example.voicevibe.domain.model.PostComment
 import com.example.voicevibe.domain.model.Resource
+import com.example.voicevibe.domain.model.SocialNotification
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import okhttp3.MultipartBody
@@ -110,6 +111,48 @@ class SocialRepository @Inject constructor(
         return try {
             val resp = api.deleteComment(id)
             if (resp.isSuccessful) Resource.Success(Unit) else Resource.Error("Failed to delete comment")
+        } catch (e: Exception) { Resource.Error(e.message ?: "Unknown error") }
+    }
+
+    // Notifications
+    fun getNotifications(limit: Int? = null, unread: Boolean? = null): Flow<Resource<List<SocialNotification>>> = flow {
+        emit(Resource.Loading())
+        try {
+            val resp = api.getNotifications(limit, unread)
+            if (resp.isSuccessful) emit(Resource.Success(resp.body() ?: emptyList())) else emit(Resource.Error("Failed to load notifications"))
+        } catch (e: Exception) {
+            emit(Resource.Error(e.message ?: "Unknown error"))
+        }
+    }
+
+    suspend fun getUnreadNotificationCount(): Resource<Int> {
+        return try {
+            val resp = api.getUnreadNotificationCount()
+            if (resp.isSuccessful) {
+                val count = resp.body()?.get("count") ?: 0
+                Resource.Success(count)
+            } else Resource.Error("Failed to load unread count")
+        } catch (e: Exception) { Resource.Error(e.message ?: "Unknown error") }
+    }
+
+    suspend fun markNotificationRead(id: Int): Resource<Unit> {
+        return try {
+            val resp = api.markNotificationRead(id)
+            if (resp.isSuccessful) Resource.Success(Unit) else Resource.Error("Failed to mark read")
+        } catch (e: Exception) { Resource.Error(e.message ?: "Unknown error") }
+    }
+
+    suspend fun markAllNotificationsRead(): Resource<Unit> {
+        return try {
+            val resp = api.markAllNotificationsRead()
+            if (resp.isSuccessful) Resource.Success(Unit) else Resource.Error("Failed to mark all read")
+        } catch (e: Exception) { Resource.Error(e.message ?: "Unknown error") }
+    }
+
+    suspend fun getPost(id: Int): Resource<Post> {
+        return try {
+            val resp = api.getPost(id)
+            if (resp.isSuccessful) resp.body()?.let { Resource.Success(it) } ?: Resource.Error("Empty response") else Resource.Error("Failed to load post")
         } catch (e: Exception) { Resource.Error(e.message ?: "Unknown error") }
     }
 }

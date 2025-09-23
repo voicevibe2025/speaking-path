@@ -195,7 +195,8 @@ fun NavGraph(
                 onNavigateToLeaderboard = {
                     navController.navigate(Screen.Leaderboard.route)
                 },
-                onNavigateToSocialFeed = { navController.navigate(Screen.SocialFeed.route) },
+                onNavigateToSocialFeed = { navController.navigate(Screen.SocialFeed.createRoute()) },
+                onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                 onNavigateToProfile = {
                     navController.navigate(Screen.Profile.route)
                 },
@@ -205,13 +206,25 @@ fun NavGraph(
             )
         }
 
-        // Social feed dedicated screen
-        composable(Screen.SocialFeed.route) {
+        // Social feed dedicated screen (supports optional postId/commentId)
+        composable(
+            route = Screen.SocialFeed.route,
+            arguments = listOf(
+                navArgument("postId") { nullable = true },
+                navArgument("commentId") { nullable = true }
+            )
+        ) { backStackEntry ->
+            val postIdStr = backStackEntry.arguments?.getString("postId")
+            val commentIdStr = backStackEntry.arguments?.getString("commentId")
+            val postId = postIdStr?.toIntOrNull()
+            val commentId = commentIdStr?.toIntOrNull()
             SocialFeedScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToUserProfile = { userId ->
                     navController.navigate(Screen.UserProfile.createRoute(userId))
-                }
+                },
+                postId = postId,
+                commentId = commentId,
             )
         }
 
@@ -573,6 +586,16 @@ fun NavGraph(
         }
         composable(Screen.About.route) {
             AboutScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        // Notifications list
+        composable(Screen.Notifications.route) {
+            com.example.voicevibe.presentation.screens.main.social.NotificationsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onOpenNotification = { postId, commentId ->
+                    navController.navigate(Screen.SocialFeed.createRoute(postId = postId, commentId = commentId))
+                }
+            )
         }
     }
 }

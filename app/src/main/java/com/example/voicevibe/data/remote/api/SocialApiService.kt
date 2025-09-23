@@ -2,6 +2,7 @@ package com.example.voicevibe.data.remote.api
 
 import com.example.voicevibe.domain.model.Post
 import com.example.voicevibe.domain.model.PostComment
+import com.example.voicevibe.domain.model.SocialNotification
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
@@ -13,6 +14,9 @@ interface SocialApiService {
 
     @GET("social/posts/")
     suspend fun getPosts(): Response<List<Post>>
+
+    @GET("social/posts/{id}/")
+    suspend fun getPost(@Path("id") postId: Int): Response<Post>
 
     @FormUrlEncoded
     @POST("social/posts/")
@@ -67,4 +71,17 @@ interface SocialApiService {
 
     @DELETE("social/comments/{id}/")
     suspend fun deleteComment(@Path("id") commentId: Int): Response<Void>
+
+    // Notifications
+    @GET("social/notifications/")
+    suspend fun getNotifications(@Query("limit") limit: Int? = null, @Query("unread") unread: Boolean? = null): Response<List<SocialNotification>>
+
+    @GET("social/notifications/unread-count/")
+    suspend fun getUnreadNotificationCount(): Response<Map<String, Int>>
+
+    @POST("social/notifications/{id}/read/")
+    suspend fun markNotificationRead(@Path("id") notificationId: Int): Response<Map<String, Any>>
+
+    @POST("social/notifications/mark-all-read/")
+    suspend fun markAllNotificationsRead(): Response<Map<String, Any>>
 }

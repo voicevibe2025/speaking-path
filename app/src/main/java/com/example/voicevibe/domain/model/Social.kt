@@ -38,3 +38,14 @@ data class PostComment(
     val isLikedByMe: Boolean = false,
     val canDelete: Boolean = false,
 )
+
+/** In-app social notification */
+data class SocialNotification(
+    val id: Int,
+    val type: String,
+    val actor: PostAuthor,
+    val postId: Int,
+    val commentId: Int? = null,
+    val createdAt: LocalDateTime,
+    val read: Boolean = false,
+)

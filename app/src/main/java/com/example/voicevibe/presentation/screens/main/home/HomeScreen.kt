@@ -21,6 +21,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -76,6 +78,7 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit,
     onNavigateToLearningPath: (String) -> Unit,
     onNavigateToSocialFeed: () -> Unit = {},
+    onNavigateToNotifications: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -127,6 +130,10 @@ fun HomeScreen(
                     title = "VozVibe",
                     avatarUrl = uiState.avatarUrl,
                     userInitials = uiState.userInitials ?: "VV",
+                    unreadCount = uiState.unreadNotifications,
+                    onNotificationsClick = {
+                        onNavigateToNotifications()
+                    },
                     onNavigationIconClick = onNavigateToProfile
                 )
             }
@@ -230,9 +237,10 @@ fun PostCard(
     onUserClick: (String) -> Unit,
     onDeletePost: () -> Unit,
     onDeleteComment: (Int, () -> Unit) -> Unit,
+    initialOpenComments: Boolean = false,
 ) {
     val context = LocalContext.current
-    var showComments by remember { mutableStateOf(false) }
+    var showComments by remember { mutableStateOf(initialOpenComments) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showMenu by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -628,7 +636,7 @@ fun PostCard(
                             }
                         }
                     ) {
-                        Icon(Icons.Default.Send, contentDescription = "Post Comment", tint = BrandIndigo)
+                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Post Comment", tint = BrandIndigo)
                     }
                 }
                 Spacer(Modifier.height(8.dp))
@@ -669,6 +677,8 @@ private fun EducationalTopBar(
     title: String,
     avatarUrl: String?,
     userInitials: String,
+    unreadCount: Int,
+    onNotificationsClick: () -> Unit,
     onNavigationIconClick: () -> Unit
 ) {
     Surface(
@@ -695,28 +705,45 @@ private fun EducationalTopBar(
                 )
             }
             
-            IconButton(onClick = onNavigationIconClick) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(BrandIndigo.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (avatarUrl != null) {
-                        SubcomposeAsyncImage(
-                            model = avatarUrl,
-                            contentDescription = "Profile Picture",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Notifications bell with badge
+                IconButton(onClick = onNotificationsClick) {
+                    BadgedBox(badge = {
+                        if (unreadCount > 0) {
+                            Badge { Text(text = unreadCount.coerceAtMost(99).toString()) }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Notifications",
+                            tint = BrandIndigo
                         )
-                    } else {
-                        Text(
-                            text = userInitials,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BrandIndigo
-                        )
+                    }
+                }
+                // Profile avatar
+                IconButton(onClick = onNavigationIconClick) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(BrandIndigo.copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (avatarUrl != null) {
+                            SubcomposeAsyncImage(
+                                model = avatarUrl,
+                                contentDescription = "Profile Picture",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Text(
+                                text = userInitials,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandIndigo
+                            )
+                        }
                     }
                 }
             }
@@ -1344,7 +1371,7 @@ private fun SocialFeedEntryCard(onClick: () -> Unit) {
                 Text("Share updates and see friends' posts", color = AccentBlueGray, fontSize = 12.sp)
             }
             Icon(
-                imageVector = Icons.Default.ArrowForward,
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = null,
                 tint = AccentBlueGray
             )

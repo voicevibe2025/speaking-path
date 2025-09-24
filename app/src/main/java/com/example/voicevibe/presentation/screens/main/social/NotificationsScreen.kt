@@ -18,7 +18,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.SubcomposeAsyncImage
 import com.example.voicevibe.domain.model.SocialNotification
 import com.example.voicevibe.presentation.screens.main.home.HomeViewModel
@@ -35,7 +34,7 @@ import java.time.Duration as JDuration
 fun NotificationsScreen(
     onNavigateBack: () -> Unit,
     onOpenNotification: (postId: Int, commentId: Int?) -> Unit,
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var isRefreshing by remember { mutableStateOf(false) }

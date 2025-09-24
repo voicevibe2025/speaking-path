@@ -1,6 +1,7 @@
 package com.example.voicevibe.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -601,12 +602,18 @@ fun NavGraph(
         }
 
         // Notifications list
-        composable(Screen.Notifications.route) {
+        composable(Screen.Notifications.route) { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Screen.Home.route)
+            }
+            val homeViewModel: com.example.voicevibe.presentation.screens.main.home.HomeViewModel = hiltViewModel(parentEntry)
+
             com.example.voicevibe.presentation.screens.main.social.NotificationsScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onOpenNotification = { postId, commentId ->
                     navController.navigate(Screen.SocialFeed.createRoute(postId = postId, commentId = commentId))
-                }
+                },
+                viewModel = homeViewModel
             )
         }
     }

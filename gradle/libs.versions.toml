@@ -70,6 +70,7 @@ mockk = "1.14.5"
 coroutinesTest = "1.10.2"
 leakcanary = "2.14"
 gemini = "0.9.0"
+robolectric = "4.12.1"
 
 [libraries]
 # Core Android
@@ -177,9 +178,11 @@ desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", ver
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 gemini-generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "gemini" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 
 # Firebase & Google Sign-In
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }

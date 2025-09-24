@@ -130,25 +130,18 @@ fun TopicMasterScreen(
         showContent = true
     }
 
-    // Animated gradient background
-    val infiniteTransition = rememberInfiniteTransition(label = "background")
-    val animatedOffset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(20000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "gradient"
+    val backgroundBrush = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF1a1a2e),
+            Color(0xFF16213e),
+            Color(0xFF0f3460)
+        )
     )
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Animated gradient background
-        AnimatedBackground(animatedOffset)
-
-        // Floating particles
-        FloatingParticles()
-
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(backgroundBrush)
+    ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = Color.Transparent,

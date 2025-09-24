@@ -282,7 +282,7 @@ fun ListeningPracticeScreen(
                                 colors = CardDefaults.cardColors(containerColor = Color(0xFF2a2d3a))
                             ) {
                                 Column(Modifier.fillMaxWidth().padding(24.dp)) {
-                                    Text("How it works", color = Color(0xFFFFD700), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                                    Text("INSTRUCTIONS", color = Color(0xFFFFD700), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                                     Spacer(Modifier.height(10.dp))
                                     Text(
                                         "1) Listen to the full conversation.\n2) Then answer short multiple-choice questions.\nScoring: +10 XP per correct answer, +20 XP bonus when you finish all.",

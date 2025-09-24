@@ -117,7 +117,15 @@ fun HomeScreen(
 
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(Color(0xFF322048))
+        .background(
+            Brush.verticalGradient(
+                colors = listOf(
+                    Color(0xFF1a1a2e),
+                    Color(0xFF16213e),
+                    Color(0xFF0f3460)
+                )
+            )
+        )
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -692,15 +700,22 @@ private fun EducationalTopBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(
+           Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.vozvibe_text_logo),
+                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
                     contentDescription = "VoiceVibe Logo",
                     modifier = Modifier
-                        .height(32.dp)
-
+                        .size(40.dp)
+                        .clip(CircleShape)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = title,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
             }
             
@@ -858,7 +873,7 @@ private fun QuickStartSection(
                 .fillMaxWidth()
                 .clickable { onStartPractice() },
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFEE8844)),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF667EEA)),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
@@ -909,7 +924,7 @@ private fun QuickStartSection(
                 .fillMaxWidth()
                 .clickable { onPracticeWithAI() },
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFB87DE8)),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF3B82F6)),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
@@ -964,7 +979,7 @@ private fun LearningProgressSection(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8EEDD)),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -974,7 +989,7 @@ private fun LearningProgressSection(
                 text = "Progress",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = NeutralDarkGray,
+                color = Color.White,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -1036,7 +1051,7 @@ private fun ProgressItem(
             text = value,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = NeutralDarkGray
+            color = Color.White
         )
         Text(
             text = label,
@@ -1107,7 +1122,7 @@ private fun StudyToolCard(
             .aspectRatio(1f)
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = NeutralWhite),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         border = BorderStroke(1.dp, color.copy(alpha = 0.2f))
     ) {
@@ -1128,7 +1143,7 @@ private fun StudyToolCard(
             Text(
                 text = title,
                 fontWeight = FontWeight.Bold,
-                color = NeutralDarkGray,
+                color = Color.White,
                 fontSize = 12.sp
             )
         }
@@ -1152,7 +1167,7 @@ private fun CurrentCoursesSection(
                 text = "Current Courses",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = NeutralDarkGray
+                color = Color.White
             )
 
             TextButton(onClick = {}) {
@@ -1189,7 +1204,7 @@ private fun CourseCard(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = NeutralWhite),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -1207,7 +1222,7 @@ private fun CourseCard(
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        color = NeutralDarkGray
+                        color = Color.White
                     )
                     
                     Spacer(modifier = Modifier.height(4.dp))
@@ -1277,7 +1292,7 @@ private fun AchievementsSection(
                 text = "Recent Achievements",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = NeutralDarkGray
+                color = Color.White
             )
 
             TextButton(onClick = onViewAll) {
@@ -1349,7 +1364,7 @@ private fun SocialFeedEntryCard(onClick: () -> Unit) {
             .padding(horizontal = 16.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = NeutralWhite),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -1374,8 +1389,8 @@ private fun SocialFeedEntryCard(onClick: () -> Unit) {
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text("Community Feed", fontWeight = FontWeight.Bold, color = NeutralDarkGray)
-                Text("Share updates and see friends' posts", color = AccentBlueGray, fontSize = 12.sp)
+                Text("Community Feed", fontWeight = FontWeight.Bold, color = Color.White)
+                Text("Share updates and see friends' posts", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,

@@ -48,6 +48,7 @@ import com.example.voicevibe.presentation.screens.speakingjourney.PronunciationP
 import com.example.voicevibe.presentation.screens.speakingjourney.PlaceholderPracticeScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
+import com.example.voicevibe.presentation.screens.practice.live.LivePracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeChatScreen
 import com.example.voicevibe.presentation.navigation.Screen
@@ -183,6 +184,9 @@ fun NavGraph(
                 },
                 onNavigateToPracticeAI = {
                     navController.navigate(Screen.PracticeWithAI.route)
+                },
+                onNavigateToLivePractice = {
+                    navController.navigate(Screen.LivePractice.route)
                 },
                 onNavigateToLearningPaths = {
                     if (speakingOnly) {
@@ -378,6 +382,12 @@ fun NavGraph(
                 onNavigateToTopicPractice = {
                     navController.navigate(Screen.TopicPractice.route)
                 }
+            )
+        }
+
+        composable(Screen.LivePractice.route) {
+            LivePracticeScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

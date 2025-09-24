@@ -72,6 +72,7 @@ import kotlinx.coroutines.withContext
 fun HomeScreen(
     onNavigateToPractice: () -> Unit,
     onNavigateToPracticeAI: () -> Unit,
+    onNavigateToLivePractice: () -> Unit,
     onNavigateToLearningPaths: () -> Unit,
     onNavigateToAchievements: () -> Unit,
     onNavigateToLeaderboard: () -> Unit,
@@ -171,7 +172,8 @@ fun HomeScreen(
                         ) {
                             QuickStartSection(
                                 onStartPractice = viewModel::onStartPractice,
-                                onPracticeWithAI = onNavigateToPracticeAI
+                                onPracticeWithAI = onNavigateToPracticeAI,
+                                onLivePractice = onNavigateToLivePractice
                             )
                         }
                     }
@@ -223,6 +225,56 @@ fun HomeScreen(
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
                     }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Live Practice Action
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onNavigateToLivePractice() },
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFF8C42)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(NeutralWhite.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FlashOn,
+                        contentDescription = null,
+                        tint = NeutralWhite,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Live Practice (Beta)",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = NeutralWhite
+                    )
+                    Text(
+                        text = "Try the low-latency Gemini Live tutor",
+                        fontSize = 14.sp,
+                        color = NeutralWhite.copy(alpha = 0.9f)
+                    )
                 }
             }
         }
@@ -854,7 +906,8 @@ private fun WelcomeSection(
 @Composable
 private fun QuickStartSection(
     onStartPractice: () -> Unit,
-    onPracticeWithAI: () -> Unit
+    onPracticeWithAI: () -> Unit,
+    onLivePractice: () -> Unit
 ) {
     Column(
         modifier = Modifier.padding(horizontal = 16.dp)
@@ -1080,13 +1133,13 @@ private fun StudyToolsSection(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             StudyToolCard(
                 modifier = Modifier.weight(1f),
-                icon = Icons.Default.Route,
-                title = "Quest",
-                color = PracticeAccuracyGreen,
+                icon = Icons.Default.MenuBook,
+                title = "Learning Paths",
+                color = BrandIndigo,
                 onClick = onViewPaths
             )
 

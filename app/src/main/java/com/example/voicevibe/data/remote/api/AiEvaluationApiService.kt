@@ -22,9 +22,30 @@ data class TranscribeResponseDto(
     val transcription: WhisperTranscriptionDto?
 )
 
+data class LiveTokenRequestDto(
+    val model: String? = null,
+    val response_modalities: List<String>? = null,
+    val system_instruction: String? = null,
+    val lock_additional_fields: List<String>? = null
+)
+
+data class LiveTokenResponseDto(
+    val token: String,
+    val expiresAt: String?,
+    val sessionId: String?,
+    val model: String,
+    val responseModalities: List<String>?,
+    val lockedFields: List<String>?
+)
+
 interface AiEvaluationApiService {
     @POST("evaluate/transcribe/")
     suspend fun transcribeAudio(
         @Body body: TranscribeRequestDto
     ): Response<TranscribeResponseDto>
+
+    @POST("evaluate/live/token/")
+    suspend fun createLiveToken(
+        @Body body: LiveTokenRequestDto = LiveTokenRequestDto()
+    ): Response<LiveTokenResponseDto>
 }

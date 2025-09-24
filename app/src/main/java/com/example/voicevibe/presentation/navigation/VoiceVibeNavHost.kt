@@ -23,6 +23,7 @@ import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourne
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationLessonScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
+import com.example.voicevibe.presentation.screens.practice.live.LivePracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeChatScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLessonScreen
@@ -126,6 +127,7 @@ fun VoiceVibeNavHost(
                     else navController.navigate(Screen.Practice.route)
                 },
                 onNavigateToPracticeAI = { navController.navigate(Screen.PracticeWithAI.route) },
+                onNavigateToLivePractice = { navController.navigate(Screen.LivePractice.route) },
                 onNavigateToLearningPaths = {
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
@@ -151,6 +153,7 @@ fun VoiceVibeNavHost(
                     else navController.navigate(Screen.Practice.route)
                 },
                 onNavigateToPracticeAI = { navController.navigate(Screen.PracticeWithAI.route) },
+                onNavigateToLivePractice = { navController.navigate(Screen.LivePractice.route) },
                 onNavigateToLearningPaths = {
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
@@ -174,6 +177,7 @@ fun VoiceVibeNavHost(
                     else navController.navigate(Screen.Practice.route)
                 },
                 onNavigateToPracticeAI = { navController.navigate(Screen.PracticeWithAI.route) },
+                onNavigateToLivePractice = { navController.navigate(Screen.LivePractice.route) },
                 onNavigateToLearningPaths = {
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
@@ -201,6 +205,7 @@ fun VoiceVibeNavHost(
                     else navController.navigate(Screen.Practice.route)
                 },
                 onNavigateToPracticeAI = { navController.navigate(Screen.PracticeWithAI.route) },
+                onNavigateToLivePractice = { navController.navigate(Screen.LivePractice.route) },
                 onNavigateToLearningPaths = {
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
@@ -277,6 +282,12 @@ fun VoiceVibeNavHost(
                 onNavigateToTopicPractice = {
                     navController.navigate(Screen.TopicPractice.route)
                 }
+            )
+        }
+
+        composable(route = Screen.LivePractice.route) {
+            LivePracticeScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

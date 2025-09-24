@@ -65,6 +65,7 @@ sealed class Screen(val route: String) {
     }
     // Practice with AI standalone screen
     object PracticeWithAI : Screen("practice_with_ai")
+    object LivePractice : Screen("live_practice")
 
     // Topic Practice (AI-guided chat limited to Speaking Journey topics)
     object TopicPractice : Screen("topic_practice")

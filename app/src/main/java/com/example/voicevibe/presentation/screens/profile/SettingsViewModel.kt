@@ -74,10 +74,13 @@ class SettingsViewModel @Inject constructor(
                 val userProfile = profileRepository.getProfile()
                 
                 // Set user name
-                val displayName = if (!userProfile.firstName.isNullOrBlank() && !userProfile.lastName.isNullOrBlank()) {
-                    "${userProfile.firstName} ${userProfile.lastName}"
-                } else {
-                    userProfile.userName
+                val displayName = when {
+                    !userProfile.displayName.isNullOrBlank() -> userProfile.displayName
+                    !userProfile.firstName.isNullOrBlank() && !userProfile.lastName.isNullOrBlank() ->
+                        "${userProfile.firstName} ${userProfile.lastName}"
+                    !userProfile.firstName.isNullOrBlank() -> userProfile.firstName
+                    !userProfile.lastName.isNullOrBlank() -> userProfile.lastName
+                    else -> userProfile.userName
                 }
                 _userName.value = displayName
 

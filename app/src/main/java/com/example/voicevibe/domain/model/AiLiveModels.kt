@@ -18,5 +18,7 @@ data class LiveChatState(
     val messages: List<LiveMessage> = emptyList(),
     val isConnected: Boolean = false,
     val isConnecting: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val voiceMode: Boolean = false,
+    val isRecording: Boolean = false
 )

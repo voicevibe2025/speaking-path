@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChatBubbleOutline
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Send
@@ -58,8 +60,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.voicevibe.domain.model.LiveMessage
 import kotlinx.coroutines.launch
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.isGranted
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun LivePracticeScreen(
     onNavigateBack: () -> Unit,
@@ -70,6 +75,7 @@ fun LivePracticeScreen(
     val canSend = uiState.isConnected && inputText.isNotBlank()
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    val recordPermission = rememberPermissionState(android.Manifest.permission.RECORD_AUDIO)
 
     LaunchedEffect(uiState.messages.size) {
         if (uiState.messages.isNotEmpty()) {
@@ -95,6 +101,13 @@ fun LivePracticeScreen(
                             style = MaterialTheme.typography.labelSmall,
                             color = if (uiState.isConnected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        if (uiState.isRecording) {
+                            Text(
+                                text = "Recording…",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
                 },
                 navigationIcon = {
@@ -102,6 +115,26 @@ fun LivePracticeScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    val recording = uiState.isRecording
+                    IconButton(onClick = {
+                        if (!recordPermission.status.isGranted) {
+                            recordPermission.launchPermissionRequest()
+                        } else {
+                            viewModel.toggleRecording()
+                        }
+                    }, enabled = uiState.isConnected) {
+                        Icon(
+                            imageVector = if (recording) Icons.Filled.MicOff else Icons.Filled.Mic,
+                            contentDescription = if (recording) "Stop recording" else "Start recording",
+                            tint = when {
+                                recording -> MaterialTheme.colorScheme.error
+                                uiState.isConnected -> MaterialTheme.colorScheme.primary
+                                else -> MaterialTheme.colorScheme.onSurfaceVariant
+                            }
                         )
                     }
                 },
@@ -162,7 +195,7 @@ fun LivePracticeScreen(
                     modifier = Modifier.weight(1f),
                     value = inputText,
                     onValueChange = { inputText = it },
-                    placeholder = { Text("Type your message…") },
+                    placeholder = { Text("Type your message…  (or tap mic)") },
                     enabled = uiState.isConnected,
                     singleLine = true
                 )

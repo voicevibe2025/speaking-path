@@ -1,11 +1,13 @@
 package com.example.voicevibe.data.ai
 
+import android.util.Base64
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,12 +33,20 @@ class LiveSessionManager @Inject constructor(
 
     private var webSocket: WebSocket? = null
     private var currentModel: String = DEFAULT_MODEL
+    private var currentResponseModalities: List<String> = listOf("TEXT")
     private var ready: Boolean = false
     private val pendingMessages = mutableListOf<String>()
+    private var loggedFirstAudio = false
 
-    fun connect(token: String, model: String?, listener: Listener) {
+    fun connect(
+        token: String,
+        model: String?,
+        responseModalities: List<String>?,
+        listener: Listener
+    ) {
         close()
         currentModel = model?.takeIf { it.isNotBlank() } ?: DEFAULT_MODEL
+        currentResponseModalities = responseModalities?.takeIf { it.isNotEmpty() } ?: listOf("TEXT")
         ready = false
         pendingMessages.clear()
 
@@ -75,11 +85,13 @@ class LiveSessionManager @Inject constructor(
                 builder.header("Authorization", "Token $token")
             }
             val request = builder.build()
+            Timber.tag("LiveSession").d("Connecting (attempt=%d) url=%s header=%s", index, attempt.url, attempt.useHeader)
 
             webSocket = webSocketClient.newWebSocket(request, object : WebSocketListener() {
                 override fun onOpen(webSocket: WebSocket, response: okhttp3.Response) {
                     // Send initial setup so the session knows the model and modalities
                     sendSetup()
+                    Timber.tag("LiveSession").d("WebSocket opened")
                     listener.onOpen()
                 }
 
@@ -89,6 +101,7 @@ class LiveSessionManager @Inject constructor(
                         val root = gson.fromJson(text, com.google.gson.JsonObject::class.java)
                         if (root.has("setupComplete")) {
                             ready = true
+                            Timber.tag("LiveSession").d("setupComplete received; flushing %d queued messages", pendingMessages.size)
                             if (pendingMessages.isNotEmpty()) {
                                 pendingMessages.forEach { msg -> this@LiveSessionManager.webSocket?.send(msg) }
                                 pendingMessages.clear()
@@ -107,6 +120,7 @@ class LiveSessionManager @Inject constructor(
                         val root = gson.fromJson(text, com.google.gson.JsonObject::class.java)
                         if (root.has("setupComplete")) {
                             ready = true
+                            Timber.tag("LiveSession").d("setupComplete (binary) received; flushing %d queued messages", pendingMessages.size)
                             if (pendingMessages.isNotEmpty()) {
                                 pendingMessages.forEach { msg -> this@LiveSessionManager.webSocket?.send(msg) }
                                 pendingMessages.clear()
@@ -120,6 +134,7 @@ class LiveSessionManager @Inject constructor(
 
                 override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
                     // Try next attempt on failure (e.g., 404 on handshake)
+                    Timber.tag("LiveSession").e(t, "WebSocket failure (attempt=%d) code=%s message=%s", index, response?.code, response?.message)
                     tryConnect(index + 1)
                 }
 
@@ -163,19 +178,55 @@ class LiveSessionManager @Inject constructor(
             pendingMessages.add(json1)
             pendingMessages.add(json2)
         }
+        Timber.tag("LiveSession").d("Sent user text (ready=%s)", ready)
     }
 
-    private fun sendSetup() {
-        val modelName = if (currentModel.startsWith("models/")) currentModel else "models/$currentModel"
+    fun sendAudioChunk(pcm16le: ByteArray, sampleRate: Int = 16_000) {
+        if (!ready) return
+        val base64 = Base64.encodeToString(pcm16le, Base64.NO_WRAP)
         val payload = mapOf(
-            "setup" to mapOf(
-                "model" to modelName,
-                "generationConfig" to mapOf(
-                    "responseModalities" to listOf("TEXT")
+            "realtimeInput" to mapOf(
+                "audio" to mapOf(
+                    "data" to base64,
+                    "mimeType" to "audio/pcm;rate=$sampleRate"
                 )
             )
         )
         val json = gson.toJson(payload)
+        if (!loggedFirstAudio) {
+            Timber.tag("LiveSession").d("Sending first audio chunk bytes=%d sr=%d", pcm16le.size, sampleRate)
+            loggedFirstAudio = true
+        }
+        webSocket?.send(json)
+    }
+
+    fun sendAudioStreamEnd() {
+        if (!ready) return
+        val payload = mapOf(
+            "realtimeInput" to mapOf(
+                "audioStreamEnd" to true
+            )
+        )
+        val json = gson.toJson(payload)
+        webSocket?.send(json)
+    }
+
+    private fun sendSetup() {
+        val modelName = if (currentModel.startsWith("models/")) currentModel else "models/$currentModel"
+        val setup = mutableMapOf<String, Any>(
+            "model" to modelName,
+            "generationConfig" to mapOf(
+                "responseModalities" to currentResponseModalities
+            )
+        )
+        if (currentResponseModalities.any { it.equals("AUDIO", ignoreCase = true) }) {
+            // Enable input/output transcription so we can show text captions
+            setup["inputAudioTranscription"] = emptyMap<String, Any>()
+            setup["outputAudioTranscription"] = emptyMap<String, Any>()
+        }
+        val payload = mapOf("setup" to setup)
+        val json = gson.toJson(payload)
+        Timber.tag("LiveSession").d("Sending setup: %s", json)
         webSocket?.send(json)
     }
 

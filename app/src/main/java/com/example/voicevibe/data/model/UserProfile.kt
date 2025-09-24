@@ -17,6 +17,8 @@ data class UserProfile(
     val firstName: String?,
     @SerializedName("last_name")
     val lastName: String?,
+    @SerializedName("display_name")
+    val displayName: String?,
     @SerializedName("current_proficiency")
     val currentProficiency: String?,
     @SerializedName("current_level")

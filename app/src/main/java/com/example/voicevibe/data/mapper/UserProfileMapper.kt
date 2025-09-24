@@ -34,7 +34,14 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
         id = (this.userId?.toString() ?: this.userName),
         username = this.userName,
         email = this.userEmail,
-        displayName = "${this.firstName ?: ""} ${this.lastName ?: ""}".trim(),
+        displayName = when {
+            !this.displayName.isNullOrBlank() -> this.displayName
+            !this.firstName.isNullOrBlank() && !this.lastName.isNullOrBlank() ->
+                "${this.firstName} ${this.lastName}"
+            !this.firstName.isNullOrBlank() -> this.firstName
+            !this.lastName.isNullOrBlank() -> this.lastName
+            else -> this.userName
+        },
         bio = null, // Not available in data model
         avatarUrl = this.avatarUrl,
         coverImageUrl = null, // Not available in data model
@@ -140,6 +147,7 @@ fun DomainUserProfile.toData(): DataUserProfile {
         avatarUrl = this.avatarUrl,
         firstName = firstName,
         lastName = lastName,
+        displayName = this.displayName.takeIf { it.isNotBlank() } ?: "${firstName ?: ""} ${lastName ?: ""}".trim().ifBlank { this.username },
         currentProficiency = null, // Not in domain model
         currentLevel = this.level,
         experiencePoints = this.xp,

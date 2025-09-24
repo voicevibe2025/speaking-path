@@ -132,10 +132,13 @@ class ProfileViewModel @Inject constructor(
             _isLoading.value = true
             try {
                 val userProfile = profileRepository.getProfile()
-                val displayName = if (!userProfile.firstName.isNullOrBlank() && !userProfile.lastName.isNullOrBlank()) {
-                    "${userProfile.firstName} ${userProfile.lastName}"
-                } else {
-                    userProfile.userName
+                val displayName = when {
+                    !userProfile.displayName.isNullOrBlank() -> userProfile.displayName
+                    !userProfile.firstName.isNullOrBlank() && !userProfile.lastName.isNullOrBlank() ->
+                        "${userProfile.firstName} ${userProfile.lastName}"
+                    !userProfile.firstName.isNullOrBlank() -> userProfile.firstName
+                    !userProfile.lastName.isNullOrBlank() -> userProfile.lastName
+                    else -> userProfile.userName
                 }
                 _userName.value = displayName
                 _userInitials.value = generateInitials(displayName)

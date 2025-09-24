@@ -3,6 +3,9 @@ package com.example.voicevibe.audio
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.media.audiofx.AcousticEchoCanceler
+import android.media.audiofx.AutomaticGainControl
+import android.media.audiofx.NoiseSuppressor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,6 +25,9 @@ class AudioRecorder(
         private set
 
     private var audioRecord: AudioRecord? = null
+    private var aec: AcousticEchoCanceler? = null
+    private var ns: NoiseSuppressor? = null
+    private var agc: AutomaticGainControl? = null
 
     fun start(
         sampleRateHz: Int = 16_000,
@@ -45,6 +51,27 @@ class AudioRecorder(
             chunkSize
         )
         audioRecord = recorder
+        // Enable hardware AEC/NS/AGC when available
+        try {
+            val sessionId = recorder.audioSessionId
+            if (AcousticEchoCanceler.isAvailable()) {
+                aec = AcousticEchoCanceler.create(sessionId)
+                aec?.enabled = true
+                Timber.tag("AudioRecorder").d("AEC enabled")
+            }
+            if (NoiseSuppressor.isAvailable()) {
+                ns = NoiseSuppressor.create(sessionId)
+                ns?.enabled = true
+                Timber.tag("AudioRecorder").d("NoiseSuppressor enabled")
+            }
+            if (AutomaticGainControl.isAvailable()) {
+                agc = AutomaticGainControl.create(sessionId)
+                agc?.enabled = true
+                Timber.tag("AudioRecorder").d("AGC enabled")
+            }
+        } catch (e: Exception) {
+            Timber.tag("AudioRecorder").w(e, "Failed to init audio effects")
+        }
         try {
             recorder.startRecording()
             isRecording = true
@@ -83,6 +110,12 @@ class AudioRecorder(
             audioRecord?.stop()
         } catch (_: Exception) {}
         Timber.tag("AudioRecorder").d("Recording stopped")
+        try { aec?.release() } catch (_: Exception) {}
+        try { ns?.release() } catch (_: Exception) {}
+        try { agc?.release() } catch (_: Exception) {}
+        aec = null
+        ns = null
+        agc = null
         audioRecord?.release()
         audioRecord = null
     }

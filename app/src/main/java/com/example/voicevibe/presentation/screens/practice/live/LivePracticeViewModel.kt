@@ -17,6 +17,8 @@ import com.google.gson.JsonObject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,6 +43,7 @@ class LivePracticeViewModel @Inject constructor(
     companion object {
         private const val NATIVE_AUDIO_MODEL = "gemini-2.5-flash-native-audio-preview-09-2025"
         private const val DEFAULT_LIVE_TEXT_MODEL = "gemini-live-2.5-flash-preview"
+        private const val MODEL_SPEAKING_SILENCE_MS = 1200L
     }
 
     init {
@@ -191,7 +194,10 @@ class LivePracticeViewModel @Inject constructor(
         if (uiState.value.isRecording) return
         _uiState.update { it.copy(isRecording = true) }
         recorder.start(sampleRateHz = 16_000) { chunk ->
-            sessionManager.sendAudioChunk(chunk, 16_000)
+            // Gate mic audio while model is speaking to prevent feedback loops
+            if (!modelSpeaking) {
+                sessionManager.sendAudioChunk(chunk, 16_000)
+            }
         }
     }
 
@@ -309,6 +315,7 @@ class LivePracticeViewModel @Inject constructor(
             if (topData != null && topData.isJsonPrimitive) {
                 val base64 = topData.asString
                 if (!base64.isNullOrEmpty()) {
+                    onModelAudioDetected()
                     val bytes = Base64.decode(base64, Base64.DEFAULT)
                     player.playPcm(bytes, 24_000)
                     return
@@ -322,6 +329,10 @@ class LivePracticeViewModel @Inject constructor(
                 items.forEach { item ->
                     if (item.isJsonObject) {
                         val obj = item.asJsonObject
+                        // Turn complete detection
+                        if (obj.get("turnComplete")?.asBoolean == true) {
+                            modelSpeaking = false
+                        }
                         val contentObj = when {
                             obj.has("modelTurn") && obj.get("modelTurn").isJsonObject -> obj.getAsJsonObject("modelTurn")
                             obj.has("content") && obj.get("content").isJsonObject -> obj.getAsJsonObject("content")
@@ -335,6 +346,7 @@ class LivePracticeViewModel @Inject constructor(
                                 val mime = inline?.get("mimeType")?.asString
                                 val data = inline?.get("data")?.asString
                                 if (!data.isNullOrEmpty() && mime != null && mime.startsWith("audio/pcm")) {
+                                    onModelAudioDetected()
                                     val bytes = Base64.decode(data, Base64.DEFAULT)
                                     // Output audio is 24kHz according to docs
                                     player.playPcm(bytes, 24_000)
@@ -347,6 +359,23 @@ class LivePracticeViewModel @Inject constructor(
             }
         } catch (_: Exception) {
             // ignore
+        }
+    }
+
+    // Duplex/echo control
+    private var modelSpeaking: Boolean = false
+    private var modelSpeakingClearJob: Job? = null
+    private fun onModelAudioDetected() {
+        modelSpeaking = true
+        // Auto-stop recording if user forgot to tap, to close the turn and avoid echo
+        if (uiState.value.isRecording) {
+            stopRecording()
+        }
+        // Debounce: clear after some silence since last audio chunk
+        modelSpeakingClearJob?.cancel()
+        modelSpeakingClearJob = viewModelScope.launch {
+            delay(MODEL_SPEAKING_SILENCE_MS)
+            modelSpeaking = false
         }
     }
 

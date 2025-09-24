@@ -146,21 +146,33 @@ class LivePracticeViewModel @Inject constructor(
             val root = gson.fromJson(raw, JsonObject::class.java)
             val texts = mutableListOf<String>()
 
-            val serverContent = root.getAsJsonArray("serverContent")
-            serverContent?.forEach { entry ->
-                texts += extractTextsFromContent(entry)
+            // Handle Live API response types
+            if (root.has("setupComplete")) {
+                // No text here; just acknowledgement from server.
             }
 
-            val candidates = root.getAsJsonArray("candidates")
-            candidates?.forEach { entry ->
-                texts += extractTextsFromContent(entry)
+            if (root.has("serverContent")) {
+                val sc = root.get("serverContent")
+                if (sc.isJsonArray) {
+                    sc.asJsonArray.forEach { entry ->
+                        texts += extractTextsFromServerContent(entry)
+                    }
+                } else if (sc.isJsonObject) {
+                    texts += extractTextsFromServerContent(sc)
+                }
+            }
+
+            // Fallback for some SDKs that expose candidates-like structures
+            if (root.has("candidates")) {
+                val candidates = root.getAsJsonArray("candidates")
+                candidates?.forEach { entry ->
+                    texts += extractTextsFromServerContent(entry)
+                }
             }
 
             if (texts.isEmpty()) {
                 root.getAsJsonObject("error")?.get("message")?.asString?.let { errorMessage ->
-                    _uiState.update {
-                        it.copy(error = errorMessage)
-                    }
+                    _uiState.update { it.copy(error = errorMessage) }
                 }
             }
 
@@ -170,23 +182,41 @@ class LivePracticeViewModel @Inject constructor(
         }
     }
 
-    private fun extractTextsFromContent(element: JsonElement): List<String> {
+    private fun extractTextsFromServerContent(element: JsonElement): List<String> {
         val collected = mutableListOf<String>()
         if (!element.isJsonObject) return collected
         val obj = element.asJsonObject
 
-        val content = if (obj.has("content") && obj.get("content").isJsonObject) {
-            obj.getAsJsonObject("content")
-        } else obj
-
-        val parts = content.getAsJsonArray("parts")
-        parts?.forEach { partElement ->
-            if (partElement.isJsonObject) {
-                val partObj = partElement.asJsonObject
-                val text = partObj.get("text")?.takeIf { it.isJsonPrimitive }?.asString
-                if (!text.isNullOrBlank()) {
-                    collected.add(text)
+        // Try typical shape: { serverContent: { content: { parts: [ { text: ... } ] } } }
+        fun collectFromContentObject(contentObj: JsonObject) {
+            val parts = contentObj.getAsJsonArray("parts")
+            parts?.forEach { partElement ->
+                if (partElement.isJsonObject) {
+                    val partObj = partElement.asJsonObject
+                    val text = partObj.get("text")?.takeIf { it.isJsonPrimitive }?.asString
+                    if (!text.isNullOrBlank()) collected.add(text)
                 }
+            }
+        }
+
+        when {
+            // serverContent.modelTurn: Content
+            obj.has("modelTurn") && obj.get("modelTurn").isJsonObject -> {
+                collectFromContentObject(obj.getAsJsonObject("modelTurn"))
+            }
+            obj.has("content") && obj.get("content").isJsonObject -> {
+                collectFromContentObject(obj.getAsJsonObject("content"))
+            }
+            obj.has("contents") && obj.get("contents").isJsonArray -> {
+                obj.getAsJsonArray("contents").forEach { co ->
+                    if (co.isJsonObject && co.asJsonObject.has("parts")) {
+                        collectFromContentObject(co.asJsonObject)
+                    }
+                }
+            }
+            // Some responses may directly contain parts
+            obj.has("parts") && obj.get("parts").isJsonArray -> {
+                collectFromContentObject(obj)
             }
         }
 

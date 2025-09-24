@@ -31,45 +31,113 @@ class LiveSessionManager @Inject constructor(
 
     private var webSocket: WebSocket? = null
     private var currentModel: String = DEFAULT_MODEL
+    private var ready: Boolean = false
+    private val pendingMessages = mutableListOf<String>()
 
     fun connect(token: String, model: String?, listener: Listener) {
         close()
         currentModel = model?.takeIf { it.isNotBlank() } ?: DEFAULT_MODEL
+        ready = false
+        pendingMessages.clear()
 
-        val endpoint = "wss://generativelanguage.googleapis.com/v1beta/models/$currentModel:streamGenerateContent?access_token=$token"
-        val request = Request.Builder()
-            .url(endpoint)
-            .build()
+        // Fallback strategy: try v1beta with Authorization header, then access_token param,
+        // then v1alpha with Authorization header, then access_token param.
+        data class Attempt(val url: String, val useHeader: Boolean)
 
-        webSocket = webSocketClient.newWebSocket(request, object : WebSocketListener() {
-            override fun onOpen(webSocket: WebSocket, response: okhttp3.Response) {
-                listener.onOpen()
+        val attempts = listOf(
+            Attempt(
+                url = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained",
+                useHeader = true
+            ),
+            Attempt(
+                url = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=$token",
+                useHeader = false
+            ),
+            Attempt(
+                url = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained",
+                useHeader = true
+            ),
+            Attempt(
+                url = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=$token",
+                useHeader = false
+            )
+        )
+
+        fun tryConnect(index: Int) {
+            if (index >= attempts.size) {
+                listener.onFailure(IllegalStateException("All Live API connection attempts failed"))
+                return
             }
 
-            override fun onMessage(webSocket: WebSocket, text: String) {
-                listener.onMessage(text)
+            val attempt = attempts[index]
+            val builder = Request.Builder().url(attempt.url)
+            if (attempt.useHeader) {
+                builder.header("Authorization", "Token $token")
             }
+            val request = builder.build()
 
-            override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-                listener.onMessage(bytes.utf8())
-            }
+            webSocket = webSocketClient.newWebSocket(request, object : WebSocketListener() {
+                override fun onOpen(webSocket: WebSocket, response: okhttp3.Response) {
+                    // Send initial setup so the session knows the model and modalities
+                    sendSetup()
+                    listener.onOpen()
+                }
 
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
-                listener.onFailure(t)
-            }
+                override fun onMessage(webSocket: WebSocket, text: String) {
+                    // Detect setupComplete and mark ready, flushing any queued messages
+                    try {
+                        val root = gson.fromJson(text, com.google.gson.JsonObject::class.java)
+                        if (root.has("setupComplete")) {
+                            ready = true
+                            if (pendingMessages.isNotEmpty()) {
+                                pendingMessages.forEach { msg -> this@LiveSessionManager.webSocket?.send(msg) }
+                                pendingMessages.clear()
+                            }
+                        }
+                    } catch (_: Exception) {
+                        // Ignore parse errors; pass through to listener
+                    }
+                    listener.onMessage(text)
+                }
 
-            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                listener.onClosed()
-            }
+                override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+                    val text = bytes.utf8()
+                    // Detect setupComplete in binary frames too
+                    try {
+                        val root = gson.fromJson(text, com.google.gson.JsonObject::class.java)
+                        if (root.has("setupComplete")) {
+                            ready = true
+                            if (pendingMessages.isNotEmpty()) {
+                                pendingMessages.forEach { msg -> this@LiveSessionManager.webSocket?.send(msg) }
+                                pendingMessages.clear()
+                            }
+                        }
+                    } catch (_: Exception) {
+                        // ignore
+                    }
+                    listener.onMessage(text)
+                }
 
-            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                listener.onClosed()
-            }
-        })
+                override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
+                    // Try next attempt on failure (e.g., 404 on handshake)
+                    tryConnect(index + 1)
+                }
+
+                override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                    listener.onClosed()
+                }
+
+                override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                    listener.onClosed()
+                }
+            })
+        }
+
+        tryConnect(0)
     }
 
     fun sendUserMessage(message: String) {
-        val payload = mapOf(
+        val clientContentPayload = mapOf(
             "clientContent" to mapOf(
                 "turns" to listOf(
                     mapOf(
@@ -78,6 +146,33 @@ class LiveSessionManager @Inject constructor(
                     )
                 ),
                 "turnComplete" to true
+            )
+        )
+        val realtimeInputPayload = mapOf(
+            "realtimeInput" to mapOf(
+                "text" to message
+            )
+        )
+
+        val json1 = gson.toJson(clientContentPayload)
+        val json2 = gson.toJson(realtimeInputPayload)
+        if (ready) {
+            webSocket?.send(json1)
+            webSocket?.send(json2)
+        } else {
+            pendingMessages.add(json1)
+            pendingMessages.add(json2)
+        }
+    }
+
+    private fun sendSetup() {
+        val modelName = if (currentModel.startsWith("models/")) currentModel else "models/$currentModel"
+        val payload = mapOf(
+            "setup" to mapOf(
+                "model" to modelName,
+                "generationConfig" to mapOf(
+                    "responseModalities" to listOf("TEXT")
+                )
             )
         )
         val json = gson.toJson(payload)

@@ -229,55 +229,6 @@ fun HomeScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Live Practice Action
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onNavigateToLivePractice() },
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFF8C42)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(NeutralWhite.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FlashOn,
-                        contentDescription = null,
-                        tint = NeutralWhite,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Live Practice (Beta)",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = NeutralWhite
-                    )
-                    Text(
-                        text = "Try the low-latency Gemini Live tutor",
-                        fontSize = 14.sp,
-                        color = NeutralWhite.copy(alpha = 0.9f)
-                    )
-                }
-            }
-        }
     }
 }
 
@@ -822,6 +773,7 @@ private fun EducationalTopBar(
                 }
             }
         }
+
     }
 }
 
@@ -1012,6 +964,56 @@ private fun QuickStartSection(
                     )
                     Text(
                         text = "AI-powered conversation partner",
+                        fontSize = 14.sp,
+                        color = NeutralWhite.copy(alpha = 0.9f)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Live Practice - Gemini Live
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onLivePractice() },
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFF8C42)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(NeutralWhite.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FlashOn,
+                        contentDescription = null,
+                        tint = NeutralWhite,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Live Practice (Beta)",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = NeutralWhite
+                    )
+                    Text(
+                        text = "Try the low-latency Gemini Live tutor",
                         fontSize = 14.sp,
                         color = NeutralWhite.copy(alpha = 0.9f)
                     )

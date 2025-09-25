@@ -129,7 +129,11 @@ class LivePracticeViewModel @Inject constructor(
     fun sendMessage(message: String) {
         if (message.isBlank()) return
         _uiState.update {
-            it.copy(messages = it.messages + LiveMessage(message, isFromUser = true))
+            it.copy(
+                messages = it.messages + LiveMessage(message, isFromUser = true),
+                showTypingIndicator = true,
+                isAiSpeaking = false
+            )
         }
         sessionManager.sendUserMessage(message)
     }
@@ -143,7 +147,9 @@ class LivePracticeViewModel @Inject constructor(
             it.copy(
                 isConnecting = true,
                 isConnected = false,
-                error = null
+                error = null,
+                showTypingIndicator = false,
+                isAiSpeaking = false
             )
         }
         sessionManager.close()
@@ -178,7 +184,9 @@ class LivePracticeViewModel @Inject constructor(
                         it.copy(
                             isConnecting = false,
                             isConnected = false,
-                            error = res.message ?: "Unable to request live token"
+                            error = res.message ?: "Unable to request live token",
+                            showTypingIndicator = false,
+                            isAiSpeaking = false
                         )
                     }
                 }
@@ -200,7 +208,8 @@ class LivePracticeViewModel @Inject constructor(
                         it.copy(
                             isConnecting = false,
                             isConnected = true,
-                            error = null
+                            error = null,
+                            showTypingIndicator = false
                         )
                     }
                 }
@@ -215,7 +224,9 @@ class LivePracticeViewModel @Inject constructor(
                 viewModelScope.launch {
                     _uiState.update { state ->
                         state.copy(
-                            messages = state.messages + messages.map { LiveMessage(it, isFromUser = false) }
+                            messages = state.messages + messages.map { LiveMessage(it, isFromUser = false) },
+                            showTypingIndicator = false,
+                            isAiSpeaking = false
                         )
                     }
                 }
@@ -227,7 +238,9 @@ class LivePracticeViewModel @Inject constructor(
                         it.copy(
                             isConnecting = false,
                             isConnected = false,
-                            error = t.message ?: "Live session connection failed"
+                            error = t.message ?: "Live session connection failed",
+                            showTypingIndicator = false,
+                            isAiSpeaking = false
                         )
                     }
                 }
@@ -238,7 +251,9 @@ class LivePracticeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isConnecting = false,
-                            isConnected = false
+                            isConnected = false,
+                            showTypingIndicator = false,
+                            isAiSpeaking = false
                         )
                     }
                 }
@@ -249,11 +264,24 @@ class LivePracticeViewModel @Inject constructor(
     // Public controls for voice mode and recording
     fun setVoiceMode(enabled: Boolean) {
         val changed = uiState.value.voiceMode != enabled
-        _uiState.update { it.copy(voiceMode = enabled) }
+        if (!enabled && uiState.value.isRecording) {
+            stopRecording()
+        }
+        _uiState.update {
+            it.copy(
+                voiceMode = enabled,
+                showTypingIndicator = false,
+                isAiSpeaking = false
+            )
+        }
         if (changed) {
             // Reconnect with different response modalities
             connectToLiveSession()
         }
+    }
+
+    fun toggleVoiceMode() {
+        setVoiceMode(!uiState.value.voiceMode)
     }
 
     fun toggleRecording() {
@@ -270,7 +298,7 @@ class LivePracticeViewModel @Inject constructor(
 
     private fun startRecording() {
         if (uiState.value.isRecording) return
-        _uiState.update { it.copy(isRecording = true) }
+        _uiState.update { it.copy(isRecording = true, showTypingIndicator = false) }
         recorder.start(sampleRateHz = 16_000) { chunk ->
             // Gate mic audio while model is speaking to prevent feedback loops
             if (!modelSpeaking) {
@@ -285,7 +313,7 @@ class LivePracticeViewModel @Inject constructor(
                 recorder.stop()
             } finally {
                 sessionManager.sendAudioStreamEnd()
-                _uiState.update { it.copy(isRecording = false) }
+                _uiState.update { it.copy(isRecording = false, showTypingIndicator = false) }
             }
         }
     }
@@ -304,12 +332,20 @@ class LivePracticeViewModel @Inject constructor(
             root.getAsJsonObject("inputTranscription")?.get("text")?.asString?.let { t ->
                 if (t.isNotBlank()) {
                     viewModelScope.launch {
-                        _uiState.update { it.copy(messages = it.messages + LiveMessage(t, isFromUser = true)) }
+                        _uiState.update {
+                            it.copy(
+                                messages = it.messages + LiveMessage(t, isFromUser = true),
+                                showTypingIndicator = false
+                            )
+                        }
                     }
                 }
             }
             root.getAsJsonObject("outputTranscription")?.get("text")?.asString?.let { t ->
-                if (t.isNotBlank()) texts.add(t)
+                if (t.isNotBlank()) {
+                    _uiState.update { it.copy(isAiSpeaking = true, showTypingIndicator = false) }
+                    texts.add(t)
+                }
             }
 
             if (root.has("serverContent")) {
@@ -410,6 +446,7 @@ class LivePracticeViewModel @Inject constructor(
                         // Turn complete detection
                         if (obj.get("turnComplete")?.asBoolean == true) {
                             modelSpeaking = false
+                            _uiState.update { it.copy(isAiSpeaking = false) }
                         }
                         val contentObj = when {
                             obj.has("modelTurn") && obj.get("modelTurn").isJsonObject -> obj.getAsJsonObject("modelTurn")
@@ -454,7 +491,13 @@ class LivePracticeViewModel @Inject constructor(
         modelSpeakingClearJob = viewModelScope.launch {
             delay(MODEL_SPEAKING_SILENCE_MS)
             modelSpeaking = false
+            _uiState.update { it.copy(isAiSpeaking = false) }
         }
+        _uiState.update { it.copy(isAiSpeaking = true, showTypingIndicator = false) }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
     }
 
     override fun onCleared() {

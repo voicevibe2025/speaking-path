@@ -20,5 +20,7 @@ data class LiveChatState(
     val isConnecting: Boolean = false,
     val error: String? = null,
     val voiceMode: Boolean = false,
-    val isRecording: Boolean = false
+    val isRecording: Boolean = false,
+    val isAiSpeaking: Boolean = false,
+    val showTypingIndicator: Boolean = false
 )

@@ -50,6 +50,10 @@ fun UserProfileScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // Read account preference for showing email
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
+    val showEmailOnProfile = settingsViewModel.showEmailOnProfile.value
+
     var showMoreOptions by remember { mutableStateOf(false) }
     var showReportDialog by remember { mutableStateOf(false) }
 
@@ -139,6 +143,7 @@ fun UserProfileScreen(
                     activities = uiState.activities,
                     selectedTab = uiState.selectedTab,
                     isOwnProfile = uiState.isOwnProfile,
+                    showEmailOnProfile = showEmailOnProfile,
                     onTabSelected = viewModel::selectTab,
                     onFollowClick = {
                         if (userProfile.isFollowing) {
@@ -206,6 +211,7 @@ private fun ProfileContent(
     activities: List<UserActivity>,
     selectedTab: ProfileTab,
     isOwnProfile: Boolean,
+    showEmailOnProfile: Boolean,
     onTabSelected: (ProfileTab) -> Unit,
     onFollowClick: () -> Unit,
     onChallengeClick: () -> Unit,
@@ -225,6 +231,7 @@ private fun ProfileContent(
             ProfileHeader(
                 profile = profile,
                 isOwnProfile = isOwnProfile,
+                showEmailOnProfile = showEmailOnProfile,
                 onFollowClick = onFollowClick,
                 onChallengeClick = onChallengeClick,
                 onViewFollowers = onViewFollowers,
@@ -286,6 +293,7 @@ private fun ProfileContent(
 private fun ProfileHeader(
     profile: UserProfile,
     isOwnProfile: Boolean,
+    showEmailOnProfile: Boolean,
     onFollowClick: () -> Unit,
     onChallengeClick: () -> Unit,
     onViewFollowers: () -> Unit,
@@ -386,8 +394,12 @@ private fun ProfileHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
+                val nameToShow = if (!showEmailOnProfile && looksLikeEmail(profile.displayName)) {
+                    // Hide raw email-like display names
+                    "User"
+                } else profile.displayName
                 Text(
-                    profile.displayName,
+                    nameToShow,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
@@ -411,11 +423,13 @@ private fun ProfileHeader(
                 }
             }
 
-            Text(
-                "@${profile.username}",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if (showEmailOnProfile || !looksLikeEmail(profile.username)) {
+                Text(
+                    "@${profile.username}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -644,4 +658,12 @@ private fun generateInitials(displayName: String): String {
         parts.size == 1 -> parts[0].take(2).uppercase()
         else -> "U"
     }
+}
+
+// Helper to detect email-like identifiers so we can hide them when the user prefers privacy
+private fun looksLikeEmail(text: String?): Boolean {
+    val s = text?.trim() ?: return false
+    // Simple RFC-like pattern
+    val emailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
+    return emailRegex.matches(s)
 }

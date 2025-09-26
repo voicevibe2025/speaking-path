@@ -85,7 +85,7 @@ fun SettingsScreen(
             // User Profile Section
             UserProfileSection(
                 userName = viewModel.userName.value,
-                userEmail = viewModel.userEmail.value,
+                userEmail = if (viewModel.showEmailOnProfile.value) viewModel.userEmail.value else "",
                 membershipStatus = viewModel.membershipStatus.value,
                 userInitials = viewModel.userInitials.value,
                 avatarUrl = viewModel.avatarUrl.value,
@@ -335,6 +335,7 @@ fun SettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountSettingsScreen(onNavigateBack: () -> Unit) {
+    val viewModel: SettingsViewModel = hiltViewModel()
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             title = { Text("Account Settings", fontWeight = FontWeight.Bold) },
@@ -344,9 +345,16 @@ fun AccountSettingsScreen(onNavigateBack: () -> Unit) {
                 }
             }
         )
-        // TODO: Implement account fields
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Manage your account details here.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            SettingsSection(title = "Account") {
+                SettingsToggleItem(
+                    icon = Icons.Default.Email,
+                    title = "Show email in Settings",
+                    subtitle = "Display your email in the Settings header",
+                    checked = viewModel.showEmailOnProfile.value,
+                    onCheckedChange = { viewModel.setShowEmailOnProfile(it) }
+                )
+            }
         }
     }
 }
@@ -487,11 +495,13 @@ fun UserProfileSection(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-                Text(
-                    text = userEmail,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                )
+                if (userEmail.isNotBlank()) {
+                    Text(
+                        text = userEmail,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                    )
+                }
                 Text(
                     text = membershipStatus,
                     fontSize = 12.sp,

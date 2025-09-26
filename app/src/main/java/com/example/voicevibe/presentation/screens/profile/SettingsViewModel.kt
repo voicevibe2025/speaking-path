@@ -56,6 +56,10 @@ class SettingsViewModel @Inject constructor(
     private val _ttsVoiceId = mutableStateOf<String?>(null)
     val ttsVoiceId: State<String?> = _ttsVoiceId
 
+    // Account preferences
+    private val _showEmailOnProfile = mutableStateOf(true)
+    val showEmailOnProfile: State<Boolean> = _showEmailOnProfile
+
     init {
         fetchUserProfile()
         observeSettings()
@@ -127,6 +131,12 @@ class SettingsViewModel @Inject constructor(
                 _ttsVoiceId.value = id
             }
         }
+        // Show email on profile/header
+        viewModelScope.launch {
+            tokenManager.showEmailOnProfileFlow().collect { show ->
+                _showEmailOnProfile.value = show
+            }
+        }
     }
 
     private fun generateInitials(displayName: String): String {
@@ -170,6 +180,12 @@ class SettingsViewModel @Inject constructor(
     fun setPreferredTtsVoice(voiceId: String?) {
         viewModelScope.launch {
             tokenManager.setTtsVoiceId(voiceId)
+        }
+    }
+
+    fun setShowEmailOnProfile(value: Boolean) {
+        viewModelScope.launch {
+            tokenManager.setShowEmailOnProfile(value)
         }
     }
 

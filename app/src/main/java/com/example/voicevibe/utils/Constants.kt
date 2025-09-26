@@ -25,6 +25,7 @@ object Constants {
     const val ONBOARDING_COMPLETED_KEY = "onboarding_completed"
     const val SPEAKING_ONLY_FLOW_KEY = "speaking_only_flow_enabled"
     const val TTS_VOICE_ID_KEY = "tts_voice_id"
+    const val SHOW_EMAIL_ON_PROFILE_KEY = "show_email_on_profile"
 
     // Temporary feature flag: lock Speaking-only Journey to ON
     const val LOCK_SPEAKING_ONLY_ON = true

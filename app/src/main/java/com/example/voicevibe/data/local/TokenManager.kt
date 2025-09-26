@@ -42,6 +42,7 @@ class TokenManager @Inject constructor(
     private val speakingOnlyFlowKey = booleanPreferencesKey(Constants.SPEAKING_ONLY_FLOW_KEY)
     private val ttsVoiceIdKey = stringPreferencesKey(Constants.TTS_VOICE_ID_KEY)
     private val micPermissionAskedKey = booleanPreferencesKey("mic_permission_asked")
+    private val showEmailOnProfileKey = booleanPreferencesKey(Constants.SHOW_EMAIL_ON_PROFILE_KEY)
 
     /**
      * Save authentication tokens
@@ -216,6 +217,19 @@ class TokenManager @Inject constructor(
             } else {
                 preferences[ttsVoiceIdKey] = voiceId
             }
+        }
+    }
+
+    /**
+     * Account preferences: show email on header/profile
+     */
+    fun showEmailOnProfileFlow(): Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[showEmailOnProfileKey] ?: true
+    }
+
+    suspend fun setShowEmailOnProfile(value: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[showEmailOnProfileKey] = value
         }
     }
 }

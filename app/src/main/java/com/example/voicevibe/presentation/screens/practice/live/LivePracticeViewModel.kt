@@ -1,27 +1,34 @@
 package com.example.voicevibe.presentation.screens.practice.live
 
 import android.util.Base64
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.audio.AudioPlayer
 import com.example.voicevibe.audio.AudioRecorder
 import com.example.voicevibe.data.ai.LiveSessionManager
 import com.example.voicevibe.data.repository.AiEvaluationRepository
+import com.example.voicevibe.data.repository.CoachRepository
+import com.example.voicevibe.data.repository.UserRepository
+import com.example.voicevibe.data.remote.api.CoachAnalysisDto
 import com.example.voicevibe.domain.model.LiveChatState
 import com.example.voicevibe.domain.model.LiveMessage
 import com.example.voicevibe.domain.model.LiveToken
 import com.example.voicevibe.domain.model.Resource
+import com.example.voicevibe.domain.model.UserProfile
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,6 +37,8 @@ import kotlinx.coroutines.withContext
 class LivePracticeViewModel @Inject constructor(
     private val aiEvaluationRepository: AiEvaluationRepository,
     private val sessionManager: LiveSessionManager,
+    private val coachRepository: CoachRepository,
+    private val userRepository: UserRepository,
     private val gson: Gson
 ) : ViewModel() {
 
@@ -39,6 +48,10 @@ class LivePracticeViewModel @Inject constructor(
     // Audio utilities
     private val recorder = AudioRecorder(viewModelScope)
     private val player = AudioPlayer()
+
+    private var coachAnalysis: CoachAnalysisDto? = null
+    private var currentUser: UserProfile? = null
+    private var userContextApplied: Boolean = false
 
     companion object {
         private const val NATIVE_AUDIO_MODEL = "gemini-2.5-flash-native-audio-preview-09-2025"
@@ -78,12 +91,12 @@ class LivePracticeViewModel @Inject constructor(
             - Talk about UNRIKA (Universitas Riau Kepulauan)
 
             ## ADDRESSING USERS (BATAM CUSTOMS)
-            Based on age and gender:
-            - For older men: "Bang [name]" (e.g., Bang Budi)
-            - For younger men: "Dek [name]" e.g. (Dek Budi) only for the first time, subsequent times use "Adek" or "Dek" only
-            - For women: "Kak [name]" (e.g., Kak Sinta)
+            Based on age and gender (never use bracket placeholders; always use the user's actual first name):
+            - For older men: use "Bang <firstName>" (e.g., Bang Budi)
+            - For younger men: use "Dek <firstName>" only for the first time; subsequent times use "Adek" or "Dek"
+            - For women: use "Kak <firstName>" (e.g., Kak Sinta)
             - Also use: "abang", "adek", "kakak", "om", "tante" appropriately
-            - Use only first name when addressing users e.g. "Bang Budi" instead of "Bang Budi Setiawan"
+            - Use only the first name when addressing users, e.g., "Bang Budi" instead of "Bang Budi Setiawan"
 
             ## SPECIAL FEATURES
             - Use "Pantun" (Batam cultural heritage) in these situations:
@@ -123,7 +136,48 @@ class LivePracticeViewModel @Inject constructor(
     }
 
     init {
-        connectToLiveSession()
+        viewModelScope.launch {
+            ensureCoachAnalysis()
+            connectToLiveSession()
+        }
+
+        // Load current user and rebuild session once to inject personalization
+        viewModelScope.launch {
+            try {
+                userRepository.getCurrentUser().collect { res ->
+                    when (res) {
+                        is Resource.Success -> {
+                            val u = res.data
+                            if (u != null) {
+                                currentUser = u
+                                if (!userContextApplied && (uiState.value.isConnected || uiState.value.isConnecting)) {
+                                    userContextApplied = true
+                                    // Reconnect to apply user-context prompt
+                                    connectToLiveSession()
+                                }
+                            }
+                        }
+                        else -> Unit
+                    }
+                }
+            } catch (_: Exception) { /* ignore */ }
+        }
+    }
+
+    private suspend fun ensureCoachAnalysis(force: Boolean = false) {
+        if (!force && coachAnalysis != null) return
+
+        val result = withContext(Dispatchers.IO) {
+            coachRepository.getAnalysis()
+        }
+        result.onSuccess { analysis ->
+            coachAnalysis = analysis
+        }.onFailure { throwable ->
+            Log.w(
+                "LivePracticeViewModel",
+                "Unable to load coach analysis for live session: ${'$'}{throwable.message}"
+            )
+        }
     }
 
     fun sendMessage(message: String) {
@@ -139,7 +193,10 @@ class LivePracticeViewModel @Inject constructor(
     }
 
     fun retryConnection() {
-        connectToLiveSession()
+        viewModelScope.launch {
+            ensureCoachAnalysis()
+            connectToLiveSession()
+        }
     }
 
     private fun connectToLiveSession() {
@@ -156,11 +213,12 @@ class LivePracticeViewModel @Inject constructor(
         viewModelScope.launch {
             val wantAudio = uiState.value.voiceMode
             val responseModalities = if (wantAudio) listOf("AUDIO") else listOf("TEXT")
+            val systemInstruction = buildSystemInstruction()
             when (val res = withContext(Dispatchers.IO) {
                 aiEvaluationRepository.requestLiveToken(
                     model = if (wantAudio) NATIVE_AUDIO_MODEL else DEFAULT_LIVE_TEXT_MODEL,
                     responseModalities = responseModalities,
-                    systemInstruction = baseSystemPrompt,
+                    systemInstruction = systemInstruction,
                     lockAdditionalFields = listOf("system_instruction")
                 )
             }) {
@@ -276,7 +334,10 @@ class LivePracticeViewModel @Inject constructor(
         }
         if (changed) {
             // Reconnect with different response modalities
-            connectToLiveSession()
+            viewModelScope.launch {
+                ensureCoachAnalysis()
+                connectToLiveSession()
+            }
         }
     }
 
@@ -432,7 +493,6 @@ class LivePracticeViewModel @Inject constructor(
                     onModelAudioDetected()
                     val bytes = Base64.decode(base64, Base64.DEFAULT)
                     player.playPcm(bytes, 24_000)
-                    return
                 }
             }
 
@@ -441,34 +501,31 @@ class LivePracticeViewModel @Inject constructor(
             if (sc != null) {
                 val items = if (sc.isJsonArray) sc.asJsonArray.toList() else listOf(sc)
                 items.forEach { item ->
-                    if (item.isJsonObject) {
-                        val obj = item.asJsonObject
-                        // Turn complete detection
-                        if (obj.get("turnComplete")?.asBoolean == true) {
-                            modelSpeaking = false
-                            _uiState.update { it.copy(isAiSpeaking = false) }
+                    if (!item.isJsonObject) return@forEach
+                    val obj = item.asJsonObject
+                    val contentObj = when {
+                        obj.has("modelTurn") && obj.get("modelTurn").isJsonObject -> obj.getAsJsonObject("modelTurn")
+                        obj.has("content") && obj.get("content").isJsonObject -> obj.getAsJsonObject("content")
+                        else -> obj
+                    }
+                    val parts = contentObj.getAsJsonArray("parts")
+                    parts?.forEach { p ->
+                        if (!p.isJsonObject) return@forEach
+                        val partObj = p.asJsonObject
+                        val inline = partObj.getAsJsonObject("inlineData")
+                        val mime = inline?.get("mimeType")?.asString
+                        val data = inline?.get("data")?.asString
+                        if (!data.isNullOrEmpty() && mime != null && mime.startsWith("audio/pcm")) {
+                            onModelAudioDetected()
+                            val bytes = Base64.decode(data, Base64.DEFAULT)
+                            // Output audio is 24kHz according to docs
+                            player.playPcm(bytes, 24_000)
                         }
-                        val contentObj = when {
-                            obj.has("modelTurn") && obj.get("modelTurn").isJsonObject -> obj.getAsJsonObject("modelTurn")
-                            obj.has("content") && obj.get("content").isJsonObject -> obj.getAsJsonObject("content")
-                            else -> obj
-                        }
-                        val parts = contentObj.getAsJsonArray("parts")
-                        parts?.forEach { p ->
-                            if (p.isJsonObject) {
-                                val partObj = p.asJsonObject
-                                val inline = partObj.getAsJsonObject("inlineData")
-                                val mime = inline?.get("mimeType")?.asString
-                                val data = inline?.get("data")?.asString
-                                if (!data.isNullOrEmpty() && mime != null && mime.startsWith("audio/pcm")) {
-                                    onModelAudioDetected()
-                                    val bytes = Base64.decode(data, Base64.DEFAULT)
-                                    // Output audio is 24kHz according to docs
-                                    player.playPcm(bytes, 24_000)
-                                    return
-                                }
-                            }
-                        }
+                    }
+                    // Turn complete detection after processing audio parts
+                    if (obj.get("turnComplete")?.asBoolean == true) {
+                        modelSpeaking = false
+                        _uiState.update { it.copy(isAiSpeaking = false) }
                     }
                 }
             }
@@ -504,5 +561,117 @@ class LivePracticeViewModel @Inject constructor(
         super.onCleared()
         sessionManager.close()
         player.release()
+    }
+
+    private fun buildSystemInstruction(): String {
+        val analysisSnapshot = coachAnalysis
+        val builder = StringBuilder()
+        builder.append(baseSystemPrompt)
+
+        // Inject user context if available and add a directive to avoid placeholders
+        val u = currentUser
+        if (u != null) {
+            val name = preferredUserName(u)
+            builder.append("\n\nUSER_PROFILE:\n")
+            builder.append(
+                """
+                {
+                  "id": "${u.id}",
+                  "username": "${u.username}",
+                  "displayName": "${u.displayName}",
+                  "level": ${u.level},
+                  "xp": ${u.xp},
+                  "streakDays": ${u.streakDays},
+                  "language": "${u.language}",
+                  "country": "${u.country ?: "-"}",
+                  "timezone": "${u.timezone ?: "-"}"
+                }
+                """.trimIndent()
+            )
+            builder.append("\n\nAssistant directives:\n")
+            builder.append("- Preferred name: '${name}'. ALWAYS address the user by this name with the appropriate Batam honorific when natural.\n")
+            builder.append("- NEVER output bracket placeholders like [name] or [User's Name]. ALWAYS use the user's actual name.\n")
+        } else {
+            builder.append("\n\nAssistant directives:\n")
+            builder.append("- Do not use bracket placeholders like [name]. If the user's name is unknown, ask briefly and then use it.\n")
+        }
+
+        if (analysisSnapshot != null) {
+            builder.append("\n\n## USER COACH SUMMARY (KEEP PRIVATE)\n")
+            builder.append("- Use this analysis silently to personalize coaching. Do not mention that it came from an AI coach unless the user asks.\n")
+
+            val strengths = analysisSnapshot.strengths.filter { it.isNotBlank() }
+            if (strengths.isNotEmpty()) {
+                builder.append("- Key strengths: ${strengths.take(3).joinToString(", ")}\n")
+            }
+
+            val weaknesses = analysisSnapshot.weaknesses.filter { it.isNotBlank() }
+            if (weaknesses.isNotEmpty()) {
+                builder.append("- Current weaknesses to address: ${weaknesses.take(3).joinToString(", ")}\n")
+            }
+
+            val skills = analysisSnapshot.skills
+            if (skills.isNotEmpty()) {
+                builder.append("- Skill mastery overview (0-100):\n")
+                skills.take(4).forEach { skill ->
+                    val trendNote = skill.trend?.takeIf { it.isNotBlank() }?.let { ", trend $it" } ?: ""
+                    val confidenceNote = skill.confidence?.let { value ->
+                        val percent = (value * 100).roundToInt()
+                        ", confidence ${percent}%"
+                    } ?: ""
+                    val evidenceNote = skill.evidence
+                        ?.firstOrNull()
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { "; evidence: $it" } ?: ""
+
+                    builder.append("  - ${skill.name}: ${skill.mastery}/100$trendNote$confidenceNote$evidenceNote\n")
+                }
+            }
+
+            analysisSnapshot.nextBestActions.firstOrNull()?.let { action ->
+                builder.append("- Next best action: ${action.title}. Rationale: ${action.rationale}. Suggest activities or dialogue nudges that align with this action.\n")
+                builder.append("  - Suggested deeplink: ${action.deeplink}\n")
+                action.expectedGain?.takeIf { it.isNotBlank() }?.let { gain ->
+                    builder.append("  - Expected gain: $gain\n")
+                }
+            }
+
+            analysisSnapshot.difficultyCalibration?.let { calibration ->
+                val calibrationNotes = listOfNotNull(
+                    calibration.pronunciation?.let { "pronunciation=$it" },
+                    calibration.fluency?.let { "fluency=$it" },
+                    calibration.vocabulary?.let { "vocabulary=$it" }
+                )
+                if (calibrationNotes.isNotEmpty()) {
+                    builder.append("- Difficulty calibration preferences: ${calibrationNotes.joinToString(", ")}\n")
+                }
+            }
+
+            analysisSnapshot.schedule?.firstOrNull()?.let { scheduleItem ->
+                builder.append("- Upcoming focus (${scheduleItem.date}): ${scheduleItem.focus}")
+                scheduleItem.microSkills?.takeIf { it.isNotEmpty() }?.let { micros ->
+                    builder.append(" | micro-skills: ${micros.joinToString(", ")}")
+                }
+                scheduleItem.reason?.takeIf { it.isNotBlank() }?.let { reason ->
+                    builder.append(" | reason: $reason")
+                }
+                builder.append("\n")
+            }
+
+            if (analysisSnapshot.coachMessage.isNotBlank()) {
+                builder.append("- Coach guidance: ${analysisSnapshot.coachMessage.trim()}\n")
+            }
+
+            builder.append("- Incorporate these insights naturally while maintaining Vivi's personality.\n")
+        }
+
+        return builder.toString()
+
+    }
+
+    private fun preferredUserName(u: UserProfile): String {
+        val base = (u.displayName.ifBlank { u.username }).trim()
+        val first = base.substringBefore(' ').ifBlank { base }
+        return first
     }
 }

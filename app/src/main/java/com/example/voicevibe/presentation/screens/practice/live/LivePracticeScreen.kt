@@ -3,9 +3,9 @@ package com.example.voicevibe.presentation.screens.practice.live
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -36,10 +36,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.voicevibe.domain.model.LiveMessage
-import kotlinx.coroutines.launch
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class, ExperimentalAnimationApi::class)
@@ -52,76 +51,43 @@ fun LivePracticeScreen(
     var inputText by rememberSaveable { mutableStateOf("") }
     val canSend = uiState.isConnected && inputText.isNotBlank()
     val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
     val recordPermission = rememberPermissionState(android.Manifest.permission.RECORD_AUDIO)
-    var showTypingIndicator by remember { mutableStateOf(false) }
-    
-    // Voice mode state
     var isVoiceMode by rememberSaveable { mutableStateOf(false) }
-    var isBotSpeaking by remember { mutableStateOf(false) }
-    
-    // Simulate bot speaking (you'll connect this to actual Gemini Live API events)
-    LaunchedEffect(uiState.isRecording) {
-        if (isVoiceMode && !uiState.isRecording) {
-            delay(500)
-            isBotSpeaking = true
-            delay(3000) // Simulate bot speaking for 3 seconds
-            isBotSpeaking = false
-        }
-    }
 
-    // Auto-scroll to bottom when new messages arrive
-    LaunchedEffect(uiState.messages.size) {
+    LaunchedEffect(uiState.messages.size, isVoiceMode) {
         if (uiState.messages.isNotEmpty() && !isVoiceMode) {
-            scope.launch {
-                delay(100)
-                listState.animateScrollToItem(uiState.messages.lastIndex)
-            }
+            delay(100)
+            listState.animateScrollToItem(uiState.messages.lastIndex)
         }
     }
 
-    // Simulate typing indicator for AI responses
-    LaunchedEffect(uiState.messages) {
-        val lastMessage = uiState.messages.lastOrNull()
-        if (lastMessage?.isFromUser == true && !isVoiceMode) {
-            showTypingIndicator = true
-            delay(1000)
-            showTypingIndicator = false
+    Scaffold(
+        containerColor = Color.Transparent,
+        topBar = {
+            ModernTopBar(
+                isConnected = uiState.isConnected,
+                isConnecting = uiState.isConnecting,
+                isRecording = uiState.isRecording,
+                isVoiceMode = isVoiceMode,
+                onNavigateBack = onNavigateBack,
+                onToggleMode = { isVoiceMode = !isVoiceMode }
+            )
         }
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        Scaffold(
-            containerColor = Color.Transparent,
-            topBar = {
-                ModernTopBar(
-                    isConnected = uiState.isConnected,
-                    isConnecting = uiState.isConnecting,
-                    isRecording = uiState.isRecording,
-                    isVoiceMode = isVoiceMode,
-                    onNavigateBack = onNavigateBack,
-                    onToggleMode = { isVoiceMode = !isVoiceMode }
-                )
-            }
-        ) { padding ->
+    ) { padding ->
+        Box(modifier = Modifier.fillMaxSize()) {
             AnimatedContent(
                 targetState = isVoiceMode,
                 transitionSpec = {
-                    fadeIn(animationSpec = tween(300)) with
-                            fadeOut(animationSpec = tween(300))
+                    fadeIn(animationSpec = tween(300)) with fadeOut(animationSpec = tween(300))
                 },
-                label = "mode_transition"
+                label = "mode_transition",
+                modifier = Modifier.fillMaxSize()
             ) { voiceMode ->
                 if (voiceMode) {
-                    // Voice Mode UI
                     VoiceModeScreen(
                         isConnected = uiState.isConnected,
                         isRecording = uiState.isRecording,
-                        isBotSpeaking = isBotSpeaking,
+                        isBotSpeaking = uiState.isAiSpeaking,
                         onToggleRecording = {
                             if (!recordPermission.status.isGranted) {
                                 recordPermission.launchPermissionRequest()
@@ -135,14 +101,12 @@ fun LivePracticeScreen(
                             .padding(padding)
                     )
                 } else {
-                    // Text Mode UI (Original Chat)
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(padding)
                             .imePadding()
                     ) {
-                        // Chat messages area
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -172,7 +136,7 @@ fun LivePracticeScreen(
                                         )
                                     }
 
-                                    if (showTypingIndicator) {
+                                    if (uiState.showTypingIndicator) {
                                         item {
                                             TypingIndicator()
                                         }
@@ -180,7 +144,6 @@ fun LivePracticeScreen(
                                 }
                             }
 
-                            // Gradient fade at top
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -197,7 +160,6 @@ fun LivePracticeScreen(
                             )
                         }
 
-                        // Modern input area
                         ModernInputArea(
                             inputText = inputText,
                             onInputChange = { inputText = it },
@@ -212,7 +174,6 @@ fun LivePracticeScreen(
                                 }
                             },
                             onToggleRecording = {
-                                // Switch to voice mode when mic is pressed
                                 if (!recordPermission.status.isGranted) {
                                     recordPermission.launchPermissionRequest()
                                 } else {
@@ -224,22 +185,21 @@ fun LivePracticeScreen(
                     }
                 }
             }
-        }
 
-        // Floating error notification
-        AnimatedVisibility(
-            visible = uiState.error != null,
-            enter = slideInVertically() + fadeIn(),
-            exit = slideOutVertically() + fadeOut(),
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 100.dp)
-        ) {
-            ModernErrorCard(
-                message = uiState.error ?: "",
-                onRetry = viewModel::retryConnection,
-                onDismiss = { /* Handle dismiss */ }
-            )
+            AnimatedVisibility(
+                visible = uiState.error != null,
+                enter = slideInVertically() + fadeIn(),
+                exit = slideOutVertically() + fadeOut(),
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 100.dp)
+            ) {
+                ModernErrorCard(
+                    message = uiState.error ?: "",
+                    onRetry = viewModel::retryConnection,
+                    onDismiss = { /* Handle dismiss */ }
+                )
+            }
         }
     }
 }

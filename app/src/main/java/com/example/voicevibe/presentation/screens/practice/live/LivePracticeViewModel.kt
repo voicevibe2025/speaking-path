@@ -52,6 +52,7 @@ class LivePracticeViewModel @Inject constructor(
     private var coachAnalysis: CoachAnalysisDto? = null
     private var currentUser: UserProfile? = null
     private var userContextApplied: Boolean = false
+    private var pendingModelText: StringBuilder? = null
 
     companion object {
         private const val NATIVE_AUDIO_MODEL = "gemini-2.5-flash-native-audio-preview-09-2025"
@@ -182,6 +183,7 @@ class LivePracticeViewModel @Inject constructor(
 
     fun sendMessage(message: String) {
         if (message.isBlank()) return
+        pendingModelText = null
         _uiState.update {
             it.copy(
                 messages = it.messages + LiveMessage(message, isFromUser = true),
@@ -200,6 +202,7 @@ class LivePracticeViewModel @Inject constructor(
     }
 
     private fun connectToLiveSession() {
+        pendingModelText = null
         _uiState.update {
             it.copy(
                 isConnecting = true,
@@ -231,7 +234,9 @@ class LivePracticeViewModel @Inject constructor(
                             it.copy(
                                 isConnecting = false,
                                 isConnected = false,
-                                error = "Live token response was empty"
+                                error = "Live token response was empty",
+                                showTypingIndicator = false,
+                                isAiSpeaking = false
                             )
                         }
                     }
@@ -277,14 +282,33 @@ class LivePracticeViewModel @Inject constructor(
                 // First, try to play audio if present
                 handleAudioFromServer(text)
 
-                val messages = extractModelTexts(text)
-                if (messages.isEmpty()) return
+                val payload = extractModelTextPayload(text)
+                val hasText = payload.outputTexts.isNotEmpty()
+                if (!hasText && !payload.turnComplete) return
                 viewModelScope.launch {
                     _uiState.update { state ->
+                        val updatedMessages = state.messages.toMutableList()
+
+                        if (hasText) {
+                            val chunk = payload.outputTexts.joinToString(separator = "")
+                            val accumulator = pendingModelText ?: StringBuilder().also { pendingModelText = it }
+                            accumulator.append(chunk)
+
+                            if (updatedMessages.isNotEmpty() && !updatedMessages.last().isFromUser) {
+                                updatedMessages[updatedMessages.lastIndex] = updatedMessages.last().copy(text = accumulator.toString())
+                            } else {
+                                updatedMessages += LiveMessage(accumulator.toString(), isFromUser = false)
+                            }
+                        }
+
+                        if (payload.turnComplete) {
+                            pendingModelText = null
+                        }
+
                         state.copy(
-                            messages = state.messages + messages.map { LiveMessage(it, isFromUser = false) },
+                            messages = updatedMessages,
                             showTypingIndicator = false,
-                            isAiSpeaking = false
+                            isAiSpeaking = !payload.turnComplete
                         )
                     }
                 }
@@ -332,6 +356,7 @@ class LivePracticeViewModel @Inject constructor(
                 isAiSpeaking = false
             )
         }
+        pendingModelText = null
         if (changed) {
             // Reconnect with different response modalities
             viewModelScope.launch {
@@ -379,10 +404,16 @@ class LivePracticeViewModel @Inject constructor(
         }
     }
 
-    private fun extractModelTexts(raw: String): List<String> {
+    private data class ModelTextPayload(
+        val outputTexts: List<String>,
+        val turnComplete: Boolean
+    )
+
+    private fun extractModelTextPayload(raw: String): ModelTextPayload {
         return try {
             val root = gson.fromJson(raw, JsonObject::class.java)
             val texts = mutableListOf<String>()
+            var turnComplete = false
 
             // Handle Live API response types
             if (root.has("setupComplete")) {
@@ -414,9 +445,15 @@ class LivePracticeViewModel @Inject constructor(
                 if (sc.isJsonArray) {
                     sc.asJsonArray.forEach { entry ->
                         texts += extractTextsFromServerContent(entry)
+                        if (entry.isJsonObject && entry.asJsonObject.get("turnComplete")?.asBoolean == true) {
+                            turnComplete = true
+                        }
                     }
                 } else if (sc.isJsonObject) {
                     texts += extractTextsFromServerContent(sc)
+                    if (sc.asJsonObject.get("turnComplete")?.asBoolean == true) {
+                        turnComplete = true
+                    }
                 }
             }
 
@@ -425,6 +462,9 @@ class LivePracticeViewModel @Inject constructor(
                 val candidates = root.getAsJsonArray("candidates")
                 candidates?.forEach { entry ->
                     texts += extractTextsFromServerContent(entry)
+                    if (entry.isJsonObject && entry.asJsonObject.get("turnComplete")?.asBoolean == true) {
+                        turnComplete = true
+                    }
                 }
             }
 
@@ -434,9 +474,9 @@ class LivePracticeViewModel @Inject constructor(
                 }
             }
 
-            texts.filter { it.isNotBlank() }
+            ModelTextPayload(texts.filter { it.isNotBlank() }, turnComplete || root.get("turnComplete")?.asBoolean == true)
         } catch (_: Exception) {
-            emptyList()
+            ModelTextPayload(emptyList(), false)
         }
     }
 

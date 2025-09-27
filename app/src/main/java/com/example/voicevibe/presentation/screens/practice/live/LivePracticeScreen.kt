@@ -235,9 +235,9 @@ private fun VoiceModeScreen(
             // Status Text
             AnimatedContent(
                 targetState = when {
+                    !isConnected -> "Connecting..."
                     isBotSpeaking -> "AI is speaking..."
                     isRecording -> "Listening..."
-                    !isConnected -> "Connecting..."
                     else -> "Tap to speak"
                 },
                 transitionSpec = {
@@ -273,7 +273,7 @@ private fun VoiceModeScreen(
                 }
 
                 // End Call Button (if recording)
-                AnimatedVisibility(visible = isRecording) {
+                AnimatedVisibility(visible = isRecording && isConnected) {
                     FilledTonalButton(
                         onClick = onToggleRecording,
                         colors = ButtonDefaults.filledTonalButtonColors(
@@ -298,7 +298,7 @@ private fun VoiceModeScreen(
         }
 
         // Ambient animation background
-        if (isRecording || isBotSpeaking) {
+        if (isRecording && isConnected || isBotSpeaking) {
             AmbientWaveAnimation(
                 isActive = true,
                 modifier = Modifier
@@ -330,7 +330,7 @@ private fun VoiceMicButton(
         contentAlignment = Alignment.Center
     ) {
         // Outer ring animations
-        if (isRecording) {
+        if (isRecording && isConnected) {
             repeat(3) { index ->
                 val delay = index * 400
                 val ringScale by infiniteTransition.animateFloat(
@@ -376,11 +376,11 @@ private fun VoiceMicButton(
                 .size(160.dp)
                 .scale(scale)
                 .shadow(
-                    elevation = if (isRecording) 16.dp else 8.dp,
+                    elevation = if (isConnected && isRecording) 16.dp else 8.dp,
                     shape = CircleShape
                 ),
             colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = if (isRecording) {
+                containerColor = if (isConnected && isRecording) {
                     MaterialTheme.colorScheme.error
                 } else {
                     MaterialTheme.colorScheme.primary
@@ -388,10 +388,10 @@ private fun VoiceMicButton(
             )
         ) {
             Icon(
-                imageVector = if (isRecording) Icons.Filled.Mic else Icons.Outlined.Mic,
-                contentDescription = if (isRecording) "Stop recording" else "Start recording",
+                imageVector = if (isConnected && isRecording) Icons.Filled.Mic else Icons.Outlined.Mic,
+                contentDescription = if (isConnected && isRecording) "Stop recording" else "Start recording",
                 modifier = Modifier.size(64.dp),
-                tint = if (isRecording) Color.White else MaterialTheme.colorScheme.onPrimary
+                tint = if (isConnected && isRecording) Color.White else MaterialTheme.colorScheme.onPrimary
             )
         }
     }
@@ -559,14 +559,10 @@ private fun ModernTopBar(
                     StatusChip(
                         isActive = isConnected,
                         isConnecting = isConnecting,
-                        label = when {
-                            isConnecting -> "Connecting"
-                            isConnected -> "Connected"
-                            else -> "Offline"
-                        }
+                        label = if (isConnected) "Connected" else "Offline"
                     )
 
-                    AnimatedVisibility(visible = isRecording) {
+                    AnimatedVisibility(visible = isRecording && isConnected) {
                         RecordingIndicator()
                     }
 
@@ -574,6 +570,7 @@ private fun ModernTopBar(
                         Surface(
                             color = MaterialTheme.colorScheme.primaryContainer,
                             shape = RoundedCornerShape(12.dp)
+
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),

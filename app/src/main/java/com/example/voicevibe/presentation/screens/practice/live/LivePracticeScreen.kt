@@ -54,12 +54,13 @@ fun LivePracticeScreen(
     val recordPermission = rememberPermissionState(android.Manifest.permission.RECORD_AUDIO)
     var isVoiceMode by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(uiState.messages.size, isVoiceMode) {
-        if (uiState.messages.isNotEmpty() && !isVoiceMode) {
-            delay(100)
-            listState.animateScrollToItem(uiState.messages.lastIndex)
+    LaunchedEffect(uiState.messages.size, uiState.showTypingIndicator, isVoiceMode) {
+        if (!isVoiceMode) {
+            // In reverseLayout, index 0 is bottom-most
+            listState.animateScrollToItem(0)
         }
     }
+
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -107,57 +108,35 @@ fun LivePracticeScreen(
                             .padding(padding)
                             .imePadding()
                     ) {
-                        Box(
+                        LazyColumn(
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth()
+                                .padding(16.dp),
+                            state = listState,
+                            reverseLayout = true,
+                            verticalArrangement = Arrangement.Bottom  // Add this line to align content to bottom
                         ) {
-                            if (uiState.messages.isEmpty()) {
-                                ModernEmptyState(
-                                    isConnecting = uiState.isConnecting,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            } else {
-                                LazyColumn(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(horizontal = 16.dp),
-                                    state = listState,
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    contentPadding = PaddingValues(vertical = 16.dp)
-                                ) {
-                                    itemsIndexed(
-                                        items = uiState.messages,
-                                        key = { _, message -> message.hashCode() }
-                                    ) { index, message ->
-                                        ModernMessageBubble(
-                                            message = message,
-                                            isLastMessage = index == uiState.messages.lastIndex
-                                        )
-                                    }
-
-                                    if (uiState.showTypingIndicator) {
-                                        item {
-                                            TypingIndicator()
-                                        }
-                                    }
+                            // Add spacing between items
+                            if (uiState.showTypingIndicator) {
+                                item(key = "typing_indicator") { 
+                                    TypingIndicator()
+                                    Spacer(modifier = Modifier.height(8.dp))  // Add spacing
                                 }
                             }
 
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                                    .align(Alignment.TopCenter)
-                                    .background(
-                                        Brush.verticalGradient(
-                                            colors = listOf(
-                                                MaterialTheme.colorScheme.background,
-                                                Color.Transparent
-                                            )
-                                        )
-                                    )
-                            )
+                            itemsIndexed(
+                                items = uiState.messages.reversed(),
+                                key = { index, message -> "message_${message.hashCode()}_$index" }
+                            ) { index, message ->
+                                ModernMessageBubble(
+                                    message = message,
+                                    isLastMessage = index == 0
+                                )
+                                if (index < uiState.messages.size - 1) {
+                                    Spacer(modifier = Modifier.height(8.dp))  // Add spacing between messages
+                                }
+                            }
                         }
 
                         ModernInputArea(

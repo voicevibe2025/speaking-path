@@ -595,27 +595,6 @@ private fun ModernTopBar(
                 }
             }
 
-            // Mode toggle button
-            IconButton(onClick = onToggleMode) {
-                Icon(
-                    imageVector = if (isVoiceMode) Icons.Outlined.Chat else Icons.Outlined.Mic,
-                    contentDescription = if (isVoiceMode) "Switch to chat" else "Switch to voice"
-                )
-            }
-
-            // Beta badge
-            Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    text = "BETA",
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            }
         }
     }
 }

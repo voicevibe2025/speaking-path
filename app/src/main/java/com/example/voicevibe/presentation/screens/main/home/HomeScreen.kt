@@ -1013,7 +1013,7 @@ private fun QuickStartSection(
                         color = NeutralWhite
                     )
                     Text(
-                        text = "Try the low-latency Gemini Live tutor",
+                        text = "Practice with a live tutor",
                         fontSize = 14.sp,
                         color = NeutralWhite.copy(alpha = 0.9f)
                     )
@@ -1140,7 +1140,7 @@ private fun StudyToolsSection(
             StudyToolCard(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.MenuBook,
-                title = "Learning Paths",
+                title = "Quest",
                 color = BrandIndigo,
                 onClick = onViewPaths
             )

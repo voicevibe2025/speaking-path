@@ -418,7 +418,9 @@ private fun ModernPromptCard(prompt: String, hints: List<String>, isCompleted: B
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium,
                 lineHeight = 28.sp,
-                color = Color.White
+                color = Color.White,
+                maxLines = 10,
+                overflow = TextOverflow.Ellipsis
             )
             
             if (hints.isNotEmpty()) {

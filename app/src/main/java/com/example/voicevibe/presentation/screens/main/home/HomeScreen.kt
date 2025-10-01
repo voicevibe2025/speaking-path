@@ -909,21 +909,27 @@ private fun QuickStartSection(
                         text = "Start Speaking Practice",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = NeutralWhite
+                        color = NeutralWhite,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = "Practice speaking with instant feedback",
                         fontSize = 14.sp,
-                        color = NeutralWhite.copy(alpha = 0.9f)
+                        color = NeutralWhite.copy(alpha = 0.9f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
             }
         }
 
+        /*
         Spacer(modifier = Modifier.height(12.dp))
 
         // Secondary Action - AI Practice
+        
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -960,16 +966,21 @@ private fun QuickStartSection(
                         text = "Practice with Vivi",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = NeutralWhite
+                        color = NeutralWhite,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = "AI-powered conversation partner",
                         fontSize = 14.sp,
-                        color = NeutralWhite.copy(alpha = 0.9f)
+                        color = NeutralWhite.copy(alpha = 0.9f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
         }
+        */
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -1007,15 +1018,19 @@ private fun QuickStartSection(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Live Practice (Beta)",
+                        text = "Practice with Vivi",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = NeutralWhite
+                        color = NeutralWhite,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "Practice with a live tutor",
+                        text = "Practice with AI tutor",
                         fontSize = 14.sp,
-                        color = NeutralWhite.copy(alpha = 0.9f)
+                        color = NeutralWhite.copy(alpha = 0.9f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }

@@ -10,6 +10,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -242,6 +245,7 @@ fun ListeningPracticeScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
                             .padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
@@ -322,7 +326,7 @@ fun ListeningPracticeScreen(
                                     Column(Modifier.fillMaxWidth().padding(24.dp)) {
                                         Text("Listen & Choose", color = Color(0xFFFFD700), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                                         Spacer(Modifier.height(10.dp))
-                                        Text(ui.question, color = Color.White, fontSize = 20.sp, lineHeight = 28.sp)
+                                        Text(ui.question, color = Color.White, fontSize = 20.sp, lineHeight = 28.sp, maxLines = 8, overflow = TextOverflow.Ellipsis)
                                     }
                                 }
 
@@ -514,7 +518,7 @@ private fun OptionItem(
         border = BorderStroke(if (borderColor == Color.Transparent) 0.dp else 2.dp, borderColor)
     ) {
         Box(Modifier.fillMaxWidth().padding(16.dp)) {
-            Text(text = text, color = Color.White, fontSize = 18.sp)
+            Text(text = text, color = Color.White, fontSize = 18.sp, maxLines = 3, overflow = TextOverflow.Ellipsis)
         }
     }
 }

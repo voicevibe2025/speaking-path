@@ -796,50 +796,6 @@ private fun ModernResultsDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Big Score Badge
-                item {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(140.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    Brush.radialGradient(
-                                        colors = listOf(scoreColor.copy(alpha = 0.35f), Color.Transparent),
-                                        center = androidx.compose.ui.geometry.Offset(70f, 70f),
-                                        radius = 120f
-                                    )
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Surface(
-                                color = Color(0xFF1E2932),
-                                shape = CircleShape,
-                                shadowElevation = 8.dp,
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(120.dp)
-                                        .background(Color(0xFF1E2932)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "$scoreInt",
-                                        color = Color.White,
-                                        fontSize = 48.sp,
-                                        fontWeight = FontWeight.ExtraBold
-                                    )
-                                }
-                            }
-                        }
-                        Spacer(Modifier.height(8.dp))
-                        Text("Fluency Score", color = scoreColor, fontWeight = FontWeight.SemiBold)
-                    }
-                }
-
                 // Simple Analysis
                 item {
                     Card(

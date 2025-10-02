@@ -282,7 +282,8 @@ fun PronunciationPracticeScreen(
                         latestEntry?.let { entry ->
                             val pct = entry.accuracy.toInt().coerceIn(0, 100)
                             val pass = pct >= 80
-                            val scoreEarned = if (pass) 10 else 0
+                            // Calculate proportional score: 100% = 10, 90-99% = 9, etc.
+                            val scoreEarned = minOf(10, maxOf(0, pct / 10))
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -446,8 +447,12 @@ fun PronunciationPracticeScreen(
                     val sum = latestByPhrase.values.sumOf { it.accuracy.toInt().coerceIn(0, 100) }
                     (sum.toFloat() / latestByPhrase.size.toFloat()).toInt()
                 } else 0
-                // Estimate XP as +20 per phrase (≥80% accuracy). Topic Mastery (+50) is awarded when all modes complete.
-                val totalXp = phraseCount * 20
+                // Calculate total XP based on proportional scoring (0-20 per phrase based on accuracy)
+                val totalXp = latestByPhrase.values.sumOf { entry ->
+                    val pct = entry.accuracy.toInt().coerceIn(0, 100)
+                    val score = minOf(10, maxOf(0, pct / 10))
+                    score * 2 // Convert 0-10 score to 0-20 XP
+                }
                 PronunciationCongratsDialog(
                     topicTitle = topic.title,
                     score = avgPct,

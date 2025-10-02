@@ -151,8 +151,17 @@ class SpeakingJourneyViewModel @Inject constructor(
                             val topicNow = sNow.topics.getOrNull(sNow.selectedTopicIdx)
                             val roleUpper = role.trim().uppercase(Locale.US)
                             val conv = topicNow?.conversation ?: emptyList()
+                            // Check if there are more user turns after the CURRENT turn
                             val hasMoreUserTurns = conv.drop(turnIndex + 1).any { it.speaker.equals(roleUpper, ignoreCase = true) }
+                            
+                            // Debug logging
+                            Log.d("ConversationCompletion", "Turn $turnIndex completed by $roleUpper")
+                            Log.d("ConversationCompletion", "nextTurnIndex: ${dto.nextTurnIndex}")
+                            Log.d("ConversationCompletion", "hasMoreUserTurns: $hasMoreUserTurns")
+                            Log.d("ConversationCompletion", "Remaining turns: ${conv.drop(turnIndex + 1).map { "${it.speaker}: ${it.text.take(20)}..." }}")
+                            
                             if (dto.nextTurnIndex == null || !hasMoreUserTurns) {
+                                Log.d("ConversationCompletion", "Showing congratulations - conversation complete for user")
                                 _uiState.value = _uiState.value.copy(showConversationCongrats = true)
                                 reloadTopics()
                             }

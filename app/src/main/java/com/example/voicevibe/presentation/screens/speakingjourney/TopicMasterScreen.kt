@@ -251,6 +251,15 @@ fun PracticeCardsSection(
     val serverConversationScore = topic?.conversationScore ?: 0 // already 0–100 average of recorded turns
     // Prefer normalized local progress if we have any local recordings; otherwise fall back to server's 0–100 average
     val conversationScoreForUi = if (recordedIndices.isNotEmpty()) liveConversationNormalized else serverConversationScore.coerceIn(0, 100)
+    
+    // Debug logging for conversation score calculation
+    Log.d("ConversationScore", "Topic: ${topic?.title}")
+    Log.d("ConversationScore", "Server conversation score: $serverConversationScore")
+    Log.d("ConversationScore", "Recorded indices: $recordedIndices")
+    Log.d("ConversationScore", "Expected user turns: $expectedUserTurns")
+    Log.d("ConversationScore", "Live conversation sum: $liveConversationSum")
+    Log.d("ConversationScore", "Live normalized: $liveConversationNormalized")
+    Log.d("ConversationScore", "Final score for UI: $conversationScoreForUi")
     val conversationMax = 100
 
     // Live Pronunciation score from local transcripts (average of latest per phrase, 0–100)

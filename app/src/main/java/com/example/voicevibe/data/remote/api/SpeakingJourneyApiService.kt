@@ -1,6 +1,7 @@
 package com.example.voicevibe.data.remote.api
 
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -58,6 +59,15 @@ interface SpeakingJourneyApiService {
         @Path("topicId") topicId: String,
         @Body body: SubmitFluencyPromptRequestDto
     ): Response<SubmitFluencyPromptResponseDto>
+
+    @Multipart
+    @POST("speaking/topics/{topicId}/fluency/submit-recording")
+    suspend fun submitFluencyRecording(
+        @Path("topicId") topicId: String,
+        @Part audio: MultipartBody.Part,
+        @Part("promptIndex") promptIndex: RequestBody,
+        @Part("recordingDuration") recordingDuration: RequestBody
+    ): Response<SubmitFluencyRecordingResponseDto>
 
     // --- Vocabulary Practice ---
     @POST("speaking/topics/{topicId}/vocabulary/start")
@@ -243,6 +253,15 @@ data class SubmitFluencyPromptResponseDto(
     val fluencyCompleted: Boolean,
     val promptScores: List<Int>,
     val xpAwarded: Int = 0
+)
+
+data class SubmitFluencyRecordingResponseDto(
+    val success: Boolean,
+    val score: Int,
+    val feedback: String,
+    val suggestions: List<String>,
+    val sessionId: String,
+    val transcription: String
 )
 
 // --- Vocabulary Practice DTOs ---

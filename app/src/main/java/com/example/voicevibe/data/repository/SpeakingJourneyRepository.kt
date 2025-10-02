@@ -3,6 +3,7 @@ package com.example.voicevibe.data.repository
 import com.example.voicevibe.data.remote.api.SpeakingJourneyApiService
 import com.example.voicevibe.data.remote.api.SubmitFluencyPromptRequestDto
 import com.example.voicevibe.data.remote.api.SubmitFluencyPromptResponseDto
+import com.example.voicevibe.data.remote.api.SubmitFluencyRecordingResponseDto
 import com.example.voicevibe.data.remote.api.SpeakingTopicDto
 import com.example.voicevibe.data.remote.api.SpeakingTopicsResponse
 import com.example.voicevibe.data.remote.api.UpdateLastVisitedTopicRequest
@@ -27,6 +28,9 @@ import com.example.voicevibe.data.remote.api.JourneyActivityDto
 import com.example.voicevibe.domain.model.ActivityType
 import com.example.voicevibe.domain.model.UserActivity
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import java.io.File
 import javax.inject.Inject
 
 class SpeakingJourneyRepository @Inject constructor(
@@ -148,6 +152,36 @@ class SpeakingJourneyRepository @Inject constructor(
                 topicId,
                 SubmitFluencyPromptRequestDto(promptIndex = promptIndex, score = score, sessionId = sessionId)
             )
+            if (response.isSuccessful) {
+                val body = response.body() ?: return Result.failure(Exception("Empty response"))
+                Result.success(body)
+            } else {
+                Result.failure(Exception("HTTP ${response.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    suspend fun submitFluencyRecording(
+        topicId: String,
+        audioFile: File,
+        promptIndex: Int = 0,
+        recordingDuration: Float
+    ): Result<SubmitFluencyRecordingResponseDto> {
+        return try {
+            val audioRequestBody = RequestBody.create("audio/m4a".toMediaTypeOrNull(), audioFile)
+            val audioPart = MultipartBody.Part.createFormData("audio", audioFile.name, audioRequestBody)
+            val promptIndexBody = RequestBody.create("text/plain".toMediaTypeOrNull(), promptIndex.toString())
+            val durationBody = RequestBody.create("text/plain".toMediaTypeOrNull(), recordingDuration.toString())
+            
+            val response = api.submitFluencyRecording(
+                topicId = topicId,
+                audio = audioPart,
+                promptIndex = promptIndexBody,
+                recordingDuration = durationBody
+            )
+            
             if (response.isSuccessful) {
                 val body = response.body() ?: return Result.failure(Exception("Empty response"))
                 Result.success(body)

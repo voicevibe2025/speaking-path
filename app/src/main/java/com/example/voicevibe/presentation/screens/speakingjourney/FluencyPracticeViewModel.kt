@@ -73,8 +73,8 @@ class FluencyPracticeViewModel @Inject constructor(
             buildPromptFromTopic(topic)
         }
         
-        // Simple hints from topic material since there's only one prompt
-        val hints = topic.material.take(3).map { "• $it" }
+        // No hints for single prompt fluency practice
+        val hints = emptyList<String>()
         _uiState.update { it.copy(prompt = promptText, hints = hints, error = null, allPrompts = listOf(promptText), currentPromptIndex = 0, showStartOverlay = true) }
 
         // Load an associated PracticePrompt for submission (best-effort)
@@ -235,42 +235,74 @@ class FluencyPracticeViewModel @Inject constructor(
                             stutterCount = analysis.stutterCount,
                             mispronunciations = analysis.mispronunciations
                         )
-                        persistAttempt(context, currentTopicId!!, attempt)
                         // Count this speaking activity towards Day Streak (idempotent server-side)
                         runCatching { gamificationRepo.updateStreak() }
-                        val updated = _uiState.value.pastAttempts + attempt
 
-                        // Submit fluency score to SpeakingJourney to unlock next prompt
+                        // Submit fluency recording to Gemini for evaluation
                         val topicId = currentTopicId
-                        val scoreToSubmit = attempt.overallScore.toInt().coerceAtLeast(0)
                         if (!topicId.isNullOrBlank()) {
                             try {
-                                val res2 = journeyRepo.submitFluencyPromptScore(
+                                // Use new Gemini-based endpoint
+                                val audioFile = File(filePath)
+                                val recordingDuration = _uiState.value.recordingDuration.toFloat()
+                                val res2 = journeyRepo.submitFluencyRecording(
                                     topicId = topicId,
-                                    promptIndex = currentPromptIndex,
-                                    score = scoreToSubmit,
-                                    sessionId = sessionId
+                                    audioFile = audioFile,
+                                    recordingDuration = recordingDuration
                                 )
                                 res2.onSuccess { body ->
-                                    // For single prompt, completion means the fluency practice is done
-                                    val isCompleted = body.fluencyCompleted
-                                    val totalScore = body.fluencyTotalScore
-                                    val xpDelta = body.xpAwarded
-                                    // Single prompt XP calculation
-                                    val totalXpWhenCompleted = if (isCompleted) xpDelta else 0
+                                    // Update the attempt with Gemini's actual score and feedback
+                                    val geminiScore = body.score
+                                    val updatedAttempt = attempt.copy(
+                                        overallScore = geminiScore.toFloat(),
+                                        feedback = body.feedback,
+                                        transcript = body.transcription
+                                    )
+                                    persistAttempt(context, currentTopicId!!, updatedAttempt)
+                                    
+                                    // Create updated evaluation with Gemini score for UI display
+                                    val updatedEval = eval?.copy(
+                                        overallScore = geminiScore.toFloat(),
+                                        feedback = body.feedback,
+                                        suggestions = body.suggestions
+                                    )
+                                    
+                                    // For single prompt system, we need to manually check if this completes fluency
+                                    // Score of 75+ completes the fluency practice  
+                                    val isCompleted = geminiScore >= 75
+                                    val xpGained = if (isCompleted) 50 else 10  // Completion bonus or participation
+                                    
                                     _uiState.update { st ->
                                         st.copy(
                                             showCongrats = isCompleted,
-                                            totalFluencyScore = totalScore,
-                                            completionXpGained = if (isCompleted) totalXpWhenCompleted else st.completionXpGained,
-                                            lastAwardedXp = xpDelta
+                                            totalFluencyScore = geminiScore,
+                                            completionXpGained = if (isCompleted) xpGained else st.completionXpGained,
+                                            lastAwardedXp = xpGained,
+                                            evaluation = updatedEval,
+                                            pastAttempts = st.pastAttempts.map { 
+                                                if (it.sessionId == updatedAttempt.sessionId) updatedAttempt else it
+                                            }
                                         )
                                     }
                                 }.onFailure { e ->
-                                    _uiState.update { it.copy(error = "Failed to save fluency score: ${'$'}{e.message}") }
+                                    // Fallback: save the attempt locally even if server submission fails
+                                    persistAttempt(context, currentTopicId!!, attempt)
+                                    _uiState.update { st -> 
+                                        st.copy(
+                                            error = "Failed to submit to server: ${e.message}",
+                                            pastAttempts = st.pastAttempts + attempt
+                                        )
+                                    }
                                 }
                             } catch (t: Throwable) {
-                                _uiState.update { it.copy(error = "Failed to save fluency score: ${'$'}{t.message}") }
+                                // Fallback: save the attempt locally even if server submission fails
+                                persistAttempt(context, currentTopicId!!, attempt)
+                                _uiState.update { st ->
+                                    st.copy(
+                                        error = "Failed to submit: ${t.message}",
+                                        pastAttempts = st.pastAttempts + attempt
+                                    )
+                                }
                             }
                         }
 
@@ -280,7 +312,6 @@ class FluencyPracticeViewModel @Inject constructor(
                                 evaluation = eval,
                                 session = sess,
                                 latestAnalysis = analysis,
-                                pastAttempts = updated.sortedByDescending { a -> a.createdAt },
                                 showResults = true
                             )
                         }

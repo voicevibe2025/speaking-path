@@ -280,7 +280,7 @@ fun PronunciationPracticeScreen(
                             ui.currentTopicTranscripts.maxByOrNull { it.timestamp }
                         }
                         latestEntry?.let { entry ->
-                            val pct = (entry.accuracy * 100).toInt().coerceIn(0, 100)
+                            val pct = entry.accuracy.toInt().coerceIn(0, 100)
                             val pass = pct >= 80
                             val scoreEarned = if (pass) 10 else 0
                             Card(
@@ -570,7 +570,7 @@ private fun AnalysisDialog(entry: PhraseTranscriptEntry, onDismiss: () -> Unit) 
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Phrase ${entry.index + 1}")
                 if (entry.text.isNotBlank()) Text("Transcript:\n${entry.text}")
-                val pct = (entry.accuracy * 100).toInt().coerceIn(0, 100)
+                val pct = entry.accuracy.toInt().coerceIn(0, 100)
                 Text("Accuracy: ${pct}%")
                 entry.feedback?.takeIf { it.isNotBlank() }?.let { fb -> Text("Feedback:\n$fb") }
             }

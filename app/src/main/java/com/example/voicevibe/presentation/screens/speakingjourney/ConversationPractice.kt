@@ -109,6 +109,23 @@ fun ConversationPracticeScreen(
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val coachVM: CoachViewModel = hiltViewModel()
     val ui by viewModel.uiState
+    // Debug: Log what topicId we received and what topics are available
+    LaunchedEffect(topicId, ui.topics) {
+        android.util.Log.d("ConversationPractice", "RECEIVED topicId: $topicId")
+        android.util.Log.d("ConversationPractice", "Available topics: ${ui.topics.map { "${it.title} (${it.id})" }}")
+        android.util.Log.d("ConversationPractice", "Current selectedTopicIdx: ${ui.selectedTopicIdx}")
+        ui.topics.getOrNull(ui.selectedTopicIdx)?.let { selectedTopic ->
+            android.util.Log.d("ConversationPractice", "Currently selected topic: ${selectedTopic.title} (${selectedTopic.id})")
+        }
+        
+        if (ui.topics.any { it.id == topicId }) {
+            android.util.Log.d("ConversationPractice", "Calling selectTopicById($topicId)")
+            viewModel.selectTopicById(topicId)
+        } else {
+            android.util.Log.d("ConversationPractice", "ERROR: topicId $topicId not found in available topics!")
+        }
+    }
+    
     // Fallback to selected/first topic if the provided topicId is unknown (e.g., AI Coach deeplink)
     val topic = ui.topics.firstOrNull { it.id == topicId }
         ?: ui.topics.getOrNull(ui.selectedTopicIdx)

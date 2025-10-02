@@ -60,6 +60,14 @@ fun TopicMasterScreen(
 ) {
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
+    
+    // Ensure the correct topic is selected in the ViewModel state
+    LaunchedEffect(topicId, ui.topics) {
+        if (ui.topics.any { it.id == topicId }) {
+            viewModel.selectTopicById(topicId)
+        }
+    }
+    
     val topic = ui.topics.firstOrNull { it.id == topicId }
     val practiceScores = topic?.practiceScores
 

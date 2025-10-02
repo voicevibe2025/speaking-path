@@ -1090,7 +1090,7 @@ private fun StartPracticeOverlay(
                 ) {
                     Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text("How it works", color = Color(0xFF64B5F6), fontWeight = FontWeight.SemiBold)
-                        Text("1) Speak for ~60–90 seconds.", color = Color(0xFFE0E0E0), fontSize = 14.sp)
+                        Text("1) Speak for ~30 seconds.", color = Color(0xFFE0E0E0), fontSize = 14.sp)
                         Text("2) Keep it smooth: avoid long pauses and stutters.", color = Color(0xFFE0E0E0), fontSize = 14.sp)
                         Text("3) Submit to see your Fluency Score.", color = Color(0xFFE0E0E0), fontSize = 14.sp)
                     }
@@ -1175,7 +1175,7 @@ private fun CongratsOverlay(
                 }
 
                 Text(
-                    text = "You've completed all fluency prompts.",
+                    text = "You've completed the fluency practice!",
                     color = Color(0xFFB0BEC5)
                 )
 
@@ -1185,48 +1185,25 @@ private fun CongratsOverlay(
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF37474F).copy(alpha = 0.4f))
                 ) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("Scores", color = Color(0xFF64B5F6), fontWeight = FontWeight.SemiBold)
-                        ui.allPrompts.forEachIndexed { idx, p ->
-                            val score = ui.completionPromptScores.getOrNull(idx)
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.Top
-                            ) {
-                                Text(
-                                    text = "${idx + 1}. ${p}",
-                                    color = Color(0xFFE0E0E0),
-                                    modifier = Modifier.weight(1f),
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                    fontSize = 13.sp
-                                )
-                                Text(
-                                    text = if (score != null) "${score}" else "-",
-                                    color = if ((score ?: 0) >= 80) Color(0xFF4CAF50) else Color(0xFFFF9800),
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.width(48.dp),
-                                    textAlign = TextAlign.End
-                                )
-                            }
-                        }
-                        Spacer(Modifier.height(6.dp))
+                        Text("Your Score", color = Color(0xFF64B5F6), fontWeight = FontWeight.SemiBold)
+                        val score = ui.totalFluencyScore
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.Top
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                "Total Fluency Score",
+                                text = "Fluency Practice",
                                 color = Color(0xFFE0E0E0),
-                                fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                fontSize = 14.sp
                             )
                             Text(
-                                "${ui.totalFluencyScore}",
-                                color = Color.White,
+                                text = "$score",
+                                color = if (score >= 80) Color(0xFF4CAF50) else Color(0xFFFF9800),
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.width(56.dp),
+                                fontSize = 18.sp,
+                                modifier = Modifier.width(48.dp),
                                 textAlign = TextAlign.End
                             )
                         }

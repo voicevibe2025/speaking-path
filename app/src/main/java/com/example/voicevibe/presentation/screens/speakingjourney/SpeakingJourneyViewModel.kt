@@ -367,6 +367,25 @@ class SpeakingJourneyViewModel @Inject constructor(
         }
     }
 
+    fun selectTopicById(topicId: String) {
+        val s = _uiState.value
+        val index = s.topics.indexOfFirst { it.id == topicId }
+        android.util.Log.d("SpeakingJourneyViewModel", "selectTopicById($topicId): found index $index")
+        if (index >= 0) {
+            val topic = s.topics[index]
+            android.util.Log.d("SpeakingJourneyViewModel", "Topic found: ${topic.title} (unlocked: ${topic.unlocked})")
+            if (topic.unlocked) {
+                android.util.Log.d("SpeakingJourneyViewModel", "Setting selectedTopicIdx from ${s.selectedTopicIdx} to $index")
+                _uiState.value = s.copy(selectedTopicIdx = index)
+                viewModelScope.launch { repo.updateLastVisitedTopic(topic.id) }
+            } else {
+                android.util.Log.d("SpeakingJourneyViewModel", "ERROR: Topic is locked!")
+            }
+        } else {
+            android.util.Log.d("SpeakingJourneyViewModel", "ERROR: Topic ID $topicId not found!")
+        }
+    }
+
     fun dismissWelcome() { _uiState.value = _uiState.value.copy(showWelcome = false) }
 
     fun setStage(stage: Stage) { _uiState.value = _uiState.value.copy(stage = stage) }

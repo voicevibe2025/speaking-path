@@ -63,23 +63,19 @@ class FluencyPracticeViewModel @Inject constructor(
         if (currentTopicId == topic.id) return // already initialized
         currentTopicId = topic.id
 
-        // Prefer backend-provided prompts for this topic; set active index from fluencyProgress
+        // For single prompt, just get the one prompt from backend or generate one
         currentPrompts = topic.fluencyPracticePrompts
-        currentPromptIndex = topic.fluencyProgress?.nextPromptIndex ?: 0
-        if (currentPromptIndex !in currentPrompts.indices) currentPromptIndex = 0
+        currentPromptIndex = 0 // Always 0 for single prompt
 
-        val promptText = currentPrompts.getOrNull(currentPromptIndex)?.trim()
-            ?.takeIf { it.isNotBlank() } ?: buildPromptFromTopic(topic)
-        val hints = if (currentPrompts.isNotEmpty()) {
-            currentPrompts.mapIndexed { idx, p ->
-                when {
-                    idx < currentPromptIndex -> "✓ ${p}"
-                    idx == currentPromptIndex -> "• ${p} (current)"
-                    else -> "🔒 ${p}"
-                }
-            }.filterIndexed { idx, _ -> idx != currentPromptIndex }.take(3)
-        } else topic.material.take(3).map { "• $it" }
-        _uiState.update { it.copy(prompt = promptText, hints = hints, error = null, allPrompts = currentPrompts, currentPromptIndex = currentPromptIndex, showStartOverlay = true) }
+        val promptText = if (currentPrompts.isNotEmpty()) {
+            currentPrompts.firstOrNull()?.trim()?.takeIf { it.isNotBlank() } ?: buildPromptFromTopic(topic)
+        } else {
+            buildPromptFromTopic(topic)
+        }
+        
+        // Simple hints from topic material since there's only one prompt
+        val hints = topic.material.take(3).map { "• $it" }
+        _uiState.update { it.copy(prompt = promptText, hints = hints, error = null, allPrompts = listOf(promptText), currentPromptIndex = 0, showStartOverlay = true) }
 
         // Load an associated PracticePrompt for submission (best-effort)
         viewModelScope.launch {
@@ -146,7 +142,7 @@ class FluencyPracticeViewModel @Inject constructor(
     }
 
     private fun buildPromptFromTopic(topic: Topic): String {
-        val base = "Speak for 60–90 seconds about: \"${topic.title}\"."
+        val base = "Speak for about 30 seconds about: \"${topic.title}\"."
         val guidance = if (topic.description.isNotBlank()) {
             " Consider: ${topic.description.take(160)}"
         } else ""
@@ -256,32 +252,16 @@ class FluencyPracticeViewModel @Inject constructor(
                                     sessionId = sessionId
                                 )
                                 res2.onSuccess { body ->
-                                    // Update local active prompt based on backend response
-                                    currentPromptIndex = body.nextPromptIndex ?: currentPromptIndex + 1
-                                    if (currentPromptIndex >= currentPrompts.size) currentPromptIndex = currentPrompts.lastIndex.coerceAtLeast(0)
-                                    val newPrompt = currentPrompts.getOrNull(currentPromptIndex) ?: _uiState.value.prompt
-                                    val newHints = currentPrompts.mapIndexed { idx, p ->
-                                        when {
-                                            idx < currentPromptIndex -> "✓ ${p}"
-                                            idx == currentPromptIndex -> "• ${p} (current)"
-                                            else -> "🔒 ${p}"
-                                        }
-                                    }.filterIndexed { idx, _ -> idx != currentPromptIndex }.take(3)
+                                    // For single prompt, completion means the fluency practice is done
                                     val isCompleted = body.fluencyCompleted
-                                    val summaryScores = body.promptScores
                                     val totalScore = body.fluencyTotalScore
                                     val xpDelta = body.xpAwarded
-                                    // Align with backend Option A: 10 per prompt >=80 + 50 completion bonus
-                                    val totalXpWhenCompleted = if (isCompleted) (summaryScores.count { it >= 80 } * 10) + 50 else 0
+                                    // Single prompt XP calculation
+                                    val totalXpWhenCompleted = if (isCompleted) xpDelta else 0
                                     _uiState.update { st ->
                                         st.copy(
-                                            prompt = newPrompt,
-                                            hints = newHints,
-                                            currentPromptIndex = currentPromptIndex,
-                                            allPrompts = currentPrompts,
                                             showCongrats = isCompleted,
-                                            completionPromptScores = if (isCompleted) summaryScores else st.completionPromptScores,
-                                            totalFluencyScore = if (isCompleted) totalScore else st.totalFluencyScore,
+                                            totalFluencyScore = totalScore,
                                             completionXpGained = if (isCompleted) totalXpWhenCompleted else st.completionXpGained,
                                             lastAwardedXp = xpDelta
                                         )

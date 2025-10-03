@@ -500,16 +500,24 @@ private fun ModernRecordingArea(
                         Icon(
                             Icons.Default.Timer,
                             contentDescription = null,
-                            tint = if (recordingState == RecordingState.RECORDING) 
-                                Color(0xFFFF6B6B) else Color(0xFF64B5F6),
+                            tint = when {
+                                recordingState == RecordingState.RECORDING && duration <= 5 -> Color(0xFFFF3B3B)
+                                recordingState == RecordingState.RECORDING && duration <= 10 -> Color(0xFFFF9800)
+                                recordingState == RecordingState.RECORDING -> Color(0xFFFF6B6B)
+                                else -> Color(0xFF64B5F6)
+                            },
                             modifier = Modifier.size(24.dp)
                         )
                         Text(
                             text = String.format("%02d:%02d", duration / 60, duration % 60),
                             fontSize = 36.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (recordingState == RecordingState.RECORDING) 
-                                Color(0xFFFF6B6B) else Color.White,
+                            color = when {
+                                recordingState == RecordingState.RECORDING && duration <= 5 -> Color(0xFFFF3B3B)
+                                recordingState == RecordingState.RECORDING && duration <= 10 -> Color(0xFFFF9800)
+                                recordingState == RecordingState.RECORDING -> Color(0xFFFF6B6B)
+                                else -> Color.White
+                            },
                             letterSpacing = 2.sp
                         )
                     }
@@ -517,9 +525,13 @@ private fun ModernRecordingArea(
                     if (recordingState == RecordingState.RECORDING) {
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Recording in progress...",
+                            if (duration <= 5) "Time almost up!" else "Recording in progress...",
                             fontSize = 14.sp,
-                            color = Color(0xFFFF6B6B),
+                            color = when {
+                                duration <= 5 -> Color(0xFFFF3B3B)
+                                duration <= 10 -> Color(0xFFFF9800)
+                                else -> Color(0xFFFF6B6B)
+                            },
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -574,9 +586,10 @@ private fun ModernRecordingArea(
                     }
                     Spacer(Modifier.height(16.dp))
                     Text(
-                        "Tap to stop recording",
+                        "Tap to stop early, or wait for auto-submit",
                         fontSize = 14.sp,
-                        color = Color(0xFFFF6B6B)
+                        color = Color(0xFFFF6B6B),
+                        textAlign = TextAlign.Center
                     )
                 }
                 
@@ -1046,9 +1059,9 @@ private fun StartPracticeOverlay(
                 ) {
                     Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text("How it works", color = Color(0xFF64B5F6), fontWeight = FontWeight.SemiBold)
-                        Text("1) Speak for ~30 seconds.", color = Color(0xFFE0E0E0), fontSize = 14.sp)
+                        Text("1) You have 30 seconds to speak (countdown timer).", color = Color(0xFFE0E0E0), fontSize = 14.sp)
                         Text("2) Keep it smooth: avoid long pauses and stutters.", color = Color(0xFFE0E0E0), fontSize = 14.sp)
-                        Text("3) Submit to see your Fluency Score.", color = Color(0xFFE0E0E0), fontSize = 14.sp)
+                        Text("3) Recording auto-submits when time is up!", color = Color(0xFFE0E0E0), fontSize = 14.sp)
                     }
                 }
 

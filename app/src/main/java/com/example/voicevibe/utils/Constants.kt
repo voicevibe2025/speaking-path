@@ -6,13 +6,13 @@ package com.example.voicevibe.utils
 object Constants {
     // API Configuration
     //const val BASE_URL = "http://10.0.2.2:8000/api/v1/" // For Android emulator
-    const val BASE_URL = "http://10.126.13.136:8000/api/v1/" // For physical device (replace with your IP)
-    //const val BASE_URL = "https://speaking-path-server-production.up.railway.app/api/v1/" // Production
+    //const val BASE_URL = "http://10.126.13.136:8000/api/v1/" // For physical device (replace with your IP)
+    const val BASE_URL = "https://speaking-path-server-production.up.railway.app/api/v1/" // Production
 
     // WebSocket Configuration
     //const val WS_BASE_URL = "ws://10.0.2.2:8000/ws/" // For Android emulator
-    const val WS_BASE_URL = "ws://10.126.13.136:8000/ws/" // For physical device
-    //const val WS_BASE_URL = "wss://speaking-path-server-production.up.railway.app/ws/" // Production
+    //const val WS_BASE_URL = "ws://10.126.13.136:8000/ws/" // For physical device
+    const val WS_BASE_URL = "wss://speaking-path-server-production.up.railway.app/ws/" // Production
 
     // DataStore Keys
     const val PREFERENCES_NAME = "voicevibe_preferences"
@@ -50,7 +50,7 @@ object Constants {
     const val ANIMATION_DURATION_LONG = 1000
 
     // Practice timers
-    const val PRACTICE_SECONDS_PER_TURN = 8
+    const val PRACTICE_SECONDS_PER_TURN = 10
 
     // Learning Levels
     val PROFICIENCY_LEVELS = listOf("A1", "A2", "B1", "B2", "C1", "C2")

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -48,6 +49,7 @@ fun LivePracticeScreen(
     viewModel: LivePracticeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     var inputText by rememberSaveable { mutableStateOf("") }
     val canSend = uiState.isConnected && inputText.isNotBlank()
     val listState = rememberLazyListState()
@@ -70,8 +72,10 @@ fun LivePracticeScreen(
                 isConnecting = uiState.isConnecting,
                 isRecording = uiState.isRecording,
                 isVoiceMode = isVoiceMode,
+                isRefreshing = isRefreshing,
                 onNavigateBack = onNavigateBack,
-                onToggleMode = { isVoiceMode = !isVoiceMode }
+                onToggleMode = { isVoiceMode = !isVoiceMode },
+                onRefresh = viewModel::refresh
             )
         }
     ) { padding ->
@@ -108,15 +112,21 @@ fun LivePracticeScreen(
                             .padding(padding)
                             .imePadding()
                     ) {
-                        LazyColumn(
+                        PullToRefreshBox(
+                            isRefreshing = isRefreshing,
+                            onRefresh = viewModel::refresh,
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth()
-                                .padding(16.dp),
-                            state = listState,
-                            reverseLayout = true,
-                            verticalArrangement = Arrangement.Bottom  // Add this line to align content to bottom
                         ) {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                state = listState,
+                                reverseLayout = true,
+                                verticalArrangement = Arrangement.Bottom
+                            ) {
                             // Add spacing between items
                             if (uiState.showTypingIndicator) {
                                 item(key = "typing_indicator") { 
@@ -136,6 +146,7 @@ fun LivePracticeScreen(
                                 if (index < uiState.messages.size - 1) {
                                     Spacer(modifier = Modifier.height(8.dp))  // Add spacing between messages
                                 }
+                            }
                             }
                         }
 
@@ -521,8 +532,10 @@ private fun ModernTopBar(
     isConnecting: Boolean,
     isRecording: Boolean,
     isVoiceMode: Boolean,
+    isRefreshing: Boolean,
     onNavigateBack: () -> Unit,
-    onToggleMode: () -> Unit
+    onToggleMode: () -> Unit,
+    onRefresh: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -595,6 +608,25 @@ private fun ModernTopBar(
                 }
             }
 
+            // Refresh button
+            IconButton(
+                onClick = onRefresh,
+                enabled = !isRefreshing && !isConnecting
+            ) {
+                if (isRefreshing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Filled.Refresh,
+                        contentDescription = "Refresh connection",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
         }
     }
 }

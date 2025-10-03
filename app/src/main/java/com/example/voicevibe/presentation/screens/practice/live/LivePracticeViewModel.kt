@@ -45,6 +45,9 @@ class LivePracticeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LiveChatState(isConnecting = true))
     val uiState: StateFlow<LiveChatState> = _uiState.asStateFlow()
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     // Audio utilities
     private val recorder = AudioRecorder(viewModelScope)
     private val player = AudioPlayer()
@@ -198,6 +201,20 @@ class LivePracticeViewModel @Inject constructor(
         viewModelScope.launch {
             ensureCoachAnalysis()
             connectToLiveSession()
+        }
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            _isRefreshing.update { true }
+            try {
+                ensureCoachAnalysis(force = true)
+                connectToLiveSession()
+                // Wait a bit to ensure connection attempt completes
+                delay(1000)
+            } finally {
+                _isRefreshing.update { false }
+            }
         }
     }
 

@@ -47,6 +47,10 @@ class FluencyPracticeViewModel @Inject constructor(
     private var currentPrompts: List<String> = emptyList()
 
     private var currentUserId: String? = null
+    
+    // Countdown timer configuration
+    private val MAX_RECORDING_DURATION = 30 // seconds
+    private var autoSubmitContext: Context? = null
 
     init {
         // Cache current user ID for user-scoped persistence of attempts
@@ -172,12 +176,15 @@ class FluencyPracticeViewModel @Inject constructor(
             mr.setAudioSamplingRate(44_100)
             mr.setOutputFile(file.absolutePath)
             mr.prepare(); mr.start()
-            _uiState.update { it.copy(recordingState = RecordingState.RECORDING, audioFilePath = file.absolutePath, recordingDuration = 0, error = null) }
+            // Start countdown from MAX_RECORDING_DURATION
+            autoSubmitContext = context
+            _uiState.update { it.copy(recordingState = RecordingState.RECORDING, audioFilePath = file.absolutePath, recordingDuration = MAX_RECORDING_DURATION, error = null) }
             tickTimer()
         } catch (t: Throwable) {
             Log.e("FluencyVM", "Failed to start recording", t)
             _uiState.update { it.copy(error = "Unable to start recording: ${t.message ?: "unknown"}", recordingState = RecordingState.IDLE) }
             releaseRecorder()
+            autoSubmitContext = null
         }
     }
 
@@ -186,6 +193,7 @@ class FluencyPracticeViewModel @Inject constructor(
         try { mediaRecorder?.reset() } catch (_: Throwable) {}
         try { mediaRecorder?.release() } catch (_: Throwable) {}
         mediaRecorder = null
+        autoSubmitContext = null
         _uiState.update { st -> st.copy(recordingState = RecordingState.STOPPED) }
     }
 
@@ -244,7 +252,8 @@ class FluencyPracticeViewModel @Inject constructor(
                             try {
                                 // Use new Gemini-based endpoint
                                 val audioFile = File(filePath)
-                                val recordingDuration = _uiState.value.recordingDuration.toFloat()
+                                // Calculate actual elapsed time (MAX_RECORDING_DURATION - remaining time)
+                                val recordingDuration = (MAX_RECORDING_DURATION - _uiState.value.recordingDuration).toFloat()
                                 val res2 = journeyRepo.submitFluencyRecording(
                                     topicId = topicId,
                                     audioFile = audioFile,
@@ -274,7 +283,7 @@ class FluencyPracticeViewModel @Inject constructor(
                                     
                                     _uiState.update { st ->
                                         st.copy(
-                                            showCongrats = isCompleted,
+                                            showCongrats = true,  // Always show congrats regardless of score
                                             totalFluencyScore = geminiScore,
                                             completionXpGained = if (isCompleted) xpGained else st.completionXpGained,
                                             lastAwardedXp = xpGained,
@@ -378,6 +387,7 @@ class FluencyPracticeViewModel @Inject constructor(
     }
 
     fun resetRecording() {
+        autoSubmitContext = null
         _uiState.update { it.copy(recordingState = RecordingState.IDLE, audioFilePath = null, recordingDuration = 0) }
     }
 
@@ -389,7 +399,19 @@ class FluencyPracticeViewModel @Inject constructor(
         viewModelScope.launch {
             while (_uiState.value.recordingState == RecordingState.RECORDING) {
                 kotlinx.coroutines.delay(1000)
-                _uiState.update { it.copy(recordingDuration = it.recordingDuration + 1) }
+                val newDuration = _uiState.value.recordingDuration - 1
+                
+                if (newDuration <= 0) {
+                    // Time's up! Auto-stop and auto-submit
+                    stopRecording()
+                    val ctx = autoSubmitContext
+                    if (ctx != null) {
+                        submitRecording(ctx)
+                    }
+                    break
+                } else {
+                    _uiState.update { it.copy(recordingDuration = newDuration) }
+                }
             }
         }
     }
@@ -404,6 +426,7 @@ class FluencyPracticeViewModel @Inject constructor(
         releaseRecorder()
         try { mediaPlayer?.release() } catch (_: Throwable) {}
         mediaPlayer = null
+        autoSubmitContext = null
     }
 
     private fun attemptsFile(context: Context, topicId: String, userId: String): File {

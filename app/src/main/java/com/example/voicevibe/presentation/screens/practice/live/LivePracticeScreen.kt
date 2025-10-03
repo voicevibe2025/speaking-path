@@ -121,7 +121,7 @@ fun LivePracticeScreen(
                         ) {
                             LazyColumn(
                                 modifier = Modifier
-                                    .fillMaxWidth()
+                                    .fillMaxSize()
                                     .padding(16.dp),
                                 state = listState,
                                 reverseLayout = true,

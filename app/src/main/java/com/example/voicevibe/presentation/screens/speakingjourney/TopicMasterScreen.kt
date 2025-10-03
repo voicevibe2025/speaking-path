@@ -278,7 +278,14 @@ fun PracticeCardsSection(
         val sum = latestByPhrase.values.sumOf { it.accuracy.toInt().coerceIn(0, 100) }
         (sum.toFloat() / latestByPhrase.size.toFloat()).toInt()
     } else 0
-    val pronScoreForUi = maxOf(practiceScores?.pronunciation ?: 0, livePronunciationScore)
+    // Use local calculation when available (more accurate), fall back to server if no local data
+    val pronScoreForUi = if (livePronunciationScore > 0) livePronunciationScore else (practiceScores?.pronunciation ?: 0)
+    
+    // Debug logging to diagnose score discrepancy
+    Log.d("TopicMasterScore", "Topic ${topic?.title}: server=${practiceScores?.pronunciation} local=$livePronunciationScore final=$pronScoreForUi phrases=${latestByPhrase.size}")
+    latestByPhrase.forEach { (idx, entry) ->
+        Log.d("TopicMasterScore", "  Phrase $idx: accuracy=${entry.accuracy}")
+    }
 
     val practiceItems = listOf(
         // Conversation Practice at the top
@@ -364,7 +371,11 @@ fun ProgressSummarySection(topicId: String) {
         val sum = latestByPhrase.values.sumOf { it.accuracy.toInt().coerceIn(0, 100) }
         (sum.toFloat() / latestByPhrase.size.toFloat()).toInt()
     } else 0
-    val pronScoreForUi = maxOf(practiceScores?.pronunciation ?: 0, livePronunciationScore)
+    // Use local calculation when available (more accurate), fall back to server if no local data
+    val pronScoreForUi = if (livePronunciationScore > 0) livePronunciationScore else (practiceScores?.pronunciation ?: 0)
+    
+    // Debug logging
+    Log.d("ProgressSummary", "Topic ${topic?.title}: server=${practiceScores?.pronunciation} local=$livePronunciationScore final=$pronScoreForUi phrases=${latestByPhrase.size}")
     
     Card(
         modifier = Modifier

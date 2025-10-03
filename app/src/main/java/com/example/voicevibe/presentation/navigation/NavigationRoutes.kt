@@ -34,6 +34,12 @@ sealed class Screen(val route: String) {
     object UserProfile : Screen("profile/{userId}") {
         fun createRoute(userId: String) = "profile/$userId"
     }
+    // Messaging
+    object Messages : Screen("messages")
+    object Conversation : Screen("conversation?conversationId={conversationId}&userId={userId}") {
+        fun createRouteWithConversation(conversationId: Int) = "conversation?conversationId=$conversationId"
+        fun createRouteWithUser(userId: String) = "conversation?userId=$userId"
+    }
     // Speaking-only flow (beta)
     object SpeakingJourney : Screen("speaking_journey")
     object TopicMaster : Screen("topic_master/{topicId}") {

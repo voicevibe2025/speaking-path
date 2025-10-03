@@ -43,6 +43,7 @@ fun UserProfileScreen(
     onNavigateToAchievements: (String) -> Unit,
     onNavigateToFollowers: (String) -> Unit,
     onNavigateToFollowing: (String) -> Unit,
+    onNavigateToMessage: (String) -> Unit,
     viewModel: UserProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -153,6 +154,7 @@ fun UserProfileScreen(
                         }
                     },
                     onChallengeClick = viewModel::challengeUser,
+                    onMessageClick = { onNavigateToMessage(userProfile.id) },
                     onViewAchievements = viewModel::viewAchievements,
                     onViewFollowers = viewModel::viewFollowers,
                     onViewFollowing = viewModel::viewFollowing,
@@ -215,6 +217,7 @@ private fun ProfileContent(
     onTabSelected: (ProfileTab) -> Unit,
     onFollowClick: () -> Unit,
     onChallengeClick: () -> Unit,
+    onMessageClick: () -> Unit,
     onViewAchievements: () -> Unit,
     onViewFollowers: () -> Unit,
     onViewFollowing: () -> Unit,
@@ -234,6 +237,7 @@ private fun ProfileContent(
                 showEmailOnProfile = showEmailOnProfile,
                 onFollowClick = onFollowClick,
                 onChallengeClick = onChallengeClick,
+                onMessageClick = onMessageClick,
                 onViewFollowers = onViewFollowers,
                 onViewFollowing = onViewFollowing
             )
@@ -296,6 +300,7 @@ private fun ProfileHeader(
     showEmailOnProfile: Boolean,
     onFollowClick: () -> Unit,
     onChallengeClick: () -> Unit,
+    onMessageClick: () -> Unit,
     onViewFollowers: () -> Unit,
     onViewFollowing: () -> Unit
 ) {
@@ -433,7 +438,7 @@ private fun ProfileHeader(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Action buttons (Follow/Unfollow, Challenge) for other users
+            // Action buttons (Follow/Unfollow, Message, Challenge) for other users
             if (!isOwnProfile) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -452,6 +457,12 @@ private fun ProfileHeader(
                             Spacer(Modifier.width(6.dp))
                             Text("Follow")
                         }
+                    }
+
+                    Button(onClick = onMessageClick) {
+                        Icon(Icons.Default.Message, contentDescription = "Message")
+                        Spacer(Modifier.width(6.dp))
+                        Text("Message")
                     }
 
                     OutlinedButton(onClick = onChallengeClick) {

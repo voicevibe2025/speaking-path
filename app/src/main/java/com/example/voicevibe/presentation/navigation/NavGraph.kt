@@ -204,6 +204,7 @@ fun NavGraph(
                 onNavigateToSocialFeed = { navController.navigate(Screen.SocialFeed.createRoute()) },
                 onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                 onNavigateToUserSearch = { navController.navigate(Screen.UserSearch.route) },
+                onNavigateToMessages = { navController.navigate(Screen.Messages.route) },
                 onNavigateToProfile = {
                     navController.navigate(Screen.Profile.route)
                 },
@@ -539,7 +540,10 @@ fun NavGraph(
                     navController.navigate(Screen.Achievements.route)
                 },
                 onNavigateToFollowers = { _: String -> },
-                onNavigateToFollowing = { _: String -> }
+                onNavigateToFollowing = { _: String -> },
+                onNavigateToMessage = { userId ->
+                    navController.navigate(Screen.Conversation.createRouteWithUser(userId))
+                }
             )
         }
 
@@ -552,6 +556,35 @@ fun NavGraph(
                 }
             )
         }
+
+        // Messaging
+        composable(Screen.Messages.route) {
+            com.example.voicevibe.presentation.screens.messaging.ConversationsListScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToConversation = { conversationId, otherUserId, otherUserName ->
+                    navController.navigate(Screen.Conversation.createRouteWithConversation(conversationId))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.Conversation.route,
+            arguments = listOf(
+                navArgument("conversationId") { 
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument("userId") { 
+                    type = NavType.StringType
+                    nullable = true
+                }
+            )
+        ) {
+            com.example.voicevibe.presentation.screens.messaging.ConversationScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
         composable(Screen.Profile.route) {
             ProfileScreen(
                 onNavigateToSettings = {

@@ -32,7 +32,8 @@ class HomeViewModel @Inject constructor(
     private val learningPathRepository: LearningPathRepository,
     private val gamificationRepository: GamificationRepository,
     private val profileRepository: ProfileRepository,
-    private val socialRepository: SocialRepository
+    private val socialRepository: SocialRepository,
+    private val messagingRepository: com.example.voicevibe.data.repository.MessagingRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -46,6 +47,7 @@ class HomeViewModel @Inject constructor(
         loadDashboardData()
         loadPosts()
         loadUnreadNotificationsCount()
+        loadUnreadMessagesCount()
         // Pre-warm Vivi greeting in background so Free Practice opens instantly
         try {
             prewarmManager.prewarm()
@@ -202,6 +204,16 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             when (val res = socialRepository.getUnreadNotificationCount()) {
                 is Resource.Success -> _uiState.update { it.copy(unreadNotifications = res.data ?: 0) }
+                else -> {}
+            }
+        }
+    }
+
+    // Messages
+    fun loadUnreadMessagesCount() {
+        viewModelScope.launch {
+            when (val res = messagingRepository.getUnreadMessagesCount()) {
+                is Resource.Success -> _uiState.update { it.copy(unreadMessages = res.data ?: 0) }
                 else -> {}
             }
         }
@@ -379,6 +391,8 @@ class HomeViewModel @Inject constructor(
         loadUserProfileData()
         loadDashboardData()
         loadPosts()
+        loadUnreadNotificationsCount()
+        loadUnreadMessagesCount()
     }
 }
 
@@ -400,6 +414,7 @@ data class HomeUiState(
     val error: String? = null,
     val posts: List<Post> = emptyList(),
     val unreadNotifications: Int = 0,
+    val unreadMessages: Int = 0,
     val notifications: List<SocialNotification> = emptyList(),
 )
 

@@ -81,6 +81,7 @@ fun HomeScreen(
     onNavigateToSocialFeed: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToUserSearch: () -> Unit = {},
+    onNavigateToMessages: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -136,9 +137,13 @@ fun HomeScreen(
                     title = "VozVibe",
                     avatarUrl = uiState.avatarUrl,
                     userInitials = uiState.userInitials ?: "VV",
-                    unreadCount = uiState.unreadNotifications,
+                    unreadNotifications = uiState.unreadNotifications,
+                    unreadMessages = uiState.unreadMessages,
                     onNotificationsClick = {
                         onNavigateToNotifications()
+                    },
+                    onMessagesClick = {
+                        onNavigateToMessages()
                     },
                     onNavigationIconClick = onNavigateToProfile,
                     onSearchClick = onNavigateToUserSearch
@@ -686,8 +691,10 @@ private fun EducationalTopBar(
     title: String,
     avatarUrl: String?,
     userInitials: String,
-    unreadCount: Int,
+    unreadNotifications: Int,
+    unreadMessages: Int,
     onNotificationsClick: () -> Unit,
+    onMessagesClick: () -> Unit,
     onNavigationIconClick: () -> Unit,
     onSearchClick: () -> Unit
 ) {
@@ -726,13 +733,27 @@ private fun EducationalTopBar(
                 // Notifications bell with badge
                 IconButton(onClick = onNotificationsClick) {
                     BadgedBox(badge = {
-                        if (unreadCount > 0) {
-                            Badge { Text(text = unreadCount.coerceAtMost(99).toString()) }
+                        if (unreadNotifications > 0) {
+                            Badge { Text(text = unreadNotifications.coerceAtMost(99).toString()) }
                         }
                     }) {
                         Icon(
                             imageVector = Icons.Default.Notifications,
                             contentDescription = "Notifications",
+                            tint = BrandIndigo
+                        )
+                    }
+                }
+                // Messages icon with badge
+                IconButton(onClick = onMessagesClick) {
+                    BadgedBox(badge = {
+                        if (unreadMessages > 0) {
+                            Badge { Text(text = unreadMessages.coerceAtMost(99).toString()) }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Message,
+                            contentDescription = "Messages",
                             tint = BrandIndigo
                         )
                     }

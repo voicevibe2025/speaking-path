@@ -26,7 +26,8 @@ data class LiveTokenRequestDto(
     val model: String? = null,
     val response_modalities: List<String>? = null,
     val system_instruction: String? = null,
-    val lock_additional_fields: List<String>? = null
+    val lock_additional_fields: List<String>? = null,
+    val function_declarations: String? = null
 )
 
 data class LiveTokenResponseDto(

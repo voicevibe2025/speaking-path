@@ -22,6 +22,7 @@ import com.example.voicevibe.presentation.screens.main.social.SocialFeedScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationLessonScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationPracticeScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.LearnTopicWithViviScreen
 import com.example.voicevibe.presentation.screens.practice.ai.PracticeWithAIScreen
 import com.example.voicevibe.presentation.screens.practice.live.LivePracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeScreen
@@ -238,6 +239,9 @@ fun VoiceVibeNavHost(
                 },
                 onNavigateToVocabularyLesson = { topicId ->
                     navController.navigate(Screen.VocabularyLesson.createRoute(topicId))
+                },
+                onNavigateToLearnWithVivi = { topicId ->
+                    navController.navigate(Screen.LearnTopicWithVivi.createRoute(topicId))
                 }
             )
         }
@@ -249,7 +253,8 @@ fun VoiceVibeNavHost(
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             ConversationLessonScreen(
                 topicId = topicId,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToLearnWithVivi = { navController.navigate(Screen.LearnTopicWithVivi.createRoute(topicId)) }
             )
         }
 
@@ -271,6 +276,16 @@ fun VoiceVibeNavHost(
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             VocabularyLessonScreen(
                 topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.LearnTopicWithVivi.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            LearnTopicWithViviScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

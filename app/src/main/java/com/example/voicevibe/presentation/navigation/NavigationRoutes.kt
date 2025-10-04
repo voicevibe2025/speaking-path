@@ -79,6 +79,9 @@ sealed class Screen(val route: String) {
     object VocabularyLesson : Screen("vocabulary_lesson/{topicId}") {
         fun createRoute(topicId: String) = "vocabulary_lesson/$topicId"
     }
+    object LearnTopicWithVivi : Screen("learn_topic_with_vivi/{topicId}") {
+        fun createRoute(topicId: String) = "learn_topic_with_vivi/$topicId"
+    }
     // Practice with AI standalone screen
     object PracticeWithAI : Screen("practice_with_ai")
     object LivePractice : Screen("live_practice")

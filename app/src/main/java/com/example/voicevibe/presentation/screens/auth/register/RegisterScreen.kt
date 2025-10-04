@@ -235,6 +235,137 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Gender Dropdown
+                var genderExpanded by remember { mutableStateOf(false) }
+                val genderOptions = listOf("Male", "Female")
+                
+                ExposedDropdownMenuBox(
+                    expanded = genderExpanded,
+                    onExpandedChange = { genderExpanded = it },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = uiState.gender,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Gender") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded)
+                        },
+                        isError = uiState.genderError != null,
+                        supportingText = {
+                            uiState.genderError?.let {
+                                Text(
+                                    text = it,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BrandIndigo,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                            focusedLabelColor = BrandIndigo,
+                            unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                            cursorColor = BrandCyan,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
+                        )
+                    )
+                    
+                    ExposedDropdownMenu(
+                        expanded = genderExpanded,
+                        onDismissRequest = { genderExpanded = false }
+                    ) {
+                        genderOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    viewModel.onGenderChanged(option)
+                                    genderExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Province Dropdown
+                var provinceExpanded by remember { mutableStateOf(false) }
+                val provinceOptions = listOf(
+                    "Aceh", "Bali", "Bangka Belitung", "Banten", "Bengkulu",
+                    "DKI Jakarta", "Gorontalo", "Jambi", "Jawa Barat", "Jawa Tengah",
+                    "Jawa Timur", "Kalimantan Barat", "Kalimantan Selatan", "Kalimantan Tengah",
+                    "Kalimantan Timur", "Kalimantan Utara", "Kepulauan Riau", "Lampung",
+                    "Maluku", "Maluku Utara", "Nusa Tenggara Barat", "Nusa Tenggara Timur",
+                    "Papua", "Papua Barat", "Riau", "Sulawesi Barat", "Sulawesi Selatan",
+                    "Sulawesi Tengah", "Sulawesi Tenggara", "Sulawesi Utara", "Sumatera Barat",
+                    "Sumatera Selatan", "Sumatera Utara", "DI Yogyakarta"
+                )
+                
+                ExposedDropdownMenuBox(
+                    expanded = provinceExpanded,
+                    onExpandedChange = { provinceExpanded = it },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = uiState.province,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Province") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = provinceExpanded)
+                        },
+                        isError = uiState.provinceError != null,
+                        supportingText = {
+                            uiState.provinceError?.let {
+                                Text(
+                                    text = it,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BrandIndigo,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                            focusedLabelColor = BrandIndigo,
+                            unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                            cursorColor = BrandCyan,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
+                        )
+                    )
+                    
+                    ExposedDropdownMenu(
+                        expanded = provinceExpanded,
+                        onDismissRequest = { provinceExpanded = false }
+                    ) {
+                        provinceOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    viewModel.onProvinceChanged(option)
+                                    provinceExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Email Field
                 OutlinedTextField(
                     value = uiState.email,

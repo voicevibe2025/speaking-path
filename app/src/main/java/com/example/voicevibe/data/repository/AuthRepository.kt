@@ -38,6 +38,8 @@ class AuthRepository @Inject constructor(
         passwordConfirm: String,
         firstName: String,
         lastName: String,
+        gender: String,
+        province: String,
         nativeLanguage: String = "Indonesian",
         targetLanguage: String = "English",
         proficiencyLevel: String = "A1"
@@ -53,7 +55,9 @@ class AuthRepository @Inject constructor(
                 lastName = lastName,
                 nativeLanguage = nativeLanguage,
                 targetLanguage = targetLanguage,
-                proficiencyLevel = proficiencyLevel
+                proficiencyLevel = proficiencyLevel,
+                gender = gender,
+                province = province
             )
 
             val response = authApi.register(request)

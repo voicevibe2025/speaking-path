@@ -54,6 +54,7 @@ import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeChatS
 import com.example.voicevibe.presentation.navigation.Screen
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLessonScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.LearnTopicWithViviScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.FluencyPracticeScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyPracticeScreen
 
@@ -262,6 +263,9 @@ fun NavGraph(
                 },
                 onNavigateToVocabularyLesson = { topicId ->
                     navController.navigate(Screen.VocabularyLesson.createRoute(topicId))
+                },
+                onNavigateToLearnWithVivi = { topicId ->
+                    navController.navigate(Screen.LearnTopicWithVivi.createRoute(topicId))
                 }
             )
         }
@@ -347,7 +351,8 @@ fun NavGraph(
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             ConversationLessonScreen(
                 topicId = topicId,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToLearnWithVivi = { navController.navigate(Screen.LearnTopicWithVivi.createRoute(topicId)) }
             )
         }
 
@@ -369,6 +374,16 @@ fun NavGraph(
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             VocabularyLessonScreen(
                 topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.LearnTopicWithVivi.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            LearnTopicWithViviScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

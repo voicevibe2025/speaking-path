@@ -18,7 +18,9 @@ data class RegisterRequest(
     @SerializedName("target_language")
     val targetLanguage: String = "English",
     @SerializedName("proficiency_level")
-    val proficiencyLevel: String = "A1"
+    val proficiencyLevel: String = "A1",
+    val gender: String,
+    val province: String
 )
 
 data class LoginRequest(

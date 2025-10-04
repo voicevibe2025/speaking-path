@@ -289,7 +289,8 @@ fun SpeakingJourneyScreen(
     onNavigateToConversation: (String) -> Unit,
     onNavigateToTopicMaster: (String) -> Unit,
     onNavigateToConversationPractice: (String) -> Unit = {},
-    onNavigateToVocabularyLesson: (String) -> Unit = {}
+    onNavigateToVocabularyLesson: (String) -> Unit = {},
+    onNavigateToLearnWithVivi: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -512,6 +513,33 @@ fun SpeakingJourneyScreen(
                             )
 
                             Spacer(modifier = Modifier.height(16.dp))
+
+                            // Learn with Vivi button
+                            OutlinedButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                onClick = { onNavigateToLearnWithVivi(topic.id) },
+                                shape = RoundedCornerShape(20.dp),
+                                border = BorderStroke(2.dp, Color(0xFF667EEA)),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color(0xFF667EEA)
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.School,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Learn with Vivi",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
 
                             // Master [TOPIC] button at the bottom
                             Button(

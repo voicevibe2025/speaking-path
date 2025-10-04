@@ -35,6 +35,7 @@ class AiEvaluationRepository @Inject constructor(
         model: String? = null,
         responseModalities: List<String>? = null,
         systemInstruction: String? = null,
+        functionDeclarations: String? = null,
         lockAdditionalFields: List<String>? = null
     ): Resource<LiveToken> {
         return try {
@@ -43,7 +44,8 @@ class AiEvaluationRepository @Inject constructor(
                     model = model,
                     response_modalities = responseModalities,
                     system_instruction = systemInstruction,
-                    lock_additional_fields = lockAdditionalFields
+                    lock_additional_fields = lockAdditionalFields,
+                    function_declarations = functionDeclarations
                 )
             )
             if (response.isSuccessful) {

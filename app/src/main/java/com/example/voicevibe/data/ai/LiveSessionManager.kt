@@ -211,6 +211,15 @@ class LiveSessionManager @Inject constructor(
         webSocket?.send(json)
     }
 
+    fun sendRawMessage(json: String) {
+        if (ready) {
+            webSocket?.send(json)
+        } else {
+            pendingMessages.add(json)
+        }
+        Timber.tag("LiveSession").d("Sent raw message (ready=%s)", ready)
+    }
+
     private fun sendSetup() {
         val modelName = if (currentModel.startsWith("models/")) currentModel else "models/$currentModel"
         val setup = mutableMapOf<String, Any>(

@@ -33,6 +33,14 @@ class RegisterViewModel @Inject constructor(
         _uiState.update { it.copy(lastName = lastName, lastNameError = null) }
     }
 
+    fun onGenderChanged(gender: String) {
+        _uiState.update { it.copy(gender = gender, genderError = null) }
+    }
+
+    fun onProvinceChanged(province: String) {
+        _uiState.update { it.copy(province = province, provinceError = null) }
+    }
+
     fun onEmailChanged(email: String) {
         _uiState.update { it.copy(email = email, emailError = null) }
     }
@@ -59,7 +67,9 @@ class RegisterViewModel @Inject constructor(
                 lastName = _uiState.value.lastName,
                 email = _uiState.value.email,
                 password = _uiState.value.password,
-                passwordConfirm = _uiState.value.confirmPassword
+                passwordConfirm = _uiState.value.confirmPassword,
+                gender = _uiState.value.gender,
+                province = _uiState.value.province
             ).collect { resource ->
                 when (resource) {
                     is Resource.Loading -> {
@@ -102,6 +112,8 @@ class RegisterViewModel @Inject constructor(
         val email = _uiState.value.email
         val password = _uiState.value.password
         val confirmPassword = _uiState.value.confirmPassword
+        val gender = _uiState.value.gender
+        val province = _uiState.value.province
         val agreeToTerms = _uiState.value.agreeToTerms
         var isValid = true
 
@@ -114,6 +126,18 @@ class RegisterViewModel @Inject constructor(
         // Validate last name
         if (lastName.isBlank()) {
             _uiState.update { it.copy(lastNameError = "Last name is required") }
+            isValid = false
+        }
+
+        // Validate gender
+        if (gender.isBlank()) {
+            _uiState.update { it.copy(genderError = "Gender is required") }
+            isValid = false
+        }
+
+        // Validate province
+        if (province.isBlank()) {
+            _uiState.update { it.copy(provinceError = "Province is required") }
             isValid = false
         }
 
@@ -208,6 +232,8 @@ data class RegisterUiState(
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",
+    val gender: String = "",
+    val province: String = "",
     val agreeToTerms: Boolean = false,
     val isLoading: Boolean = false,
     val firstNameError: String? = null,
@@ -215,6 +241,8 @@ data class RegisterUiState(
     val emailError: String? = null,
     val passwordError: String? = null,
     val confirmPasswordError: String? = null,
+    val genderError: String? = null,
+    val provinceError: String? = null,
     val generalError: String? = null,
     val passwordStrength: PasswordStrength = PasswordStrength.WEAK
 )

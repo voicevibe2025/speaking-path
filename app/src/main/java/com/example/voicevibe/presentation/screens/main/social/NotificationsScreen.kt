@@ -34,6 +34,7 @@ import java.time.Duration as JDuration
 fun NotificationsScreen(
     onNavigateBack: () -> Unit,
     onOpenNotification: (postId: Int, commentId: Int?) -> Unit,
+    onNavigateToProfile: (userId: Int) -> Unit,
     viewModel: HomeViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -89,7 +90,10 @@ fun NotificationsScreen(
                             notif = n,
                             onClick = {
                                 viewModel.markNotificationRead(n.id)
-                                onOpenNotification(n.postId, n.commentId)
+                                when (n.type) {
+                                    "user_follow" -> onNavigateToProfile(n.actor.id)
+                                    else -> n.postId?.let { onOpenNotification(it, n.commentId) }
+                                }
                             }
                         )
                     }
@@ -109,6 +113,7 @@ private fun NotificationRow(
         "post_comment" -> "commented on your post"
         "comment_like" -> "liked your comment"
         "comment_reply" -> "replied to your comment"
+        "user_follow" -> "is following you"
         else -> notif.type
     }
 

@@ -318,4 +318,54 @@ class UserRepository @Inject constructor(
             Resource.Error<Boolean>(e.message ?: "Unknown error occurred")
         }
     }
+
+    /**
+     * Get followers for current user or specified user
+     */
+    suspend fun getFollowers(userId: String? = null): Resource<List<DomainUserProfile>> {
+        return try {
+            val response = if (userId != null) {
+                apiService.getFollowersByUserId(userId)
+            } else {
+                apiService.getFollowers()
+            }
+            if (response.isSuccessful) {
+                val list = response.body()?.map { data ->
+                    data.toDomain().copy(
+                        avatarUrl = data.avatarUrl?.let { normalizeUrl(it) }
+                    )
+                } ?: emptyList()
+                Resource.Success(list)
+            } else {
+                Resource.Error("Failed to load followers")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Get following for current user or specified user
+     */
+    suspend fun getFollowing(userId: String? = null): Resource<List<DomainUserProfile>> {
+        return try {
+            val response = if (userId != null) {
+                apiService.getFollowingByUserId(userId)
+            } else {
+                apiService.getFollowing()
+            }
+            if (response.isSuccessful) {
+                val list = response.body()?.map { data ->
+                    data.toDomain().copy(
+                        avatarUrl = data.avatarUrl?.let { normalizeUrl(it) }
+                    )
+                } ?: emptyList()
+                Resource.Success(list)
+            } else {
+                Resource.Error("Failed to load following")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
 }

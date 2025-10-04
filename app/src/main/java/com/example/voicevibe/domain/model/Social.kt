@@ -44,7 +44,7 @@ data class SocialNotification(
     val id: Int,
     val type: String,
     val actor: PostAuthor,
-    val postId: Int,
+    val postId: Int? = null,
     val commentId: Int? = null,
     val createdAt: LocalDateTime,
     val read: Boolean = false,

@@ -34,6 +34,16 @@ sealed class Screen(val route: String) {
     object UserProfile : Screen("profile/{userId}") {
         fun createRoute(userId: String) = "profile/$userId"
     }
+    object FollowersFollowing : Screen("followers_following?userId={userId}&tab={tab}") {
+        fun createRoute(userId: String? = null, tab: Int = 0): String {
+            val base = "followers_following"
+            val params = buildList {
+                if (userId != null) add("userId=$userId")
+                add("tab=$tab")
+            }.joinToString("&")
+            return "$base?$params"
+        }
+    }
     // Messaging
     object Messages : Screen("messages")
     object Conversation : Screen("conversation?conversationId={conversationId}&userId={userId}") {

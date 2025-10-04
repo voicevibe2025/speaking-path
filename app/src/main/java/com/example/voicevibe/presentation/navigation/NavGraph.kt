@@ -539,8 +539,12 @@ fun NavGraph(
                 onNavigateToAchievements = { _: String ->
                     navController.navigate(Screen.Achievements.route)
                 },
-                onNavigateToFollowers = { _: String -> },
-                onNavigateToFollowing = { _: String -> },
+                onNavigateToFollowers = { userId: String ->
+                    navController.navigate(Screen.FollowersFollowing.createRoute(userId = userId, tab = 0))
+                },
+                onNavigateToFollowing = { userId: String ->
+                    navController.navigate(Screen.FollowersFollowing.createRoute(userId = userId, tab = 1))
+                },
                 onNavigateToMessage = { userId ->
                     navController.navigate(Screen.Conversation.createRouteWithUser(userId))
                 }
@@ -656,7 +660,38 @@ fun NavGraph(
                 onOpenNotification = { postId, commentId ->
                     navController.navigate(Screen.SocialFeed.createRoute(postId = postId, commentId = commentId))
                 },
+                onNavigateToProfile = { userId ->
+                    navController.navigate(Screen.UserProfile.createRoute(userId.toString()))
+                },
                 viewModel = homeViewModel
+            )
+        }
+
+        // Followers/Following screen
+        composable(
+            route = Screen.FollowersFollowing.route,
+            arguments = listOf(
+                navArgument("userId") { 
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("tab") { 
+                    type = NavType.IntType
+                    defaultValue = 0
+                }
+            )
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")
+            val tab = backStackEntry.arguments?.getInt("tab") ?: 0
+
+            com.example.voicevibe.presentation.screens.profile.FollowersFollowingScreen(
+                userId = userId,
+                initialTab = tab,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToProfile = { targetUserId ->
+                    navController.navigate(Screen.UserProfile.createRoute(targetUserId))
+                }
             )
         }
     }

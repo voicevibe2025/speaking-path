@@ -191,6 +191,27 @@ class ProfileViewModel @Inject constructor(
                 _monthlyXpEarned.value = userProfile.monthlyXpEarned ?: 0
                 _monthlyLessonsCompleted.value = userProfile.monthlyLessonsCompleted ?: 0
 
+                // Override Pronunciation with Speaking Journey aggregate (current user) when available
+                // This matches TopicMasterScreen-derived logic and avoids stale/incorrect profile values.
+                speakingJourneyRepository.getTopics()
+                    .onSuccess { resp ->
+                        var pronSum = 0f
+                        var pronCount = 0
+                        resp.topics.forEach { t ->
+                            val ps = t.practiceScores
+                            if (ps != null && ps.maxPronunciation > 0) {
+                                val v = (ps.pronunciation.toFloat() / ps.maxPronunciation.toFloat()) * 100f
+                                pronSum += v
+                                pronCount++
+                            }
+                        }
+                        if (pronCount > 0) {
+                            val avgPron = (pronSum / pronCount).coerceIn(0f, 100f)
+                            _pronunciationScore.value = avgPron / 100f
+                        }
+                    }
+                    .onFailure { /* keep server value on failure */ }
+
             } catch (e: IOException) {
                 _errorMessage.value = "Network error. Please check your connection."
             } catch (e: HttpException) {

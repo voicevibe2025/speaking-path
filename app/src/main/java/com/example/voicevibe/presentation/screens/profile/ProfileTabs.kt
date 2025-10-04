@@ -83,17 +83,20 @@ fun LazyListScope.OverviewTabContent(
                 )
                 PerformanceMetric(
                     label = "Pronunciation",
-                    value = profile.pronunciationScore,
+                    value = (overview?.averagePronunciation?.takeIf { it > 0f }
+                        ?: profile.pronunciationScore),
                     color = MaterialTheme.colorScheme.secondary
                 )
                 PerformanceMetric(
                     label = "Fluency",
-                    value = profile.fluencyScore,
+                    value = (overview?.averageFluency?.takeIf { it > 0f }
+                        ?: profile.fluencyScore),
                     color = MaterialTheme.colorScheme.tertiary
                 )
                 PerformanceMetric(
                     label = "Vocabulary",
-                    value = profile.vocabularyScore,
+                    value = (overview?.averageVocabulary?.takeIf { it > 0f }
+                        ?: profile.vocabularyScore),
                     color = MaterialTheme.colorScheme.primary
                 )
                 PerformanceMetric(

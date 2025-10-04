@@ -380,6 +380,38 @@ class UserProfileViewModel @Inject constructor(
         loadUserActivities()
         loadSpeakingOverview()
     }
+
+    fun loadFollowers(userId: String?) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(followersLoading = true) }
+            val result = repository.getFollowers(userId)
+            when (result) {
+                is Resource.Success -> {
+                    _uiState.update { it.copy(followers = result.data ?: emptyList(), followersLoading = false) }
+                }
+                is Resource.Error -> {
+                    _uiState.update { it.copy(followers = emptyList(), followersLoading = false) }
+                }
+                else -> {}
+            }
+        }
+    }
+
+    fun loadFollowing(userId: String?) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(followingLoading = true) }
+            val result = repository.getFollowing(userId)
+            when (result) {
+                is Resource.Success -> {
+                    _uiState.update { it.copy(following = result.data ?: emptyList(), followingLoading = false) }
+                }
+                is Resource.Error -> {
+                    _uiState.update { it.copy(following = emptyList(), followingLoading = false) }
+                }
+                else -> {}
+            }
+        }
+    }
 }
 
 /**
@@ -395,7 +427,12 @@ data class UserProfileUiState(
     // Speaking Journey derived overview metrics for Overview tab
     val speakingOverview: SpeakingOverview? = null,
     val speakingOverviewLoading: Boolean = false,
-    val speakingOverviewError: String? = null
+    val speakingOverviewError: String? = null,
+    // Followers and following lists
+    val followers: List<UserProfile> = emptyList(),
+    val following: List<UserProfile> = emptyList(),
+    val followersLoading: Boolean = false,
+    val followingLoading: Boolean = false
 )
 
 /**

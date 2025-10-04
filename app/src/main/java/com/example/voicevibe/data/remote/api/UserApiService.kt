@@ -47,8 +47,14 @@ interface UserApiService {
     @GET("users/followers/")
     suspend fun getFollowers(): Response<List<UserProfile>>
     
+    @GET("users/followers/{id}/")
+    suspend fun getFollowersByUserId(@Path("id") userId: String): Response<List<UserProfile>>
+    
     @GET("users/following/")
     suspend fun getFollowing(): Response<List<UserProfile>>
+    
+    @GET("users/following/{id}/")
+    suspend fun getFollowingByUserId(@Path("id") userId: String): Response<List<UserProfile>>
     
     @POST("users/report/{id}")
     suspend fun reportUser(

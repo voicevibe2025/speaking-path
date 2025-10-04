@@ -440,36 +440,53 @@ private fun ProfileHeader(
 
             // Action buttons (Follow/Unfollow, Message, Challenge) for other users
             if (!isOwnProfile) {
+                // First row: Follow and Message buttons
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     val isFollowing = profile.isFollowing
                     if (isFollowing) {
-                        OutlinedButton(onClick = onFollowClick) {
+                        OutlinedButton(
+                            onClick = onFollowClick,
+                            modifier = Modifier.weight(1f)
+                        ) {
                             Icon(Icons.Default.PersonRemove, contentDescription = "Unfollow")
                             Spacer(Modifier.width(6.dp))
                             Text("Unfollow")
                         }
                     } else {
-                        Button(onClick = onFollowClick) {
+                        Button(
+                            onClick = onFollowClick,
+                            modifier = Modifier.weight(1f)
+                        ) {
                             Icon(Icons.Default.PersonAdd, contentDescription = "Follow")
                             Spacer(Modifier.width(6.dp))
                             Text("Follow")
                         }
                     }
 
-                    Button(onClick = onMessageClick) {
+                    Button(
+                        onClick = onMessageClick,
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Icon(Icons.Default.Message, contentDescription = "Message")
                         Spacer(Modifier.width(6.dp))
                         Text("Message")
                     }
+                }
 
-                    OutlinedButton(onClick = onChallengeClick) {
-                        Icon(Icons.Default.SportsKabaddi, contentDescription = "Challenge")
-                        Spacer(Modifier.width(6.dp))
-                        Text("Challenge")
-                    }
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Second row: Challenge button (full width)
+                OutlinedButton(
+                    onClick = onChallengeClick,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.SportsKabaddi, contentDescription = "Challenge")
+                    Spacer(Modifier.width(6.dp))
+                    Text("Challenge")
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))

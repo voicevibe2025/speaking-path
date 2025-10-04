@@ -179,6 +179,13 @@ fun ConversationScreen(
                         ) { message ->
                             MessageBubble(message = message, otherUser = uiState.otherUser)
                         }
+                        
+                        // Typing indicator
+                        if (uiState.otherUserTyping) {
+                            item {
+                                TypingIndicator(otherUser = uiState.otherUser)
+                            }
+                        }
                     }
                 }
             }
@@ -328,6 +335,70 @@ private fun MessageInputBar(
                         tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = if (isEnabled) 1f else 0.8f)
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TypingIndicator(
+    otherUser: com.example.voicevibe.domain.model.ConversationUser?
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start
+    ) {
+        // Show avatar for other user
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            if (otherUser?.avatarUrl != null) {
+                SubcomposeAsyncImage(
+                    model = otherUser.avatarUrl,
+                    contentDescription = "Avatar",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Text(
+                    text = otherUser?.displayName?.take(1)?.uppercase() ?: "?",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.width(8.dp))
+        
+        Surface(
+            shape = RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            shadowElevation = 1.dp
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "●",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
+                Text(
+                    text = "●",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                )
+                Text(
+                    text = "●",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                )
             }
         }
     }

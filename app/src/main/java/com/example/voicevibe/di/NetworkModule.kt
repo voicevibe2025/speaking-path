@@ -188,4 +188,9 @@ object NetworkModule {
     fun provideMessagingApi(retrofit: Retrofit): com.example.voicevibe.data.remote.api.MessagingApiService =
         retrofit.create(com.example.voicevibe.data.remote.api.MessagingApiService::class.java)
 
+    @Provides
+    @Singleton
+    fun provideChatWebSocketClient(gson: Gson): com.example.voicevibe.data.websocket.ChatWebSocketClient =
+        com.example.voicevibe.data.websocket.ChatWebSocketClient(gson)
+
 }

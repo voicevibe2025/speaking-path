@@ -3,7 +3,10 @@ package com.example.voicevibe.presentation.screens.messaging
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.voicevibe.data.local.TokenManager
 import com.example.voicevibe.data.repository.MessagingRepository
+import com.example.voicevibe.data.websocket.ChatWebSocketClient
+import com.example.voicevibe.data.websocket.ConnectionState
 import com.example.voicevibe.domain.model.ConversationUser
 import com.example.voicevibe.domain.model.Message
 import com.example.voicevibe.domain.model.Resource
@@ -22,7 +25,9 @@ data class ConversationUiState(
     val messageText: String = "",
     val isSending: Boolean = false,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isConnected: Boolean = false,
+    val otherUserTyping: Boolean = false
 )
 
 /**
@@ -40,6 +45,8 @@ sealed class ConversationEvent {
 @HiltViewModel
 class ConversationViewModel @Inject constructor(
     private val repository: MessagingRepository,
+    private val webSocketClient: ChatWebSocketClient,
+    private val tokenManager: TokenManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -55,9 +62,68 @@ class ConversationViewModel @Inject constructor(
     init {
         if (conversationId != null) {
             loadConversation(conversationId)
+            connectToWebSocket(conversationId)
         } else if (otherUserId != null) {
             // Create new conversation with user
             createConversationWithUser(otherUserId)
+        }
+        
+        // Observe WebSocket connection state
+        observeWebSocketState()
+        
+        // Observe incoming messages
+        observeIncomingMessages()
+        
+        // Observe typing indicators
+        observeTypingIndicators()
+    }
+    
+    override fun onCleared() {
+        super.onCleared()
+        webSocketClient.disconnect()
+    }
+    
+    private fun connectToWebSocket(convId: Int) {
+        viewModelScope.launch {
+            val token = tokenManager.getAccessToken()
+            if (!token.isNullOrEmpty()) {
+                webSocketClient.connect(convId, token)
+            }
+        }
+    }
+    
+    private fun observeWebSocketState() {
+        viewModelScope.launch {
+            webSocketClient.connectionState.collect { state ->
+                _uiState.update { 
+                    it.copy(isConnected = state is ConnectionState.Connected) 
+                }
+            }
+        }
+    }
+    
+    private fun observeIncomingMessages() {
+        viewModelScope.launch {
+            webSocketClient.messages.collect { message ->
+                // Add message to list if not already present
+                _uiState.update { state ->
+                    if (state.messages.none { it.id == message.id }) {
+                        state.copy(messages = state.messages + message)
+                    } else {
+                        state
+                    }
+                }
+            }
+        }
+    }
+    
+    private fun observeTypingIndicators() {
+        viewModelScope.launch {
+            webSocketClient.typingUsers.collect { typingEvent ->
+                _uiState.update { 
+                    it.copy(otherUserTyping = typingEvent.isTyping) 
+                }
+            }
         }
     }
 
@@ -109,6 +175,11 @@ class ConversationViewModel @Inject constructor(
                             error = null
                         )
                     }
+                    
+                    // Connect to WebSocket for new conversation
+                    conversation?.id?.let { convId ->
+                        connectToWebSocket(convId)
+                    }
                 }
                 is Resource.Error -> {
                     _uiState.update {
@@ -128,47 +199,69 @@ class ConversationViewModel @Inject constructor(
 
     fun onMessageTextChanged(text: String) {
         _uiState.update { it.copy(messageText = text) }
+        
+        // Send typing indicator when user starts/stops typing
+        val isTyping = text.isNotEmpty()
+        if (_uiState.value.isConnected) {
+            webSocketClient.sendTypingIndicator(isTyping)
+        }
     }
 
     fun sendMessage() {
         val currentState = _uiState.value
         val text = currentState.messageText.trim()
-        val recipientId = currentState.otherUser?.id
 
-        if (text.isEmpty() || recipientId == null) {
+        if (text.isEmpty()) {
             return
         }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSending = true) }
-
-            when (val result = repository.sendMessage(recipientId, text)) {
-                is Resource.Success -> {
-                    // Clear message text
-                    _uiState.update {
-                        it.copy(
-                            messageText = "",
-                            isSending = false
-                        )
-                    }
-                    
-                    // Add new message to list optimistically
-                    result.data?.let { newMessage ->
-                        _uiState.update {
-                            it.copy(messages = it.messages + newMessage)
-                        }
-                    }
-                    
-                    _events.emit(ConversationEvent.MessageSent)
-                    
-                    // Reload conversation to get any updates
-                    currentState.conversationId?.let { loadConversation(it) }
+            
+            if (currentState.isConnected) {
+                // Send via WebSocket for instant delivery
+                webSocketClient.sendMessage(text)
+                
+                // Clear message text immediately for better UX
+                _uiState.update {
+                    it.copy(
+                        messageText = "",
+                        isSending = false
+                    )
                 }
-                is Resource.Error -> {
+                
+                _events.emit(ConversationEvent.MessageSent)
+            } else {
+                // Fallback to HTTP if WebSocket is not connected
+                val recipientId = currentState.otherUser?.id
+                if (recipientId == null) {
                     _uiState.update { it.copy(isSending = false) }
-                    _events.emit(ConversationEvent.ShowMessage(result.message ?: "Failed to send message"))
+                    return@launch
                 }
-                is Resource.Loading -> {}
+                
+                when (val result = repository.sendMessage(recipientId, text)) {
+                    is Resource.Success -> {
+                        _uiState.update {
+                            it.copy(
+                                messageText = "",
+                                isSending = false
+                            )
+                        }
+                        
+                        result.data?.let { newMessage ->
+                            _uiState.update {
+                                it.copy(messages = it.messages + newMessage)
+                            }
+                        }
+                        
+                        _events.emit(ConversationEvent.MessageSent)
+                    }
+                    is Resource.Error -> {
+                        _uiState.update { it.copy(isSending = false) }
+                        _events.emit(ConversationEvent.ShowMessage(result.message ?: "Failed to send message"))
+                    }
+                    is Resource.Loading -> {}
+                }
             }
         }
     }
@@ -177,7 +270,13 @@ class ConversationViewModel @Inject constructor(
         val conversationId = _uiState.value.conversationId ?: return
         
         viewModelScope.launch {
-            repository.markConversationAsRead(conversationId)
+            if (_uiState.value.isConnected) {
+                // Use WebSocket for instant marking
+                webSocketClient.markAsRead()
+            } else {
+                // Fallback to HTTP
+                repository.markConversationAsRead(conversationId)
+            }
         }
     }
 

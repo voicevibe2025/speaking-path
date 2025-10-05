@@ -1063,8 +1063,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
                c. Wait for the card to appear, then explain what it means in English
                d. Explain when and how to use it
                e. Provide Indonesian cultural context if relevant
-               f. Ask the user if they understand or have questions
-               g. Ask the user to repeat the phrase. If the user repeats the phrase correctly, **IMMEDIATELY** call mark_phrase_completed(phraseIndex)
+               f. Ask the user to repeat the phrase. If the user repeats the phrase correctly, **IMMEDIATELY** call mark_phrase_completed(phraseIndex)
             4. Move to the next phrase
             5. After ALL phrases are learned, congratulate them and **IMMEDIATELY** call award_completion_xp()
             
@@ -1129,6 +1128,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
             
             ## IMPORTANT RULES
             - ALWAYS address user as "$userName"
+            - Use English to explain, and use Indonesian when you think users have difficulty understanding English
             - Work through phrases in order (0, 1, 2, ...)
             - Don't skip phrases
             - Don't move to next phrase until current is mastered

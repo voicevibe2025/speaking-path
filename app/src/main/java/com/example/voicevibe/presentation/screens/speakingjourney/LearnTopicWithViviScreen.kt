@@ -5,6 +5,8 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -44,10 +46,16 @@ fun LearnTopicWithViviScreen(
     onNavigateBack: () -> Unit,
     viewModel: LearnTopicWithViviViewModel = hiltViewModel()
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val recordPermission = rememberPermissionState(android.Manifest.permission.RECORD_AUDIO)
+    
+    // Set context in ViewModel
+    LaunchedEffect(Unit) {
+        viewModel.setContext(context)
+    }
 
     LaunchedEffect(uiState.messages.size, uiState.showTypingIndicator) {
         listState.animateScrollToItem(0)
@@ -58,7 +66,10 @@ fun LearnTopicWithViviScreen(
         CompletionDialog(
             topicTitle = uiState.topic?.title ?: "Topic",
             phrasesCompleted = uiState.phrasesCompleted,
-            onDismiss = onNavigateBack
+            onDismiss = {
+                viewModel.clearCompletionState()
+                onNavigateBack()
+            }
         )
     }
 
@@ -133,6 +144,17 @@ fun LearnTopicWithViviScreen(
                             }
                         }
 
+                        itemsIndexed(
+                            items = uiState.phraseCards.reversed(),
+                            key = { index, card -> "phrase_card_${card.phraseIndex}_$index" }
+                        ) { index, card ->
+                            PhraseCardItem(
+                                card = card,
+                                onPlayAudio = { viewModel.playPhraseAudio(card.phraseIndex) }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        
                         itemsIndexed(
                             items = uiState.messages.reversed(),
                             key = { index, message -> "message_${message.hashCode()}_$index" }
@@ -731,6 +753,73 @@ private fun ErrorCard(
                 )
             ) {
                 Text("Retry")
+            }
+        }
+    }
+}
+
+@Composable
+private fun PhraseCardItem(
+    card: PhraseCard,
+    onPlayAudio: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onPlayAudio),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Play icon
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.VolumeUp,
+                    contentDescription = "Play audio",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+            
+            // Phrase text
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Speaker ${card.speaker}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = card.text,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Tap to play audio",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
             }
         }
     }

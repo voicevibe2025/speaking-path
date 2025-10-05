@@ -55,6 +55,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
     // Audio utilities
     private val recorder = AudioRecorder(viewModelScope)
     private val player = AudioPlayer()
+    private var mediaPlayer: android.media.MediaPlayer? = null
 
     private var currentUser: UserProfile? = null
     private var topicData: Topic? = null
@@ -62,6 +63,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
     private var pendingModelText: StringBuilder? = null
     private var currentPhraseIndex: Int = 0
     private var phrasesCompleted: MutableSet<Int> = mutableSetOf()
+    private var appContext: android.content.Context? = null
 
     companion object {
         private const val NATIVE_AUDIO_MODEL = "gemini-2.5-flash-native-audio-preview-09-2025"
@@ -248,13 +250,21 @@ class LearnTopicWithViviViewModel @Inject constructor(
                             isConnecting = false,
                             isConnected = true,
                             error = null,
-                            showTypingIndicator = false
+                            showTypingIndicator = true  // Show typing indicator for initial response
                         )
                     }
+                    
+                    // Send initial greeting to trigger Vivi's welcome message
+                    delay(500)  // Brief delay to ensure session is fully ready
+                    sessionManager.sendUserMessage("Hello")
+                    Log.d(TAG, "Sent initial greeting to Vivi")
                 }
             }
 
             override fun onMessage(text: String) {
+                // Log raw message for debugging
+                Log.d(TAG, "Raw message received: ${text.take(500)}...")
+                
                 // Handle audio from server
                 handleAudioFromServer(text)
                 
@@ -354,53 +364,197 @@ class LearnTopicWithViviViewModel @Inject constructor(
     private fun handleFunctionCalls(text: String) {
         try {
             val root = gson.fromJson(text, JsonObject::class.java)
+            Log.d(TAG, "Checking for function calls in message...")
+            
+            // Check for toolCall in root
+            val toolCall = root.getAsJsonObject("toolCall")
+            if (toolCall != null) {
+                Log.d(TAG, "Found toolCall in root: $toolCall")
+                processFunctionCalls(toolCall)
+                return
+            }
             
             // Check for function calls in serverContent
             val sc = root.get("serverContent")
             if (sc != null) {
+                Log.d(TAG, "Found serverContent, checking for function calls...")
                 val items = if (sc.isJsonArray) sc.asJsonArray.toList() else listOf(sc)
                 items.forEach { item ->
                     if (!item.isJsonObject) return@forEach
                     val obj = item.asJsonObject
                     
-                    // Look for function calls
-                    val functionCall = obj.getAsJsonObject("functionCall")
-                    if (functionCall != null) {
-                        val functionName = functionCall.get("name")?.asString
-                        val args = functionCall.getAsJsonObject("args")
-                        
-                        when (functionName) {
-                            "play_phrase_audio" -> {
-                                val phraseIndex = args?.get("phraseIndex")?.asInt ?: currentPhraseIndex
-                                handlePlayPhraseAudio(phraseIndex)
-                            }
-                            "mark_phrase_completed" -> {
-                                val phraseIndex = args?.get("phraseIndex")?.asInt ?: currentPhraseIndex
-                                handleMarkPhraseCompleted(phraseIndex)
-                            }
-                            "award_completion_xp" -> {
-                                handleAwardCompletionXp()
-                            }
+                    // Check for toolCall at this level
+                    val itemToolCall = obj.getAsJsonObject("toolCall")
+                    if (itemToolCall != null) {
+                        Log.d(TAG, "Found toolCall in serverContent item: $itemToolCall")
+                        processFunctionCalls(itemToolCall)
+                        return@forEach
+                    }
+                    
+                    // Check for modelTurn with parts
+                    val modelTurn = obj.getAsJsonObject("modelTurn")
+                    if (modelTurn != null) {
+                        val parts = modelTurn.getAsJsonArray("parts")
+                        if (parts != null) {
+                            Log.d(TAG, "Found modelTurn.parts, checking for functionCall...")
+                            processParts(parts)
                         }
-                        
-                        // Send function response back
-                        sendFunctionResponse(functionName ?: "unknown", "success")
+                    }
+                    
+                    // Look for function calls directly in parts
+                    val parts = obj.getAsJsonArray("parts")
+                    if (parts != null) {
+                        Log.d(TAG, "Found parts array, checking for functionCall...")
+                        processParts(parts)
                     }
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error handling function calls: ${e.message}")
+            Log.e(TAG, "Error handling function calls: ${e.message}", e)
+        }
+    }
+    
+    private fun processParts(parts: com.google.gson.JsonArray) {
+        parts.forEach { partElement ->
+            if (!partElement.isJsonObject) return@forEach
+            val partObj = partElement.asJsonObject
+            val functionCall = partObj.getAsJsonObject("functionCall")
+            
+            if (functionCall != null) {
+                val functionName = functionCall.get("name")?.asString
+                val callId = functionCall.get("id")?.asString ?: "unknown"
+                val args = functionCall.getAsJsonObject("args")
+                
+                Log.d(TAG, "✅ Function call received: $functionName (id=$callId, args=$args)")
+                
+                when (functionName) {
+                    "show_phrase_card" -> {
+                        val phraseIndex = args?.get("phraseIndex")?.asInt ?: currentPhraseIndex
+                        handleShowPhraseCard(phraseIndex)
+                    }
+                    "mark_phrase_completed" -> {
+                        val phraseIndex = args?.get("phraseIndex")?.asInt ?: currentPhraseIndex
+                        handleMarkPhraseCompleted(phraseIndex)
+                    }
+                    "award_completion_xp" -> {
+                        handleAwardCompletionXp()
+                    }
+                }
+                
+                // Send function response back with proper format
+                sendFunctionResponse(callId, functionName ?: "unknown", "success")
+            }
+        }
+    }
+    
+    private fun processFunctionCalls(toolCall: JsonObject) {
+        val functionCalls = toolCall.getAsJsonArray("functionCalls")
+        if (functionCalls != null) {
+            functionCalls.forEach { callElement ->
+                if (!callElement.isJsonObject) return@forEach
+                val call = callElement.asJsonObject
+                val functionName = call.get("name")?.asString
+                val callId = call.get("id")?.asString ?: "unknown"
+                val args = call.getAsJsonObject("args")
+                
+                Log.d(TAG, "✅ Function call from toolCall: $functionName (id=$callId, args=$args)")
+                
+                when (functionName) {
+                    "show_phrase_card" -> {
+                        val phraseIndex = args?.get("phraseIndex")?.asInt ?: currentPhraseIndex
+                        handleShowPhraseCard(phraseIndex)
+                    }
+                    "mark_phrase_completed" -> {
+                        val phraseIndex = args?.get("phraseIndex")?.asInt ?: currentPhraseIndex
+                        handleMarkPhraseCompleted(phraseIndex)
+                    }
+                    "award_completion_xp" -> {
+                        handleAwardCompletionXp()
+                    }
+                }
+                
+                sendFunctionResponse(callId, functionName ?: "unknown", "success")
+            }
         }
     }
 
-    private fun handlePlayPhraseAudio(phraseIndex: Int) {
-        Log.d(TAG, "Playing audio for phrase $phraseIndex")
+    private fun handleShowPhraseCard(phraseIndex: Int) {
+        Log.d(TAG, "Showing phrase card for phrase $phraseIndex")
         val conversation = topicData?.conversation
+        
         if (conversation != null && phraseIndex < conversation.size) {
             currentPhraseIndex = phraseIndex
-            _uiState.update { it.copy(currentPhraseIndex = phraseIndex) }
-            // Audio will be played via TTS - you can implement this similar to ConversationLesson
-            // For now, just log it
+            val turn = conversation[phraseIndex]
+            
+            // Add a clickable phrase card to the messages
+            _uiState.update { state ->
+                val newCard = PhraseCard(
+                    phraseIndex = phraseIndex,
+                    text = turn.text,
+                    speaker = turn.speaker
+                )
+                state.copy(
+                    currentPhraseIndex = phraseIndex,
+                    phraseCards = state.phraseCards + newCard
+                )
+            }
+            
+            Log.d(TAG, "Phrase card added for phrase $phraseIndex: ${turn.text}")
+        } else {
+            Log.e(TAG, "Cannot show phrase card: conversation=$conversation, phraseIndex=$phraseIndex")
+        }
+    }
+    
+    fun playPhraseAudio(phraseIndex: Int) {
+        Log.d(TAG, "Playing audio for phrase $phraseIndex")
+        val conversation = topicData?.conversation
+        val ctx = appContext
+        
+        if (conversation != null && phraseIndex < conversation.size && ctx != null) {
+            val turn = conversation[phraseIndex]
+            val topicTitle = topicData?.title ?: topicId
+            
+            // Play audio from assets like ConversationLesson does
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    // Release any existing player
+                    mediaPlayer?.release()
+                    
+                    // Build asset path
+                    val slug = topicTitle.trim().lowercase(java.util.Locale.US)
+                        .replace(Regex("[^a-z0-9]+"), "_").trim('_')
+                    val turnNumber = (phraseIndex + 1).coerceAtLeast(1)
+                    val assetPath = "conversation_audios/$slug/turn_${turnNumber}.wav"
+                    
+                    val afd = ctx.assets.openFd(assetPath)
+                    afd.use { desc ->
+                        val mp = android.media.MediaPlayer().apply {
+                            setDataSource(desc.fileDescriptor, desc.startOffset, desc.length)
+                            setOnPreparedListener {
+                                it.start()
+                                Log.d(TAG, "Audio playback started for phrase $phraseIndex")
+                            }
+                            setOnCompletionListener {
+                                try { it.release() } catch (_: Throwable) {}
+                                if (mediaPlayer === it) mediaPlayer = null
+                                Log.d(TAG, "Audio playback completed for phrase $phraseIndex")
+                            }
+                            setOnErrorListener { pl, what, extra ->
+                                try { pl.release() } catch (_: Throwable) {}
+                                if (mediaPlayer === pl) mediaPlayer = null
+                                Log.e(TAG, "Audio playback error: what=$what, extra=$extra")
+                                true
+                            }
+                        }
+                        mediaPlayer = mp
+                        mp.prepareAsync()
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to play audio for phrase $phraseIndex: ${e.message}", e)
+                }
+            }
+        } else {
+            Log.e(TAG, "Cannot play audio: conversation=$conversation, phraseIndex=$phraseIndex, context=$ctx")
         }
     }
 
@@ -452,14 +606,25 @@ class LearnTopicWithViviViewModel @Inject constructor(
         }
     }
 
-    private fun sendFunctionResponse(functionName: String, response: String) {
+    private fun sendFunctionResponse(callId: String, functionName: String, response: String) {
+        // According to Gemini Live API docs, function responses must include the call id
+        // Use INTERRUPT scheduling to ensure Vivi knows the function completed before continuing
         val functionResponse = mapOf(
-            "functionResponse" to mapOf(
-                "name" to functionName,
-                "response" to mapOf("result" to response)
+            "toolResponse" to mapOf(
+                "functionResponses" to listOf(
+                    mapOf(
+                        "id" to callId,
+                        "name" to functionName,
+                        "response" to mapOf(
+                            "result" to response,
+                            "scheduling" to "INTERRUPT"
+                        )
+                    )
+                )
             )
         )
         val jsonResponse = gson.toJson(functionResponse)
+        Log.d(TAG, "Sending function response: $jsonResponse")
         sessionManager.sendRawMessage(jsonResponse)
     }
 
@@ -547,8 +712,19 @@ class LearnTopicWithViviViewModel @Inject constructor(
             parts?.forEach { partElement ->
                 if (partElement.isJsonObject) {
                     val partObj = partElement.asJsonObject
+                    
+                    // Skip thinking/thought parts - these are internal reasoning, not for display
+                    val isThought = partObj.get("thought")?.asBoolean == true
+                    if (isThought) {
+                        Log.d(TAG, "Skipping thought part (internal reasoning)")
+                        return@forEach
+                    }
+                    
                     val text = partObj.get("text")?.takeIf { it.isJsonPrimitive }?.asString
-                    if (!text.isNullOrBlank()) collected.add(text)
+                    if (!text.isNullOrBlank()) {
+                        Log.d(TAG, "Collected text part: ${text.take(50)}...")
+                        collected.add(text)
+                    }
                 }
             }
         }
@@ -644,11 +820,21 @@ class LearnTopicWithViviViewModel @Inject constructor(
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
+    
+    fun clearCompletionState() {
+        _uiState.update { it.copy(topicCompleted = false) }
+    }
+    
+    fun setContext(context: android.content.Context) {
+        appContext = context.applicationContext
+    }
 
     override fun onCleared() {
         super.onCleared()
         sessionManager.close()
         player.release()
+        mediaPlayer?.release()
+        mediaPlayer = null
         viewModelScope.launch {
             recorder.stop()
         }
@@ -691,15 +877,23 @@ class LearnTopicWithViviViewModel @Inject constructor(
             ## TEACHING FLOW
             1. Welcome the user warmly and introduce the topic
             2. Start teaching phrase 0
-            3. For each phrase:
-               - Explain what it means in English
-               - Give the Indonesian translation or equivalent
-               - Explain when and how to use it
-               - Provide cultural context if relevant
-               - Ask the user to try saying it or demonstrate understanding
-            4. When the user shows they understand a phrase, call mark_phrase_completed
-            5. Move to the next phrase
-            6. After all phrases are learned, congratulate them and call award_completion_xp
+            3. For EACH phrase you teach:
+               a. Say "Frasa pertama adalah:" (The first phrase is:)
+               b. Call show_phrase_card(phraseIndex) to display a clickable phrase card
+               c. Explain what it means in English
+               d. Give the Indonesian translation or equivalent
+               e. Explain when and how to use it
+               f. Provide cultural context if relevant
+               g. Ask the user if they understand or have questions
+               i. When user shows understanding, call mark_phrase_completed(phraseIndex)
+            4. Move to the next phrase
+            5. After ALL phrases are learned, congratulate them and call award_completion_xp()
+            
+            ## CRITICAL: FUNCTION CALLING RULES
+            - ALWAYS call show_phrase_card when introducing a new phrase
+            - The user can click the card to hear audio as many times as they want
+            - You MUST call mark_phrase_completed when user demonstrates understanding
+            - You MUST call award_completion_xp when all phrases are completed
             
             ## INDONESIAN CULTURAL CONTEXT
             - When explaining phrases, relate them to Indonesian culture and Batam context
@@ -707,14 +901,14 @@ class LearnTopicWithViviViewModel @Inject constructor(
             - Use examples from daily life in Batam, Indonesia
             
             ## PERSONALITY
-            - Be super friendly, warm, encouraging
+            - Be super friendly, warm, encouraging, and humorous
             - Use emojis occasionally 🙂
             - Keep responses natural and conversational
             - Celebrate small wins with the user
             
             ## FUNCTION CALLING
             You have access to these functions:
-            - play_phrase_audio(phraseIndex): Play audio for a specific phrase (use when introducing a new phrase)
+            - show_phrase_card(phraseIndex): Display a clickable phrase card (use when introducing a new phrase)
             - mark_phrase_completed(phraseIndex): Mark a phrase as completed when user demonstrates understanding
             - award_completion_xp(): Award bonus XP when all phrases are completed
             
@@ -748,14 +942,14 @@ class LearnTopicWithViviViewModel @Inject constructor(
         {
             "functionDeclarations": [
                 {
-                    "name": "play_phrase_audio",
-                    "description": "Plays the audio for a specific phrase in the conversation. Use this when introducing a new phrase to help the user hear the correct pronunciation.",
+                    "name": "show_phrase_card",
+                    "description": "Displays a clickable phrase card in the chat. The user can click on it to hear the audio pronunciation. Use this when introducing each new phrase so the user can listen to it as many times as they want.",
                     "parameters": {
                         "type": "OBJECT",
                         "properties": {
                             "phraseIndex": {
                                 "type": "INTEGER",
-                                "description": "The index of the phrase to play (0-based)"
+                                "description": "The index of the phrase to display (0-based)"
                             }
                         },
                         "required": ["phraseIndex"]
@@ -844,17 +1038,24 @@ class LearnTopicWithViviViewModel @Inject constructor(
 }
 
 data class LearnWithViviState(
-    val isConnecting: Boolean = true,
+    val isConnecting: Boolean = false,
     val isConnected: Boolean = false,
-    val isLoadingTopic: Boolean = false,
-    val messages: List<LiveMessage> = emptyList(),
-    val showTypingIndicator: Boolean = false,
     val isRecording: Boolean = false,
     val isAiSpeaking: Boolean = false,
+    val messages: List<LiveMessage> = emptyList(),
+    val showTypingIndicator: Boolean = false,
     val error: String? = null,
+    val isLoadingTopic: Boolean = false,
     val topic: Topic? = null,
     val currentPhraseIndex: Int = 0,
     val phrasesCompleted: Int = 0,
     val totalPhrases: Int = 0,
-    val topicCompleted: Boolean = false
+    val topicCompleted: Boolean = false,
+    val phraseCards: List<PhraseCard> = emptyList()
+)
+
+data class PhraseCard(
+    val phraseIndex: Int,
+    val text: String,
+    val speaker: String
 )

@@ -8,6 +8,7 @@ import com.example.voicevibe.data.repository.LearningPathRepository
 import com.example.voicevibe.data.repository.GamificationRepository
 import com.example.voicevibe.data.repository.SocialRepository
 import com.example.voicevibe.data.repository.ProfileRepository
+import com.example.voicevibe.data.repository.SpeakingJourneyRepository
 import com.example.voicevibe.domain.model.Resource
 import com.example.voicevibe.domain.model.UserProfile
 import com.example.voicevibe.domain.model.LearningPath
@@ -33,7 +34,8 @@ class HomeViewModel @Inject constructor(
     private val gamificationRepository: GamificationRepository,
     private val profileRepository: ProfileRepository,
     private val socialRepository: SocialRepository,
-    private val messagingRepository: com.example.voicevibe.data.repository.MessagingRepository
+    private val messagingRepository: com.example.voicevibe.data.repository.MessagingRepository,
+    private val speakingJourneyRepository: SpeakingJourneyRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -48,6 +50,7 @@ class HomeViewModel @Inject constructor(
         loadPosts()
         loadUnreadNotificationsCount()
         loadUnreadMessagesCount()
+        loadSpeakingTopics()
         // Pre-warm Vivi greeting in background so Free Practice opens instantly
         try {
             prewarmManager.prewarm()
@@ -393,6 +396,25 @@ class HomeViewModel @Inject constructor(
         loadPosts()
         loadUnreadNotificationsCount()
         loadUnreadMessagesCount()
+        loadSpeakingTopics()
+    }
+
+    private fun loadSpeakingTopics() {
+        viewModelScope.launch {
+            speakingJourneyRepository.getTopics().onSuccess { response ->
+                // Map topics from DTO to simpler UI model
+                val topics = response.topics.map { dto ->
+                    ViviTopic(
+                        id = dto.id,
+                        title = dto.title,
+                        description = dto.description,
+                        unlocked = dto.unlocked,
+                        hasConversation = dto.conversation.isNotEmpty()
+                    )
+                }
+                _uiState.update { it.copy(viviTopics = topics) }
+            }
+        }
     }
 }
 
@@ -416,6 +438,18 @@ data class HomeUiState(
     val unreadNotifications: Int = 0,
     val unreadMessages: Int = 0,
     val notifications: List<SocialNotification> = emptyList(),
+    val viviTopics: List<ViviTopic> = emptyList(),
+)
+
+/**
+ * Simplified topic model for Vivi topic selection
+ */
+data class ViviTopic(
+    val id: String,
+    val title: String,
+    val description: String,
+    val unlocked: Boolean,
+    val hasConversation: Boolean
 )
 
 /**

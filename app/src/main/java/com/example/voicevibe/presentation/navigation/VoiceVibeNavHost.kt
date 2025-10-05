@@ -143,7 +143,10 @@ fun VoiceVibeNavHost(
                 },
                 onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                 onNavigateToUserSearch = { navController.navigate(Screen.UserSearch.route) },
-                onNavigateToMessages = { navController.navigate(Screen.Messages.route) }
+                onNavigateToMessages = { navController.navigate(Screen.Messages.route) },
+                onNavigateToLearnWithVivi = { topicId ->
+                    navController.navigate(Screen.LearnTopicWithVivi.createRoute(topicId))
+                }
             )
         }
 

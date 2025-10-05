@@ -82,6 +82,7 @@ fun HomeScreen(
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToUserSearch: () -> Unit = {},
     onNavigateToMessages: () -> Unit = {},
+    onNavigateToLearnWithVivi: (String) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -178,7 +179,9 @@ fun HomeScreen(
                             QuickStartSection(
                                 onStartPractice = viewModel::onStartPractice,
                                 onPracticeWithAI = onNavigateToPracticeAI,
-                                onLivePractice = onNavigateToLivePractice
+                                onLivePractice = onNavigateToLivePractice,
+                                viviTopics = uiState.viviTopics,
+                                onNavigateToLearnWithVivi = onNavigateToLearnWithVivi
                             )
                         }
                     }
@@ -880,8 +883,11 @@ private fun WelcomeSection(
 private fun QuickStartSection(
     onStartPractice: () -> Unit,
     onPracticeWithAI: () -> Unit,
-    onLivePractice: () -> Unit
+    onLivePractice: () -> Unit,
+    viviTopics: List<ViviTopic>,
+    onNavigateToLearnWithVivi: (String) -> Unit
 ) {
+    var showTopicSelectionDialog by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.padding(horizontal = 16.dp)
     ) {
@@ -1005,6 +1011,60 @@ private fun QuickStartSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Learn With Vivi - Topic-based Learning
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showTopicSelectionDialog = true },
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF10B981)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(NeutralWhite.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoStories,
+                        contentDescription = null,
+                        tint = NeutralWhite,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Learn With Vivi",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = NeutralWhite,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = "Learn topics through conversation",
+                        fontSize = 14.sp,
+                        color = NeutralWhite.copy(alpha = 0.9f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         // Live Practice - Gemini Live
         Card(
             modifier = Modifier
@@ -1056,6 +1116,18 @@ private fun QuickStartSection(
                 }
             }
         }
+    }
+
+    // Topic Selection Dialog
+    if (showTopicSelectionDialog) {
+        TopicSelectionDialog(
+            topics = viviTopics,
+            onDismiss = { showTopicSelectionDialog = false },
+            onTopicSelected = { topicId ->
+                showTopicSelectionDialog = false
+                onNavigateToLearnWithVivi(topicId)
+            }
+        )
     }
 }
 
@@ -1490,4 +1562,125 @@ private fun SocialFeedEntryCard(onClick: () -> Unit) {
             )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TopicSelectionDialog(
+    topics: List<ViviTopic>,
+    onDismiss: () -> Unit,
+    onTopicSelected: (String) -> Unit
+) {
+    // Filter topics: unlocked AND has conversation
+    val availableTopics = topics.filter { it.unlocked && it.hasConversation }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF1a1a2e),
+        title = {
+            Text(
+                text = "Select a Topic",
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        },
+        text = {
+            if (availableTopics.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = null,
+                        tint = AccentBlueGray,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = "No topics available yet",
+                        color = Color.White,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "Complete practices to unlock topics",
+                        color = AccentBlueGray,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 400.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(availableTopics) { topic ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onTopicSelected(topic.id) },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.White.copy(alpha = 0.1f)
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFF10B981).copy(alpha = 0.2f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AutoStories,
+                                        contentDescription = null,
+                                        tint = Color(0xFF10B981),
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                                Spacer(Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = topic.title,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = topic.description,
+                                        color = AccentBlueGray,
+                                        fontSize = 13.sp,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    tint = AccentBlueGray
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close", color = BrandIndigo)
+            }
+        }
+    )
 }

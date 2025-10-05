@@ -211,6 +211,9 @@ fun NavGraph(
                 },
                 onNavigateToLearningPath = { pathId ->
                     navController.navigate(Screen.LearningPathDetail.createRoute(pathId))
+                },
+                onNavigateToLearnWithVivi = { topicId ->
+                    navController.navigate(Screen.LearnTopicWithVivi.createRoute(topicId))
                 }
             )
         }

@@ -589,6 +589,19 @@ class LearnTopicWithViviViewModel @Inject constructor(
             currentPhraseIndex = phraseIndex
             val turn = conversation[phraseIndex]
             
+            // Check if card already exists to prevent duplicates
+            val existingCards = _uiState.value.phraseCards
+            val alreadyExists = existingCards.any { it.phraseIndex == phraseIndex }
+            
+            if (alreadyExists) {
+                Log.d(TAG, "Phrase card $phraseIndex already exists, skipping duplicate")
+                // Just update current phrase index without adding duplicate
+                _uiState.update { state ->
+                    state.copy(currentPhraseIndex = phraseIndex)
+                }
+                return
+            }
+            
             // Add a clickable phrase card to the messages
             _uiState.update { state ->
                 val newCard = PhraseCard(

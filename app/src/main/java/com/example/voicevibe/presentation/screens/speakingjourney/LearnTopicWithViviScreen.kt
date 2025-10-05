@@ -174,6 +174,7 @@ fun LearnTopicWithViviScreen(
                         ) { index, card ->
                             PhraseCardItem(
                                 card = card,
+                                isCurrentPhrase = card.phraseIndex == uiState.currentPhraseIndex,
                                 onPlayAudio = { viewModel.playPhraseAudio(card.phraseIndex) }
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -870,15 +871,31 @@ private fun ErrorCard(
 @Composable
 private fun PhraseCardItem(
     card: PhraseCard,
+    isCurrentPhrase: Boolean,
     onPlayAudio: () -> Unit
 ) {
+    // Animate the highlight effect
+    val animatedBorderWidth by animateDpAsState(
+        targetValue = if (isCurrentPhrase) 3.dp else 1.dp,
+        animationSpec = tween(300)
+    )
+    val animatedBorderAlpha by animateFloatAsState(
+        targetValue = if (isCurrentPhrase) 1f else 0.5f,
+        animationSpec = tween(300)
+    )
+    val animatedContainerAlpha by animateFloatAsState(
+        targetValue = if (isCurrentPhrase) 0.6f else 0.3f,
+        animationSpec = tween(300)
+    )
+    
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onPlayAudio),
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = animatedContainerAlpha),
+        border = BorderStroke(animatedBorderWidth, MaterialTheme.colorScheme.primary.copy(alpha = animatedBorderAlpha)),
+        shadowElevation = if (isCurrentPhrase) 4.dp else 1.dp
     ) {
         Row(
             modifier = Modifier
@@ -909,17 +926,38 @@ private fun PhraseCardItem(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
-                    text = "Speaker ${card.speaker}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Speaker ${card.speaker}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    
+                    // Current phrase badge
+                    if (isCurrentPhrase) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        ) {
+                            Text(
+                                text = "Current",
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = card.text,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = if (isCurrentPhrase) FontWeight.Bold else FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))

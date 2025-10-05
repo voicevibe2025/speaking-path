@@ -67,12 +67,39 @@ class LearnTopicWithViviViewModel @Inject constructor(
     private var appContext: android.content.Context? = null
 
     companion object {
+        // Choose your priority:
+        // STABLE_LIVE_MODEL = Reliable functions but robotic voice
+        // NATIVE_AUDIO_MODEL = Natural voice but sometimes misses function calls
+        private const val STABLE_LIVE_MODEL = "gemini-live-2.5-flash-preview"
         private const val NATIVE_AUDIO_MODEL = "gemini-2.5-flash-native-audio-preview-09-2025"
-        private const val DEFAULT_LIVE_TEXT_MODEL = "gemini-live-2.5-flash-preview"
+        
+        // Current choice: Natural voice (with extra safeguards in prompts)
+        private const val ACTIVE_MODEL = NATIVE_AUDIO_MODEL
+        
         private const val MODEL_SPEAKING_SILENCE_MS = 1200L
         private const val TAG = "LearnTopicWithVivi"
         private const val XP_PER_PHRASE = 10
         private const val COMPLETION_BONUS_XP = 50
+    }
+    
+    // Voice presets for Vivi
+    enum class ViviVoice(val displayName: String, val voiceName: String) {
+        PUCK("Puck (Energetic & Fun)", "Puck"),
+        CHARON("Charon (Warm & Natural)", "Charon"),
+        KORE("Kore (Clear & Professional)", "Kore"),
+        FENRIR("Fenrir (Deep & Dramatic)", "Fenrir"),
+        AOEDE("Aoede (Smooth & Friendly)", "Aoede")
+    }
+    
+    private fun buildVoiceConfig(voice: ViviVoice = ViviVoice.PUCK): Map<String, Any> {
+        // Structure: speech_config -> voice_config -> prebuilt_voice_config -> voice_name
+        return mapOf(
+            "voice_config" to mapOf(
+                "prebuilt_voice_config" to mapOf(
+                    "voice_name" to voice.voiceName
+                )
+            )
+        )
     }
 
     init {
@@ -212,13 +239,18 @@ class LearnTopicWithViviViewModel @Inject constructor(
             // Register function declarations
             val functionDeclarations = buildFunctionDeclarations()
             
+            // Configure Vivi's voice (Aoede = smooth & natural)
+            val speechConfig = buildVoiceConfig(ViviVoice.AOEDE)
+            Log.d(TAG, "Using model: $ACTIVE_MODEL with voice config: $speechConfig")
+            
             when (val res = withContext(Dispatchers.IO) {
                 aiEvaluationRepository.requestLiveToken(
-                    model = NATIVE_AUDIO_MODEL,
+                    model = ACTIVE_MODEL,
                     responseModalities = responseModalities,
                     systemInstruction = systemInstruction,
                     functionDeclarations = functionDeclarations,
-                    lockAdditionalFields = listOf("system_instruction", "tools")
+                    lockAdditionalFields = listOf("system_instruction", "tools"),
+                    speechConfig = speechConfig
                 )
             }) {
                 is Resource.Success -> {
@@ -848,12 +880,50 @@ class LearnTopicWithViviViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        sessionManager.close()
-        player.release()
-        mediaPlayer?.release()
-        mediaPlayer = null
+        Log.d(TAG, "ViewModel clearing - stopping all audio and closing session")
+        
+        // Update UI state to reflect shutdown
+        _uiState.update { 
+            it.copy(
+                isAiSpeaking = false, 
+                showTypingIndicator = false,
+                isConnected = false,
+                isConnecting = false
+            ) 
+        }
+        
+        // Close session gracefully first
+        try {
+            sessionManager.close()
+            Log.d(TAG, "Session manager closed")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error closing session: ${e.message}")
+        }
+        
+        // Release audio resources (player.release() handles stopping gracefully)
+        try {
+            player.release()
+            Log.d(TAG, "Audio player released")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error releasing player: ${e.message}")
+        }
+        
+        try {
+            mediaPlayer?.release()
+            mediaPlayer = null
+            Log.d(TAG, "Media player released")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error releasing media player: ${e.message}")
+        }
+        
+        // Stop recorder
         viewModelScope.launch {
-            recorder.stop()
+            try {
+                recorder.stop()
+                Log.d(TAG, "Recorder stopped")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error stopping recorder: ${e.message}")
+            }
         }
     }
 
@@ -894,23 +964,36 @@ class LearnTopicWithViviViewModel @Inject constructor(
             ## TEACHING FLOW
             1. Welcome the user warmly and introduce the topic
             2. Start teaching phrase 0
-            3. For EACH phrase you teach:
+            3. For EACH phrase you teach, follow this EXACT sequence:
                a. Say "Frasa pertama adalah:" (The first phrase is:)
-               b. Call show_phrase_card(phraseIndex) to display a clickable phrase card
-               c. Explain what it means in English
+               b. **IMMEDIATELY** call show_phrase_card(phraseIndex) - DO NOT SKIP THIS!
+               c. Wait for the card to appear, then explain what it means in English
                d. Give the Indonesian translation or equivalent
                e. Explain when and how to use it
                f. Provide cultural context if relevant
                g. Ask the user if they understand or have questions
-               h. Ask the user to repeat the phrase. If the user repeats the phrase correctly, call mark_phrase_completed(phraseIndex)
+               h. Ask the user to repeat the phrase. If the user repeats the phrase correctly, **IMMEDIATELY** call mark_phrase_completed(phraseIndex)
             4. Move to the next phrase
-            5. After ALL phrases are learned, congratulate them and call award_completion_xp()
+            5. After ALL phrases are learned, congratulate them and **IMMEDIATELY** call award_completion_xp()
             
-            ## CRITICAL: FUNCTION CALLING RULES
-            - ALWAYS call show_phrase_card when introducing a new phrase
-            - The user can click the card to hear audio as many times as they want
-            - You MUST call mark_phrase_completed when user demonstrates understanding
-            - You MUST call award_completion_xp when all phrases are completed
+            ## CRITICAL: FUNCTION CALLING RULES ⚠️⚠️⚠️
+            YOU ARE REQUIRED TO USE THE FOLLOWING FUNCTIONS. CALLING THEM IS NOT OPTIONAL.
+            
+            1. **show_phrase_card(phraseIndex)** - Call this EVERY TIME you introduce a phrase
+               - Example: When teaching phrase 0, call show_phrase_card(0)
+               - When teaching phrase 1, call show_phrase_card(1), etc.
+               - NEVER skip this function call
+            
+            2. **mark_phrase_completed(phraseIndex)** - Call when user successfully repeats/understands
+               - Example: After user repeats phrase 0 well, call mark_phrase_completed(0)
+               - This tracks their progress
+            
+            3. **award_completion_xp()** - Call ONCE after ALL phrases are done
+               - Only call this when the entire lesson is finished
+               - This gives the user their XP reward
+            
+            ⚠️ THE APP WILL BREAK IF YOU FORGET THESE FUNCTION CALLS ⚠️
+            The user can click phrase cards to hear audio pronunciation
             
             ## INDONESIAN CULTURAL CONTEXT
             - When explaining phrases, relate them to Indonesian culture and Batam context

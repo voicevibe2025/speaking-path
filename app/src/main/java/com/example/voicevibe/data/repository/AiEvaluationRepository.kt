@@ -36,7 +36,8 @@ class AiEvaluationRepository @Inject constructor(
         responseModalities: List<String>? = null,
         systemInstruction: String? = null,
         functionDeclarations: String? = null,
-        lockAdditionalFields: List<String>? = null
+        lockAdditionalFields: List<String>? = null,
+        speechConfig: Map<String, Any>? = null
     ): Resource<LiveToken> {
         return try {
             val response = api.createLiveToken(
@@ -45,7 +46,8 @@ class AiEvaluationRepository @Inject constructor(
                     response_modalities = responseModalities,
                     system_instruction = systemInstruction,
                     lock_additional_fields = lockAdditionalFields,
-                    function_declarations = functionDeclarations
+                    function_declarations = functionDeclarations,
+                    speech_config = speechConfig
                 )
             )
             if (response.isSuccessful) {

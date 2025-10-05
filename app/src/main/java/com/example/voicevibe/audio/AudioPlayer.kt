@@ -28,10 +28,15 @@ class AudioPlayer {
             if (!isActive) break
             ensureTrack(sampleRate)
             val t = track ?: continue
-            // Write blocking on the audio thread, never on the WebSocket callback
-            t.write(data, 0, data.size, AudioTrack.WRITE_BLOCKING)
-            if (t.playState != AudioTrack.PLAYSTATE_PLAYING) {
-                t.play()
+            try {
+                // Write blocking on the audio thread, never on the WebSocket callback
+                t.write(data, 0, data.size, AudioTrack.WRITE_BLOCKING)
+                if (isActive && t.playState != AudioTrack.PLAYSTATE_PLAYING) {
+                    t.play()
+                }
+            } catch (e: Exception) {
+                // Track was released while we were using it - exit gracefully
+                break
             }
         }
     }
@@ -82,7 +87,12 @@ class AudioPlayer {
     }
 
     fun release() {
+        // Close the queue to prevent new audio from being queued
+        queue.close()
+        // Cancel worker and wait for it to finish
         worker?.cancel()
+        // Give worker thread time to exit cleanly
+        Thread.sleep(100)
         worker = null
         releaseInternal()
     }

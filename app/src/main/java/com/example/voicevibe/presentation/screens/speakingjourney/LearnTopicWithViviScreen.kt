@@ -74,7 +74,11 @@ fun LearnTopicWithViviScreen(
         CompletionDialog(
             topicTitle = uiState.topic?.title ?: "Topic",
             phrasesCompleted = uiState.phrasesCompleted,
-            onDismiss = {
+            onContinuePracticing = {
+                viewModel.clearCompletionState()
+                // Stay in the screen for more practice
+            },
+            onFinish = {
                 viewModel.clearCompletionState()
                 onNavigateBack()
             }
@@ -202,6 +206,8 @@ fun LearnTopicWithViviScreen(
                             viewModel.toggleRecording()
                         }
                     },
+                    onRequestShowPhrase = viewModel::requestShowPhrase,
+                    onRequestRolePlay = viewModel::requestRolePlay,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
@@ -406,6 +412,8 @@ private fun VoiceModeControl(
     isRecording: Boolean,
     isBotSpeaking: Boolean,
     onToggleRecording: () -> Unit,
+    onRequestShowPhrase: () -> Unit,
+    onRequestRolePlay: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -449,6 +457,72 @@ private fun VoiceModeControl(
                 isBotSpeaking = isBotSpeaking,
                 onClick = onToggleRecording
             )
+            
+            // Show phrase button
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            OutlinedButton(
+                onClick = onRequestShowPhrase,
+                enabled = isConnected && !isRecording,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary
+                ),
+                border = BorderStroke(
+                    width = 1.5.dp,
+                    color = if (isConnected && !isRecording) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    }
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Visibility,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Show me the phrase",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            
+            // Role play button
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            OutlinedButton(
+                onClick = onRequestRolePlay,
+                enabled = isConnected && !isRecording,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.secondary
+                ),
+                border = BorderStroke(
+                    width = 1.5.dp,
+                    color = if (isConnected && !isRecording) {
+                        MaterialTheme.colorScheme.secondary
+                    } else {
+                        MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    }
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.People,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Let's do a role play",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
     }
 }
@@ -864,10 +938,11 @@ private fun PhraseCardItem(
 private fun CompletionDialog(
     topicTitle: String,
     phrasesCompleted: Int,
-    onDismiss: () -> Unit
+    onContinuePracticing: () -> Unit,
+    onFinish: () -> Unit
 ) {
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = onContinuePracticing,
         icon = {
             Icon(
                 imageVector = Icons.Filled.EmojiEvents,
@@ -912,14 +987,42 @@ private fun CompletionDialog(
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Want to practice more or finish the lesson?",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        dismissButton = {
+            OutlinedButton(
+                onClick = onContinuePracticing,
+                modifier = Modifier.fillMaxWidth(0.48f)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Practice")
             }
         },
         confirmButton = {
             Button(
-                onClick = onDismiss,
-                modifier = Modifier.fillMaxWidth()
+                onClick = onFinish,
+                modifier = Modifier.fillMaxWidth(0.48f)
             ) {
-                Text("Awesome!")
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Finish")
             }
         }
     )

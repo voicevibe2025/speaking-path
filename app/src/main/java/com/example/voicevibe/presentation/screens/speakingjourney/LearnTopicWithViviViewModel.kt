@@ -224,6 +224,21 @@ class LearnTopicWithViviViewModel @Inject constructor(
         }
         sessionManager.sendUserMessage(message)
     }
+    
+    fun requestShowPhrase() {
+        // Send a predefined message to ask the AI to show the current phrase
+        val message = "Please show me the phrase you are explaining right now. Call show_phrase_card() for the current phrase."
+        sendMessage(message)
+        Log.d(TAG, "User requested to show phrase via button")
+    }
+    
+    fun requestRolePlay() {
+        // Send a predefined message to initiate role play mode
+        val topicTitle = topicData?.title ?: "this topic"
+        val message = "Let's do a role play! I want to practice the conversation from $topicTitle using the exact phrases. Please ask me which role I want to take: Speaker A or Speaker B. After I choose, you will take the opposite role and we'll practice the conversation. When it's your turn, only say your character's phrases from the conversation - don't explain anything, just act as that speaker."
+        sendMessage(message)
+        Log.d(TAG, "User requested role play via button")
+    }
 
     fun retryConnection() {
         viewModelScope.launch {
@@ -673,6 +688,14 @@ class LearnTopicWithViviViewModel @Inject constructor(
                 currentPhraseIndex = currentPhraseIndex
             ) 
         }
+        
+        // Automatically show the next phrase card if available
+        val nextPhraseIndex = currentPhraseIndex // Already incremented above
+        val totalPhrases = topicData?.conversation?.size ?: 0
+        if (nextPhraseIndex < totalPhrases) {
+            Log.d(TAG, "Auto-showing next phrase card: $nextPhraseIndex")
+            handleShowPhraseCard(nextPhraseIndex)
+        }
     }
 
     private fun handleAwardCompletionXp() {
@@ -750,6 +773,49 @@ class LearnTopicWithViviViewModel @Inject constructor(
     }
 
     private fun sendFunctionResponse(callId: String, functionName: String, response: String) {
+        // Build a detailed response that includes the current state of shown phrases
+        val shownPhraseIndices = uiState.value.phraseCards.map { it.phraseIndex }.toSet()
+        val totalPhrases = topicData?.conversation?.size ?: 0
+        
+        // Create a status message showing which phrases have been displayed
+        val statusMessage = buildString {
+            append(response)
+            append("\n\n")
+            append("📊 Current Status:\n")
+            append("• Phrases with cards shown: ")
+            if (shownPhraseIndices.isEmpty()) {
+                append("NONE ❌")
+            } else {
+                append(shownPhraseIndices.sorted().joinToString(", ") { "#$it ✅" })
+            }
+            append("\n")
+            append("• Current phrase index: ${uiState.value.currentPhraseIndex}\n")
+            append("• Total phrases: $totalPhrases\n")
+            append("\n")
+            
+            // Special reminder after marking a phrase complete
+            if (functionName == "mark_phrase_completed") {
+                val nextPhraseIndex = uiState.value.currentPhraseIndex
+                if (nextPhraseIndex < totalPhrases) {
+                    append("🎯 NEXT STEP: Now show the next phrase!\n")
+                    append("   👉 Call show_phrase_card($nextPhraseIndex) immediately!\n")
+                    append("   Don't explain it yet - show the card FIRST!\n")
+                    append("\n")
+                } else {
+                    append("🎉 All phrases completed! Time to award completion XP!\n")
+                    append("   👉 Call award_completion_xp() now!\n")
+                    append("\n")
+                }
+            }
+            
+            // Add a reminder if teaching a new phrase
+            val nextPhraseToTeach = uiState.value.currentPhraseIndex
+            if (nextPhraseToTeach < totalPhrases && nextPhraseToTeach !in shownPhraseIndices) {
+                append("⚠️ REMINDER: Phrase #$nextPhraseToTeach has NOT been shown yet!\n")
+                append("   You MUST call show_phrase_card($nextPhraseToTeach) before explaining it.\n")
+            }
+        }
+        
         // According to Gemini Live API docs, function responses must include the call id
         // Use INTERRUPT scheduling to ensure Vivi knows the function completed before continuing
         val functionResponse = mapOf(
@@ -759,7 +825,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
                         "id" to callId,
                         "name" to functionName,
                         "response" to mapOf(
-                            "result" to response,
+                            "result" to statusMessage,
                             "scheduling" to "INTERRUPT"
                         )
                     )
@@ -767,7 +833,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
             )
         )
         val jsonResponse = gson.toJson(functionResponse)
-        Log.d(TAG, "Sending function response: $jsonResponse")
+        Log.d(TAG, "Sending function response with status: $jsonResponse")
         sessionManager.sendRawMessage(jsonResponse)
     }
 
@@ -1059,33 +1125,55 @@ class LearnTopicWithViviViewModel @Inject constructor(
             1. Welcome the user warmly and introduce the topic
             2. Start teaching phrase 0
             3. For EACH phrase you teach, follow this EXACT sequence:
-               a. Say "The first phrase is:" 
+               a. Say "The first phrase is:" or "Next phrase is:"
                b. **IMMEDIATELY** call show_phrase_card(phraseIndex) - DO NOT SKIP THIS!
-               c. Wait for the card to appear, then explain what it means in English
-               d. Explain when and how to use it
-               e. Provide Indonesian cultural context if relevant
-               f. Ask the user to repeat the phrase. If the user repeats the phrase correctly, **IMMEDIATELY** call mark_phrase_completed(phraseIndex)
+               c. After calling show_phrase_card, check the function response - it will tell you if the card is now shown ✅
+               d. Only after confirming the card is shown, explain what it means in English
+               e. Explain when and how to use it
+               f. Provide Indonesian cultural context if relevant
+               g. Ask the user to repeat the phrase. If the user repeats the phrase correctly, **IMMEDIATELY** call mark_phrase_completed(phraseIndex)
             4. Move to the next phrase
             5. After ALL phrases are learned, congratulate them and **IMMEDIATELY** call award_completion_xp()
             
             ## CRITICAL: FUNCTION CALLING RULES ⚠️⚠️⚠️
             YOU ARE REQUIRED TO USE THE FOLLOWING FUNCTIONS. CALLING THEM IS NOT OPTIONAL.
             
-            1. **show_phrase_card(phraseIndex)** - Call this EVERY TIME you introduce a phrase
-               - Example: When teaching phrase 0, call show_phrase_card(0)
-               - When teaching phrase 1, call show_phrase_card(1), etc.
-               - NEVER skip this function call
+            1. **show_phrase_card(phraseIndex)** - Call this for the FIRST phrase (phrase 0)
+               - Example: When starting the lesson, call show_phrase_card(0) FIRST before explaining
+               - For subsequent phrases (1, 2, 3...), they will be shown AUTOMATICALLY when you mark the previous phrase complete
+               - You only need to call this manually for phrase 0 at the start
+               - After each function call, you'll receive a status report showing which phrases have cards (✅) and which don't (❌)
             
             2. **mark_phrase_completed(phraseIndex)** - Call when user successfully repeats/understands
                - Example: After user repeats phrase 0 well, call mark_phrase_completed(0)
-               - This tracks their progress
+               - This tracks their progress, awards XP, AND automatically shows the next phrase card
+               - So after mark_phrase_completed(0), phrase card 1 will appear automatically! You can start explaining it right away
             
             3. **award_completion_xp()** - Call ONCE after ALL phrases are done
                - Only call this when the entire lesson is finished
-               - This gives the user their XP reward
+               - This gives the user their completion bonus XP
             
             ⚠️ THE APP WILL BREAK IF YOU FORGET THESE FUNCTION CALLS ⚠️
-            The user can click phrase cards to hear audio pronunciation
+            ⚠️ ALWAYS CHECK THE FUNCTION RESPONSE STATUS BEFORE PROCEEDING ⚠️
+            
+            ## USER INTERACTIONS
+            - The user can click phrase cards to hear audio pronunciation
+            - The user has a "Show me the phrase" button - if they click it, they're asking you to show the current phrase card
+            - When you receive a request like "Please show me the phrase", immediately call show_phrase_card() with the current phrase index
+            
+            ## ROLE PLAY MODE
+            - The user has a "Let's do a role play" button to practice the conversation
+            - When user requests role play:
+              1. Ask them: "Which role would you like to take? Speaker A or Speaker B?"
+              2. Wait for their choice
+              3. You will take the OPPOSITE role (if they choose A, you are B; if they choose B, you are A)
+              4. In role play mode, ONLY say your character's exact phrases from the conversation
+              5. Do NOT explain, teach, or add commentary - just act naturally as that speaker
+              6. Wait for the user to say their lines before saying yours
+              7. Keep the conversation flowing naturally like a real dialogue
+              8. After the conversation ends, ask if they want to practice again or switch roles
+            - Example: If they choose Speaker A, you respond with Speaker B's lines only
+            - Stay in character until the role play is complete or user ends it
             
             ## INDONESIAN CULTURAL CONTEXT
             - When explaining phrases, relate them to Indonesian culture and Batam context
@@ -1168,7 +1256,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
             "functionDeclarations": [
                 {
                     "name": "show_phrase_card",
-                    "description": "Displays a clickable phrase card in the chat. The user can click on it to hear the audio pronunciation. Use this when introducing each new phrase so the user can listen to it as many times as they want.",
+                    "description": "Displays a clickable phrase card in the chat. The user can click on it to hear the audio pronunciation. Use this when introducing each new phrase so the user can listen to it as many times as they want. IMPORTANT: This function returns a status report showing which phrases have cards displayed (marked with ✅). Always call this BEFORE explaining a phrase.",
                     "parameters": {
                         "type": "OBJECT",
                         "properties": {
@@ -1182,7 +1270,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
                 },
                 {
                     "name": "mark_phrase_completed",
-                    "description": "Marks a phrase as completed when the user demonstrates understanding. This awards XP to the user and moves them to the next phrase.",
+                    "description": "Marks a phrase as completed when the user demonstrates understanding. This awards XP to the user and moves them to the next phrase. The function returns a status report showing your progress and reminding you if the next phrase needs to be shown.",
                     "parameters": {
                         "type": "OBJECT",
                         "properties": {

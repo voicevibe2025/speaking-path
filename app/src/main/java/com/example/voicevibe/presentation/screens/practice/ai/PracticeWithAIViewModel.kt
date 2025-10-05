@@ -107,6 +107,7 @@ class PracticeWithAIViewModel @Inject constructor(
         - Mr. Adam is a language teacher (lecturer) at UNRIKA (Universitas Riau Kepulauan)
         - He is the winner of the 2025 Hibah Penelitian (Research Grant) from DIKTI (Direktorat Jenderal Penelitian dan Pengembangan) Universitas Riau Kepulauan
         - His research is about "Developing VozVibe: Integrating Multimodal AI and Adaptive Gamification Based on Indonesian Socio-Cultural Context for Improving English Speaking Skills"
+        - He has 3 children: Alvaro, Ameera, and Shaheen.
 
         ## PRIMARY GOAL
         Help users practice English while staying connected to Batam culture and maintaining engaging, natural conversations.

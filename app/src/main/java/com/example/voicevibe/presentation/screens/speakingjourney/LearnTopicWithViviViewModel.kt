@@ -29,8 +29,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -105,18 +105,24 @@ class LearnTopicWithViviViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            // Load all required data first, then connect once
+            // Show loading state
+            _uiState.update { it.copy(isLoadingTopic = true) }
             Log.d(TAG, "Loading topic data and user profile...")
-            loadTopicData()
-            loadCurrentUserOnce()
             
-            // Wait for both topic and user data to be ready
-            if (topicData != null && currentUser != null) {
+            // Load all required data first
+            val topicSuccess = loadTopicData()
+            val userSuccess = loadCurrentUserOnce()
+            
+            // Hide loading state
+            _uiState.update { it.copy(isLoadingTopic = false) }
+            
+            // Only connect if both loaded successfully
+            if (topicSuccess && userSuccess && topicData != null && currentUser != null) {
                 userContextApplied = true
                 Log.d(TAG, "All data loaded successfully, connecting to live session")
                 connectToLiveSession()
             } else {
-                Log.e(TAG, "Failed to load required data: topicData=${topicData != null}, currentUser=${currentUser != null}")
+                Log.e(TAG, "Failed to load required data: topicSuccess=$topicSuccess, userSuccess=$userSuccess, topicData=${topicData != null}, currentUser=${currentUser != null}")
                 _uiState.update { 
                     it.copy(error = "Failed to load lesson data. Please try again.")
                 }
@@ -124,9 +130,8 @@ class LearnTopicWithViviViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadTopicData() {
-        _uiState.update { it.copy(isLoadingTopic = true) }
-        try {
+    private suspend fun loadTopicData(): Boolean {
+        return try {
             val result = speakingJourneyRepository.getTopics()
             result.fold(
                 onSuccess = { response ->
@@ -134,58 +139,76 @@ class LearnTopicWithViviViewModel @Inject constructor(
                     topicData = topicDto?.let { mapDtoToTopic(it) }
                     _uiState.update {
                         it.copy(
-                            isLoadingTopic = false,
                             topic = topicData,
                             totalPhrases = topicData?.conversation?.size ?: 0
                         )
                     }
-                    // Don't connect here - wait for init to connect after both are loaded
+                    Log.d(TAG, "Topic data loaded successfully: ${topicData?.title}")
+                    topicData != null // Return true if data was loaded
                 },
                 onFailure = { error ->
-                    _uiState.update {
-                        it.copy(
-                            isLoadingTopic = false,
-                            error = error.message ?: "Failed to load topic"
-                        )
-                    }
+                    Log.e(TAG, "Failed to load topic data: ${error.message}")
+                    false
                 }
             )
         } catch (e: Exception) {
-            _uiState.update {
-                it.copy(
-                    isLoadingTopic = false,
-                    error = e.message ?: "Failed to load topic"
-                )
-            }
+            Log.e(TAG, "Exception loading topic data: ${e.message}")
+            false
         }
     }
 
-    private suspend fun loadCurrentUserOnce() {
-        try {
-            // Wait for the first SUCCESS emission, skip Loading states
-            userRepository.getCurrentUser()
-                .firstOrNull { it is Resource.Success || it is Resource.Error }
-                ?.let { res ->
-                    when (res) {
-                        is Resource.Success -> {
-                            val u = res.data
-                            if (u != null) {
-                                currentUser = u
-                                Log.d(TAG, "User profile loaded: ${u.displayName}")
-                            } else {
-                                Log.w(TAG, "User profile data is null")
+    private suspend fun loadCurrentUserOnce(): Boolean {
+        return try {
+            var resultFound = false
+            var success = false
+            
+            // Manually collect and exit on first non-Loading emission
+            withContext(Dispatchers.IO) {
+                val job = launch {
+                    userRepository.getCurrentUser().collect { res ->
+                        if (resultFound) return@collect // Already got result, ignore further emissions
+                        
+                        when (res) {
+                            is Resource.Success -> {
+                                resultFound = true
+                                val u = res.data
+                                if (u != null) {
+                                    currentUser = u
+                                    Log.d(TAG, "User profile loaded: ${u.displayName}")
+                                    success = true
+                                } else {
+                                    Log.w(TAG, "User profile data is null")
+                                    success = false
+                                }
                             }
-                        }
-                        is Resource.Error -> {
-                            Log.e(TAG, "Failed to load user profile: ${res.message}")
-                        }
-                        else -> {
-                            Log.w(TAG, "User profile loading status: $res")
+                            is Resource.Error -> {
+                                if (!resultFound) { // Only log error if we haven't got success yet
+                                    resultFound = true
+                                    Log.e(TAG, "Failed to load user profile: ${res.message}")
+                                    success = false
+                                }
+                            }
+                            is Resource.Loading -> {
+                                Log.d(TAG, "Loading user profile...")
+                            }
                         }
                     }
                 }
+                
+                // Wait for result or timeout after 10 seconds
+                var waited = 0
+                while (!resultFound && waited < 100) {
+                    delay(100)
+                    waited++
+                }
+                
+                job.cancel() // Stop collecting
+            }
+            
+            success
         } catch (e: Exception) { 
             Log.e(TAG, "Exception loading user profile: ${e.message}")
+            false
         }
     }
 
@@ -1015,7 +1038,6 @@ class LearnTopicWithViviViewModel @Inject constructor(
             - Age: 18 years old
             - Location: Batam, Indonesia
             - Gender: Female
-            - Language: Indonesian and English
             
             ## YOUR MISSION
             You are helping the user learn the topic: "${topic.title}"
@@ -1025,9 +1047,9 @@ class LearnTopicWithViviViewModel @Inject constructor(
             - Guide the user through the conversation PHRASE BY PHRASE
             - Start with phrase 0 and move sequentially
             - For each phrase, explain its meaning, usage, and pronunciation
-            - Always provide the Indonesian equivalent and cultural context
-            - Be encouraging and patient
-            - Use simple, friendly language
+            - Always provide the Indonesian cultural context
+            - Be encouraging, patient, and humorous
+            - Use short, simple, friendly language
             
             ## CONVERSATION PHRASES TO TEACH
             $phrasesText
@@ -1039,11 +1061,10 @@ class LearnTopicWithViviViewModel @Inject constructor(
                a. Say "Frasa pertama adalah:" (The first phrase is:)
                b. **IMMEDIATELY** call show_phrase_card(phraseIndex) - DO NOT SKIP THIS!
                c. Wait for the card to appear, then explain what it means in English
-               d. Give the Indonesian translation or equivalent
-               e. Explain when and how to use it
-               f. Provide cultural context if relevant
-               g. Ask the user if they understand or have questions
-               h. Ask the user to repeat the phrase. If the user repeats the phrase correctly, **IMMEDIATELY** call mark_phrase_completed(phraseIndex)
+               d. Explain when and how to use it
+               e. Provide Indonesian cultural context if relevant
+               f. Ask the user if they understand or have questions
+               g. Ask the user to repeat the phrase. If the user repeats the phrase correctly, **IMMEDIATELY** call mark_phrase_completed(phraseIndex)
             4. Move to the next phrase
             5. After ALL phrases are learned, congratulate them and **IMMEDIATELY** call award_completion_xp()
             

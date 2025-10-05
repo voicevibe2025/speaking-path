@@ -29,6 +29,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -76,9 +77,22 @@ class LearnTopicWithViviViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            // Load all required data first, then connect once
+            Log.d(TAG, "Loading topic data and user profile...")
             loadTopicData()
-            loadCurrentUser()
-            connectToLiveSession()
+            loadCurrentUserOnce()
+            
+            // Wait for both topic and user data to be ready
+            if (topicData != null && currentUser != null) {
+                userContextApplied = true
+                Log.d(TAG, "All data loaded successfully, connecting to live session")
+                connectToLiveSession()
+            } else {
+                Log.e(TAG, "Failed to load required data: topicData=${topicData != null}, currentUser=${currentUser != null}")
+                _uiState.update { 
+                    it.copy(error = "Failed to load lesson data. Please try again.")
+                }
+            }
         }
     }
 
@@ -97,10 +111,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
                             totalPhrases = topicData?.conversation?.size ?: 0
                         )
                     }
-                    if (topicData != null && !userContextApplied) {
-                        // Reconnect with topic data
-                        connectToLiveSession()
-                    }
+                    // Don't connect here - wait for init to connect after both are loaded
                 },
                 onFailure = { error ->
                     _uiState.update {
@@ -121,24 +132,30 @@ class LearnTopicWithViviViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadCurrentUser() {
+    private suspend fun loadCurrentUserOnce() {
         try {
-            userRepository.getCurrentUser().collect { res ->
-                when (res) {
-                    is Resource.Success -> {
-                        val u = res.data
-                        if (u != null) {
-                            currentUser = u
-                            if (!userContextApplied && topicData != null) {
-                                userContextApplied = true
-                                connectToLiveSession()
-                            }
-                        }
+            // Use first() to get only the first emission and complete
+            val res = userRepository.getCurrentUser().first()
+            when (res) {
+                is Resource.Success -> {
+                    val u = res.data
+                    if (u != null) {
+                        currentUser = u
+                        Log.d(TAG, "User profile loaded: ${u.displayName}")
+                    } else {
+                        Log.w(TAG, "User profile data is null")
                     }
-                    else -> Unit
+                }
+                is Resource.Error -> {
+                    Log.e(TAG, "Failed to load user profile: ${res.message}")
+                }
+                else -> {
+                    Log.w(TAG, "User profile loading status: $res")
                 }
             }
-        } catch (_: Exception) { /* ignore */ }
+        } catch (e: Exception) { 
+            Log.e(TAG, "Exception loading user profile: ${e.message}")
+        }
     }
 
     fun sendMessage(message: String) {
@@ -885,7 +902,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
                e. Explain when and how to use it
                f. Provide cultural context if relevant
                g. Ask the user if they understand or have questions
-               i. When user shows understanding, call mark_phrase_completed(phraseIndex)
+               h. Ask the user to repeat the phrase. If the user repeats the phrase correctly, call mark_phrase_completed(phraseIndex)
             4. Move to the next phrase
             5. After ALL phrases are learned, congratulate them and call award_completion_xp()
             

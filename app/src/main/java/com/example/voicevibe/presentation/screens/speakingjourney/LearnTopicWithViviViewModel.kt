@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -161,25 +162,28 @@ class LearnTopicWithViviViewModel @Inject constructor(
 
     private suspend fun loadCurrentUserOnce() {
         try {
-            // Use first() to get only the first emission and complete
-            val res = userRepository.getCurrentUser().first()
-            when (res) {
-                is Resource.Success -> {
-                    val u = res.data
-                    if (u != null) {
-                        currentUser = u
-                        Log.d(TAG, "User profile loaded: ${u.displayName}")
-                    } else {
-                        Log.w(TAG, "User profile data is null")
+            // Wait for the first SUCCESS emission, skip Loading states
+            userRepository.getCurrentUser()
+                .firstOrNull { it is Resource.Success || it is Resource.Error }
+                ?.let { res ->
+                    when (res) {
+                        is Resource.Success -> {
+                            val u = res.data
+                            if (u != null) {
+                                currentUser = u
+                                Log.d(TAG, "User profile loaded: ${u.displayName}")
+                            } else {
+                                Log.w(TAG, "User profile data is null")
+                            }
+                        }
+                        is Resource.Error -> {
+                            Log.e(TAG, "Failed to load user profile: ${res.message}")
+                        }
+                        else -> {
+                            Log.w(TAG, "User profile loading status: $res")
+                        }
                     }
                 }
-                is Resource.Error -> {
-                    Log.e(TAG, "Failed to load user profile: ${res.message}")
-                }
-                else -> {
-                    Log.w(TAG, "User profile loading status: $res")
-                }
-            }
         } catch (e: Exception) { 
             Log.e(TAG, "Exception loading user profile: ${e.message}")
         }
@@ -488,6 +492,12 @@ class LearnTopicWithViviViewModel @Inject constructor(
                     "award_completion_xp" -> {
                         handleAwardCompletionXp()
                     }
+                    "suggest_video_clip" -> {
+                        val phraseIndex = args?.get("phraseIndex")?.asInt ?: currentPhraseIndex
+                        val searchQuery = args?.get("searchQuery")?.asString ?: ""
+                        val description = args?.get("description")?.asString ?: ""
+                        handleSuggestVideoClip(phraseIndex, searchQuery, description)
+                    }
                 }
                 
                 // Send function response back with proper format
@@ -519,6 +529,12 @@ class LearnTopicWithViviViewModel @Inject constructor(
                     }
                     "award_completion_xp" -> {
                         handleAwardCompletionXp()
+                    }
+                    "suggest_video_clip" -> {
+                        val phraseIndex = args?.get("phraseIndex")?.asInt ?: currentPhraseIndex
+                        val searchQuery = args?.get("searchQuery")?.asString ?: ""
+                        val description = args?.get("description")?.asString ?: ""
+                        handleSuggestVideoClip(phraseIndex, searchQuery, description)
                     }
                 }
                 
@@ -653,6 +669,61 @@ class LearnTopicWithViviViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun handleSuggestVideoClip(phraseIndex: Int, searchQuery: String, description: String) {
+        Log.d(TAG, "Suggesting video clip for phrase $phraseIndex: query='$searchQuery', description='$description'")
+        
+        val suggestionId = "video_${phraseIndex}_${System.currentTimeMillis()}"
+        val suggestion = VideoSuggestion(
+            id = suggestionId,
+            phraseIndex = phraseIndex,
+            searchQuery = searchQuery,
+            description = description
+        )
+        
+        _uiState.update { state ->
+            state.copy(
+                videoSuggestions = state.videoSuggestions + suggestion
+            )
+        }
+        
+        Log.d(TAG, "Video suggestion added: $suggestion")
+    }
+    
+    fun acceptVideoSuggestion(suggestionId: String) {
+        val suggestion = uiState.value.videoSuggestions.find { it.id == suggestionId }
+        if (suggestion != null) {
+            Log.d(TAG, "User accepted video suggestion: ${suggestion.searchQuery}")
+            
+            // Create YouTube search URL (embedded player with search results)
+            val encodedQuery = java.net.URLEncoder.encode(suggestion.searchQuery, "UTF-8")
+            val youtubeSearchUrl = "https://www.youtube.com/results?search_query=$encodedQuery"
+            
+            _uiState.update { state ->
+                state.copy(
+                    activeVideoUrl = youtubeSearchUrl,
+                    videoSuggestions = state.videoSuggestions.map {
+                        if (it.id == suggestionId) it.copy(dismissed = true) else it
+                    }
+                )
+            }
+        }
+    }
+    
+    fun dismissVideoSuggestion(suggestionId: String) {
+        Log.d(TAG, "User dismissed video suggestion: $suggestionId")
+        _uiState.update { state ->
+            state.copy(
+                videoSuggestions = state.videoSuggestions.map {
+                    if (it.id == suggestionId) it.copy(dismissed = true) else it
+                }
+            )
+        }
+    }
+    
+    fun closeVideo() {
+        _uiState.update { it.copy(activeVideoUrl = null) }
     }
 
     private fun sendFunctionResponse(callId: String, functionName: String, response: String) {
@@ -1011,6 +1082,17 @@ class LearnTopicWithViviViewModel @Inject constructor(
             - show_phrase_card(phraseIndex): Display a clickable phrase card (use when introducing a new phrase)
             - mark_phrase_completed(phraseIndex): Mark a phrase as completed when user demonstrates understanding
             - award_completion_xp(): Award bonus XP when all phrases are completed
+            - suggest_video_clip(phraseIndex, searchQuery, description): Offer the user a YouTube video to help visualize the phrase context
+            
+            ## USING VIDEO SUGGESTIONS
+            - After explaining a phrase, you MAY offer a video to help visualize it
+            - Call suggest_video_clip(phraseIndex, searchQuery, description) where:
+              * searchQuery: YouTube search terms (e.g., "how to order coffee in english")
+              * description: Brief explanation of what the video will show (e.g., "See how people greet each other in real situations")
+            - The user will be asked if they want to watch it
+            - Don't offer videos for EVERY phrase, only when it would genuinely help (2-3 per lesson max)
+            - Good for: greetings, ordering food, asking directions, cultural situations
+            - Not needed for: simple vocabulary, grammar points
             
             ## USER CONTEXT
             ${user?.let { 
@@ -1076,6 +1158,28 @@ class LearnTopicWithViviViewModel @Inject constructor(
                         "type": "OBJECT",
                         "properties": {},
                         "required": []
+                    }
+                },
+                {
+                    "name": "suggest_video_clip",
+                    "description": "Suggests a YouTube video clip to help the user visualize the phrase in real context. The user will be asked if they want to watch it. Use this selectively (2-3 times per lesson) when a video would genuinely help understanding, such as for greetings, ordering food, asking directions, or cultural situations.",
+                    "parameters": {
+                        "type": "OBJECT",
+                        "properties": {
+                            "phraseIndex": {
+                                "type": "INTEGER",
+                                "description": "The index of the phrase this video relates to (0-based)"
+                            },
+                            "searchQuery": {
+                                "type": "STRING",
+                                "description": "YouTube search query to find relevant videos (e.g., 'how to greet someone in english', 'ordering coffee in english conversation')"
+                            },
+                            "description": {
+                                "type": "STRING",
+                                "description": "Brief, friendly explanation of what the video will show (e.g., 'See how people use this greeting in real conversations')"
+                            }
+                        },
+                        "required": ["phraseIndex", "searchQuery", "description"]
                     }
                 }
             ]
@@ -1151,11 +1255,21 @@ data class LearnWithViviState(
     val phrasesCompleted: Int = 0,
     val totalPhrases: Int = 0,
     val topicCompleted: Boolean = false,
-    val phraseCards: List<PhraseCard> = emptyList()
+    val phraseCards: List<PhraseCard> = emptyList(),
+    val videoSuggestions: List<VideoSuggestion> = emptyList(),
+    val activeVideoUrl: String? = null
 )
 
 data class PhraseCard(
     val phraseIndex: Int,
     val text: String,
     val speaker: String
+)
+
+data class VideoSuggestion(
+    val id: String,
+    val phraseIndex: Int,
+    val searchQuery: String,
+    val description: String,
+    val dismissed: Boolean = false
 )

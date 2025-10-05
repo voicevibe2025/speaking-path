@@ -21,7 +21,11 @@ import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.viewinterop.AndroidView
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.ui.Modifier
+import androidx.compose.material3.HorizontalDivider as Divider
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -57,7 +61,11 @@ fun LearnTopicWithViviScreen(
         viewModel.setContext(context)
     }
 
-    LaunchedEffect(uiState.messages.size, uiState.showTypingIndicator) {
+    LaunchedEffect(
+        uiState.messages.size,
+        uiState.showTypingIndicator,
+        uiState.videoSuggestions.count { !it.dismissed }
+    ) {
         listState.animateScrollToItem(0)
     }
 
@@ -145,6 +153,18 @@ fun LearnTopicWithViviScreen(
                         }
 
                         itemsIndexed(
+                            items = uiState.videoSuggestions.reversed().filter { !it.dismissed },
+                            key = { index, suggestion -> "video_suggestion_${suggestion.id}_$index" }
+                        ) { index, suggestion ->
+                            VideoSuggestionCard(
+                                suggestion = suggestion,
+                                onAccept = { viewModel.acceptVideoSuggestion(suggestion.id) },
+                                onDismiss = { viewModel.dismissVideoSuggestion(suggestion.id) }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        
+                        itemsIndexed(
                             items = uiState.phraseCards.reversed(),
                             key = { index, card -> "phrase_card_${card.phraseIndex}_$index" }
                         ) { index, card ->
@@ -188,6 +208,21 @@ fun LearnTopicWithViviScreen(
                 )
             }
 
+            // Video player overlay
+            AnimatedVisibility(
+                visible = uiState.activeVideoUrl != null,
+                enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+                modifier = Modifier.align(Alignment.BottomCenter)
+            ) {
+                uiState.activeVideoUrl?.let { videoUrl ->
+                    VideoPlayerOverlay(
+                        videoUrl = videoUrl,
+                        onClose = viewModel::closeVideo
+                    )
+                }
+            }
+            
             // Error display
             AnimatedVisibility(
                 visible = uiState.error != null,
@@ -883,4 +918,175 @@ private fun CompletionDialog(
             }
         }
     )
+}
+
+@Composable
+private fun VideoSuggestionCard(
+    suggestion: VideoSuggestion,
+    onAccept: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 40.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)
+        ),
+        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PlayCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Text(
+                        text = "Video Suggestion",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                }
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Dismiss",
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = suggestion.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                ) {
+                    Text("No, thanks")
+                }
+                
+                Button(
+                    onClick = onAccept,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Watch Video")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun VideoPlayerOverlay(
+    videoUrl: String,
+    onClose: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.7f),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 8.dp,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.OndemandVideo,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Text(
+                        text = "YouTube Videos",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                
+                IconButton(onClick = onClose) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Close video player"
+                    )
+                }
+            }
+            
+            Divider(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+            
+            // WebView for YouTube
+            AndroidView(
+                factory = { context ->
+                    WebView(context).apply {
+                        settings.javaScriptEnabled = true
+                        settings.domStorageEnabled = true
+                        settings.mediaPlaybackRequiresUserGesture = false
+                        webViewClient = WebViewClient()
+                        loadUrl(videoUrl)
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
 }

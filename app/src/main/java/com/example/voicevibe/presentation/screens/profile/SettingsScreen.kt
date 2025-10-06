@@ -34,6 +34,10 @@ fun SettingsScreen(
     onNavigateToAccountSettings: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
     onNavigateToAbout: () -> Unit,
+    onNavigateToPrivacySettings: () -> Unit,
+    onNavigateToBlockedUsers: () -> Unit,
+    onNavigateToPrivacyPolicy: () -> Unit,
+    onNavigateToCommunityGuidelines: () -> Unit,
     onLogout: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -150,6 +154,34 @@ fun SettingsScreen(
                         selectedAccent = viewModel.voiceAccent.value
                         showAccentDialog = true
                     }
+                )
+            }
+
+            // Privacy & Safety
+            SettingsSection(title = "Privacy & Safety") {
+                SettingsItem(
+                    icon = Icons.Default.Shield,
+                    title = "Privacy Settings",
+                    subtitle = "Control your privacy and visibility",
+                    onClick = onNavigateToPrivacySettings
+                )
+                SettingsItem(
+                    icon = Icons.Default.Block,
+                    title = "Blocked Users",
+                    subtitle = "Manage blocked users",
+                    onClick = onNavigateToBlockedUsers
+                )
+                SettingsItem(
+                    icon = Icons.Default.Gavel,
+                    title = "Privacy Policy",
+                    subtitle = "Read our privacy policy",
+                    onClick = onNavigateToPrivacyPolicy
+                )
+                SettingsItem(
+                    icon = Icons.Default.Article,
+                    title = "Community Guidelines",
+                    subtitle = "Learn about our community standards",
+                    onClick = onNavigateToCommunityGuidelines
                 )
             }
 
@@ -1281,7 +1313,7 @@ private fun DeleteAccountDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(
-                    text = "⚠️ Warning: This action is permanent and cannot be undone.",
+                    text = " Warning: This action is permanent and cannot be undone.",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.error
@@ -1347,4 +1379,440 @@ private fun DeleteAccountDialog(
             }
         }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PrivacySettingsScreen(
+    onNavigateBack: () -> Unit,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
+    var hideAvatar by remember { mutableStateOf(false) }
+    var hideOnlineStatus by remember { mutableStateOf(false) }
+    var allowMessagesFromStrangers by remember { mutableStateOf(true) }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text("Privacy Settings", fontWeight = FontWeight.Bold) },
+            navigationIcon = {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            }
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Control your visibility and privacy",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    SettingsToggleItem(
+                        icon = Icons.Default.AccountCircle,
+                        title = "Hide Avatar",
+                        subtitle = "Other users won't see your profile picture",
+                        checked = hideAvatar,
+                        onCheckedChange = { hideAvatar = it }
+                    )
+                    
+                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+                    
+                    SettingsToggleItem(
+                        icon = Icons.Default.Visibility,
+                        title = "Hide Online Status",
+                        subtitle = "Don't show when you're active",
+                        checked = hideOnlineStatus,
+                        onCheckedChange = { hideOnlineStatus = it }
+                    )
+                    
+                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+                    
+                    SettingsToggleItem(
+                        icon = Icons.Default.Message,
+                        title = "Allow Messages from Anyone",
+                        subtitle = "If off, only followers can message you",
+                        checked = allowMessagesFromStrangers,
+                        onCheckedChange = { allowMessagesFromStrangers = it }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = {
+                    // TODO: Save privacy settings via viewModel
+                    onNavigateBack()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Save Changes", fontSize = 16.sp)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BlockedUsersScreen(
+    onNavigateBack: () -> Unit,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
+    var blockedUsers by remember { mutableStateOf<List<String>>(emptyList()) }
+    var showUnblockDialog by remember { mutableStateOf<String?>(null) }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text("Blocked Users", fontWeight = FontWeight.Bold) },
+            navigationIcon = {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            }
+        )
+
+        if (blockedUsers.isEmpty()) {
+            // Empty state
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    Icons.Default.Block,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "No Blocked Users",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Users you block will appear here",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
+        } else {
+            // List of blocked users
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "You have blocked ${blockedUsers.size} user${if (blockedUsers.size != 1) "s" else ""}",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                blockedUsers.forEach { username ->
+                    BlockedUserItem(
+                        username = username,
+                        onUnblock = { showUnblockDialog = username }
+                    )
+                }
+            }
+        }
+    }
+
+    // Unblock confirmation dialog
+    showUnblockDialog?.let { username ->
+        AlertDialog(
+            onDismissRequest = { showUnblockDialog = null },
+            title = { Text("Unblock User", fontWeight = FontWeight.Bold) },
+            text = { Text("Are you sure you want to unblock $username?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        // TODO: Call unblock API
+                        blockedUsers = blockedUsers.filter { it != username }
+                        showUnblockDialog = null
+                    }
+                ) {
+                    Text("Unblock")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showUnblockDialog = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun BlockedUserItem(
+    username: String,
+    onUnblock: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = username.take(2).uppercase(),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = username,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = "Blocked",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            OutlinedButton(
+                onClick = onUnblock,
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Unblock")
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PrivacyPolicyScreen(onNavigateBack: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text("Privacy Policy", fontWeight = FontWeight.Bold) },
+            navigationIcon = {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            }
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "VozVibe Privacy Policy",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            
+            Text(
+                text = "Last updated: ${java.time.LocalDate.now()}",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Divider()
+            
+            PrivacySection(
+                title = "1. Information We Collect",
+                content = "We collect information you provide directly to us, including:\n• Account information (email, username)\n• Profile information (name, bio, avatar)\n• Learning progress and practice recordings\n• Social interactions (posts, comments, follows)"
+            )
+            
+            PrivacySection(
+                title = "2. How We Use Your Information",
+                content = "We use the information we collect to:\n• Provide and improve our services\n• Personalize your learning experience\n• Communicate with you\n• Ensure platform safety and security"
+            )
+            
+            PrivacySection(
+                title = "3. Data Sharing",
+                content = "We do not sell your personal information. We may share your information only in these circumstances:\n• With your consent\n• To comply with legal obligations\n• To protect our rights and safety"
+            )
+            
+            PrivacySection(
+                title = "4. Data Security",
+                content = "We implement appropriate security measures to protect your personal information from unauthorized access, alteration, disclosure, or destruction."
+            )
+            
+            PrivacySection(
+                title = "5. Your Rights",
+                content = "You have the right to:\n• Access your personal data\n• Correct inaccurate data\n• Delete your account and data\n• Control your privacy settings\n• Export your data"
+            )
+            
+            PrivacySection(
+                title = "6. Contact Us",
+                content = "If you have questions about this Privacy Policy, please contact us at privacy@vozvibe.com"
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CommunityGuidelinesScreen(onNavigateBack: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text("Community Guidelines", fontWeight = FontWeight.Bold) },
+            navigationIcon = {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            }
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "VozVibe Community Guidelines",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            
+            Text(
+                text = "Our community guidelines help create a safe, respectful, and supportive learning environment for everyone.",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Divider()
+            
+            GuidelineSection(
+                title = "Be Respectful",
+                content = "Treat all community members with respect and kindness. Harassment, hate speech, or discriminatory behavior will not be tolerated."
+            )
+            
+            GuidelineSection(
+                title = "No Spam or Self-Promotion",
+                content = "Don't post spam, excessive self-promotion, or repetitive content. Share helpful resources and engage authentically."
+            )
+            
+            GuidelineSection(
+                title = "Keep Content Appropriate",
+                content = "Ensure all content is appropriate for a learning platform. Explicit, violent, or offensive material is prohibited."
+            )
+            
+            GuidelineSection(
+                title = "Protect Privacy",
+                content = "Respect others' privacy. Don't share personal information about others without their consent."
+            )
+            
+            GuidelineSection(
+                title = "Be Supportive",
+                content = "We're all here to learn. Encourage others, celebrate progress, and help create a positive learning environment."
+            )
+            
+            GuidelineSection(
+                title = "Report Violations",
+                content = "If you see content that violates these guidelines, please report it using the report button. Our moderation team will review it promptly."
+            )
+            
+            Divider()
+            
+            Text(
+                text = "Consequences of Violations",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            
+            Text(
+                text = "Violations of these guidelines may result in:\n• Content removal\n• Temporary suspension\n• Permanent account termination\n\nThe severity of the action depends on the nature and frequency of the violation.",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun PrivacySection(title: String, content: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = content,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            lineHeight = 20.sp
+        )
+    }
+}
+
+@Composable
+private fun GuidelineSection(title: String, content: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                Icons.Default.CheckCircle,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        Text(
+            text = content,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            lineHeight = 20.sp,
+            modifier = Modifier.padding(start = 28.dp)
+        )
+    }
 }

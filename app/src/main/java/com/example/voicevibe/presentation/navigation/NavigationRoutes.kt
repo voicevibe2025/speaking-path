@@ -140,6 +140,12 @@ sealed class Screen(val route: String) {
     object NotificationSettings : Screen("notification_settings")
     object LanguageSettings : Screen("language_settings")
     object About : Screen("about")
+    
+    // Privacy & Safety
+    object PrivacySettings : Screen("privacy_settings")
+    object BlockedUsers : Screen("blocked_users")
+    object PrivacyPolicy : Screen("privacy_policy")
+    object CommunityGuidelines : Screen("community_guidelines")
 }
 
 /**

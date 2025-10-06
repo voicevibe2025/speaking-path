@@ -300,16 +300,23 @@ class UserProfileViewModel @Inject constructor(
         }
     }
 
-    fun reportUser(reason: String) {
+    fun reportUser(reason: String, description: String = "") {
         viewModelScope.launch {
-            userId?.let { id ->
-                when (val result = repository.reportUser(id, reason)) {
-                    is Resource.Success -> {
+            // Get the actual user ID from the loaded profile
+            val reportedUserId = _uiState.value.userProfile?.id?.toIntOrNull()
+            if (reportedUserId != null) {
+                when (val result = repository.createReport(
+                    reportType = "user",
+                    reason = reason,
+                    description = description,
+                    reportedUserId = reportedUserId
+                )) {
+                    is Resource.Success<*> -> {
                         _events.emit(
-                            UserProfileEvent.ShowMessage("User reported. We'll review this soon.")
+                            UserProfileEvent.ShowMessage(result.data?.toString() ?: "User reported. We'll review this soon.")
                         )
                     }
-                    is Resource.Error -> {
+                    is Resource.Error<*> -> {
                         _events.emit(
                             UserProfileEvent.ShowMessage(
                                 result.message ?: "Failed to report user"
@@ -318,6 +325,8 @@ class UserProfileViewModel @Inject constructor(
                     }
                     else -> {}
                 }
+            } else {
+                _events.emit(UserProfileEvent.ShowMessage("Unable to report user"))
             }
         }
     }

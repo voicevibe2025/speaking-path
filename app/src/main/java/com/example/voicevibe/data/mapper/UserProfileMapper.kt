@@ -59,7 +59,7 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
         timezone = null, // Not in data model
         isVerified = false, // Not in data model
         isPremium = this.membershipStatus == "premium",
-        isOnline = false, // Not in data model
+        isOnline = this.isOnline == true,
         isFollowing = this.isFollowing == true,
         isFollower = this.isFollower == true,
         isBlocked = false, // Not in data model

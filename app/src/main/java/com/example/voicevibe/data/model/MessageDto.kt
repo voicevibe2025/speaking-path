@@ -36,7 +36,9 @@ data class ConversationUserDto(
     @SerializedName("displayName")
     val displayName: String,
     @SerializedName("avatarUrl")
-    val avatarUrl: String?
+    val avatarUrl: String?,
+    @SerializedName("isOnline")
+    val isOnline: Boolean? = null
 )
 
 /**

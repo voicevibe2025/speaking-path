@@ -288,29 +288,42 @@ fun PostCard(
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(BrandIndigo.copy(alpha = 0.1f))
-                        .clickable { onUserClick(post.author.id.toString()) },
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier.size(40.dp)
                 ) {
-                    val avatarUrl = post.author.avatarUrl
-                    if (avatarUrl != null) {
-                        SubcomposeAsyncImage(
-                            model = avatarUrl,
-                            contentDescription = "Author Avatar",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        Text(
-                            text = post.author.displayName.take(2).uppercase(),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BrandIndigo
-                        )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                            .background(BrandIndigo.copy(alpha = 0.1f))
+                            .clickable { onUserClick(post.author.id.toString()) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        val avatarUrl = post.author.avatarUrl
+                        if (avatarUrl != null) {
+                            SubcomposeAsyncImage(
+                                model = avatarUrl,
+                                contentDescription = "Author Avatar",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Text(
+                                text = post.author.displayName.take(2).uppercase(),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandIndigo
+                            )
+                        }
                     }
+                    
+                    // Online status indicator
+                    com.example.voicevibe.presentation.components.OnlineStatusIndicator(
+                        isOnline = post.author.isOnline,
+                        size = 10.dp,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .offset(x = 2.dp, y = 2.dp)
+                    )
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {

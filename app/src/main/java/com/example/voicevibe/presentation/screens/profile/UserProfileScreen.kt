@@ -33,6 +33,7 @@ import com.example.voicevibe.R
 import com.example.voicevibe.domain.model.*
 import com.example.voicevibe.presentation.components.LoadingScreen
 import com.example.voicevibe.presentation.components.ErrorScreen
+import com.example.voicevibe.presentation.components.OnlineStatusIndicator
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -360,42 +361,56 @@ private fun ProfileHeader(
                 Box(
                     modifier = Modifier
                         .size(120.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-                        .border(4.dp, MaterialTheme.colorScheme.surface, CircleShape),
-                    contentAlignment = Alignment.Center
                 ) {
-                    if (!profile.avatarUrl.isNullOrBlank()) {
-                        SubcomposeAsyncImage(
-                            model = profile.avatarUrl,
-                            contentDescription = "Avatar",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize(),
-                            loading = {
-                                Text(
-                                    text = initials,
-                                    fontSize = 40.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                            },
-                            error = {
-                                Text(
-                                    text = initials,
-                                    fontSize = 40.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                            }
-                        )
-                    } else {
-                        Text(
-                            text = initials,
-                            fontSize = 40.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                            .border(4.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (!profile.avatarUrl.isNullOrBlank()) {
+                            SubcomposeAsyncImage(
+                                model = profile.avatarUrl,
+                                contentDescription = "Avatar",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize(),
+                                loading = {
+                                    Text(
+                                        text = initials,
+                                        fontSize = 40.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                },
+                                error = {
+                                    Text(
+                                        text = initials,
+                                        fontSize = 40.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+                            )
+                        } else {
+                            Text(
+                                text = initials,
+                                fontSize = 40.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
                     }
+                    
+                    // Online status indicator
+                    OnlineStatusIndicator(
+                        isOnline = profile.isOnline,
+                        size = 16.dp,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .offset(x = (-8).dp, y = (-8).dp)
+                    )
                 }
             }
         }

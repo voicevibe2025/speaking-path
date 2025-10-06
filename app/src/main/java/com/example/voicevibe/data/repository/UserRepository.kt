@@ -147,9 +147,10 @@ class UserRepository @Inject constructor(
     /**
      * Block a user
      */
-    suspend fun blockUser(userId: String): Resource<Unit> {
+    suspend fun blockUser(userId: String, reason: String? = null): Resource<Unit> {
         return try {
-            val response = apiService.blockUser(userId)
+            val reasonMap = if (reason != null) mapOf("reason" to reason) else emptyMap()
+            val response = apiService.blockUser(userId, reasonMap)
             if (response.isSuccessful) {
                 Resource.Success(Unit)
             } else {
@@ -161,16 +162,103 @@ class UserRepository @Inject constructor(
     }
 
     /**
-     * Report a user
+     * Unblock a user
      */
-    suspend fun reportUser(userId: String, reason: String): Resource<Unit> {
+    suspend fun unblockUser(userId: String): Resource<Unit> {
         return try {
-            val reasonMap = mapOf("reason" to reason)
-            val response = apiService.reportUser(userId, reasonMap)
+            val response = apiService.unblockUser(userId)
             if (response.isSuccessful) {
                 Resource.Success(Unit)
             } else {
-                Resource.Error("Failed to report user")
+                Resource.Error("Failed to unblock user")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Get blocked users list
+     */
+    suspend fun getBlockedUsers(): Resource<List<com.example.voicevibe.data.remote.api.BlockedUser>> {
+        return try {
+            val response = apiService.getBlockedUsers()
+            if (response.isSuccessful) {
+                Resource.Success(response.body() ?: emptyList())
+            } else {
+                Resource.Error("Failed to load blocked users")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Create a report for user, post, or comment
+     */
+    suspend fun createReport(
+        reportType: String,
+        reason: String,
+        description: String,
+        reportedUserId: Int? = null,
+        reportedPostId: Int? = null,
+        reportedCommentId: Int? = null
+    ): Resource<String> {
+        return try {
+            val request = com.example.voicevibe.data.remote.api.CreateReportRequest(
+                reportType = reportType,
+                reason = reason,
+                description = description,
+                reportedUser = reportedUserId,
+                reportedPostId = reportedPostId,
+                reportedCommentId = reportedCommentId
+            )
+            val response = apiService.createReport(request)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true) {
+                    Resource.Success(body.message)
+                } else {
+                    Resource.Error("Failed to submit report")
+                }
+            } else {
+                Resource.Error("Failed to submit report")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Get user's privacy settings
+     */
+    suspend fun getPrivacySettings(): Resource<com.example.voicevibe.data.remote.api.PrivacySettings> {
+        return try {
+            val response = apiService.getPrivacySettings()
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    Resource.Success(it)
+                } ?: Resource.Error("Failed to load privacy settings")
+            } else {
+                Resource.Error("Failed to load privacy settings")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Update user's privacy settings
+     */
+    suspend fun updatePrivacySettings(settings: com.example.voicevibe.data.remote.api.PrivacySettings): Resource<com.example.voicevibe.data.remote.api.PrivacySettings> {
+        return try {
+            val response = apiService.updatePrivacySettings(settings)
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    Resource.Success(it)
+                } ?: Resource.Error("Failed to update privacy settings")
+            } else {
+                Resource.Error("Failed to update privacy settings")
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unknown error occurred")

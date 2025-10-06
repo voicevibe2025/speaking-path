@@ -8,6 +8,7 @@ data class PostAuthor(
     val username: String,
     val displayName: String,
     val avatarUrl: String? = null,
+    val isOnline: Boolean = false
 )
 
 /** A social post: can have text and/or imageUrl, or a linkUrl (link is exclusive) */

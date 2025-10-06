@@ -89,4 +89,7 @@ data class UserProfile(
     val followersCount: Int? = null,
     @SerializedName("followingCount")
     val followingCount: Int? = null
+    ,
+    @SerializedName("isOnline")
+    val isOnline: Boolean? = null
 )

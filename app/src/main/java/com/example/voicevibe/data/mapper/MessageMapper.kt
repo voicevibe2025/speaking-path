@@ -32,7 +32,8 @@ fun ConversationUserDto.toDomain(): ConversationUser {
         id = this.id,
         username = this.username,
         displayName = this.displayName,
-        avatarUrl = this.avatarUrl
+        avatarUrl = this.avatarUrl,
+        isOnline = this.isOnline == true
     )
 }
 

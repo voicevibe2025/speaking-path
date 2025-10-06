@@ -26,6 +26,7 @@ import coil.compose.SubcomposeAsyncImage
 import com.example.voicevibe.domain.model.Conversation
 import com.example.voicevibe.presentation.components.ErrorScreen
 import com.example.voicevibe.presentation.components.LoadingScreen
+import com.example.voicevibe.presentation.components.OnlineStatusIndicator
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -193,28 +194,40 @@ private fun ConversationItem(
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Avatar
+                    // Avatar + online indicator
                     Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer),
-                        contentAlignment = Alignment.Center
+                        modifier = Modifier.size(56.dp)
                     ) {
-                        if (conversation.otherUser.avatarUrl != null) {
-                            SubcomposeAsyncImage(
-                                model = conversation.otherUser.avatarUrl,
-                                contentDescription = "Avatar",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        } else {
-                            Text(
-                                text = conversation.otherUser.displayName.take(1).uppercase(),
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (conversation.otherUser.avatarUrl != null) {
+                                SubcomposeAsyncImage(
+                                    model = conversation.otherUser.avatarUrl,
+                                    contentDescription = "Avatar",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                Text(
+                                    text = conversation.otherUser.displayName.take(1).uppercase(),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
                         }
+
+                        OnlineStatusIndicator(
+                            isOnline = conversation.otherUser.isOnline,
+                            size = 10.dp,
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .offset(x = 2.dp, y = 2.dp)
+                        )
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))

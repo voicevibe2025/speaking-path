@@ -35,6 +35,10 @@ import com.example.voicevibe.presentation.screens.profile.SettingsScreen
 import com.example.voicevibe.presentation.screens.profile.AccountSettingsScreen
 import com.example.voicevibe.presentation.screens.profile.EditProfileScreen
 import com.example.voicevibe.presentation.screens.profile.AboutScreen
+import com.example.voicevibe.presentation.screens.profile.PrivacySettingsScreen
+import com.example.voicevibe.presentation.screens.profile.BlockedUsersScreen
+import com.example.voicevibe.presentation.screens.profile.PrivacyPolicyScreen
+import com.example.voicevibe.presentation.screens.profile.CommunityGuidelinesScreen
 import com.example.voicevibe.presentation.screens.main.social.SocialFeedScreen
 import com.example.voicevibe.presentation.screens.main.search.UserSearchResultsScreen
 import com.example.voicevibe.presentation.screens.scenarios.CulturalScenariosScreen
@@ -636,6 +640,18 @@ fun NavGraph(
                 onNavigateToAbout = {
                     navController.navigate(Screen.About.route)
                 },
+                onNavigateToPrivacySettings = {
+                    navController.navigate(Screen.PrivacySettings.route)
+                },
+                onNavigateToBlockedUsers = {
+                    navController.navigate(Screen.BlockedUsers.route)
+                },
+                onNavigateToPrivacyPolicy = {
+                    navController.navigate(Screen.PrivacyPolicy.route)
+                },
+                onNavigateToCommunityGuidelines = {
+                    navController.navigate(Screen.CommunityGuidelines.route)
+                },
                 onLogout = {
                     scope.launch {
                         settingsViewModel.logout()
@@ -659,6 +675,20 @@ fun NavGraph(
         }
         composable(Screen.About.route) {
             AboutScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        
+        // Privacy & Safety screens
+        composable(Screen.PrivacySettings.route) {
+            PrivacySettingsScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(Screen.BlockedUsers.route) {
+            BlockedUsersScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(Screen.PrivacyPolicy.route) {
+            PrivacyPolicyScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(Screen.CommunityGuidelines.route) {
+            CommunityGuidelinesScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         // Notifications list

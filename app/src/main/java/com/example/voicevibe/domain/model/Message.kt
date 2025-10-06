@@ -35,7 +35,8 @@ data class ConversationUser(
     val id: Int,
     val username: String,
     val displayName: String,
-    val avatarUrl: String?
+    val avatarUrl: String?,
+    val isOnline: Boolean = false
 )
 
 /**

@@ -29,6 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.SubcomposeAsyncImage
 import com.example.voicevibe.domain.model.UserProfile
+import com.example.voicevibe.presentation.components.OnlineStatusIndicator
 import com.example.voicevibe.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,22 +131,35 @@ private fun UserRow(user: UserProfile, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(BrandIndigo.copy(alpha = 0.1f)),
-                contentAlignment = Alignment.Center
+                modifier = Modifier.size(44.dp)
             ) {
-                val avatarUrl = user.avatarUrl
-                if (!avatarUrl.isNullOrBlank()) {
-                    SubcomposeAsyncImage(
-                        model = avatarUrl,
-                        contentDescription = "Avatar",
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    Icon(Icons.Filled.Person, contentDescription = null, tint = BrandIndigo)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(BrandIndigo.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val avatarUrl = user.avatarUrl
+                    if (!avatarUrl.isNullOrBlank()) {
+                        SubcomposeAsyncImage(
+                            model = avatarUrl,
+                            contentDescription = "Avatar",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Icon(Icons.Filled.Person, contentDescription = null, tint = BrandIndigo)
+                    }
                 }
+                
+                // Online status indicator
+                OnlineStatusIndicator(
+                    isOnline = user.isOnline,
+                    size = 10.dp,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .offset(x = 2.dp, y = 2.dp)
+                )
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {

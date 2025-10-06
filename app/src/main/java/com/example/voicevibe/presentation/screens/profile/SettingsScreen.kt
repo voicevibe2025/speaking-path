@@ -17,6 +17,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,6 +32,7 @@ import coil.compose.SubcomposeAsyncImage
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAccountSettings: () -> Unit,
+    onNavigateToEditProfile: () -> Unit,
     onNavigateToNotificationSettings: () -> Unit,
     onNavigateToLanguageSettings: () -> Unit,
     onNavigateToAbout: () -> Unit,
@@ -438,7 +441,10 @@ fun SettingsScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountSettingsScreen(onNavigateBack: () -> Unit) {
+fun AccountSettingsScreen(
+    onNavigateBack: () -> Unit,
+    onNavigateToEditProfile: () -> Unit
+) {
     val viewModel: SettingsViewModel = hiltViewModel()
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
@@ -457,6 +463,17 @@ fun AccountSettingsScreen(onNavigateBack: () -> Unit) {
                     subtitle = "Display your email in Profile Screen",
                     checked = viewModel.showEmailOnProfile.value,
                     onCheckedChange = { viewModel.setShowEmailOnProfile(it) }
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            SettingsSection(title = "Edit Profile") {
+                SettingsItem(
+                    icon = Icons.Default.Edit,
+                    title = "Edit Profile",
+                    subtitle = "Change email, display name, or password",
+                    onClick = onNavigateToEditProfile
                 )
             }
         }
@@ -513,6 +530,344 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
         )
         Column(modifier = Modifier.padding(16.dp)) {
             Text("VoiceVibe v1.0.0", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditProfileScreen(
+    onNavigateBack: () -> Unit,
+    viewModel: EditProfileViewModel = hiltViewModel()
+) {
+    val scrollState = rememberScrollState()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Edit Profile", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(scrollState)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            // Email Section
+            EmailUpdateSection(viewModel)
+
+            Divider()
+
+            // Display Name Section
+            DisplayNameUpdateSection(viewModel)
+
+            Divider()
+
+            // Password Section
+            PasswordUpdateSection(viewModel)
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun EmailUpdateSection(viewModel: EditProfileViewModel) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = "Change Email",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        
+        Text(
+            text = "Current: ${viewModel.currentEmail.value}",
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        OutlinedTextField(
+            value = viewModel.newEmail.value,
+            onValueChange = { viewModel.onEmailChanged(it) },
+            label = { Text("New Email") },
+            placeholder = { Text("Enter new email address") },
+            leadingIcon = {
+                Icon(Icons.Default.Email, contentDescription = "Email")
+            },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            isError = viewModel.emailUpdateError.value != null,
+            supportingText = {
+                viewModel.emailUpdateError.value?.let { error ->
+                    Text(text = error, color = MaterialTheme.colorScheme.error)
+                }
+            }
+        )
+
+        if (viewModel.emailUpdateSuccess.value) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        RoundedCornerShape(8.dp)
+                    )
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = "Success",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Email updated successfully",
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 14.sp
+                )
+            }
+        }
+
+        Button(
+            onClick = { viewModel.updateEmail() },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !viewModel.isUpdatingEmail.value && viewModel.newEmail.value.isNotBlank(),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            if (viewModel.isUpdatingEmail.value) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Update Email")
+            }
+        }
+    }
+}
+
+@Composable
+private fun DisplayNameUpdateSection(viewModel: EditProfileViewModel) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = "Change Display Name",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        
+        Text(
+            text = "Current: ${viewModel.currentDisplayName.value.ifEmpty { "Not set" }}",
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        OutlinedTextField(
+            value = viewModel.newDisplayName.value,
+            onValueChange = { viewModel.onDisplayNameChanged(it) },
+            label = { Text("New Display Name") },
+            placeholder = { Text("Enter new display name") },
+            leadingIcon = {
+                Icon(Icons.Default.Person, contentDescription = "Display Name")
+            },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            isError = viewModel.displayNameUpdateError.value != null,
+            supportingText = {
+                viewModel.displayNameUpdateError.value?.let { error ->
+                    Text(text = error, color = MaterialTheme.colorScheme.error)
+                }
+            }
+        )
+
+        if (viewModel.displayNameUpdateSuccess.value) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        RoundedCornerShape(8.dp)
+                    )
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = "Success",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Display name updated successfully",
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 14.sp
+                )
+            }
+        }
+
+        Button(
+            onClick = { viewModel.updateDisplayName() },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !viewModel.isUpdatingDisplayName.value && viewModel.newDisplayName.value.isNotBlank(),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            if (viewModel.isUpdatingDisplayName.value) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Update Display Name")
+            }
+        }
+    }
+}
+
+@Composable
+private fun PasswordUpdateSection(viewModel: EditProfileViewModel) {
+    var currentPasswordVisible by remember { mutableStateOf(false) }
+    var newPasswordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = "Change Password",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        OutlinedTextField(
+            value = viewModel.currentPassword.value,
+            onValueChange = { viewModel.onCurrentPasswordChanged(it) },
+            label = { Text("Current Password") },
+            placeholder = { Text("Enter current password") },
+            leadingIcon = {
+                Icon(Icons.Default.Lock, contentDescription = "Password")
+            },
+            trailingIcon = {
+                IconButton(onClick = { currentPasswordVisible = !currentPasswordVisible }) {
+                    Icon(
+                        if (currentPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = if (currentPasswordVisible) "Hide password" else "Show password"
+                    )
+                }
+            },
+            visualTransformation = if (currentPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = viewModel.newPassword.value,
+            onValueChange = { viewModel.onNewPasswordChanged(it) },
+            label = { Text("New Password") },
+            placeholder = { Text("Enter new password (min. 6 characters)") },
+            leadingIcon = {
+                Icon(Icons.Default.Lock, contentDescription = "Password")
+            },
+            trailingIcon = {
+                IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
+                    Icon(
+                        if (newPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = if (newPasswordVisible) "Hide password" else "Show password"
+                    )
+                }
+            },
+            visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = viewModel.confirmPassword.value,
+            onValueChange = { viewModel.onConfirmPasswordChanged(it) },
+            label = { Text("Confirm New Password") },
+            placeholder = { Text("Re-enter new password") },
+            leadingIcon = {
+                Icon(Icons.Default.Lock, contentDescription = "Password")
+            },
+            trailingIcon = {
+                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                    Icon(
+                        if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password"
+                    )
+                }
+            },
+            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            isError = viewModel.passwordUpdateError.value != null,
+            supportingText = {
+                viewModel.passwordUpdateError.value?.let { error ->
+                    Text(text = error, color = MaterialTheme.colorScheme.error)
+                }
+            }
+        )
+
+        if (viewModel.passwordUpdateSuccess.value) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        RoundedCornerShape(8.dp)
+                    )
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = "Success",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Password changed successfully",
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 14.sp
+                )
+            }
+        }
+
+        Button(
+            onClick = { viewModel.updatePassword() },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !viewModel.isUpdatingPassword.value &&
+                    viewModel.currentPassword.value.isNotBlank() &&
+                    viewModel.newPassword.value.isNotBlank() &&
+                    viewModel.confirmPassword.value.isNotBlank(),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            if (viewModel.isUpdatingPassword.value) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Change Password")
+            }
         }
     }
 }

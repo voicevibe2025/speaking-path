@@ -33,6 +33,7 @@ import com.example.voicevibe.presentation.screens.profile.SettingsScreen
  import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
  import com.example.voicevibe.presentation.screens.profile.UserProfileScreen
 import com.example.voicevibe.presentation.screens.profile.AccountSettingsScreen
+import com.example.voicevibe.presentation.screens.profile.EditProfileScreen
 import com.example.voicevibe.presentation.screens.profile.NotificationSettingsScreen
 import com.example.voicevibe.presentation.screens.profile.LanguageSettingsScreen
 import com.example.voicevibe.presentation.screens.profile.AboutScreen
@@ -631,6 +632,9 @@ fun NavGraph(
                 onNavigateToAccountSettings = {
                     navController.navigate(Screen.AccountSettings.route)
                 },
+                onNavigateToEditProfile = {
+                    navController.navigate(Screen.EditProfile.route)
+                },
                 onNavigateToNotificationSettings = {
                     navController.navigate(Screen.NotificationSettings.route)
                 },
@@ -654,7 +658,15 @@ fun NavGraph(
 
         // Settings sub-screens
         composable(Screen.AccountSettings.route) {
-            AccountSettingsScreen(onNavigateBack = { navController.popBackStack() })
+            AccountSettingsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToEditProfile = {
+                    navController.navigate(Screen.EditProfile.route)
+                }
+            )
+        }
+        composable(Screen.EditProfile.route) {
+            EditProfileScreen(onNavigateBack = { navController.popBackStack() })
         }
         composable(Screen.NotificationSettings.route) {
             NotificationSettingsScreen(onNavigateBack = { navController.popBackStack() })

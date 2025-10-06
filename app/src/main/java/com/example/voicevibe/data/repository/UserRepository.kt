@@ -368,4 +368,50 @@ class UserRepository @Inject constructor(
             Resource.Error(e.message ?: "Unknown error occurred")
         }
     }
+
+    /**
+     * Change user password
+     */
+    suspend fun changePassword(oldPassword: String, newPassword: String): Resource<String> {
+        return try {
+            val request = com.example.voicevibe.data.remote.api.ChangePasswordRequest(
+                oldPassword = oldPassword,
+                newPassword = newPassword
+            )
+            val response = apiService.changePassword(request)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true) {
+                    Resource.Success(body.message ?: "Password changed successfully")
+                } else {
+                    Resource.Error(body?.error ?: "Failed to change password")
+                }
+            } else {
+                Resource.Error("Failed to change password")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Update profile fields (email, displayName, etc.)
+     */
+    suspend fun updateProfileFields(fields: Map<String, String>): Resource<DomainUserProfile> {
+        return try {
+            val response = apiService.updateProfileFields(fields)
+            if (response.isSuccessful) {
+                response.body()?.let { body ->
+                    val domainProfile = body.toDomain().copy(
+                        avatarUrl = body.avatarUrl?.let { normalizeUrl(it) }
+                    )
+                    Resource.Success(domainProfile)
+                } ?: Resource.Error<DomainUserProfile>("Failed to update profile: empty body")
+            } else {
+                Resource.Error<DomainUserProfile>("Failed to update profile")
+            }
+        } catch (e: Exception) {
+            Resource.Error<DomainUserProfile>(e.message ?: "Unknown error occurred")
+        }
+    }
 }

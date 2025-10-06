@@ -213,6 +213,8 @@ class SettingsViewModel @Inject constructor(
             when (val result = userRepository.uploadProfilePicture(imageBytes)) {
                 is Resource.Success -> {
                     _avatarUrl.value = result.data
+                    // Reload the full profile to ensure all data is in sync
+                    fetchUserProfile()
                 }
                 is Resource.Error -> {
                     _errorMessage.value = result.message ?: "Failed to upload avatar"
@@ -223,5 +225,10 @@ class SettingsViewModel @Inject constructor(
             }
             _isUploadingAvatar.value = false
         }
+    }
+    
+    // Public method to refresh profile (can be called from UI on resume)
+    fun refreshProfile() {
+        fetchUserProfile()
     }
 }

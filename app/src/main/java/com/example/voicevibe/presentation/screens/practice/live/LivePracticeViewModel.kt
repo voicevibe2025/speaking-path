@@ -59,6 +59,7 @@ class LivePracticeViewModel @Inject constructor(
     private var userContextApplied: Boolean = false
     private var pendingModelText: StringBuilder? = null
     private var preferredVoiceName: String? = null
+    private var preferredAccent: String? = null
 
     companion object {
         private const val NATIVE_AUDIO_MODEL = "gemini-2.5-flash-native-audio-preview-09-2025"
@@ -175,6 +176,15 @@ class LivePracticeViewModel @Inject constructor(
             try {
                 tokenManager.ttsVoiceIdFlow().collect { name ->
                     preferredVoiceName = name
+                }
+            } catch (_: Exception) { /* ignore */ }
+        }
+
+        // Observe preferred accent from settings
+        viewModelScope.launch {
+            try {
+                tokenManager.voiceAccentFlow().collect { acc ->
+                    preferredAccent = acc
                 }
             } catch (_: Exception) { /* ignore */ }
         }
@@ -639,8 +649,6 @@ class LivePracticeViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        sessionManager.close()
-        player.release()
     }
 
     private fun buildSystemInstruction(): String {
@@ -648,11 +656,16 @@ class LivePracticeViewModel @Inject constructor(
         val builder = StringBuilder()
         builder.append(baseSystemPrompt)
 
+        // Accent preference (if any)
+        preferredAccent?.let { acc ->
+            builder.append("\n\n## ACCENT PREFERENCE\n")
+            builder.append("- When speaking aloud, use a ${acc} English accent. Keep vocabulary and spelling consistent with that accent.\n")
+        }
+
         // Inject user context if available and add a directive to avoid placeholders
         val u = currentUser
         if (u != null) {
             val name = preferredUserName(u)
-            builder.append("\n\nUSER_PROFILE:\n")
             builder.append(
                 """
                 {

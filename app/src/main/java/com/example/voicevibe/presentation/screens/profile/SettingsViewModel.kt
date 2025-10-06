@@ -56,6 +56,10 @@ class SettingsViewModel @Inject constructor(
     private val _ttsVoiceId = mutableStateOf<String?>(null)
     val ttsVoiceId: State<String?> = _ttsVoiceId
 
+    // Learning preference: voice accent
+    private val _voiceAccent = mutableStateOf<String?>(null)
+    val voiceAccent: State<String?> = _voiceAccent
+
     // Account preferences
     private val _showEmailOnProfile = mutableStateOf(true)
     val showEmailOnProfile: State<Boolean> = _showEmailOnProfile
@@ -131,6 +135,12 @@ class SettingsViewModel @Inject constructor(
                 _ttsVoiceId.value = id
             }
         }
+        // Preferred accent
+        viewModelScope.launch {
+            tokenManager.voiceAccentFlow().collect { accent ->
+                _voiceAccent.value = accent
+            }
+        }
         // Show email on profile/header
         viewModelScope.launch {
             tokenManager.showEmailOnProfileFlow().collect { show ->
@@ -180,6 +190,12 @@ class SettingsViewModel @Inject constructor(
     fun setPreferredTtsVoice(voiceId: String?) {
         viewModelScope.launch {
             tokenManager.setTtsVoiceId(voiceId)
+        }
+    }
+
+    fun setVoiceAccent(accent: String?) {
+        viewModelScope.launch {
+            tokenManager.setVoiceAccent(accent)
         }
     }
 

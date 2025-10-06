@@ -41,6 +41,7 @@ class TokenManager @Inject constructor(
     private val onboardingCompletedKey = booleanPreferencesKey(Constants.ONBOARDING_COMPLETED_KEY)
     private val speakingOnlyFlowKey = booleanPreferencesKey(Constants.SPEAKING_ONLY_FLOW_KEY)
     private val ttsVoiceIdKey = stringPreferencesKey(Constants.TTS_VOICE_ID_KEY)
+    private val voiceAccentKey = stringPreferencesKey(Constants.VOICE_ACCENT_KEY)
     private val micPermissionAskedKey = booleanPreferencesKey("mic_permission_asked")
     private val showEmailOnProfileKey = booleanPreferencesKey(Constants.SHOW_EMAIL_ON_PROFILE_KEY)
 
@@ -216,6 +217,23 @@ class TokenManager @Inject constructor(
                 preferences.remove(ttsVoiceIdKey)
             } else {
                 preferences[ttsVoiceIdKey] = voiceId
+            }
+        }
+    }
+
+    /**
+     * Preferred voice accent (nullable -> no preference)
+     */
+    fun voiceAccentFlow(): Flow<String?> = dataStore.data.map { preferences ->
+        preferences[voiceAccentKey]
+    }
+
+    suspend fun setVoiceAccent(accent: String?) {
+        dataStore.edit { preferences ->
+            if (accent.isNullOrBlank()) {
+                preferences.remove(voiceAccentKey)
+            } else {
+                preferences[voiceAccentKey] = accent
             }
         }
     }

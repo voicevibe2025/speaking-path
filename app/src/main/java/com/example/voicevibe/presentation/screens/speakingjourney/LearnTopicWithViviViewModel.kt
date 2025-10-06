@@ -69,6 +69,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
     private var phrasesCompleted: MutableSet<Int> = mutableSetOf()
     private var appContext: android.content.Context? = null
     private var preferredVoiceName: String? = null
+    private var preferredAccent: String? = null
 
     companion object {
         // Choose your priority:
@@ -139,6 +140,15 @@ class LearnTopicWithViviViewModel @Inject constructor(
             try {
                 tokenManager.ttsVoiceIdFlow().collect { name ->
                     preferredVoiceName = name
+                }
+            } catch (_: Exception) { /* ignore */ }
+        }
+
+        // Observe preferred accent from settings
+        viewModelScope.launch {
+            try {
+                tokenManager.voiceAccentFlow().collect { acc ->
+                    preferredAccent = acc
                 }
             } catch (_: Exception) { /* ignore */ }
         }
@@ -1133,6 +1143,9 @@ class LearnTopicWithViviViewModel @Inject constructor(
             - Location: Batam, Indonesia
             - Gender: Female
             - Language: English but can switch to Indonesian when needed
+            
+            ## ACCENT PREFERENCE
+            ${preferredAccent?.let { "- When speaking aloud, use a ${it} English accent. Keep vocabulary and spelling consistent with that accent." } ?: "- No explicit accent preference; use your default natural accent."}
             
             ## YOUR MISSION
             You are helping the user learn the topic: "${topic.title}"

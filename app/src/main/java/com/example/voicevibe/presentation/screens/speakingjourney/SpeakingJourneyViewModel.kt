@@ -53,6 +53,16 @@ class SpeakingJourneyViewModel @Inject constructor(
                 // ignore
             }
         }
+        // Observe preferred accent selection
+        viewModelScope.launch {
+            try {
+                tokenManager.voiceAccentFlow().collect { acc ->
+                    preferredAccent = acc
+                }
+            } catch (_: Throwable) {
+                // ignore
+            }
+        }
     }
 
     // --- Conversation Practice Recording ---
@@ -424,6 +434,16 @@ class SpeakingJourneyViewModel @Inject constructor(
     private var conversationSelectedRole: String? = null
     // Preferred TTS voice (nullable => keep existing defaults)
     private var preferredTtsVoiceName: String? = null
+    private var preferredAccent: String? = null
+
+    private fun accentDefaultVoice(accent: String?): String? = when (accent) {
+        "American" -> "Zephyr"
+        "British" -> "Charon"
+        "Australian" -> "Aoede"
+        "Indian" -> "Kore"
+        "Singaporean" -> "Umbriel"
+        else -> null
+    }
 
     fun startPhraseRecording(context: Context) {
         try {
@@ -972,7 +992,9 @@ class SpeakingJourneyViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
-                val effectiveVoice = preferredTtsVoiceName ?: voiceName
+                val effectiveVoice = preferredTtsVoiceName
+                    ?: voiceName
+                    ?: accentDefaultVoice(preferredAccent)
                 val result = repo.generateTts(text, effectiveVoice)
                 result.fold(
                     onSuccess = { dto ->

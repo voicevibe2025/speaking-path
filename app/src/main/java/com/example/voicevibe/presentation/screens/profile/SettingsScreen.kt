@@ -42,6 +42,8 @@ fun SettingsScreen(
     var offlineMode by remember { mutableStateOf(false) }
     var showVoiceDialog by remember { mutableStateOf(false) }
     var selectedVoiceName: String? by remember { mutableStateOf(null) }
+    var showAccentDialog by remember { mutableStateOf(false) }
+    var selectedAccent: String? by remember { mutableStateOf(null) }
 
     val context = LocalContext.current
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -143,22 +145,25 @@ fun SettingsScreen(
                     }
                 )
                 SettingsItem(
+                    icon = Icons.Default.RecordVoiceOver,
+                    title = "Voice Accent",
+                    subtitle = viewModel.voiceAccent.value ?: "Default",
+                    onClick = {
+                        selectedAccent = viewModel.voiceAccent.value
+                        showAccentDialog = true
+                    }
+                )
+                SettingsItem(
                     icon = Icons.Default.Speed,
                     title = "Speech Speed",
                     subtitle = "Normal",
                     onClick = { /* Show speed selection dialog */ }
                 )
                 SettingsItem(
-                    icon = Icons.Default.Mic,
-                    title = "Voice Accent",
-                    subtitle = "American English",
-                    onClick = { /* Show accent selection dialog */ }
-                )
-                SettingsItem(
-                    icon = Icons.Default.Timer,
-                    title = "Daily Goal",
-                    subtitle = "30 minutes per day",
-                    onClick = { /* Show goal setting dialog */ }
+                    icon = Icons.Default.Hearing,
+                    title = "Audio Playback",
+                    subtitle = if (autoPlayEnabled) "Auto-play is On" else "Auto-play is Off",
+                    onClick = { /* Navigate to audio playback settings */ }
                 )
             }
 
@@ -293,6 +298,60 @@ fun SettingsScreen(
         )
     }
 
+    // Voice Accent Dialog
+    if (showAccentDialog) {
+        val accentOptions: List<Pair<String, String?>> = listOf(
+            "Default (Current)" to null,
+            "American Accent" to "American",
+            "British Accent" to "British",
+            "Australian Accent" to "Australian",
+            "Indian Accent" to "Indian",
+            "Singaporean Accent" to "Singaporean"
+        )
+
+        AlertDialog(
+            onDismissRequest = { showAccentDialog = false },
+            title = { Text("Voice Accent", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(modifier = Modifier.fillMaxWidth().heightIn(max = 320.dp).verticalScroll(rememberScrollState())) {
+                    Text(
+                        text = "Choose the accent Vivi should use when speaking in Live sessions.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    accentOptions.forEach { (label, value) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { selectedAccent = value }
+                                .padding(vertical = 10.dp, horizontal = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = (selectedAccent == value) || (value == null && selectedAccent == null),
+                                onClick = { selectedAccent = value }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = label)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.setVoiceAccent(selectedAccent)
+                        showAccentDialog = false
+                    }
+                ) { Text("Save") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAccentDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+
     // Preferred TTS Voice Dialog (Gemini voices)
     if (showVoiceDialog) {
         val voiceOptions: List<Pair<String, String?>> = listOf(
@@ -394,8 +453,8 @@ fun AccountSettingsScreen(onNavigateBack: () -> Unit) {
             SettingsSection(title = "Account") {
                 SettingsToggleItem(
                     icon = Icons.Default.Email,
-                    title = "Show email in Settings",
-                    subtitle = "Display your email in the Settings header",
+                    title = "Show email in Profile Screen",
+                    subtitle = "Display your email in Profile Screen",
                     checked = viewModel.showEmailOnProfile.value,
                     onCheckedChange = { viewModel.setShowEmailOnProfile(it) }
                 )

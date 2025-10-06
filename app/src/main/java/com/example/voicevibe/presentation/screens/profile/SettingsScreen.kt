@@ -446,6 +446,10 @@ fun AccountSettingsScreen(
     onNavigateToEditProfile: () -> Unit
 ) {
     val viewModel: SettingsViewModel = hiltViewModel()
+    // Reuse EditProfileViewModel for email/password update logic
+    val editProfileViewModel: EditProfileViewModel = hiltViewModel()
+    val scrollState = rememberScrollState()
+    
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             title = { Text("Account Settings", fontWeight = FontWeight.Bold) },
@@ -455,7 +459,12 @@ fun AccountSettingsScreen(
                 }
             }
         )
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(16.dp)
+        ) {
             SettingsSection(title = "Account") {
                 SettingsToggleItem(
                     icon = Icons.Default.Email,
@@ -465,14 +474,28 @@ fun AccountSettingsScreen(
                     onCheckedChange = { viewModel.setShowEmailOnProfile(it) }
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
+            // Change Email
+            SettingsSection(title = "Change Email") {
+                EmailUpdateSection(viewModel = editProfileViewModel)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Change Password
+            SettingsSection(title = "Change Password") {
+                PasswordUpdateSection(viewModel = editProfileViewModel)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             SettingsSection(title = "Edit Profile") {
                 SettingsItem(
                     icon = Icons.Default.Edit,
                     title = "Edit Profile",
-                    subtitle = "Change email, display name, or password",
+                    subtitle = "Change display name",
                     onClick = onNavigateToEditProfile
                 )
             }
@@ -565,18 +588,8 @@ fun EditProfileScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Email Section
-            EmailUpdateSection(viewModel)
-
-            Divider()
-
-            // Display Name Section
+            // Display Name only
             DisplayNameUpdateSection(viewModel)
-
-            Divider()
-
-            // Password Section
-            PasswordUpdateSection(viewModel)
 
             Spacer(modifier = Modifier.height(16.dp))
         }

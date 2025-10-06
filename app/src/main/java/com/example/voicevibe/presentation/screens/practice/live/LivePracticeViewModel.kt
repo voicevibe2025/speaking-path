@@ -10,6 +10,7 @@ import com.example.voicevibe.data.ai.LiveSessionManager
 import com.example.voicevibe.data.repository.AiEvaluationRepository
 import com.example.voicevibe.data.repository.CoachRepository
 import com.example.voicevibe.data.repository.UserRepository
+import com.example.voicevibe.data.local.TokenManager
 import com.example.voicevibe.data.remote.api.CoachAnalysisDto
 import com.example.voicevibe.domain.model.LiveChatState
 import com.example.voicevibe.domain.model.LiveMessage
@@ -39,6 +40,7 @@ class LivePracticeViewModel @Inject constructor(
     private val sessionManager: LiveSessionManager,
     private val coachRepository: CoachRepository,
     private val userRepository: UserRepository,
+    private val tokenManager: TokenManager,
     private val gson: Gson
 ) : ViewModel() {
 
@@ -56,6 +58,7 @@ class LivePracticeViewModel @Inject constructor(
     private var currentUser: UserProfile? = null
     private var userContextApplied: Boolean = false
     private var pendingModelText: StringBuilder? = null
+    private var preferredVoiceName: String? = null
 
     companion object {
         private const val NATIVE_AUDIO_MODEL = "gemini-2.5-flash-native-audio-preview-09-2025"
@@ -166,6 +169,15 @@ class LivePracticeViewModel @Inject constructor(
                 }
             } catch (_: Exception) { /* ignore */ }
         }
+
+        // Observe preferred voice selection from settings
+        viewModelScope.launch {
+            try {
+                tokenManager.ttsVoiceIdFlow().collect { name ->
+                    preferredVoiceName = name
+                }
+            } catch (_: Exception) { /* ignore */ }
+        }
     }
 
     private suspend fun ensureCoachAnalysis(force: Boolean = false) {
@@ -234,12 +246,23 @@ class LivePracticeViewModel @Inject constructor(
             val wantAudio = uiState.value.voiceMode
             val responseModalities = if (wantAudio) listOf("AUDIO") else listOf("TEXT")
             val systemInstruction = buildSystemInstruction()
+            val speechCfg = preferredVoiceName?.let { v ->
+                mapOf(
+                    "voice_config" to mapOf(
+                        "prebuilt_voice_config" to mapOf(
+                            "voice_name" to v
+                        )
+                    )
+                )
+            }
             when (val res = withContext(Dispatchers.IO) {
                 aiEvaluationRepository.requestLiveToken(
                     model = if (wantAudio) NATIVE_AUDIO_MODEL else DEFAULT_LIVE_TEXT_MODEL,
                     responseModalities = responseModalities,
                     systemInstruction = systemInstruction,
-                    lockAdditionalFields = listOf("system_instruction")
+                    functionDeclarations = null,
+                    lockAdditionalFields = listOf("system_instruction"),
+                    speechConfig = speechCfg
                 )
             }) {
                 is Resource.Success -> {

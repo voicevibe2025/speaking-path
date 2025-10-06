@@ -13,6 +13,7 @@ import com.example.voicevibe.data.repository.AiEvaluationRepository
 import com.example.voicevibe.data.repository.GamificationRepository
 import com.example.voicevibe.data.repository.UserRepository
 import com.example.voicevibe.data.repository.SpeakingJourneyRepository
+import com.example.voicevibe.data.local.TokenManager
 import com.example.voicevibe.domain.model.LiveChatState
 import com.example.voicevibe.domain.model.LiveMessage
 import com.example.voicevibe.domain.model.LiveToken
@@ -43,6 +44,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val speakingJourneyRepository: SpeakingJourneyRepository,
     private val gamificationRepository: GamificationRepository,
+    private val tokenManager: TokenManager,
     private val gson: Gson
 ) : ViewModel() {
 
@@ -66,6 +68,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
     private var currentPhraseIndex: Int = 0
     private var phrasesCompleted: MutableSet<Int> = mutableSetOf()
     private var appContext: android.content.Context? = null
+    private var preferredVoiceName: String? = null
 
     companion object {
         // Choose your priority:
@@ -92,12 +95,14 @@ class LearnTopicWithViviViewModel @Inject constructor(
         AOEDE("Aoede (Smooth & Friendly)", "Aoede")
     }
     
-    private fun buildVoiceConfig(voice: ViviVoice = ViviVoice.PUCK): Map<String, Any> {
+    private fun buildVoiceConfig(voice: ViviVoice = ViviVoice.PUCK): Map<String, Any> = buildVoiceConfig(voice.voiceName)
+
+    private fun buildVoiceConfig(voiceName: String): Map<String, Any> {
         // Structure: speech_config -> voice_config -> prebuilt_voice_config -> voice_name
         return mapOf(
             "voice_config" to mapOf(
                 "prebuilt_voice_config" to mapOf(
-                    "voice_name" to voice.voiceName
+                    "voice_name" to voiceName
                 )
             )
         )
@@ -127,6 +132,15 @@ class LearnTopicWithViviViewModel @Inject constructor(
                     it.copy(error = "Failed to load lesson data. Please try again.")
                 }
             }
+        }
+
+        // Observe preferred voice name from settings
+        viewModelScope.launch {
+            try {
+                tokenManager.ttsVoiceIdFlow().collect { name ->
+                    preferredVoiceName = name
+                }
+            } catch (_: Exception) { /* ignore */ }
         }
     }
 
@@ -281,8 +295,9 @@ class LearnTopicWithViviViewModel @Inject constructor(
             // Register function declarations
             val functionDeclarations = buildFunctionDeclarations()
             
-            // Configure Vivi's voice (Aoede = smooth & natural)
-            val speechConfig = buildVoiceConfig(ViviVoice.AOEDE)
+            // Configure Vivi's voice: use preferred if set, else keep current default (Aoede)
+            val voiceToUse = preferredVoiceName ?: ViviVoice.AOEDE.voiceName
+            val speechConfig = buildVoiceConfig(voiceToUse)
             Log.d(TAG, "Using model: $ACTIVE_MODEL with voice config: $speechConfig")
             
             when (val res = withContext(Dispatchers.IO) {

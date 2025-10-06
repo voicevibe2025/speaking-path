@@ -13,6 +13,7 @@ import com.example.voicevibe.data.repository.GamificationProfile
 import com.example.voicevibe.data.repository.GamificationRepository
 import com.example.voicevibe.data.repository.ProfileRepository
 import com.example.voicevibe.data.repository.SpeakingJourneyRepository
+import com.example.voicevibe.data.local.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -31,7 +32,8 @@ import javax.inject.Inject
 class SpeakingJourneyViewModel @Inject constructor(
     private val repo: SpeakingJourneyRepository,
     private val profileRepo: ProfileRepository,
-    private val gamificationRepo: GamificationRepository
+    private val gamificationRepo: GamificationRepository,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
     private val _uiState = mutableStateOf(
         SpeakingJourneyUiState(topics = emptyList())
@@ -41,6 +43,16 @@ class SpeakingJourneyViewModel @Inject constructor(
     init {
         reloadTopics(showWelcomeOnLoad = true)
         fetchGamificationProfile()
+        // Observe preferred TTS voice selection
+        viewModelScope.launch {
+            try {
+                tokenManager.ttsVoiceIdFlow().collect { preferred ->
+                    preferredTtsVoiceName = preferred
+                }
+            } catch (_: Throwable) {
+                // ignore
+            }
+        }
     }
 
     // --- Conversation Practice Recording ---
@@ -410,6 +422,8 @@ class SpeakingJourneyViewModel @Inject constructor(
     private var conversationAudioFile: File? = null
     private var conversationRecordingTargetIndex: Int? = null
     private var conversationSelectedRole: String? = null
+    // Preferred TTS voice (nullable => keep existing defaults)
+    private var preferredTtsVoiceName: String? = null
 
     fun startPhraseRecording(context: Context) {
         try {
@@ -958,7 +972,8 @@ class SpeakingJourneyViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
-                val result = repo.generateTts(text, voiceName)
+                val effectiveVoice = preferredTtsVoiceName ?: voiceName
+                val result = repo.generateTts(text, effectiveVoice)
                 result.fold(
                     onSuccess = { dto ->
                         val url = dto.audioUrl

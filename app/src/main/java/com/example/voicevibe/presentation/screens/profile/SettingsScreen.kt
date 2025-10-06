@@ -41,7 +41,7 @@ fun SettingsScreen(
     var autoPlayEnabled by remember { mutableStateOf(true) }
     var offlineMode by remember { mutableStateOf(false) }
     var showVoiceDialog by remember { mutableStateOf(false) }
-    var voiceInput by remember { mutableStateOf("") }
+    var selectedVoiceName: String? by remember { mutableStateOf(null) }
 
     val context = LocalContext.current
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -138,7 +138,7 @@ fun SettingsScreen(
                     title = "Preferred TTS Voice",
                     subtitle = viewModel.ttsVoiceId.value ?: "Default",
                     onClick = {
-                        voiceInput = viewModel.ttsVoiceId.value ?: ""
+                        selectedVoiceName = viewModel.ttsVoiceId.value
                         showVoiceDialog = true
                     }
                 )
@@ -293,30 +293,75 @@ fun SettingsScreen(
         )
     }
 
-    // Preferred TTS Voice Dialog
+    // Preferred TTS Voice Dialog (Gemini voices)
     if (showVoiceDialog) {
+        val voiceOptions: List<Pair<String, String?>> = listOf(
+            "Default (Current)" to null,
+            "Zephyr — Bright" to "Zephyr",
+            "Puck — Upbeat" to "Puck",
+            "Charon — Informative" to "Charon",
+            "Kore — Firm" to "Kore",
+            "Fenrir — Excitable" to "Fenrir",
+            "Leda — Youthful" to "Leda",
+            "Orus — Firm" to "Orus",
+            "Aoede — Breezy" to "Aoede",
+            "Callirrhoe — Easy-going" to "Callirrhoe",
+            "Autonoe — Bright" to "Autonoe",
+            "Enceladus — Breathy" to "Enceladus",
+            "Iapetus — Clear" to "Iapetus",
+            "Umbriel — Easy-going" to "Umbriel",
+            "Algieba — Smooth" to "Algieba",
+            "Despina — Smooth" to "Despina",
+            "Erinome — Clear" to "Erinome",
+            "Algenib — Gravelly" to "Algenib",
+            "Rasalgethi — Informative" to "Rasalgethi",
+            "Laomedeia — Upbeat" to "Laomedeia",
+            "Achernar — Soft" to "Achernar",
+            "Alnilam — Firm" to "Alnilam",
+            "Schedar — Even" to "Schedar",
+            "Gacrux — Mature" to "Gacrux",
+            "Pulcherrima — Forward" to "Pulcherrima",
+            "Achird — Friendly" to "Achird",
+            "Zubenelgenubi — Casual" to "Zubenelgenubi",
+            "Vindemiatrix — Gentle" to "Vindemiatrix",
+            "Sadachbia — Lively" to "Sadachbia",
+            "Sadaltager — Knowledgeable" to "Sadaltager",
+            "Sulafat — Warm" to "Sulafat"
+        )
+
         AlertDialog(
             onDismissRequest = { showVoiceDialog = false },
             title = { Text("Preferred TTS Voice", fontWeight = FontWeight.Bold) },
             text = {
-                Column {
+                Column(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp).verticalScroll(rememberScrollState())) {
                     Text(
-                        text = "Enter an ElevenLabs voice ID. Leave empty to use default.",
+                        text = "Choose a Gemini voice for both TTS and Live API. You can restore the current default by selecting ‘Default (Current)’.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextField(
-                        value = voiceInput,
-                        onValueChange = { voiceInput = it },
-                        singleLine = true,
-                        label = { Text("Voice ID") }
-                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    voiceOptions.forEach { (label, value) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { selectedVoiceName = value }
+                                .padding(vertical = 10.dp, horizontal = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = (selectedVoiceName == value) || (value == null && selectedVoiceName == null),
+                                onClick = { selectedVoiceName = value }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = label)
+                        }
+                    }
                 }
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.setPreferredTtsVoice(voiceInput.ifBlank { null })
+                        viewModel.setPreferredTtsVoice(selectedVoiceName)
                         showVoiceDialog = false
                     }
                 ) {

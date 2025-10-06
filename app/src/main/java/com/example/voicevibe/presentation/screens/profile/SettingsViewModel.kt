@@ -49,6 +49,14 @@ class SettingsViewModel @Inject constructor(
     private val _errorMessage = mutableStateOf("")
     val errorMessage: State<String> = _errorMessage
 
+    // Blocked users state
+    private val _blockedUsers = mutableStateOf<List<com.example.voicevibe.data.remote.api.BlockedUser>>(emptyList())
+    val blockedUsers: State<List<com.example.voicevibe.data.remote.api.BlockedUser>> = _blockedUsers
+    private val _blockedUsersLoading = mutableStateOf(false)
+    val blockedUsersLoading: State<Boolean> = _blockedUsersLoading
+    private val _blockedUsersError = mutableStateOf<String?>(null)
+    val blockedUsersError: State<String?> = _blockedUsersError
+
     // Feature flags / preferences
     private val _speakingOnlyEnabled = mutableStateOf(true)
     val speakingOnlyEnabled: State<Boolean> = _speakingOnlyEnabled
@@ -71,6 +79,41 @@ class SettingsViewModel @Inject constructor(
         if (com.example.voicevibe.utils.Constants.LOCK_SPEAKING_ONLY_ON) {
             viewModelScope.launch {
                 tokenManager.setSpeakingOnlyFlowEnabled(true)
+            }
+        }
+    }
+
+    // Load blocked users from backend
+    fun loadBlockedUsers() {
+        viewModelScope.launch {
+            _blockedUsersLoading.value = true
+            _blockedUsersError.value = null
+            when (val result = userRepository.getBlockedUsers()) {
+                is Resource.Success -> {
+                    _blockedUsers.value = result.data ?: emptyList()
+                }
+                is Resource.Error -> {
+                    _blockedUsersError.value = result.message ?: "Failed to load blocked users"
+                    _blockedUsers.value = emptyList()
+                }
+                else -> {}
+            }
+            _blockedUsersLoading.value = false
+        }
+    }
+
+    // Unblock a specific user and update local list
+    fun unblockUser(userId: Int, onSuccess: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            when (val result = userRepository.unblockUser(userId.toString())) {
+                is Resource.Success -> {
+                    _blockedUsers.value = _blockedUsers.value.filter { it.userId != userId }
+                    onSuccess?.invoke()
+                }
+                is Resource.Error -> {
+                    _errorMessage.value = result.message ?: "Failed to unblock user"
+                }
+                else -> {}
             }
         }
     }

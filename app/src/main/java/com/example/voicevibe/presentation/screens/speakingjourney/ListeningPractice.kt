@@ -81,7 +81,6 @@ fun ListeningPracticeScreen(
     fun rawId(name: String): Int = context.resources.getIdentifier(name, "raw", context.packageName)
     val sfxCorrect = remember(soundPool) { rawId("correct").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
     val sfxIncorrect = remember(soundPool) { rawId("incorrect").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
-    val sfxTick = remember(soundPool) { rawId("tick").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
     val sfxTimeUp = remember(soundPool) { rawId("timeisup").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
     val sfxWin = remember(soundPool) { rawId("win").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
     DisposableEffect(soundPool) { onDispose { runCatching { soundPool.release() } } }
@@ -131,7 +130,6 @@ fun ListeningPracticeScreen(
                 delay(1000L)
                 remainingSeconds -= 1
                 if (remainingSeconds > 0) {
-                    if (sfxTick != 0) soundPool.play(sfxTick, 1f, 1f, 1, 0, 1f) else runCatching { toneGen?.startTone(ToneGenerator.TONE_PROP_BEEP, 60) }
                 }
             }
             if (remainingSeconds <= 0 && !showStartOverlay && !isTimeUp && !ui.showCongrats && ui.showQuestions) {

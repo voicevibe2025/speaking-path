@@ -279,7 +279,8 @@ class UserProfileViewModel @Inject constructor(
 
     fun blockUser() {
         viewModelScope.launch {
-            userId?.let { id ->
+            val targetId = (userId ?: _uiState.value.userProfile?.id)?.toString()
+            targetId?.let { id ->
                 when (val result = repository.blockUser(id)) {
                     is Resource.Success -> {
                         _events.emit(UserProfileEvent.NavigateBack)
@@ -303,11 +304,20 @@ class UserProfileViewModel @Inject constructor(
     fun reportUser(reason: String, description: String = "") {
         viewModelScope.launch {
             // Get the actual user ID from the loaded profile
-            val reportedUserId = _uiState.value.userProfile?.id?.toIntOrNull()
+            val reportedUserId = (userId ?: _uiState.value.userProfile?.id)?.toIntOrNull()
             if (reportedUserId != null) {
+                // Map human-readable reason from UI to backend enum codes
+                val backendReason = when (reason.trim().lowercase()) {
+                    "spam" -> "spam"
+                    "harassment or bullying", "harassment" -> "harassment"
+                    "hate speech" -> "hate_speech"
+                    "inappropriate content", "inappropriate" -> "inappropriate"
+                    "impersonation" -> "impersonation"
+                    else -> "other"
+                }
                 when (val result = repository.createReport(
                     reportType = "user",
-                    reason = reason,
+                    reason = backendReason,
                     description = description,
                     reportedUserId = reportedUserId
                 )) {

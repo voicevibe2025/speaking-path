@@ -119,7 +119,6 @@ fun VocabularyPracticeScreen(
     // Load sounds if available
     val sfxCorrect = remember(soundPool) { rawId("correct").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
     val sfxIncorrect = remember(soundPool) { rawId("incorrect").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
-    val sfxTick = remember(soundPool) { rawId("tick").let { if (it != 0) soundPool.load(context, it, 1) else 0 } }
     val sfxWelcome = remember(soundPool) {
         val rid = rawId("welcom_to_vocab").takeIf { it != 0 } ?: rawId("welcome_to_vocab")
         if (rid != 0) soundPool.load(context, rid, 1) else 0
@@ -163,11 +162,6 @@ fun VocabularyPracticeScreen(
                 delay(1000L)
                 remainingSeconds -= 1
                 if (remainingSeconds > 0) {
-                    if (sfxTick != 0) {
-                        soundPool.play(sfxTick, 1f, 1f, 1, 0, 1f)
-                    } else {
-                        runCatching { toneGen?.startTone(ToneGenerator.TONE_PROP_BEEP, 60) }
-                    }
                 }
             }
             if (remainingSeconds <= 0 && !showStartOverlay && !isTimeUp && !ui.showCongrats) {

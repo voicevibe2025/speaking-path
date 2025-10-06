@@ -1472,8 +1472,14 @@ fun BlockedUsersScreen(
     onNavigateBack: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    var blockedUsers by remember { mutableStateOf<List<String>>(emptyList()) }
-    var showUnblockDialog by remember { mutableStateOf<String?>(null) }
+    val blockedUsers = viewModel.blockedUsers.value
+    val loading = viewModel.blockedUsersLoading.value
+    val error = viewModel.blockedUsersError.value
+    var showUnblockDialog by remember { mutableStateOf<com.example.voicevibe.data.remote.api.BlockedUser?>(null) }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadBlockedUsers()
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
@@ -1485,7 +1491,39 @@ fun BlockedUsersScreen(
             }
         )
 
-        if (blockedUsers.isEmpty()) {
+        if (loading) {
+            // Loading state
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (error != null) {
+            // Error state
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    Icons.Default.Error,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(error, color = MaterialTheme.colorScheme.error)
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(onClick = { viewModel.loadBlockedUsers() }) {
+                    Text("Retry")
+                }
+            }
+        } else if (blockedUsers.isEmpty()) {
             // Empty state
             Column(
                 modifier = Modifier
@@ -1531,28 +1569,28 @@ fun BlockedUsersScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                blockedUsers.forEach { username ->
+                blockedUsers.forEach { user ->
                     BlockedUserItem(
-                        username = username,
-                        onUnblock = { showUnblockDialog = username }
+                        user = user,
+                        onUnblock = { showUnblockDialog = user }
                     )
                 }
             }
         }
     }
 
-    // Unblock confirmation dialog
-    showUnblockDialog?.let { username ->
+    // Block confirmation dialog
+    showUnblockDialog?.let { user ->
         AlertDialog(
             onDismissRequest = { showUnblockDialog = null },
             title = { Text("Unblock User", fontWeight = FontWeight.Bold) },
-            text = { Text("Are you sure you want to unblock $username?") },
+            text = { Text("Are you sure you want to unblock ${user.displayName ?: user.username}?") },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        // TODO: Call unblock API
-                        blockedUsers = blockedUsers.filter { it != username }
-                        showUnblockDialog = null
+                        viewModel.unblockUser(user.userId) {
+                            showUnblockDialog = null
+                        }
                     }
                 ) {
                     Text("Unblock")
@@ -1566,10 +1604,9 @@ fun BlockedUsersScreen(
         )
     }
 }
-
 @Composable
 private fun BlockedUserItem(
-    username: String,
+    user: com.example.voicevibe.data.remote.api.BlockedUser,
     onUnblock: () -> Unit
 ) {
     Card(
@@ -1590,7 +1627,7 @@ private fun BlockedUserItem(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = username.take(2).uppercase(),
+                    text = (user.displayName ?: user.username).take(2).uppercase(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -1601,7 +1638,7 @@ private fun BlockedUserItem(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = username,
+                    text = user.displayName ?: user.username,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )

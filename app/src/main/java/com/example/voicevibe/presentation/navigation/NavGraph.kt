@@ -34,8 +34,6 @@ import com.example.voicevibe.presentation.screens.profile.SettingsScreen
  import com.example.voicevibe.presentation.screens.profile.UserProfileScreen
 import com.example.voicevibe.presentation.screens.profile.AccountSettingsScreen
 import com.example.voicevibe.presentation.screens.profile.EditProfileScreen
-import com.example.voicevibe.presentation.screens.profile.NotificationSettingsScreen
-import com.example.voicevibe.presentation.screens.profile.LanguageSettingsScreen
 import com.example.voicevibe.presentation.screens.profile.AboutScreen
 import com.example.voicevibe.presentation.screens.main.social.SocialFeedScreen
 import com.example.voicevibe.presentation.screens.main.search.UserSearchResultsScreen
@@ -635,12 +633,6 @@ fun NavGraph(
                 onNavigateToEditProfile = {
                     navController.navigate(Screen.EditProfile.route)
                 },
-                onNavigateToNotificationSettings = {
-                    navController.navigate(Screen.NotificationSettings.route)
-                },
-                onNavigateToLanguageSettings = {
-                    navController.navigate(Screen.LanguageSettings.route)
-                },
                 onNavigateToAbout = {
                     navController.navigate(Screen.About.route)
                 },
@@ -659,20 +651,11 @@ fun NavGraph(
         // Settings sub-screens
         composable(Screen.AccountSettings.route) {
             AccountSettingsScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToEditProfile = {
-                    navController.navigate(Screen.EditProfile.route)
-                }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
         composable(Screen.EditProfile.route) {
             EditProfileScreen(onNavigateBack = { navController.popBackStack() })
-        }
-        composable(Screen.NotificationSettings.route) {
-            NotificationSettingsScreen(onNavigateBack = { navController.popBackStack() })
-        }
-        composable(Screen.LanguageSettings.route) {
-            LanguageSettingsScreen(onNavigateBack = { navController.popBackStack() })
         }
         composable(Screen.About.route) {
             AboutScreen(onNavigateBack = { navController.popBackStack() })

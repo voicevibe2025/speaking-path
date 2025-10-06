@@ -30,7 +30,7 @@ interface UserApiService {
     @PATCH("users/preferences/")
     suspend fun updatePreferences(@Body preferences: Map<String, Any>): Response<UserProfile>
     
-    @DELETE("users/me")
+    @DELETE("users/delete-account/")
     suspend fun deleteAccount(): Response<Unit>
     
     @GET("users/{id}/")

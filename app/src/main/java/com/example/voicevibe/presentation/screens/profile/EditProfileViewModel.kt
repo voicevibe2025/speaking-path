@@ -69,6 +69,29 @@ class EditProfileViewModel @Inject constructor(
     private val _passwordUpdateError = mutableStateOf<String?>(null)
     val passwordUpdateError: State<String?> = _passwordUpdateError
 
+    // About me update state
+    private val _aboutMe = mutableStateOf("")
+    val aboutMe: State<String> = _aboutMe
+
+    private val _isUpdatingAboutMe = mutableStateOf(false)
+    val isUpdatingAboutMe: State<Boolean> = _isUpdatingAboutMe
+
+    private val _aboutMeUpdateSuccess = mutableStateOf(false)
+    val aboutMeUpdateSuccess: State<Boolean> = _aboutMeUpdateSuccess
+
+    private val _aboutMeUpdateError = mutableStateOf<String?>(null)
+    val aboutMeUpdateError: State<String?> = _aboutMeUpdateError
+
+    // Delete account state
+    private val _isDeletingAccount = mutableStateOf(false)
+    val isDeletingAccount: State<Boolean> = _isDeletingAccount
+
+    private val _deleteAccountSuccess = mutableStateOf(false)
+    val deleteAccountSuccess: State<Boolean> = _deleteAccountSuccess
+
+    private val _deleteAccountError = mutableStateOf<String?>(null)
+    val deleteAccountError: State<String?> = _deleteAccountError
+
     init {
         loadCurrentProfile()
     }
@@ -79,6 +102,8 @@ class EditProfileViewModel @Inject constructor(
                 val profile = profileRepository.getProfile()
                 _currentEmail.value = profile.userEmail
                 _currentDisplayName.value = profile.displayName ?: ""
+                // Note: bio field is not in the current UserProfile data model
+                // It will be added when backend returns it
             } catch (e: Exception) {
                 // Handle error silently, fields will remain empty
             }
@@ -252,5 +277,65 @@ class EditProfileViewModel @Inject constructor(
     fun clearPasswordStatus() {
         _passwordUpdateSuccess.value = false
         _passwordUpdateError.value = null
+    }
+
+    fun onAboutMeChanged(text: String) {
+        if (text.length <= 500) {
+            _aboutMe.value = text
+            _aboutMeUpdateError.value = null
+            _aboutMeUpdateSuccess.value = false
+        }
+    }
+
+    fun updateAboutMe() {
+        val text = _aboutMe.value.trim()
+
+        viewModelScope.launch {
+            _isUpdatingAboutMe.value = true
+            _aboutMeUpdateError.value = null
+            _aboutMeUpdateSuccess.value = false
+
+            val fields = mapOf("bio" to text)
+            when (val result = userRepository.updateProfileFields(fields)) {
+                is Resource.Success -> {
+                    _aboutMeUpdateSuccess.value = true
+                }
+                is Resource.Error -> {
+                    _aboutMeUpdateError.value = result.message ?: "Failed to update about me"
+                }
+                is Resource.Loading -> {}
+            }
+            _isUpdatingAboutMe.value = false
+        }
+    }
+
+    fun clearAboutMeStatus() {
+        _aboutMeUpdateSuccess.value = false
+        _aboutMeUpdateError.value = null
+    }
+
+    fun deleteAccount() {
+        viewModelScope.launch {
+            _isDeletingAccount.value = true
+            _deleteAccountError.value = null
+            _deleteAccountSuccess.value = false
+
+            when (val result = userRepository.deleteAccount()) {
+                is Resource.Success -> {
+                    _deleteAccountSuccess.value = true
+                    // Clear all local data/cache if needed
+                }
+                is Resource.Error -> {
+                    _deleteAccountError.value = result.message ?: "Failed to delete account"
+                }
+                is Resource.Loading -> {}
+            }
+            _isDeletingAccount.value = false
+        }
+    }
+
+    fun clearDeleteAccountStatus() {
+        _deleteAccountSuccess.value = false
+        _deleteAccountError.value = null
     }
 }

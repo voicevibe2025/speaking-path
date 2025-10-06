@@ -33,8 +33,6 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAccountSettings: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
-    onNavigateToNotificationSettings: () -> Unit,
-    onNavigateToLanguageSettings: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onLogout: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
@@ -98,25 +96,29 @@ fun SettingsScreen(
                 onChangeAvatar = { imagePickerLauncher.launch("image/*") }
             )
 
-            // General Settings
+            // General
             SettingsSection(title = "General") {
                 SettingsItem(
-                    icon = Icons.Default.Person,
-                    title = "Account Settings",
-                    subtitle = "Manage your account details",
+                    icon = Icons.Default.Edit,
+                    title = "Edit Profile",
+                    subtitle = "Update your profile information",
+                    onClick = onNavigateToEditProfile
+                )
+            }
+
+            // Account Settings
+            SettingsSection(title = "Account Settings") {
+                SettingsItem(
+                    icon = Icons.Default.Email,
+                    title = "Change Email",
+                    subtitle = "Update your email address",
                     onClick = onNavigateToAccountSettings
                 )
                 SettingsItem(
-                    icon = Icons.Default.Notifications,
-                    title = "Notifications",
-                    subtitle = "Configure notification preferences",
-                    onClick = onNavigateToNotificationSettings
-                )
-                SettingsItem(
-                    icon = Icons.Default.Language,
-                    title = "Language & Region",
-                    subtitle = "Change app language and region",
-                    onClick = onNavigateToLanguageSettings
+                    icon = Icons.Default.Lock,
+                    title = "Change Password",
+                    subtitle = "Update your password",
+                    onClick = onNavigateToAccountSettings
                 )
             }
 
@@ -125,22 +127,15 @@ fun SettingsScreen(
                 // Feature flag: Speaking-only Journey (beta)
                 SettingsToggleItem(
                     icon = Icons.Default.Mic,
-                    title = "Speaking-only Journey (beta)",
+                    title = "Speaking-only Journey",
                     subtitle = "Enable the new speaking-only flow",
                     checked = viewModel.speakingOnlyEnabled.value,
                     onCheckedChange = { viewModel.onToggleSpeakingOnly(it) },
                     enabled = !com.example.voicevibe.utils.Constants.LOCK_SPEAKING_ONLY_ON
                 )
-                SettingsToggleItem(
-                    icon = Icons.Default.PlayArrow,
-                    title = "Auto-play Audio",
-                    subtitle = "Automatically play audio in lessons",
-                    checked = autoPlayEnabled,
-                    onCheckedChange = { autoPlayEnabled = it }
-                )
                 SettingsItem(
                     icon = Icons.Default.Mic,
-                    title = "Preferred TTS Voice",
+                    title = "Preferred Voice",
                     subtitle = viewModel.ttsVoiceId.value ?: "Default",
                     onClick = {
                         selectedVoiceName = viewModel.ttsVoiceId.value
@@ -156,97 +151,27 @@ fun SettingsScreen(
                         showAccentDialog = true
                     }
                 )
-                SettingsItem(
-                    icon = Icons.Default.Speed,
-                    title = "Speech Speed",
-                    subtitle = "Normal",
-                    onClick = { /* Show speed selection dialog */ }
-                )
-                SettingsItem(
-                    icon = Icons.Default.Hearing,
-                    title = "Audio Playback",
-                    subtitle = if (autoPlayEnabled) "Auto-play is On" else "Auto-play is Off",
-                    onClick = { /* Navigate to audio playback settings */ }
-                )
-            }
-
-            // App Settings
-            SettingsSection(title = "App Settings") {
-                SettingsToggleItem(
-                    icon = Icons.Default.DarkMode,
-                    title = "Dark Mode",
-                    subtitle = "Use dark theme",
-                    checked = darkModeEnabled,
-                    onCheckedChange = { darkModeEnabled = it }
-                )
-                SettingsToggleItem(
-                    icon = Icons.Default.CloudOff,
-                    title = "Offline Mode",
-                    subtitle = "Download content for offline use",
-                    checked = offlineMode,
-                    onCheckedChange = { offlineMode = it }
-                )
-                SettingsItem(
-                    icon = Icons.Default.Storage,
-                    title = "Storage",
-                    subtitle = "Manage downloaded content",
-                    onClick = { /* Show storage management */ }
-                )
-                SettingsItem(
-                    icon = Icons.Default.Backup,
-                    title = "Backup & Sync",
-                    subtitle = "Last synced: 2 hours ago",
-                    onClick = { /* Show backup settings */ }
-                )
-            }
-
-            // Privacy & Security
-            SettingsSection(title = "Privacy & Security") {
-                SettingsItem(
-                    icon = Icons.Default.Lock,
-                    title = "Privacy Policy",
-                    subtitle = "View our privacy policy",
-                    onClick = { /* Open privacy policy */ }
-                )
-                SettingsItem(
-                    icon = Icons.Default.Security,
-                    title = "Security Settings",
-                    subtitle = "Manage app security",
-                    onClick = { /* Show security settings */ }
-                )
-                SettingsItem(
-                    icon = Icons.Default.Analytics,
-                    title = "Data & Analytics",
-                    subtitle = "Manage data collection preferences",
-                    onClick = { /* Show data settings */ }
-                )
             }
 
             // Support & About
             SettingsSection(title = "Support & About") {
                 SettingsItem(
-                    icon = Icons.Default.Help,
-                    title = "Help Center",
-                    subtitle = "Get help and support",
-                    onClick = { /* Open help center */ }
-                )
-                SettingsItem(
-                    icon = Icons.Default.Feedback,
-                    title = "Send Feedback",
-                    subtitle = "Share your thoughts with us",
-                    onClick = { /* Open feedback form */ }
-                )
-                SettingsItem(
-                    icon = Icons.Default.Star,
-                    title = "Rate Us",
-                    subtitle = "Rate our app on the store",
-                    onClick = { /* Open app store rating */ }
-                )
-                SettingsItem(
                     icon = Icons.Default.Info,
                     title = "About",
                     subtitle = "Version 1.0.0",
                     onClick = onNavigateToAbout
+                )
+                SettingsItem(
+                    icon = Icons.Default.ContactMail,
+                    title = "Contact",
+                    subtitle = "Get in touch with us",
+                    onClick = { /* TODO: Open contact form */ }
+                )
+                SettingsItem(
+                    icon = Icons.Default.Help,
+                    title = "Q & A",
+                    subtitle = "Frequently asked questions",
+                    onClick = { /* TODO: Open FAQ */ }
                 )
             }
 
@@ -442,13 +367,12 @@ fun SettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountSettingsScreen(
-    onNavigateBack: () -> Unit,
-    onNavigateToEditProfile: () -> Unit
+    onNavigateBack: () -> Unit
 ) {
-    val viewModel: SettingsViewModel = hiltViewModel()
     // Reuse EditProfileViewModel for email/password update logic
     val editProfileViewModel: EditProfileViewModel = hiltViewModel()
     val scrollState = rememberScrollState()
+    var showDeleteAccountDialog by remember { mutableStateOf(false) }
     
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
@@ -463,79 +387,37 @@ fun AccountSettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            SettingsSection(title = "Account") {
-                SettingsToggleItem(
-                    icon = Icons.Default.Email,
-                    title = "Show email in Profile Screen",
-                    subtitle = "Display your email in Profile Screen",
-                    checked = viewModel.showEmailOnProfile.value,
-                    onCheckedChange = { viewModel.setShowEmailOnProfile(it) }
-                )
-            }
+            // Change Email (no wrapper section)
+            EmailUpdateSection(viewModel = editProfileViewModel)
+
+            Divider()
+
+            // Change Password (no wrapper section)
+            PasswordUpdateSection(viewModel = editProfileViewModel)
+
+            Divider()
+
+            // Delete Account Section
+            DeleteAccountSection(onDeleteClick = { showDeleteAccountDialog = true })
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            // Change Email
-            SettingsSection(title = "Change Email") {
-                EmailUpdateSection(viewModel = editProfileViewModel)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Change Password
-            SettingsSection(title = "Change Password") {
-                PasswordUpdateSection(viewModel = editProfileViewModel)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            SettingsSection(title = "Edit Profile") {
-                SettingsItem(
-                    icon = Icons.Default.Edit,
-                    title = "Edit Profile",
-                    subtitle = "Change display name",
-                    onClick = onNavigateToEditProfile
-                )
-            }
         }
     }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun NotificationSettingsScreen(onNavigateBack: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = { Text("Notifications", fontWeight = FontWeight.Bold) },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                }
+    // Delete Account Confirmation Dialog
+    if (showDeleteAccountDialog) {
+        DeleteAccountDialog(
+            viewModel = editProfileViewModel,
+            onDismiss = { showDeleteAccountDialog = false },
+            onConfirmDelete = {
+                editProfileViewModel.deleteAccount()
+                // Note: Navigation to login will be handled by the calling screen
+                // when it observes the deletion success state
             }
         )
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Configure notification preferences.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun LanguageSettingsScreen(onNavigateBack: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = { Text("Language & Region", fontWeight = FontWeight.Bold) },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                }
-            }
-        )
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Change app language and region.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
     }
 }
 
@@ -563,7 +445,9 @@ fun EditProfileScreen(
     onNavigateBack: () -> Unit,
     viewModel: EditProfileViewModel = hiltViewModel()
 ) {
-    val scrollState = rememberScrollState()
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
+    var showDisplayNameDialog by remember { mutableStateOf(false) }
+    var showAboutMeDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -584,15 +468,49 @@ fun EditProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(scrollState)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .padding(16.dp)
         ) {
-            // Display Name only
-            DisplayNameUpdateSection(viewModel)
+            // Show Email Toggle
+            SettingsToggleItem(
+                icon = Icons.Default.Email,
+                title = "Show Email",
+                subtitle = "Display your email on Profile Screen",
+                checked = settingsViewModel.showEmailOnProfile.value,
+                onCheckedChange = { settingsViewModel.setShowEmailOnProfile(it) }
+            )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Change Display Name
+            SettingsItem(
+                icon = Icons.Default.Person,
+                title = "Change Display Name",
+                subtitle = viewModel.currentDisplayName.value.ifEmpty { "Not set" },
+                onClick = { showDisplayNameDialog = true }
+            )
+
+            // About Me
+            SettingsItem(
+                icon = Icons.Default.Info,
+                title = "About Me",
+                subtitle = viewModel.aboutMe.value.ifEmpty { "Tell others about yourself" }.take(50) + if (viewModel.aboutMe.value.length > 50) "..." else "",
+                onClick = { showAboutMeDialog = true }
+            )
         }
+    }
+
+    // Display Name Dialog
+    if (showDisplayNameDialog) {
+        DisplayNameDialog(
+            viewModel = viewModel,
+            onDismiss = { showDisplayNameDialog = false }
+        )
+    }
+
+    // About Me Dialog
+    if (showAboutMeDialog) {
+        AboutMeDialog(
+            viewModel = viewModel,
+            onDismiss = { showAboutMeDialog = false }
+        )
     }
 }
 
@@ -1136,4 +1054,297 @@ fun SettingsToggleItem(
             )
         )
     }
+}
+
+@Composable
+private fun DisplayNameDialog(
+    viewModel: EditProfileViewModel,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Change Display Name", fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "Current: ${viewModel.currentDisplayName.value.ifEmpty { "Not set" }}",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                OutlinedTextField(
+                    value = viewModel.newDisplayName.value,
+                    onValueChange = { viewModel.onDisplayNameChanged(it) },
+                    label = { Text("New Display Name") },
+                    placeholder = { Text("Enter new display name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = viewModel.displayNameUpdateError.value != null,
+                    supportingText = {
+                        viewModel.displayNameUpdateError.value?.let { error ->
+                            Text(text = error, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                )
+
+                if (viewModel.displayNameUpdateSuccess.value) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                MaterialTheme.colorScheme.primaryContainer,
+                                RoundedCornerShape(8.dp)
+                            )
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = "Success",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Display name updated successfully",
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { 
+                    viewModel.updateDisplayName()
+                },
+                enabled = !viewModel.isUpdatingDisplayName.value && viewModel.newDisplayName.value.isNotBlank()
+            ) {
+                if (viewModel.isUpdatingDisplayName.value) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Update")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+private fun AboutMeDialog(
+    viewModel: EditProfileViewModel,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("About Me", fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "Tell others about yourself",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                OutlinedTextField(
+                    value = viewModel.aboutMe.value,
+                    onValueChange = { viewModel.onAboutMeChanged(it) },
+                    label = { Text("About Me") },
+                    placeholder = { Text("Share something about yourself...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    maxLines = 6,
+                    supportingText = {
+                        Text("${viewModel.aboutMe.value.length}/500")
+                    }
+                )
+
+                if (viewModel.aboutMeUpdateSuccess.value) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                MaterialTheme.colorScheme.primaryContainer,
+                                RoundedCornerShape(8.dp)
+                            )
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = "Success",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "About me updated successfully",
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { 
+                    viewModel.updateAboutMe()
+                },
+                enabled = !viewModel.isUpdatingAboutMe.value
+            ) {
+                if (viewModel.isUpdatingAboutMe.value) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Update")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+private fun DeleteAccountSection(
+    onDeleteClick: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = "Delete Account",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.error
+        )
+        
+        Text(
+            text = "Permanently delete your account and all associated data. This action cannot be undone.",
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Button(
+            onClick = onDeleteClick,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.error
+            ),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Icon(
+                Icons.Default.Delete,
+                contentDescription = "Delete Account",
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Delete My Account")
+        }
+    }
+}
+
+@Composable
+private fun DeleteAccountDialog(
+    viewModel: EditProfileViewModel,
+    onDismiss: () -> Unit,
+    onConfirmDelete: () -> Unit
+) {
+    var confirmationText by remember { mutableStateOf("") }
+    val requiredText = "DELETE"
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Delete Account", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(
+                    text = "⚠️ Warning: This action is permanent and cannot be undone.",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error
+                )
+                
+                Text(
+                    text = "All your data including:\n• Profile information\n• Learning progress\n• Recordings and evaluations\n• Social connections\n\nwill be permanently deleted.",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Text(
+                    text = "Type \"$requiredText\" to confirm:",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                OutlinedTextField(
+                    value = confirmationText,
+                    onValueChange = { confirmationText = it },
+                    label = { Text("Confirmation") },
+                    placeholder = { Text(requiredText) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.error,
+                        focusedLabelColor = MaterialTheme.colorScheme.error
+                    )
+                )
+
+                if (viewModel.deleteAccountError.value != null) {
+                    Text(
+                        text = viewModel.deleteAccountError.value ?: "",
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirmDelete,
+                enabled = confirmationText == requiredText && !viewModel.isDeletingAccount.value,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    disabledContainerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
+                )
+            ) {
+                if (viewModel.isDeletingAccount.value) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onError,
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Delete Account")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }

@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -20,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.voicevibe.presentation.navigation.NavGraph
 import com.example.voicevibe.ui.theme.VoiceVibeTheme
 import com.example.voicevibe.data.local.TokenManager
+import com.example.voicevibe.presentation.system.MaintenanceBanner
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -81,6 +83,9 @@ fun VoiceVibeApp() {
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        NavGraph(navController = navController)
+        Column {
+            MaintenanceBanner()
+            NavGraph(navController = navController)
+        }
     }
 }

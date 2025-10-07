@@ -144,6 +144,7 @@ sealed class Screen(val route: String) {
     // Privacy & Safety
     object PrivacySettings : Screen("privacy_settings")
     object BlockedUsers : Screen("blocked_users")
+    object MyReports : Screen("my_reports")
     object PrivacyPolicy : Screen("privacy_policy")
     object CommunityGuidelines : Screen("community_guidelines")
 }

@@ -39,6 +39,7 @@ import com.example.voicevibe.presentation.screens.profile.PrivacySettingsScreen
 import com.example.voicevibe.presentation.screens.profile.BlockedUsersScreen
 import com.example.voicevibe.presentation.screens.profile.PrivacyPolicyScreen
 import com.example.voicevibe.presentation.screens.profile.CommunityGuidelinesScreen
+import com.example.voicevibe.presentation.screens.profile.MyReportsScreen
 import com.example.voicevibe.presentation.screens.main.social.SocialFeedScreen
 import com.example.voicevibe.presentation.screens.main.search.UserSearchResultsScreen
 import com.example.voicevibe.presentation.screens.scenarios.CulturalScenariosScreen
@@ -646,6 +647,9 @@ fun NavGraph(
                 onNavigateToBlockedUsers = {
                     navController.navigate(Screen.BlockedUsers.route)
                 },
+                onNavigateToMyReports = {
+                    navController.navigate(Screen.MyReports.route)
+                },
                 onNavigateToPrivacyPolicy = {
                     navController.navigate(Screen.PrivacyPolicy.route)
                 },
@@ -689,6 +693,11 @@ fun NavGraph(
         }
         composable(Screen.CommunityGuidelines.route) {
             CommunityGuidelinesScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        // My Reports
+        composable(Screen.MyReports.route) {
+            MyReportsScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         // Notifications list

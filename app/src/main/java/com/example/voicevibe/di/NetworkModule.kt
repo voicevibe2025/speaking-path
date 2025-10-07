@@ -3,6 +3,7 @@ package com.example.voicevibe.di
 import com.example.voicevibe.BuildConfig
 import com.example.voicevibe.data.remote.api.*
 import com.example.voicevibe.data.remote.interceptor.AuthInterceptor
+import com.example.voicevibe.data.remote.interceptor.MaintenanceInterceptor
 import com.example.voicevibe.data.network.ProfileApiService
 import com.example.voicevibe.utils.Constants
 import com.google.gson.Gson
@@ -106,9 +107,11 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
-        authInterceptor: AuthInterceptor
+        authInterceptor: AuthInterceptor,
+        maintenanceInterceptor: MaintenanceInterceptor
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
+        .addInterceptor(maintenanceInterceptor)
         .addInterceptor(loggingInterceptor)
         .connectTimeout(120, TimeUnit.SECONDS)
         .readTimeout(120, TimeUnit.SECONDS)

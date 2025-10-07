@@ -29,6 +29,7 @@ import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeScree
 import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeChatScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLessonScreen
 import com.example.voicevibe.presentation.screens.gamification.AchievementScreen
+import com.example.voicevibe.presentation.screens.profile.MyReportsScreen
 
 /**
  * Main navigation host for the VoiceVibe app
@@ -333,6 +334,11 @@ fun VoiceVibeNavHost(
                     navController.navigate(Screen.TopicPracticeChat.createRoute(topicId))
                 }
             )
+        }
+
+        // My Reports
+        composable(route = Screen.MyReports.route) {
+            MyReportsScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         // Topic Practice chat

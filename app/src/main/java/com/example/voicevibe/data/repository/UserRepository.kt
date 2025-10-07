@@ -1,6 +1,7 @@
 package com.example.voicevibe.data.repository
 
 import com.example.voicevibe.data.remote.api.UserApiService
+import com.example.voicevibe.data.remote.api.ReportItem
 import com.example.voicevibe.data.mapper.toData
 import com.example.voicevibe.data.mapper.toDomain
 import com.example.voicevibe.domain.model.UserProfile as DomainUserProfile
@@ -46,6 +47,22 @@ class UserRepository @Inject constructor(
             }
         } catch (e: Exception) {
             emit(Resource.Error<DomainUserProfile>(e.message ?: "Unknown error occurred"))
+        }
+    }
+
+    /**
+     * List reports submitted by the current user
+     */
+    suspend fun getMyReports(): Resource<List<ReportItem>> {
+        return try {
+            val response = apiService.getMyReports()
+            if (response.isSuccessful) {
+                Resource.Success(response.body() ?: emptyList())
+            } else {
+                Resource.Error("Failed to load reports")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
         }
     }
     

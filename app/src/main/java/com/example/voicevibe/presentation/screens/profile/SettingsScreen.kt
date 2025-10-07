@@ -36,6 +36,7 @@ fun SettingsScreen(
     onNavigateToAbout: () -> Unit,
     onNavigateToPrivacySettings: () -> Unit,
     onNavigateToBlockedUsers: () -> Unit,
+    onNavigateToMyReports: () -> Unit,
     onNavigateToPrivacyPolicy: () -> Unit,
     onNavigateToCommunityGuidelines: () -> Unit,
     onLogout: () -> Unit,
@@ -170,6 +171,12 @@ fun SettingsScreen(
                     title = "Blocked Users",
                     subtitle = "Manage blocked users",
                     onClick = onNavigateToBlockedUsers
+                )
+                SettingsItem(
+                    icon = Icons.Default.Report,
+                    title = "My Reports",
+                    subtitle = "View your submitted reports",
+                    onClick = onNavigateToMyReports
                 )
                 SettingsItem(
                     icon = Icons.Default.Gavel,

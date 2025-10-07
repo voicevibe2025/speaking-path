@@ -19,8 +19,8 @@ class MaintenanceInterceptor @Inject constructor(
             val response = chain.proceed(request)
 
             when (response.code) {
-                502, 503, 504 -> {
-                    // Try to read message and retryAfterSeconds from JSON body if provided
+                503 -> {
+                    // Real maintenance: try to read message and retryAfterSeconds
                     var message: String? = null
                     var retryAfterSeconds: Long? = null
                     try {
@@ -41,6 +41,10 @@ class MaintenanceInterceptor @Inject constructor(
                         message = message ?: "Server maintenance in progress. Some features may be unavailable.",
                         retryAfterSeconds = retryAfterSeconds
                     )
+                }
+                502, 504 -> {
+                    // Treat as transient network/gateway problem
+                    maintenanceManager.setNetworkIssue()
                 }
                 else -> {
                     // Clear banner if previously active and we received a successful response

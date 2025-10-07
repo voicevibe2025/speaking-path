@@ -18,7 +18,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.voicevibe.presentation.navigation.NavGraph
+import com.example.voicevibe.presentation.navigation.Screen
 import com.example.voicevibe.ui.theme.VoiceVibeTheme
 import com.example.voicevibe.data.local.TokenManager
 import com.example.voicevibe.presentation.system.MaintenanceBanner
@@ -78,13 +80,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun VoiceVibeApp() {
     val navController = rememberNavController()
-    
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    val showNetworkIssues = currentRoute != Screen.Login.route && currentRoute != Screen.Register.route
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            MaintenanceBanner()
+            MaintenanceBanner(showNetworkIssues = showNetworkIssues)
             NavGraph(navController = navController)
         }
     }

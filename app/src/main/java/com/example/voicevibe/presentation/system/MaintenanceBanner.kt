@@ -28,16 +28,22 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.voicevibe.data.system.MaintenanceManager
 
 @Composable
 fun MaintenanceBanner(
     modifier: Modifier = Modifier,
-    viewModel: MaintenanceViewModel = hiltViewModel()
+    viewModel: MaintenanceViewModel = hiltViewModel(),
+    showNetworkIssues: Boolean = true
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var dismissedVersion by rememberSaveable { mutableStateOf<Long?>(null) }
 
-    val visible = state.active && dismissedVersion != state.version
+    val causeAllowed = when (state.cause) {
+        MaintenanceManager.Cause.Maintenance -> true
+        MaintenanceManager.Cause.Network -> showNetworkIssues
+    }
+    val visible = state.active && causeAllowed && dismissedVersion != state.version
 
     Box(modifier = modifier.fillMaxWidth()) {
         AnimatedVisibility(

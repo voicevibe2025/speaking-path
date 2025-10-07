@@ -89,6 +89,9 @@ fun ProfileScreen(
     val vocabularyScore by viewModel.vocabularyScore
     val pronunciationScore by viewModel.pronunciationScore
 
+    // About Me / Bio
+    val bio by viewModel.bio
+
     // Monthly Progress data
     val monthlyDaysActive by viewModel.monthlyDaysActive
     val monthlyXpEarned by viewModel.monthlyXpEarned
@@ -169,6 +172,11 @@ fun ProfileScreen(
                             followingCount = followingCount
                         )
                         Spacer(modifier = Modifier.height(16.dp))
+                        // About Me section
+                        bio?.takeIf { it.isNotBlank() }?.let { bioText ->
+                            AboutMeCard(bio = bioText)
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
                         RecentAchievements(
                             achievements = recentAchievements,
                             onNavigateToAchievements = onNavigateToAchievements
@@ -500,7 +508,37 @@ fun StatCard(
             Text(
                 text = label,
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2
+            )
+        }
+    }
+}
+
+@Composable
+fun AboutMeCard(bio: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "About Me",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = bio,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 20.sp
             )
         }
     }

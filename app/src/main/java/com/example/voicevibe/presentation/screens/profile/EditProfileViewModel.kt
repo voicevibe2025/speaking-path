@@ -102,8 +102,7 @@ class EditProfileViewModel @Inject constructor(
                 val profile = profileRepository.getProfile()
                 _currentEmail.value = profile.userEmail
                 _currentDisplayName.value = profile.displayName ?: ""
-                // Note: bio field is not in the current UserProfile data model
-                // It will be added when backend returns it
+                _aboutMe.value = profile.bio ?: ""
             } catch (e: Exception) {
                 // Handle error silently, fields will remain empty
             }

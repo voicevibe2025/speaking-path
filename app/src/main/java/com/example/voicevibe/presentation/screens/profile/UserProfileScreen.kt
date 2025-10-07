@@ -490,6 +490,25 @@ private fun ProfileHeader(
                 )
             }
 
+            // Bio - right below username
+            profile.bio?.takeIf { it.isNotBlank() }?.let { bio ->
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    color = Color.Transparent
+                ) {
+                    Text(
+                        bio,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             // Action buttons (Follow/Unfollow, Message, Challenge) for other users
@@ -603,15 +622,6 @@ private fun ProfileHeader(
                         )
                     }
                 }
-            }
-
-            // Bio
-            profile.bio?.let { bio ->
-                Text(
-                    bio,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
             }
 
             // Stats Bar

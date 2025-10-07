@@ -72,6 +72,10 @@ class SettingsViewModel @Inject constructor(
     private val _showEmailOnProfile = mutableStateOf(true)
     val showEmailOnProfile: State<Boolean> = _showEmailOnProfile
 
+    // About Me / Bio
+    private val _aboutMe = mutableStateOf("")
+    val aboutMe: State<String> = _aboutMe
+
     // Privacy settings
     private val _privacyLoading = mutableStateOf(false)
     val privacyLoading: State<Boolean> = _privacyLoading
@@ -165,6 +169,9 @@ class SettingsViewModel @Inject constructor(
 
                 // Set avatar URL (normalize if relative)
                 _avatarUrl.value = userProfile.avatarUrl?.let { normalizeUrl(it) }
+
+                // Set bio
+                _aboutMe.value = userProfile.bio ?: ""
 
             } catch (e: IOException) {
                 _errorMessage.value = "Network error. Please check your connection."

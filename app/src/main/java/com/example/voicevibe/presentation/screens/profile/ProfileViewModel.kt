@@ -66,6 +66,10 @@ class ProfileViewModel @Inject constructor(
     private val _userInitials = mutableStateOf("VV")
     val userInitials: State<String> = _userInitials
 
+    // About Me / Bio state
+    private val _bio = mutableStateOf<String?>(null)
+    val bio: State<String?> = _bio
+
     // Recent Achievements state
     private val _recentAchievements = mutableStateOf<List<com.example.voicevibe.data.model.Achievement>>(emptyList())
     val recentAchievements: State<List<com.example.voicevibe.data.model.Achievement>> = _recentAchievements
@@ -154,6 +158,9 @@ class ProfileViewModel @Inject constructor(
 
                 // Avatar URL (normalize if relative)
                 _avatarUrl.value = userProfile.avatarUrl?.let { normalizeUrl(it) }
+
+                // Set bio
+                _bio.value = userProfile.bio
 
                 // Update Quick Stats
                 _practiceHours.value = userProfile.totalPracticeHours ?: 0f

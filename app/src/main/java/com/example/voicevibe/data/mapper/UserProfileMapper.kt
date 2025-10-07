@@ -42,7 +42,7 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
             !this.lastName.isNullOrBlank() -> this.lastName
             else -> this.userName
         },
-        bio = null, // Not available in data model
+        bio = this.bio,
         avatarUrl = this.avatarUrl,
         coverImageUrl = null, // Not available in data model
         level = this.currentLevel ?: 1,
@@ -148,6 +148,7 @@ fun DomainUserProfile.toData(): DataUserProfile {
         firstName = firstName,
         lastName = lastName,
         displayName = this.displayName.takeIf { it.isNotBlank() } ?: "${firstName ?: ""} ${lastName ?: ""}".trim().ifBlank { this.username },
+        bio = this.bio,
         currentProficiency = null, // Not in domain model
         currentLevel = this.level,
         experiencePoints = this.xp,

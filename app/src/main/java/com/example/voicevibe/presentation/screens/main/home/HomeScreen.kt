@@ -180,9 +180,13 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(vertical = 16.dp)
                 ) {
-                    // Social Feed entry card
+                    // Learning Progress
                     item {
-                        SocialFeedEntryCard(onClick = onNavigateToSocialFeed)
+                        LearningProgressSection(
+                            totalPoints = uiState.totalPoints,
+                            currentStreak = uiState.currentStreak,
+                            completedLessons = uiState.completedLessons
+                        )
                     }
 
                     // Quick Start Actions - Highlighted
@@ -197,20 +201,6 @@ fun HomeScreen(
                                 onLivePractice = onNavigateToLivePractice,
                                 viviTopics = uiState.viviTopics,
                                 onNavigateToLearnWithVivi = onNavigateToLearnWithVivi
-                            )
-                        }
-                    }
-
-                    // Learning Progress
-                    item {
-                        AnimatedVisibility(
-                            visible = isVisible,
-                            enter = fadeIn(animationSpec = tween(400, 200))
-                        ) {
-                            LearningProgressSection(
-                                totalPoints = uiState.totalPoints,
-                                currentStreak = uiState.currentStreak,
-                                completedLessons = uiState.completedLessons
                             )
                         }
                     }
@@ -244,6 +234,11 @@ fun HomeScreen(
                         }
                     }
 
+                    // Social Section
+                    item {
+                        SocialSection(onNavigateToSocialFeed = onNavigateToSocialFeed)
+                    }
+
                     // Bottom padding
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
@@ -252,6 +247,24 @@ fun HomeScreen(
             }
         }
 
+    }
+}
+
+@Composable
+private fun SocialSection(
+    onNavigateToSocialFeed: () -> Unit
+) {
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp)
+    ) {
+        Text(
+            text = "Social",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+        SocialFeedEntryCard(onClick = onNavigateToSocialFeed)
     }
 }
 

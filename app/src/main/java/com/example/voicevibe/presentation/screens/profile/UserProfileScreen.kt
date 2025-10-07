@@ -34,6 +34,7 @@ import com.example.voicevibe.domain.model.*
 import com.example.voicevibe.presentation.components.LoadingScreen
 import com.example.voicevibe.presentation.components.ErrorScreen
 import com.example.voicevibe.presentation.components.OnlineStatusIndicator
+import com.example.voicevibe.presentation.components.FullScreenImageViewer
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -54,6 +55,9 @@ fun UserProfileScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Full-screen image viewer state
+    var avatarToView by remember { mutableStateOf<String?>(null) }
 
     // Read account preference for showing email
     val settingsViewModel: SettingsViewModel = hiltViewModel()
@@ -171,6 +175,11 @@ fun UserProfileScreen(
                     },
                     onChallengeClick = viewModel::challengeUser,
                     onMessageClick = { onNavigateToMessage(userProfile.id) },
+                    onAvatarClick = {
+                        if (!userProfile.avatarUrl.isNullOrBlank()) {
+                            avatarToView = userProfile.avatarUrl
+                        }
+                    },
                     onViewAchievements = viewModel::viewAchievements,
                     onViewFollowers = viewModel::viewFollowers,
                     onViewFollowing = viewModel::viewFollowing,
@@ -180,6 +189,15 @@ fun UserProfileScreen(
         }
     }
 
+    // Full-screen avatar viewer dialog
+    avatarToView?.let { url ->
+        FullScreenImageViewer(
+            imageUrl = url,
+            contentDescription = "Avatar",
+            onDismiss = { avatarToView = null }
+        )
+    }
+    
     // More Options Menu
     if (showMoreOptions && !uiState.isOwnProfile) {
         DropdownMenu(
@@ -234,6 +252,7 @@ private fun ProfileContent(
     onFollowClick: () -> Unit,
     onChallengeClick: () -> Unit,
     onMessageClick: () -> Unit,
+    onAvatarClick: (() -> Unit)? = null,
     onViewAchievements: () -> Unit,
     onViewFollowers: () -> Unit,
     onViewFollowing: () -> Unit,
@@ -254,6 +273,7 @@ private fun ProfileContent(
                 onFollowClick = onFollowClick,
                 onChallengeClick = onChallengeClick,
                 onMessageClick = onMessageClick,
+                onAvatarClick = onAvatarClick,
                 onViewFollowers = onViewFollowers,
                 onViewFollowing = onViewFollowing
             )
@@ -317,6 +337,7 @@ private fun ProfileHeader(
     onFollowClick: () -> Unit,
     onChallengeClick: () -> Unit,
     onMessageClick: () -> Unit,
+    onAvatarClick: (() -> Unit)? = null,
     onViewFollowers: () -> Unit,
     onViewFollowing: () -> Unit
 ) {
@@ -361,6 +382,9 @@ private fun ProfileHeader(
                 Box(
                     modifier = Modifier
                         .size(120.dp)
+                        .then(
+                            if (onAvatarClick != null && !profile.avatarUrl.isNullOrBlank()) Modifier.clickable { onAvatarClick() } else Modifier
+                        )
                 ) {
                     Box(
                         modifier = Modifier

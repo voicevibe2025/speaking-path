@@ -33,6 +33,7 @@ import coil.compose.SubcomposeAsyncImage
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.voicevibe.presentation.components.FullScreenImageViewer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +72,9 @@ fun ProfileScreen(
     val userInitials by viewModel.userInitials
     val nextLevelXp by viewModel.nextLevelXp
     val totalXp by viewModel.totalXp
+
+    // Avatar viewer state
+    var showAvatarViewer by remember { mutableStateOf(false) }
 
     // Learning Preferences data
     val dailyPracticeGoal by viewModel.dailyPracticeGoal
@@ -127,7 +131,10 @@ fun ProfileScreen(
                 nextLevelXp = nextLevelXp,
                 streak = streak,
                 avatarUrl = avatarUrl,
-                userInitials = userInitials
+                userInitials = userInitials,
+                onAvatarClick = {
+                    if (avatarUrl != null) showAvatarViewer = true
+                }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -192,6 +199,15 @@ fun ProfileScreen(
                 }
                 2 -> ActivityTab(activities = activities)
             }
+
+            // Full-screen avatar viewer
+            if (showAvatarViewer && avatarUrl != null) {
+                FullScreenImageViewer(
+                    imageUrl = avatarUrl!!,
+                    contentDescription = "Avatar",
+                    onDismiss = { showAvatarViewer = false }
+                )
+            }
         }
     }
 }
@@ -205,7 +221,8 @@ fun ProfileHeader(
     nextLevelXp: Int,
     streak: Int,
     avatarUrl: String?,
-    userInitials: String
+    userInitials: String,
+    onAvatarClick: (() -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
@@ -226,7 +243,10 @@ fun ProfileHeader(
                         )
                     )
                 )
-                .border(3.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                .border(3.dp, MaterialTheme.colorScheme.surface, CircleShape)
+                .then(
+                    if (onAvatarClick != null && avatarUrl != null) Modifier.clickable { onAvatarClick() } else Modifier
+                ),
             contentAlignment = Alignment.Center
         ) {
             if (avatarUrl != null) {

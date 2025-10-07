@@ -103,6 +103,9 @@ fun VoiceVibeNavHost(
                         popUpTo(Screen.Register.route) { inclusive = true }
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
+                },
+                onNavigateToTerms = {
+                    navController.navigate(Screen.TermsOfService.route)
                 }
             )
         }

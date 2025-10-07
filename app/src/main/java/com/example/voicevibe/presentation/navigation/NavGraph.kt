@@ -152,6 +152,9 @@ fun NavGraph(
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Register.route) { inclusive = true }
                     }
+                },
+                onNavigateToTerms = {
+                    navController.navigate(Screen.TermsOfService.route)
                 }
             )
         }

@@ -56,6 +56,7 @@ import com.example.voicevibe.ui.theme.BrandNavyDark
 fun RegisterScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToHome: () -> Unit,
+    onNavigateToTerms: () -> Unit,
     viewModel: RegisterViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -570,7 +571,7 @@ fun RegisterScreen(
                         fontSize = 14.sp,
                         color = BrandCyan,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clickable { /* Open terms */ }
+                        modifier = Modifier.clickable { onNavigateToTerms() }
                     )
                 }
 

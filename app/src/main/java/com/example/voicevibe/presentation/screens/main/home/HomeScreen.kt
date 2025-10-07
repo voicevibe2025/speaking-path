@@ -127,7 +127,6 @@ fun HomeScreen(
     fun onRefresh() {
         coroutineScope.launch {
             isRefreshing = true
-            viewModel.refresh()
             delay(300) // Minimum refresh time for UX
             isRefreshing = false
         }
@@ -135,15 +134,7 @@ fun HomeScreen(
 
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(
-            Brush.verticalGradient(
-                colors = listOf(
-                    Color(0xFF1a1a2e),
-                    Color(0xFF16213e),
-                    Color(0xFF0f3460)
-                )
-            )
-        )
+        .background(MaterialTheme.colorScheme.background)
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -261,7 +252,7 @@ private fun SocialSection(
             text = "Social",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(bottom = 12.dp)
         )
         SocialFeedEntryCard(onClick = onNavigateToSocialFeed)
@@ -295,7 +286,7 @@ fun PostCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = NeutralWhite),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -324,7 +315,7 @@ fun PostCard(
                                 text = post.author.displayName.take(2).uppercase(),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = BrandIndigo
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -340,14 +331,14 @@ fun PostCard(
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(post.author.displayName, fontWeight = FontWeight.Bold, color = NeutralDarkGray)
+                    Text(post.author.displayName, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     // Relative time from createdAt
-                    Text(relativeTime(post.createdAt), fontSize = 12.sp, color = AccentBlueGray)
+                    Text(relativeTime(post.createdAt), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
                 if (post.canDelete) {
                     Box {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = null, tint = AccentBlueGray)
+                            Icon(Icons.Default.MoreVert, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                         }
                         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                             DropdownMenuItem(
@@ -368,7 +359,7 @@ fun PostCard(
                 val link = post.linkUrl!!
                 Text(
                     text = link,
-                    color = BrandIndigo,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable {
                         try {
                             context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link)))
@@ -377,7 +368,7 @@ fun PostCard(
                 )
             } else {
                 if (!post.text.isNullOrBlank()) {
-                    Text(post.text!!, color = NeutralDarkGray)
+                    Text(post.text!!, color = MaterialTheme.colorScheme.onSurface)
                 }
                 if (!post.imageUrl.isNullOrBlank()) {
                     if (!post.text.isNullOrBlank()) Spacer(Modifier.height(6.dp))
@@ -410,14 +401,14 @@ fun PostCard(
                         if (post.isLikedByMe) onUnlike() else onLike()
                     }
                 ) {
-                    val likeTint = if (post.isLikedByMe) BrandFuchsia else AccentBlueGray
+                    val likeTint = if (post.isLikedByMe) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     Icon(
                         imageVector = if (post.isLikedByMe) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = null,
                         tint = likeTint
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text(post.likesCount.toString(), color = AccentBlueGray)
+                    Text(post.likesCount.toString(), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
 
                 // Comment (icon + count)
@@ -425,9 +416,9 @@ fun PostCard(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable { showComments = true }
                 ) {
-                    Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, tint = AccentBlueGray)
+                    Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                     Spacer(Modifier.width(6.dp))
-                    Text(post.commentsCount.toString(), color = AccentBlueGray)
+                    Text(post.commentsCount.toString(), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
             }
         }
@@ -443,7 +434,7 @@ fun PostCard(
                 TextButton(onClick = {
                     showDeleteConfirm = false
                     onDeletePost()
-                }) { Text("Delete", color = BrandFuchsia) }
+                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirm = false }) { Text("Cancel") }
@@ -470,7 +461,7 @@ fun PostCard(
                     .navigationBarsPadding()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Text("Comments", fontWeight = FontWeight.Bold, color = NeutralDarkGray)
+                Text("Comments", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.height(8.dp))
                 // Build parent -> replies grouping for nested view
                 val repliesByParent = remember(comments) { comments.filter { it.parent != null }.groupBy { it.parent!! } }
@@ -489,7 +480,7 @@ fun PostCard(
                                     modifier = Modifier
                                         .size(28.dp)
                                         .clip(CircleShape)
-                                        .background(BrandIndigo.copy(alpha = 0.1f))
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                                         .clickable { onUserClick(parent.author.id.toString()) },
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -506,18 +497,18 @@ fun PostCard(
                                             text = parent.author.displayName.take(2).uppercase(),
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = BrandIndigo
+                                            color = MaterialTheme.colorScheme.primary
                                         )
                                     }
                                 }
                                 Spacer(Modifier.width(8.dp))
                                 Column {
-                                    Text(parent.author.displayName, fontWeight = FontWeight.SemiBold, color = NeutralDarkGray)
-                                    Text(relativeTime(parent.createdAt), fontSize = 11.sp, color = AccentBlueGray)
+                                    Text(parent.author.displayName, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                                    Text(relativeTime(parent.createdAt), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                                 }
                             }
                             Spacer(Modifier.height(2.dp))
-                            Text(parent.text, color = NeutralDarkGray)
+                            Text(parent.text, color = MaterialTheme.colorScheme.onSurface)
                             Spacer(Modifier.height(6.dp))
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                 Row(
@@ -534,24 +525,24 @@ fun PostCard(
                                         if (currentlyLiked) unlikeComment(parent.id) else likeComment(parent.id)
                                     }
                                 ) {
-                                    val likeTint = if (parent.isLikedByMe) BrandFuchsia else AccentBlueGray
+                                    val likeTint = if (parent.isLikedByMe) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                     Icon(
                                         imageVector = if (parent.isLikedByMe) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                                         contentDescription = null,
                                         tint = likeTint
                                     )
                                     Spacer(Modifier.width(6.dp))
-                                    Text(parent.likesCount.toString(), color = AccentBlueGray)
+                                    Text(parent.likesCount.toString(), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                                 }
                                 Text(
                                     text = "Reply",
-                                    color = BrandIndigo,
+                                    color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.clickable { replyToId = parent.id }
                                 )
                                 if (parent.canDelete) {
                                     Text(
                                         text = "Delete",
-                                        color = BrandFuchsia,
+                                        color = MaterialTheme.colorScheme.error,
                                         modifier = Modifier.clickable {
                                             onDeleteComment(parent.id) {
                                                 fetchComments(post.id) { list -> comments = list }
@@ -573,7 +564,7 @@ fun PostCard(
                                                     modifier = Modifier
                                                         .size(24.dp)
                                                         .clip(CircleShape)
-                                                        .background(BrandIndigo.copy(alpha = 0.1f))
+                                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                                                         .clickable { onUserClick(child.author.id.toString()) },
                                                     contentAlignment = Alignment.Center
                                                 ) {
@@ -590,18 +581,18 @@ fun PostCard(
                                                             text = child.author.displayName.take(2).uppercase(),
                                                             fontSize = 9.sp,
                                                             fontWeight = FontWeight.Bold,
-                                                            color = BrandIndigo
+                                                            color = MaterialTheme.colorScheme.primary
                                                         )
                                                     }
                                                 }
                                                 Spacer(Modifier.width(8.dp))
                                                 Column {
-                                                    Text(child.author.displayName, fontWeight = FontWeight.Medium, color = NeutralDarkGray)
-                                                    Text(relativeTime(child.createdAt), fontSize = 11.sp, color = AccentBlueGray)
+                                                    Text(child.author.displayName, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+                                                    Text(relativeTime(child.createdAt), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                                                 }
                                             }
                                             Spacer(Modifier.height(2.dp))
-                                            Text(child.text, color = NeutralDarkGray)
+                                            Text(child.text, color = MaterialTheme.colorScheme.onSurface)
                                             Spacer(Modifier.height(4.dp))
                                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                                 Row(
@@ -618,24 +609,24 @@ fun PostCard(
                                                         if (currentlyLiked) unlikeComment(child.id) else likeComment(child.id)
                                                     }
                                                 ) {
-                                                    val likeTint = if (child.isLikedByMe) BrandFuchsia else AccentBlueGray
+                                                    val likeTint = if (child.isLikedByMe) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                                     Icon(
                                                         imageVector = if (child.isLikedByMe) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                                                         contentDescription = null,
                                                         tint = likeTint
                                                     )
                                                     Spacer(Modifier.width(6.dp))
-                                                    Text(child.likesCount.toString(), color = AccentBlueGray)
+                                                    Text(child.likesCount.toString(), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                                                 }
                                                 Text(
                                                     text = "Reply",
-                                                    color = BrandIndigo,
+                                                    color = MaterialTheme.colorScheme.primary,
                                                     modifier = Modifier.clickable { replyToId = parent.id }
                                                 )
                                                 if (child.canDelete) {
                                                     Text(
                                                         text = "Delete",
-                                                        color = BrandFuchsia,
+                                                        color = MaterialTheme.colorScheme.error,
                                                         modifier = Modifier.clickable {
                                                             onDeleteComment(child.id) {
                                                                 fetchComments(post.id) { list -> comments = list }
@@ -656,10 +647,10 @@ fun PostCard(
                 replyToId?.let { pid ->
                     val name = comments.firstOrNull { it.id == pid }?.author?.displayName ?: "comment"
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Replying to $name", color = BrandIndigo, fontSize = 12.sp)
+                        Text("Replying to $name", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
                         Text(
                             text = "Cancel",
-                            color = BrandFuchsia,
+                            color = MaterialTheme.colorScheme.error,
                             fontSize = 12.sp,
                             modifier = Modifier.clickable { replyToId = null }
                         )
@@ -694,7 +685,7 @@ fun PostCard(
                             }
                         }
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Post Comment", tint = BrandIndigo)
+                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Post Comment", tint = MaterialTheme.colorScheme.primary)
                     }
                 }
                 Spacer(Modifier.height(8.dp))
@@ -769,7 +760,7 @@ private fun EducationalTopBar(
                     text = title,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
             
@@ -784,7 +775,7 @@ private fun EducationalTopBar(
                         Icon(
                             imageVector = Icons.Default.Notifications,
                             contentDescription = "Notifications",
-                            tint = BrandIndigo
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -798,7 +789,7 @@ private fun EducationalTopBar(
                         Icon(
                             imageVector = Icons.Default.Message,
                             contentDescription = "Messages",
-                            tint = BrandIndigo
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -807,7 +798,7 @@ private fun EducationalTopBar(
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search Users",
-                        tint = BrandIndigo
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
                 // Profile avatar
@@ -816,7 +807,7 @@ private fun EducationalTopBar(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(BrandIndigo.copy(alpha = 0.1f)),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center
                     ) {
                         if (avatarUrl != null) {
@@ -831,7 +822,7 @@ private fun EducationalTopBar(
                                 text = userInitials,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = BrandIndigo
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -855,7 +846,7 @@ private fun WelcomeSection(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = NeutralWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -912,7 +903,7 @@ private fun WelcomeSection(
                     Text(
                         text = "Level $level",
                         fontSize = 14.sp,
-                        color = AccentBlueGray
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                 }
             }
@@ -936,7 +927,7 @@ private fun QuickStartSection(
             text = "Start Learning",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
@@ -946,7 +937,7 @@ private fun QuickStartSection(
                 .fillMaxWidth()
                 .clickable { onStartPractice() },
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF667EEA)),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
@@ -959,13 +950,13 @@ private fun QuickStartSection(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape)
-                        .background(NeutralWhite.copy(alpha = 0.2f)),
+                        .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Mic,
                         contentDescription = null,
-                        tint = NeutralWhite,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -977,14 +968,14 @@ private fun QuickStartSection(
                         text = "Start Speaking Practice",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = NeutralWhite,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = "Practice speaking with instant feedback",
                         fontSize = 14.sp,
-                        color = NeutralWhite.copy(alpha = 0.9f),
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -1016,13 +1007,13 @@ private fun QuickStartSection(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape)
-                        .background(NeutralWhite.copy(alpha = 0.2f)),
+                        .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Psychology,
                         contentDescription = null,
-                        tint = NeutralWhite,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -1034,14 +1025,14 @@ private fun QuickStartSection(
                         text = "Practice with Vivi",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = NeutralWhite,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = "AI-powered conversation partner",
                         fontSize = 14.sp,
-                        color = NeutralWhite.copy(alpha = 0.9f),
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -1058,7 +1049,7 @@ private fun QuickStartSection(
                 .fillMaxWidth()
                 .clickable { showTopicSelectionDialog = true },
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF10B981)),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
@@ -1071,13 +1062,13 @@ private fun QuickStartSection(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape)
-                        .background(NeutralWhite.copy(alpha = 0.2f)),
+                        .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.AutoStories,
                         contentDescription = null,
-                        tint = NeutralWhite,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -1089,14 +1080,14 @@ private fun QuickStartSection(
                         text = "Learn With Vivi",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = NeutralWhite,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = "Learn topics through conversation",
                         fontSize = 14.sp,
-                        color = NeutralWhite.copy(alpha = 0.9f),
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -1112,7 +1103,7 @@ private fun QuickStartSection(
                 .fillMaxWidth()
                 .clickable { onLivePractice() },
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFF8C42)),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
@@ -1125,13 +1116,13 @@ private fun QuickStartSection(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape)
-                        .background(NeutralWhite.copy(alpha = 0.2f)),
+                        .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.FlashOn,
                         contentDescription = null,
-                        tint = NeutralWhite,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -1143,14 +1134,14 @@ private fun QuickStartSection(
                         text = "Practice with Vivi",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = NeutralWhite,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = "Practice with AI tutor",
                         fontSize = 14.sp,
-                        color = NeutralWhite.copy(alpha = 0.9f),
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -1183,7 +1174,7 @@ private fun LearningProgressSection(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -1193,7 +1184,7 @@ private fun LearningProgressSection(
                 text = "Progress",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -1255,12 +1246,12 @@ private fun ProgressItem(
             text = value,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = MaterialTheme.colorScheme.onBackground
         )
         Text(
             text = label,
             fontSize = 12.sp,
-            color = AccentBlueGray
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
     }
 }
@@ -1278,7 +1269,7 @@ private fun StudyToolsSection(
             text = "Study Tools",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
@@ -1326,7 +1317,7 @@ private fun StudyToolCard(
             .aspectRatio(1f)
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         border = BorderStroke(1.dp, color.copy(alpha = 0.2f))
     ) {
@@ -1347,7 +1338,7 @@ private fun StudyToolCard(
             Text(
                 text = title,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 12.sp
             )
         }
@@ -1371,13 +1362,13 @@ private fun CurrentCoursesSection(
                 text = "Current Courses",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             TextButton(onClick = {}) {
                 Text(
                     text = "See All",
-                    color = BrandIndigo,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 14.sp
                 )
             }
@@ -1408,7 +1399,7 @@ private fun CourseCard(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -1426,7 +1417,7 @@ private fun CourseCard(
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     
                     Spacer(modifier = Modifier.height(4.dp))
@@ -1438,27 +1429,27 @@ private fun CourseCard(
                             Icons.AutoMirrored.Filled.MenuBook,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
-                            tint = AccentBlueGray
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "${path.completedLessons} of ${path.totalLessons} lessons",
                             fontSize = 13.sp,
-                            color = AccentBlueGray
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
                     }
                 }
 
                 Surface(
                     shape = RoundedCornerShape(20.dp),
-                    color = if (path.progress >= 80) PracticeAccuracyGreen else BrandIndigo,
+                    color = if (path.progress >= 80) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
                     Text(
                         text = "${path.progress}%",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = NeutralWhite,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                     )
                 }
@@ -1472,8 +1463,8 @@ private fun CourseCard(
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
-                color = if (path.progress >= 80) PracticeAccuracyGreen else BrandIndigo,
-                trackColor = NeutralGray,
+                color = if (path.progress >= 80) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
             )
         }
     }
@@ -1496,13 +1487,13 @@ private fun AchievementsSection(
                 text = "Recent Achievements",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             TextButton(onClick = onViewAll) {
                 Text(
                     text = "View All",
-                    color = BrandIndigo,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 14.sp
                 )
             }
@@ -1568,7 +1559,7 @@ private fun SocialFeedEntryCard(onClick: () -> Unit) {
             .padding(horizontal = 16.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -1593,8 +1584,8 @@ private fun SocialFeedEntryCard(onClick: () -> Unit) {
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text("Community Feed", fontWeight = FontWeight.Bold, color = Color.White)
-                Text("Share updates and see friends' posts", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
+                Text("Community Feed", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+                Text("Share updates and see friends' posts", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f), fontSize = 12.sp)
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
@@ -1621,12 +1612,12 @@ private fun TopicSelectionDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF1a1a2e),
+        containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Text(
                 text = "Select a Topic",
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground
             )
         },
         text = {
@@ -1646,12 +1637,12 @@ private fun TopicSelectionDialog(
                     Spacer(Modifier.height(12.dp))
                     Text(
                         text = "No topics available yet",
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = "Complete practices to unlock topics",
-                        color = AccentBlueGray,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center
                     )
@@ -1675,7 +1666,7 @@ private fun TopicSelectionDialog(
                                 .clickable(enabled = canOpen) { onTopicSelected(topic.id) },
                             shape = RoundedCornerShape(12.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color.White.copy(alpha = if (topic.unlocked) 0.1f else 0.05f)
+                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = if (topic.unlocked) 0.5f else 0.3f)
                             ),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
@@ -1704,13 +1695,13 @@ private fun TopicSelectionDialog(
                                     Text(
                                         text = topic.title,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onBackground,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
                                         text = topic.description,
-                                        color = AccentBlueGray,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                         fontSize = 13.sp,
                                         maxLines = 2,
                                         overflow = TextOverflow.Ellipsis
@@ -1760,3 +1751,4 @@ private fun TopicSelectionDialog(
         }
     )
 }
+

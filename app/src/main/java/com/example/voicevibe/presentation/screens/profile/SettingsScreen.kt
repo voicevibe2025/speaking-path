@@ -1929,9 +1929,17 @@ fun PrivacySettingsScreen(
     onNavigateBack: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    var hideAvatar by remember { mutableStateOf(false) }
-    var hideOnlineStatus by remember { mutableStateOf(false) }
-    var allowMessagesFromStrangers by remember { mutableStateOf(true) }
+    // Bind to ViewModel state
+    val hideAvatar = viewModel.hideAvatar.value
+    val hideOnlineStatus = viewModel.hideOnlineStatus.value
+    val allowMessagesFromStrangers = viewModel.allowMessagesFromStrangers.value
+    val saving = viewModel.isSavingPrivacy.value
+    val loading = viewModel.privacyLoading.value
+    val error = viewModel.privacyError.value
+
+    LaunchedEffect(Unit) {
+        viewModel.loadPrivacySettings()
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
@@ -1942,6 +1950,9 @@ fun PrivacySettingsScreen(
                 }
             }
         )
+        if (loading) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -1955,6 +1966,13 @@ fun PrivacySettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
+            if (error != null) {
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
@@ -1965,7 +1983,7 @@ fun PrivacySettingsScreen(
                         title = "Hide Avatar",
                         subtitle = "Other users won't see your profile picture",
                         checked = hideAvatar,
-                        onCheckedChange = { hideAvatar = it }
+                        onCheckedChange = { viewModel.setHideAvatar(it) }
                     )
                     
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
@@ -1975,7 +1993,7 @@ fun PrivacySettingsScreen(
                         title = "Hide Online Status",
                         subtitle = "Don't show when you're active",
                         checked = hideOnlineStatus,
-                        onCheckedChange = { hideOnlineStatus = it }
+                        onCheckedChange = { viewModel.setHideOnlineStatus(it) }
                     )
                     
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
@@ -1985,7 +2003,7 @@ fun PrivacySettingsScreen(
                         title = "Allow Messages from Anyone",
                         subtitle = "If off, only followers can message you",
                         checked = allowMessagesFromStrangers,
-                        onCheckedChange = { allowMessagesFromStrangers = it }
+                        onCheckedChange = { viewModel.setAllowMessagesFromStrangers(it) }
                     )
                 }
             }
@@ -1994,15 +2012,23 @@ fun PrivacySettingsScreen(
 
             Button(
                 onClick = {
-                    // TODO: Save privacy settings via viewModel
-                    onNavigateBack()
+                    viewModel.savePrivacySettings(onSuccess = { onNavigateBack() })
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                enabled = !saving
             ) {
-                Text("Save Changes", fontSize = 16.sp)
+                if (saving) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Save Changes", fontSize = 16.sp)
+                }
             }
         }
     }

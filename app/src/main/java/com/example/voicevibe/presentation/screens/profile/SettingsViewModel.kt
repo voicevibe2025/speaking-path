@@ -72,6 +72,25 @@ class SettingsViewModel @Inject constructor(
     private val _showEmailOnProfile = mutableStateOf(true)
     val showEmailOnProfile: State<Boolean> = _showEmailOnProfile
 
+    // Privacy settings
+    private val _privacyLoading = mutableStateOf(false)
+    val privacyLoading: State<Boolean> = _privacyLoading
+
+    private val _privacyError = mutableStateOf<String?>(null)
+    val privacyError: State<String?> = _privacyError
+
+    private val _hideAvatar = mutableStateOf(false)
+    val hideAvatar: State<Boolean> = _hideAvatar
+
+    private val _hideOnlineStatus = mutableStateOf(false)
+    val hideOnlineStatus: State<Boolean> = _hideOnlineStatus
+
+    private val _allowMessagesFromStrangers = mutableStateOf(true)
+    val allowMessagesFromStrangers: State<Boolean> = _allowMessagesFromStrangers
+
+    private val _isSavingPrivacy = mutableStateOf(false)
+    val isSavingPrivacy: State<Boolean> = _isSavingPrivacy
+
     init {
         fetchUserProfile()
         observeSettings()
@@ -247,6 +266,63 @@ class SettingsViewModel @Inject constructor(
             tokenManager.setShowEmailOnProfile(value)
         }
     }
+
+    // region Privacy settings
+    fun loadPrivacySettings() {
+        viewModelScope.launch {
+            _privacyLoading.value = true
+            _privacyError.value = null
+            when (val result = userRepository.getPrivacySettings()) {
+                is Resource.Success -> {
+                    val s = result.data
+                    _hideAvatar.value = s?.hideAvatar ?: false
+                    _hideOnlineStatus.value = s?.hideOnlineStatus ?: false
+                    _allowMessagesFromStrangers.value = s?.allowMessagesFromStrangers ?: true
+                }
+                is Resource.Error -> {
+                    _privacyError.value = result.message ?: "Failed to load privacy settings"
+                }
+                else -> {}
+            }
+            _privacyLoading.value = false
+        }
+    }
+
+    fun savePrivacySettings(
+        hideAvatar: Boolean = _hideAvatar.value,
+        hideOnlineStatus: Boolean = _hideOnlineStatus.value,
+        allowMessagesFromStrangers: Boolean = _allowMessagesFromStrangers.value,
+        onSuccess: (() -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            _isSavingPrivacy.value = true
+            _privacyError.value = null
+            val payload = com.example.voicevibe.data.remote.api.PrivacySettings(
+                hideAvatar = hideAvatar,
+                hideOnlineStatus = hideOnlineStatus,
+                allowMessagesFromStrangers = allowMessagesFromStrangers
+            )
+            when (val result = userRepository.updatePrivacySettings(payload)) {
+                is Resource.Success -> {
+                    val s = result.data
+                    _hideAvatar.value = s?.hideAvatar ?: hideAvatar
+                    _hideOnlineStatus.value = s?.hideOnlineStatus ?: hideOnlineStatus
+                    _allowMessagesFromStrangers.value = s?.allowMessagesFromStrangers ?: allowMessagesFromStrangers
+                    onSuccess?.invoke()
+                }
+                is Resource.Error -> {
+                    _privacyError.value = result.message ?: "Failed to update privacy settings"
+                }
+                else -> {}
+            }
+            _isSavingPrivacy.value = false
+        }
+    }
+
+    fun setHideAvatar(value: Boolean) { _hideAvatar.value = value }
+    fun setHideOnlineStatus(value: Boolean) { _hideOnlineStatus.value = value }
+    fun setAllowMessagesFromStrangers(value: Boolean) { _allowMessagesFromStrangers.value = value }
+    // endregion
 
     // Avatar upload handler - accepts raw image bytes from UI layer
     fun uploadAvatar(imageBytes: ByteArray) {

@@ -1612,9 +1612,13 @@ private fun TopicSelectionDialog(
     onDismiss: () -> Unit,
     onTopicSelected: (String) -> Unit
 ) {
-    // Filter topics: unlocked AND has conversation
-    val availableTopics = topics.filter { it.unlocked && it.hasConversation }
-    
+    val sortedTopics = remember(topics) {
+        topics.sortedWith(
+            compareByDescending<ViviTopic> { it.unlocked }
+                .thenBy { it.title.lowercase(Locale.getDefault()) }
+        )
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = Color(0xFF1a1a2e),
@@ -1626,7 +1630,7 @@ private fun TopicSelectionDialog(
             )
         },
         text = {
-            if (availableTopics.isEmpty()) {
+            if (sortedTopics.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1659,14 +1663,19 @@ private fun TopicSelectionDialog(
                         .heightIn(max = 400.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(availableTopics) { topic ->
+                    items(sortedTopics) { topic ->
+                        val canOpen = topic.unlocked
+                        val statusIcon = if (topic.unlocked) Icons.Default.LockOpen else Icons.Default.Lock
+                        val statusText = if (topic.unlocked) "Unlocked" else "Locked"
+                        val statusColor = if (topic.unlocked) PracticeAccuracyGreen else AccentBlueGray
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onTopicSelected(topic.id) },
+                                .alpha(if (canOpen) 1f else 0.6f)
+                                .clickable(enabled = canOpen) { onTopicSelected(topic.id) },
                             shape = RoundedCornerShape(12.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color.White.copy(alpha = 0.1f)
+                                containerColor = Color.White.copy(alpha = if (topic.unlocked) 0.1f else 0.05f)
                             ),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
@@ -1680,13 +1689,13 @@ private fun TopicSelectionDialog(
                                     modifier = Modifier
                                         .size(40.dp)
                                         .clip(CircleShape)
-                                        .background(Color(0xFF10B981).copy(alpha = 0.2f)),
+                                        .background(statusColor.copy(alpha = 0.18f)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.AutoStories,
                                         contentDescription = null,
-                                        tint = Color(0xFF10B981),
+                                        tint = statusColor,
                                         modifier = Modifier.size(24.dp)
                                     )
                                 }
@@ -1706,12 +1715,38 @@ private fun TopicSelectionDialog(
                                         maxLines = 2,
                                         overflow = TextOverflow.Ellipsis
                                     )
+                                    Spacer(Modifier.height(6.dp))
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = statusIcon,
+                                            contentDescription = statusText,
+                                            tint = statusColor,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(Modifier.width(6.dp))
+                                        Text(
+                                            text = statusText,
+                                            color = statusColor,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
                                 }
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                    contentDescription = null,
-                                    tint = AccentBlueGray
-                                )
+                                if (canOpen) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                        contentDescription = null,
+                                        tint = AccentBlueGray
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Lock,
+                                        contentDescription = null,
+                                        tint = AccentBlueGray
+                                    )
+                                }
                             }
                         }
                     }

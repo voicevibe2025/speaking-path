@@ -76,7 +76,7 @@ fun LearnTopicWithViviScreen(
             phrasesCompleted = uiState.phrasesCompleted,
             onContinuePracticing = {
                 viewModel.clearCompletionState()
-                // Stay in the screen for more practice
+                viewModel.requestRolePlay()  // Send practice message to Vivi
             },
             onFinish = {
                 viewModel.clearCompletionState()
@@ -208,7 +208,6 @@ fun LearnTopicWithViviScreen(
                         }
                     },
                     onRequestShowPhrase = viewModel::requestShowPhrase,
-                    onRequestRolePlay = viewModel::requestRolePlay,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
@@ -414,7 +413,6 @@ private fun VoiceModeControl(
     isBotSpeaking: Boolean,
     onToggleRecording: () -> Unit,
     onRequestShowPhrase: () -> Unit,
-    onRequestRolePlay: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -487,39 +485,6 @@ private fun VoiceModeControl(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Show me the phrase",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-            
-            // Role play button
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            OutlinedButton(
-                onClick = onRequestRolePlay,
-                enabled = isConnected && !isRecording,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.secondary
-                ),
-                border = BorderStroke(
-                    width = 1.5.dp,
-                    color = if (isConnected && !isRecording) {
-                        MaterialTheme.colorScheme.secondary
-                    } else {
-                        MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                    }
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.People,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Let's do a role play",
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Medium
                 )
@@ -930,12 +895,23 @@ private fun PhraseCardItem(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = "Speaker ${card.speaker}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
+                    // Show speaker label only if speaker is not empty (for conversation practice)
+                    if (card.speaker.isNotBlank()) {
+                        Text(
+                            text = "Speaker ${card.speaker}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        // For material phrases, show phrase label
+                        Text(
+                            text = "Phrase #${card.phraseIndex + 1}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                     
                     // Current phrase badge
                     if (isCurrentPhrase) {

@@ -164,7 +164,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             topic = topicData,
-                            totalPhrases = topicData?.conversation?.size ?: 0
+                            totalPhrases = topicData?.material?.size ?: 0
                         )
                     }
                     Log.d(TAG, "Topic data loaded successfully: ${topicData?.title}")
@@ -257,11 +257,11 @@ class LearnTopicWithViviViewModel @Inject constructor(
     }
     
     fun requestRolePlay() {
-        // Send a predefined message to initiate role play mode
+        // Send a predefined message to initiate practice mode
         val topicTitle = topicData?.title ?: "this topic"
-        val message = "Let's do a role play! I want to practice the conversation from $topicTitle using the exact phrases. Please ask me which role I want to take: Speaker A or Speaker B. After I choose, you will take the opposite role and we'll practice the conversation. When it's your turn, only say your character's phrases from the conversation - don't explain anything, just act as that speaker."
+        val message = "Let's practice using these phrases! I want to use the phrases I just learned from $topicTitle in a conversation. Can you help me practice by creating a scenario where I can use these phrases naturally? Guide me through using each phrase in context."
         sendMessage(message)
-        Log.d(TAG, "User requested role play via button")
+        Log.d(TAG, "User requested practice via button")
     }
 
     fun retryConnection() {
@@ -608,11 +608,11 @@ class LearnTopicWithViviViewModel @Inject constructor(
 
     private fun handleShowPhraseCard(phraseIndex: Int) {
         Log.d(TAG, "Showing phrase card for phrase $phraseIndex")
-        val conversation = topicData?.conversation
+        val material = topicData?.material
         
-        if (conversation != null && phraseIndex < conversation.size) {
+        if (material != null && phraseIndex < material.size) {
             currentPhraseIndex = phraseIndex
-            val turn = conversation[phraseIndex]
+            val phraseText = material[phraseIndex]
             
             // Check if card already exists to prevent duplicates
             val existingCards = _uiState.value.phraseCards
@@ -631,8 +631,8 @@ class LearnTopicWithViviViewModel @Inject constructor(
             _uiState.update { state ->
                 val newCard = PhraseCard(
                     phraseIndex = phraseIndex,
-                    text = turn.text,
-                    speaker = turn.speaker
+                    text = phraseText,
+                    speaker = "" // No speaker for material phrases
                 )
                 state.copy(
                     currentPhraseIndex = phraseIndex,
@@ -640,32 +640,32 @@ class LearnTopicWithViviViewModel @Inject constructor(
                 )
             }
             
-            Log.d(TAG, "Phrase card added for phrase $phraseIndex: ${turn.text}")
+            Log.d(TAG, "Phrase card added for phrase $phraseIndex: $phraseText")
         } else {
-            Log.e(TAG, "Cannot show phrase card: conversation=$conversation, phraseIndex=$phraseIndex")
+            Log.e(TAG, "Cannot show phrase card: material=$material, phraseIndex=$phraseIndex")
         }
     }
     
     fun playPhraseAudio(phraseIndex: Int) {
         Log.d(TAG, "Playing audio for phrase $phraseIndex")
-        val conversation = topicData?.conversation
+        val material = topicData?.material
         val ctx = appContext
         
-        if (conversation != null && phraseIndex < conversation.size && ctx != null) {
-            val turn = conversation[phraseIndex]
+        if (material != null && phraseIndex < material.size && ctx != null) {
+            val phraseText = material[phraseIndex]
             val topicTitle = topicData?.title ?: topicId
             
-            // Play audio from assets like ConversationLesson does
+            // Play audio from assets for pronunciation practice phrases
             viewModelScope.launch(Dispatchers.IO) {
                 try {
                     // Release any existing player
                     mediaPlayer?.release()
                     
-                    // Build asset path
+                    // Build asset path for material phrases
                     val slug = topicTitle.trim().lowercase(java.util.Locale.US)
                         .replace(Regex("[^a-z0-9]+"), "_").trim('_')
-                    val turnNumber = (phraseIndex + 1).coerceAtLeast(1)
-                    val assetPath = "conversation_audios/$slug/turn_${turnNumber}.wav"
+                    val phraseNumber = (phraseIndex + 1).coerceAtLeast(1)
+                    val assetPath = "phrase_audios/$slug/phrase_${phraseNumber}.wav"
                     
                     val afd = ctx.assets.openFd(assetPath)
                     afd.use { desc ->
@@ -695,7 +695,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
                 }
             }
         } else {
-            Log.e(TAG, "Cannot play audio: conversation=$conversation, phraseIndex=$phraseIndex, context=$ctx")
+            Log.e(TAG, "Cannot play audio: material=$material, phraseIndex=$phraseIndex, context=$ctx")
         }
     }
 
@@ -729,7 +729,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
         
         // Automatically show the next phrase card if available
         val nextPhraseIndex = currentPhraseIndex // Already incremented above
-        val totalPhrases = topicData?.conversation?.size ?: 0
+        val totalPhrases = topicData?.material?.size ?: 0
         if (nextPhraseIndex < totalPhrases) {
             Log.d(TAG, "Auto-showing next phrase card: $nextPhraseIndex")
             handleShowPhraseCard(nextPhraseIndex)
@@ -813,7 +813,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
     private fun sendFunctionResponse(callId: String, functionName: String, response: String) {
         // Build a detailed response that includes the current state of shown phrases
         val shownPhraseIndices = uiState.value.phraseCards.map { it.phraseIndex }.toSet()
-        val totalPhrases = topicData?.conversation?.size ?: 0
+        val totalPhrases = topicData?.material?.size ?: 0
         
         // Create a status message showing which phrases have been displayed
         val statusMessage = buildString {
@@ -1130,9 +1130,9 @@ class LearnTopicWithViviViewModel @Inject constructor(
         val user = currentUser
         val userName = user?.let { preferredUserName(it) } ?: "there"
         
-        val conversation = topic.conversation
-        val phrasesText = conversation.mapIndexed { index, turn ->
-            "Phrase ${index + 1}: \"${turn.text}\" (Speaker: ${turn.speaker})"
+        val material = topic.material
+        val phrasesText = material.mapIndexed { index, phrase ->
+            "Phrase ${index + 1}: \"${phrase}\""
         }.joinToString("\n")
 
         return """
@@ -1152,14 +1152,14 @@ class LearnTopicWithViviViewModel @Inject constructor(
             Description: ${topic.description}
             
             ## LEARNING APPROACH
-            - Guide the user through the conversation PHRASE BY PHRASE
+            - Guide the user through the material PHRASE BY PHRASE
             - Start with phrase 0 and move sequentially
             - For each phrase, explain its meaning, usage, and pronunciation
             - Always provide the Indonesian cultural context
             - Be encouraging, patient, and humorous
             - Use short, simple, friendly language
             
-            ## CONVERSATION PHRASES TO TEACH
+            ## PHRASES TO TEACH
             $phrasesText
             
             ## TEACHING FLOW
@@ -1202,19 +1202,16 @@ class LearnTopicWithViviViewModel @Inject constructor(
             - The user has a "Show me the phrase" button - if they click it, they're asking you to show the current phrase card
             - When you receive a request like "Please show me the phrase", immediately call show_phrase_card() with the current phrase index
             
-            ## ROLE PLAY MODE
-            - The user has a "Let's do a role play" button to practice the conversation
-            - When user requests role play:
-              1. Ask them: "Which role would you like to take? Speaker A or Speaker B?"
-              2. Wait for their choice
-              3. You will take the OPPOSITE role (if they choose A, you are B; if they choose B, you are A)
-              4. In role play mode, ONLY say your character's exact phrases from the conversation
-              5. Do NOT explain, teach, or add commentary - just act naturally as that speaker
-              6. Wait for the user to say their lines before saying yours
-              7. Keep the conversation flowing naturally like a real dialogue
-              8. After the conversation ends, ask if they want to practice again or switch roles
-            - Example: If they choose Speaker A, you respond with Speaker B's lines only
-            - Stay in character until the role play is complete or user ends it
+            ## PRACTICE MODE
+            - The user has a "Let's do a role play" button to practice with these phrases
+            - When user requests practice:
+              1. Suggest a simple practice scenario using these phrases
+              2. Ask them to use the phrases in context
+              3. Give them feedback on their usage
+              4. Encourage them to create their own sentences with the phrases
+              5. After practicing, ask if they want to try more examples or move to the next phrase
+            - Keep practice sessions interactive and fun
+            - Give positive feedback and gentle corrections
             
             ## INDONESIAN CULTURAL CONTEXT
             - When explaining phrases, relate them to Indonesian culture and Batam context

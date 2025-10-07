@@ -34,11 +34,14 @@ fun SettingsScreen(
     onNavigateToAccountSettings: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
     onNavigateToAbout: () -> Unit,
+    onNavigateToQA: () -> Unit,
     onNavigateToPrivacySettings: () -> Unit,
     onNavigateToBlockedUsers: () -> Unit,
     onNavigateToMyReports: () -> Unit,
     onNavigateToPrivacyPolicy: () -> Unit,
+    onNavigateToTermsOfService: () -> Unit,
     onNavigateToCommunityGuidelines: () -> Unit,
+    onNavigateToImageCrop: (String) -> Unit = {},
     onLogout: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -56,12 +59,9 @@ fun SettingsScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) {
-            try {
-                val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
-                if (bytes != null) {
-                    viewModel.uploadAvatar(bytes)
-                }
-            } catch (_: Exception) { }
+            // Navigate to crop screen with encoded URI
+            val encodedUri = android.net.Uri.encode(uri.toString())
+            onNavigateToImageCrop(encodedUri)
         }
     }
 
@@ -185,6 +185,12 @@ fun SettingsScreen(
                     onClick = onNavigateToPrivacyPolicy
                 )
                 SettingsItem(
+                    icon = Icons.Default.Description,
+                    title = "Terms of Service",
+                    subtitle = "View terms and conditions",
+                    onClick = onNavigateToTermsOfService
+                )
+                SettingsItem(
                     icon = Icons.Default.Article,
                     title = "Community Guidelines",
                     subtitle = "Learn about our community standards",
@@ -197,20 +203,14 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Default.Info,
                     title = "About",
-                    subtitle = "Version 1.0.0",
+                    subtitle = "VozVibe v1.0",
                     onClick = onNavigateToAbout
-                )
-                SettingsItem(
-                    icon = Icons.Default.ContactMail,
-                    title = "Contact",
-                    subtitle = "Get in touch with us",
-                    onClick = { /* TODO: Open contact form */ }
                 )
                 SettingsItem(
                     icon = Icons.Default.Help,
                     title = "Q & A",
                     subtitle = "Frequently asked questions",
-                    onClick = { /* TODO: Open FAQ */ }
+                    onClick = onNavigateToQA
                 )
             }
 
@@ -470,10 +470,545 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                 IconButton(onClick = onNavigateBack) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                 }
-            }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         )
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("VoiceVibe v1.0.0", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            // App Logo/Name Section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "VozVibe",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "v1.0",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+
+            // Description Section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "About VozVibe",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "VozVibe is your AI-powered companion for mastering English speaking skills. Our platform combines cutting-edge speech recognition, real-time pronunciation feedback, and interactive conversations to help you speak English with confidence.",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 20.sp
+                    )
+                    Divider(modifier = Modifier.padding(vertical = 4.dp))
+                    Text(
+                        text = "Features:",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FeatureBullet("AI-powered pronunciation analysis")
+                        FeatureBullet("Interactive conversation practice")
+                        FeatureBullet("Vocabulary lessons with real-time feedback")
+                        FeatureBullet("Progress tracking and gamification")
+                        FeatureBullet("Social learning community")
+                    }
+                }
+            }
+
+            // Contact Section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Contact Us",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Email,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Column {
+                            Text(
+                                text = "VozVibe Team 2025",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "vozvibe2025@gmail.com",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
+
+
+            // Copyright
+            Text(
+                text = "© 2025 VozVibe. All rights reserved.",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+private fun FeatureBullet(text: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "•",
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = text,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun QAScreen(onNavigateBack: () -> Unit) {
+    var expandedItems by remember { mutableStateOf(setOf<Int>()) }
+    
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text("Q & A", fontWeight = FontWeight.Bold) },
+            navigationIcon = {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Frequently Asked Questions",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            
+            Text(
+                text = "Find answers to common questions about VozVibe. Tap any question to expand the answer.",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            
+            // Getting Started
+            Text(
+                text = "Getting Started",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            
+            QAItem(
+                index = 0,
+                question = "What is VozVibe?",
+                answer = "VozVibe is an AI-powered English learning platform designed to help you master speaking skills. We combine cutting-edge speech recognition, real-time pronunciation feedback, fluency analysis, and interactive conversations to help you speak English with confidence.",
+                isExpanded = 0 in expandedItems,
+                onToggle = { expandedItems = if (0 in expandedItems) expandedItems - 0 else expandedItems + 0 }
+            )
+            
+            QAItem(
+                index = 1,
+                question = "How do I get started?",
+                answer = "After creating your account, you'll see the Speaking Journey with various topics. Start with the first unlocked topic and practice pronunciation, fluency, and vocabulary. Complete all practice modes to unlock new topics and progress through your learning journey.",
+                isExpanded = 1 in expandedItems,
+                onToggle = { expandedItems = if (1 in expandedItems) expandedItems - 1 else expandedItems + 1 }
+            )
+            
+            QAItem(
+                index = 2,
+                question = "What are the system requirements?",
+                answer = "VozVibe requires Android 7.0 (Nougat) or higher. You'll also need:\n• Stable internet connection for AI features\n• Microphone access for speech practice\n• At least 200 MB of free storage\n• Recommended: Headphones for best audio experience",
+                isExpanded = 2 in expandedItems,
+                onToggle = { expandedItems = if (2 in expandedItems) expandedItems - 2 else expandedItems + 2 }
+            )
+            
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            
+            // Learning Features
+            Text(
+                text = "Learning Features",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            
+            QAItem(
+                index = 3,
+                question = "What practice modes are available?",
+                answer = "Each topic includes five practice modes:\n\n• Pronunciation Practice: Record and get AI feedback on your pronunciation accuracy\n• Fluency Practice: Speak freely and receive analysis on your speaking speed, pauses, and natural flow\n• Vocabulary Practice: Interactive AI-generated quizzes to learn topic-specific words\n• Conversation Practice: Engage in realistic dialogues with TTS audio\n• Vocabulary Lesson: Get detailed AI explanations with pronunciation guides",
+                isExpanded = 3 in expandedItems,
+                onToggle = { expandedItems = if (3 in expandedItems) expandedItems - 3 else expandedItems + 3 }
+            )
+            
+            QAItem(
+                index = 4,
+                question = "How does the Speaking Journey work?",
+                answer = "The Speaking Journey is a structured learning path with 60+ topics organized by difficulty. Topics unlock sequentially as you complete all practice modes with at least 75% average score. Track your progress on each topic and see your overall proficiency grow from Chaucerite to The Bard Eternal!",
+                isExpanded = 4 in expandedItems,
+                onToggle = { expandedItems = if (4 in expandedItems) expandedItems - 4 else expandedItems + 4 }
+            )
+            
+            QAItem(
+                index = 5,
+                question = "How accurate is the pronunciation feedback?",
+                answer = "VozVibe uses state-of-the-art AI models (OpenAI Whisper for transcription and SpeechBrain for phoneme analysis) combined with Google Gemini 2.5 to provide detailed, context-aware feedback. You'll get:\n• Overall accuracy percentage\n• Word-by-word pronunciation analysis\n• Specific tips on weak sounds\n• Comparison to native pronunciation",
+                isExpanded = 5 in expandedItems,
+                onToggle = { expandedItems = if (5 in expandedItems) expandedItems - 5 else expandedItems + 5 }
+            )
+            
+            QAItem(
+                index = 6,
+                question = "Can I customize the AI voice?",
+                answer = "Yes! Go to Settings > Learning Preferences to choose from 30+ Gemini TTS voices (like Zephyr, Puck, Aoede) with different tones and characteristics. You can also select accent preferences (American, British, Australian, Indian, Singaporean) for Live sessions.",
+                isExpanded = 6 in expandedItems,
+                onToggle = { expandedItems = if (6 in expandedItems) expandedItems - 6 else expandedItems + 6 }
+            )
+            
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            
+            // Gamification & Progress
+            Text(
+                text = "Gamification & Progress",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            
+            QAItem(
+                index = 7,
+                question = "How does the XP and leveling system work?",
+                answer = "Earn XP by completing practice activities:\n• Pronunciation: Up to 20 XP per phrase (based on accuracy)\n• Fluency: 10 XP per prompt with 80%+ score\n• Vocabulary: 5 XP per correct answer + 20 XP completion bonus\n• Topic Completion: 50 XP bonus\n\nYour level increases as you accumulate XP, unlocking new proficiency tiers and badges.",
+                isExpanded = 7 in expandedItems,
+                onToggle = { expandedItems = if (7 in expandedItems) expandedItems - 7 else expandedItems + 7 }
+            )
+            
+            QAItem(
+                index = 8,
+                question = "What are proficiency tiers?",
+                answer = "Your proficiency tier reflects your overall progress:\n\n🌱 Chaucerite (0-10 topics)\n🎭 Shakespire (11-20 topics)\n🔥 Miltonarch (21-30 topics)\n💫 Austennova (31-40 topics)\n📚 Dickenlord (41-50 topics)\n🌀 Joycemancer (51-60 topics)\n👑 The Bard Eternal (61+ topics)\n\nComplete topics to advance through these literary-inspired ranks!",
+                isExpanded = 8 in expandedItems,
+                onToggle = { expandedItems = if (8 in expandedItems) expandedItems - 8 else expandedItems + 8 }
+            )
+            
+            QAItem(
+                index = 9,
+                question = "How do Leaderboards work?",
+                answer = "Compete with other learners on three leaderboards:\n• Daily: XP earned today (resets at midnight)\n• Weekly: XP earned this week (Monday-Sunday)\n• Monthly: XP earned this month\n\nYour rank updates in real-time, and you can view top performers plus your own position. Use leaderboards for motivation and healthy competition!",
+                isExpanded = 9 in expandedItems,
+                onToggle = { expandedItems = if (9 in expandedItems) expandedItems - 9 else expandedItems + 9 }
+            )
+            
+            QAItem(
+                index = 10,
+                question = "What is a streak and how do I maintain it?",
+                answer = "A streak counts consecutive days you've practiced. Open VozVibe and complete any practice activity (pronunciation, fluency, or vocabulary) each day to keep your streak alive. Streaks are displayed on your profile and contribute to your achievements!",
+                isExpanded = 10 in expandedItems,
+                onToggle = { expandedItems = if (10 in expandedItems) expandedItems - 10 else expandedItems + 10 }
+            )
+            
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            
+            // Social Features
+            Text(
+                text = "Social Features",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            
+            QAItem(
+                index = 11,
+                question = "Can I interact with other learners?",
+                answer = "Yes! VozVibe includes a social learning community where you can:\n• Create posts and share your progress\n• Like and comment on others' posts\n• Follow users to see their activities\n• View other users' profiles and learning journey\n• Receive notifications for interactions\n• Send direct messages (coming soon)",
+                isExpanded = 11 in expandedItems,
+                onToggle = { expandedItems = if (11 in expandedItems) expandedItems - 11 else expandedItems + 11 }
+            )
+            
+            QAItem(
+                index = 12,
+                question = "How do I find other users?",
+                answer = "Tap the search icon in the Home screen to find users by username or display name. You can also discover users through the social feed when they post content or appear on the leaderboard.",
+                isExpanded = 12 in expandedItems,
+                onToggle = { expandedItems = if (12 in expandedItems) expandedItems - 12 else expandedItems + 12 }
+            )
+            
+            QAItem(
+                index = 13,
+                question = "What are the privacy options?",
+                answer = "Control your privacy in Settings > Privacy & Safety:\n• Privacy Settings: Manage who can see your profile and activities\n• Blocked Users: View and manage users you've blocked\n• Report inappropriate content or users\n• Hide email visibility on profile\n\nReview our Privacy Policy and Community Guidelines for more details.",
+                isExpanded = 13 in expandedItems,
+                onToggle = { expandedItems = if (13 in expandedItems) expandedItems - 13 else expandedItems + 13 }
+            )
+            
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            
+            // Account & Technical
+            Text(
+                text = "Account & Technical",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            
+            QAItem(
+                index = 14,
+                question = "How do I change my email or password?",
+                answer = "Go to Settings > Account Settings to update your email or password. For email changes, enter your new email and save. For password changes, you'll be prompted to enter your current password and a new one. If you forgot your password, use the 'Forgot Password' link on the login screen.",
+                isExpanded = 14 in expandedItems,
+                onToggle = { expandedItems = if (14 in expandedItems) expandedItems - 14 else expandedItems + 14 }
+            )
+            
+            QAItem(
+                index = 15,
+                question = "Can I use VozVibe offline?",
+                answer = "Most features require an internet connection because they rely on cloud-based AI processing (Whisper for transcription, Gemini for feedback and TTS). However, you can view your past progress, statistics, and profile data offline. We recommend using WiFi for best experience and to save mobile data.",
+                isExpanded = 15 in expandedItems,
+                onToggle = { expandedItems = if (15 in expandedItems) expandedItems - 15 else expandedItems + 15 }
+            )
+            
+            QAItem(
+                index = 16,
+                question = "How do I update my profile picture (avatar)?",
+                answer = "Tap your avatar in Settings or Profile screen, select 'Change Avatar', choose an image from your device, crop it as desired, and save. Your new avatar will sync across all your activities and be visible to other users (unless you hide it in Privacy Settings).",
+                isExpanded = 16 in expandedItems,
+                onToggle = { expandedItems = if (16 in expandedItems) expandedItems - 16 else expandedItems + 16 }
+            )
+            
+            QAItem(
+                index = 17,
+                question = "What happens if I delete my account?",
+                answer = "Account deletion is permanent and irreversible. All your data will be deleted, including:\n• Profile information\n• Learning progress and scores\n• Recordings and evaluations\n• Social connections and posts\n\nTo delete your account, go to Settings > Account Settings > Delete Account and follow the confirmation steps.",
+                isExpanded = 17 in expandedItems,
+                onToggle = { expandedItems = if (17 in expandedItems) expandedItems - 17 else expandedItems + 17 }
+            )
+            
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            
+            // Troubleshooting
+            Text(
+                text = "Troubleshooting",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            
+            QAItem(
+                index = 18,
+                question = "The app isn't recognizing my speech. What should I do?",
+                answer = "Try these solutions:\n• Check microphone permissions in device settings\n• Ensure you're in a quiet environment\n• Speak clearly and at moderate volume\n• Check your internet connection\n• Try closing and reopening the app\n• If using headphones, ensure mic is working\n• Restart your device if issues persist",
+                isExpanded = 18 in expandedItems,
+                onToggle = { expandedItems = if (18 in expandedItems) expandedItems - 18 else expandedItems + 18 }
+            )
+            
+            QAItem(
+                index = 19,
+                question = "Why is the app slow or laggy?",
+                answer = "AI processing can take a few seconds, especially for transcription and feedback generation. To improve performance:\n• Ensure stable WiFi connection (4G/5G works but may be slower)\n• Close other apps running in background\n• Clear app cache in device settings\n• Update to the latest VozVibe version\n• The first transcription after opening may be slower (model warmup)",
+                isExpanded = 19 in expandedItems,
+                onToggle = { expandedItems = if (19 in expandedItems) expandedItems - 19 else expandedItems + 19 }
+            )
+            
+            QAItem(
+                index = 20,
+                question = "I found a bug or have a feature request. Where can I report it?",
+                answer = "We'd love to hear from you! Contact the VozVibe Team at:\n\nEmail: vozvibe2025@gmail.com\n\nPlease include:\n• Your device model and Android version\n• Detailed description of the issue\n• Steps to reproduce (for bugs)\n• Screenshots if applicable\n\nWe review all feedback and continuously work to improve VozVibe!",
+                isExpanded = 20 in expandedItems,
+                onToggle = { expandedItems = if (20 in expandedItems) expandedItems - 20 else expandedItems + 20 }
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Contact Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Email,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "Still have questions?",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                    Text(
+                        text = "Contact us at vozvibe2025@gmail.com and we'll be happy to help!",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun QAItem(
+    index: Int,
+    question: String,
+    answer: String,
+    isExpanded: Boolean,
+    onToggle: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onToggle),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isExpanded) MaterialTheme.colorScheme.primaryContainer 
+                            else MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Help,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = question,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isExpanded) MaterialTheme.colorScheme.onPrimaryContainer 
+                                else MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Icon(
+                    if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            
+            if (isExpanded) {
+                Divider(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                )
+                Text(
+                    text = answer,
+                    fontSize = 14.sp,
+                    color = if (isExpanded) MaterialTheme.colorScheme.onPrimaryContainer 
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 20.sp
+                )
+            }
         }
     }
 }
@@ -1817,6 +2352,136 @@ fun CommunityGuidelinesScreen(onNavigateBack: () -> Unit) {
 
 @Composable
 private fun PrivacySection(title: String, content: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = content,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            lineHeight = 20.sp
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TermsOfServiceScreen(onNavigateBack: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text("Terms of Service", fontWeight = FontWeight.Bold) },
+            navigationIcon = {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            }
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "VozVibe Terms of Service",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            
+            Text(
+                text = "Last updated: ${java.time.LocalDate.now()}",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Divider()
+            
+            TermsSection(
+                title = "1. Acceptance of Terms",
+                content = "By accessing and using VozVibe, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this application."
+            )
+            
+            TermsSection(
+                title = "2. Description of Service",
+                content = "VozVibe provides an AI-powered English learning platform that includes:\n• Speech recognition and pronunciation analysis\n• Interactive conversation practice\n• Vocabulary lessons and exercises\n• Progress tracking and gamification\n• Social learning features\n\nThe service is provided \"as is\" and we reserve the right to modify or discontinue any feature at any time."
+            )
+            
+            TermsSection(
+                title = "3. User Accounts",
+                content = "You are responsible for:\n• Maintaining the confidentiality of your account credentials\n• All activities that occur under your account\n• Notifying us immediately of any unauthorized use\n\nWe reserve the right to terminate accounts that violate these terms or engage in fraudulent activity."
+            )
+            
+            TermsSection(
+                title = "4. User Content",
+                content = "You retain ownership of content you create (recordings, posts, comments). By using VozVibe, you grant us a license to:\n• Store and process your content to provide services\n• Use anonymized data to improve our AI models\n• Display your content to other users as part of social features\n\nYou are responsible for ensuring your content does not violate any laws or third-party rights."
+            )
+            
+            TermsSection(
+                title = "5. Acceptable Use",
+                content = "You agree NOT to:\n• Harass, abuse, or harm other users\n• Post spam, malware, or malicious content\n• Attempt to hack or compromise the platform\n• Use the service for any illegal purpose\n• Impersonate others or create fake accounts\n• Scrape or copy content without permission\n\nViolations may result in immediate account termination."
+            )
+            
+            TermsSection(
+                title = "6. Intellectual Property",
+                content = "VozVibe and its original content, features, and functionality are owned by VozVibe Team and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.\n\nYou may not copy, modify, distribute, sell, or lease any part of our services or software without express written permission."
+            )
+            
+            TermsSection(
+                title = "7. Privacy",
+                content = "Your use of VozVibe is also governed by our Privacy Policy. We collect and process data as described in the Privacy Policy to provide and improve our services.\n\nBy using VozVibe, you consent to data processing as outlined in our Privacy Policy."
+            )
+            
+            TermsSection(
+                title = "8. Limitation of Liability",
+                content = "VozVibe is provided for educational purposes. We make no guarantees about learning outcomes.\n\nTo the maximum extent permitted by law, VozVibe shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly."
+            )
+            
+            TermsSection(
+                title = "9. Subscription and Payments",
+                content = "VozVibe currently offers free access to all features. If we introduce paid features in the future:\n• Pricing will be clearly displayed\n• Subscriptions may auto-renew unless cancelled\n• Refund policies will be specified\n• You are responsible for all charges incurred"
+            )
+            
+            TermsSection(
+                title = "10. Termination",
+                content = "We reserve the right to terminate or suspend your account and access to VozVibe at our sole discretion, without notice, for conduct that we believe:\n• Violates these Terms of Service\n• Violates Community Guidelines\n• Is harmful to other users or VozVibe\n• Exposes us to legal liability"
+            )
+            
+            TermsSection(
+                title = "11. Changes to Terms",
+                content = "We reserve the right to modify these terms at any time. We will notify users of material changes via email or in-app notification.\n\nYour continued use of VozVibe after changes constitutes acceptance of the modified terms."
+            )
+            
+            TermsSection(
+                title = "12. Governing Law",
+                content = "These Terms shall be governed by and construed in accordance with applicable international laws, without regard to conflict of law provisions.\n\nAny disputes arising from these terms will be resolved through binding arbitration."
+            )
+            
+            TermsSection(
+                title = "13. Contact Information",
+                content = "If you have questions about these Terms of Service, please contact us at:\n\nVozVibe Team 2025\nvozvibe2025@gmail.com"
+            )
+            
+            Divider()
+            
+            Text(
+                text = "By using VozVibe, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun TermsSection(title: String, content: String) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = title,

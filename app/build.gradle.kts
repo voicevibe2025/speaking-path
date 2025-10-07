@@ -166,6 +166,7 @@ dependencies {
 
     // Image Loading
     implementation(libs.coil.compose)
+    implementation(libs.easycrop)
 
     // DataStore
     implementation(libs.datastore.preferences)

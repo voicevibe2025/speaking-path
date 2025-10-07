@@ -43,6 +43,7 @@ waveRecorder = "1.0.0"
 
 # Images
 coil = "2.7.0"
+easycrop = "0.1.1"
 
 # Permissions & System
 accompanistPermissions = "0.37.3"
@@ -122,6 +123,7 @@ gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
 # Images
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+easycrop = { group = "io.github.mr0xf00", name = "easycrop", version.ref = "easycrop" }
 
 # DataStore
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }

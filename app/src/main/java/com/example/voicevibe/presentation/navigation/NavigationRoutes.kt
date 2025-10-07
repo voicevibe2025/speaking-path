@@ -140,12 +140,17 @@ sealed class Screen(val route: String) {
     object NotificationSettings : Screen("notification_settings")
     object LanguageSettings : Screen("language_settings")
     object About : Screen("about")
+    object QA : Screen("qa")
+    object ImageCrop : Screen("image_crop/{imageUri}") {
+        fun createRoute(imageUri: String) = "image_crop/${imageUri}"
+    }
     
     // Privacy & Safety
     object PrivacySettings : Screen("privacy_settings")
     object BlockedUsers : Screen("blocked_users")
     object MyReports : Screen("my_reports")
     object PrivacyPolicy : Screen("privacy_policy")
+    object TermsOfService : Screen("terms_of_service")
     object CommunityGuidelines : Screen("community_guidelines")
 }
 

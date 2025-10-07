@@ -35,11 +35,14 @@ import com.example.voicevibe.presentation.screens.profile.SettingsScreen
 import com.example.voicevibe.presentation.screens.profile.AccountSettingsScreen
 import com.example.voicevibe.presentation.screens.profile.EditProfileScreen
 import com.example.voicevibe.presentation.screens.profile.AboutScreen
+import com.example.voicevibe.presentation.screens.profile.QAScreen
 import com.example.voicevibe.presentation.screens.profile.PrivacySettingsScreen
 import com.example.voicevibe.presentation.screens.profile.BlockedUsersScreen
 import com.example.voicevibe.presentation.screens.profile.PrivacyPolicyScreen
+import com.example.voicevibe.presentation.screens.profile.TermsOfServiceScreen
 import com.example.voicevibe.presentation.screens.profile.CommunityGuidelinesScreen
 import com.example.voicevibe.presentation.screens.profile.MyReportsScreen
+import com.example.voicevibe.presentation.screens.profile.ImageCropScreen
 import com.example.voicevibe.presentation.screens.main.social.SocialFeedScreen
 import com.example.voicevibe.presentation.screens.main.search.UserSearchResultsScreen
 import com.example.voicevibe.presentation.screens.scenarios.CulturalScenariosScreen
@@ -641,6 +644,9 @@ fun NavGraph(
                 onNavigateToAbout = {
                     navController.navigate(Screen.About.route)
                 },
+                onNavigateToQA = {
+                    navController.navigate(Screen.QA.route)
+                },
                 onNavigateToPrivacySettings = {
                     navController.navigate(Screen.PrivacySettings.route)
                 },
@@ -653,8 +659,14 @@ fun NavGraph(
                 onNavigateToPrivacyPolicy = {
                     navController.navigate(Screen.PrivacyPolicy.route)
                 },
+                onNavigateToTermsOfService = {
+                    navController.navigate(Screen.TermsOfService.route)
+                },
                 onNavigateToCommunityGuidelines = {
                     navController.navigate(Screen.CommunityGuidelines.route)
+                },
+                onNavigateToImageCrop = { encodedUri ->
+                    navController.navigate(Screen.ImageCrop.createRoute(encodedUri))
                 },
                 onLogout = {
                     scope.launch {
@@ -680,6 +692,9 @@ fun NavGraph(
         composable(Screen.About.route) {
             AboutScreen(onNavigateBack = { navController.popBackStack() })
         }
+        composable(Screen.QA.route) {
+            QAScreen(onNavigateBack = { navController.popBackStack() })
+        }
         
         // Privacy & Safety screens
         composable(Screen.PrivacySettings.route) {
@@ -691,6 +706,9 @@ fun NavGraph(
         composable(Screen.PrivacyPolicy.route) {
             PrivacyPolicyScreen(onNavigateBack = { navController.popBackStack() })
         }
+        composable(Screen.TermsOfService.route) {
+            TermsOfServiceScreen(onNavigateBack = { navController.popBackStack() })
+        }
         composable(Screen.CommunityGuidelines.route) {
             CommunityGuidelinesScreen(onNavigateBack = { navController.popBackStack() })
         }
@@ -698,6 +716,21 @@ fun NavGraph(
         // My Reports
         composable(Screen.MyReports.route) {
             MyReportsScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        // Image Crop Screen
+        composable(
+            route = Screen.ImageCrop.route,
+            arguments = listOf(navArgument("imageUri") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val imageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
+            val settingsViewModel: SettingsViewModel = hiltViewModel()
+            ImageCropScreen(
+                imageUri = imageUri,
+                onNavigateBack = { navController.popBackStack() },
+                onCropComplete = { navController.popBackStack() },
+                viewModel = settingsViewModel
+            )
         }
 
         // Notifications list

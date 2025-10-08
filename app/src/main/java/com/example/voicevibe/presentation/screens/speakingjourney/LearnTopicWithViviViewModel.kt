@@ -263,10 +263,20 @@ class LearnTopicWithViviViewModel @Inject constructor(
     }
     
     fun requestShowPhrase() {
+        // Check if the current phrase card is already displayed
+        val currentPhraseIndex = _uiState.value.currentPhraseIndex
+        val phraseCards = _uiState.value.phraseCards
+        val isCurrentPhraseAlreadyShown = phraseCards.any { it.phraseIndex == currentPhraseIndex }
+        
+        if (isCurrentPhraseAlreadyShown) {
+            Log.d(TAG, "Phrase card for index $currentPhraseIndex is already shown, skipping request to avoid interrupting Vivi")
+            return
+        }
+        
         // Send a predefined message to ask the AI to show the current phrase
         val message = "Please show me the phrase you are explaining right now. Call show_phrase_card() for the current phrase."
         sendMessage(message)
-        Log.d(TAG, "User requested to show phrase via button")
+        Log.d(TAG, "User requested to show phrase via button - phrase card not shown yet")
     }
     
     fun requestRolePlay() {

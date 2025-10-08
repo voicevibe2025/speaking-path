@@ -134,7 +134,7 @@ fun HomeScreen(
 
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(Color(0xFF0F172A))
+        .background(Color(0xFF1A2642)) // Slightly brighter with more blue tint
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -167,7 +167,7 @@ fun HomeScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color(0xFF0F172A)),
+                        .background(Color(0xFF1A2642)),
                     verticalArrangement = Arrangement.spacedBy(20.dp),
                     contentPadding = PaddingValues(vertical = 20.dp, horizontal = 16.dp)
                 ) {
@@ -712,10 +712,10 @@ private fun EducationalTopBar(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
                 .statusBarsPadding(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically
         ) {
-           Row(
+            // Left group: Logo and text
+            Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
@@ -734,9 +734,19 @@ private fun EducationalTopBar(
                 )
             }
             
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Flexible space between left and right groups
+            Spacer(modifier = Modifier.weight(1f))
+            
+            // Right group: Icons compacted together
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
                 // Notifications bell with badge
-                IconButton(onClick = onNotificationsClick) {
+                IconButton(
+                    onClick = onNotificationsClick,
+                    modifier = Modifier.size(40.dp)
+                ) {
                     BadgedBox(badge = {
                         if (unreadNotifications > 0) {
                             Badge { Text(text = unreadNotifications.coerceAtMost(99).toString()) }
@@ -750,7 +760,10 @@ private fun EducationalTopBar(
                     }
                 }
                 // Messages icon with badge
-                IconButton(onClick = onMessagesClick) {
+                IconButton(
+                    onClick = onMessagesClick,
+                    modifier = Modifier.size(40.dp)
+                ) {
                     BadgedBox(badge = {
                         if (unreadMessages > 0) {
                             Badge { Text(text = unreadMessages.coerceAtMost(99).toString()) }
@@ -764,7 +777,10 @@ private fun EducationalTopBar(
                     }
                 }
                 // Search button
-                IconButton(onClick = onSearchClick) {
+                IconButton(
+                    onClick = onSearchClick,
+                    modifier = Modifier.size(40.dp)
+                ) {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search Users",
@@ -772,7 +788,10 @@ private fun EducationalTopBar(
                     )
                 }
                 // Profile avatar
-                IconButton(onClick = onNavigationIconClick) {
+                IconButton(
+                    onClick = onNavigationIconClick,
+                    modifier = Modifier.size(40.dp)
+                ) {
                     Box(
                         modifier = Modifier
                             .size(36.dp)
@@ -1085,7 +1104,7 @@ private fun LearningProgressSection(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF243454)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         BoxWithConstraints(
@@ -1254,7 +1273,7 @@ private fun StudyToolCard(
             .aspectRatio(1f)
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF243454)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(

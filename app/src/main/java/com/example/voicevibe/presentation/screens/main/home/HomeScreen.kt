@@ -908,7 +908,11 @@ private fun QuickStartSection(
     viviTopics: List<ViviTopic>,
     onNavigateToLearnWithVivi: (String) -> Unit
 ) {
-    var showTopicSelectionDialog by remember { mutableStateOf(false) }
+    // Find the first unlocked topic, or fallback to first topic
+    val defaultTopicId = remember(viviTopics) {
+        viviTopics.firstOrNull { it.unlocked }?.id ?: viviTopics.firstOrNull()?.id
+    }
+    
     BoxWithConstraints {
         val isCompact = maxWidth < 360.dp
         Column {
@@ -978,7 +982,9 @@ private fun QuickStartSection(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { showTopicSelectionDialog = true },
+                    .clickable { 
+                        defaultTopicId?.let { onNavigateToLearnWithVivi(it) }
+                    },
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF9333EA)),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
@@ -1080,18 +1086,6 @@ private fun QuickStartSection(
                 }
             }
         }
-    }
-
-    // Topic Selection Dialog
-    if (showTopicSelectionDialog) {
-        TopicSelectionDialog(
-            topics = viviTopics,
-            onDismiss = { showTopicSelectionDialog = false },
-            onTopicSelected = { topicId ->
-                showTopicSelectionDialog = false
-                onNavigateToLearnWithVivi(topicId)
-            }
-        )
     }
 }
 

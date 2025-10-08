@@ -48,7 +48,7 @@ class LearnTopicWithViviViewModel @Inject constructor(
     private val gson: Gson
 ) : ViewModel() {
 
-    private val topicId: String = checkNotNull(savedStateHandle.get<String>("topicId"))
+    private var topicId: String = checkNotNull(savedStateHandle.get<String>("topicId"))
     
     private val _uiState = MutableStateFlow(LearnWithViviState())
     val uiState: StateFlow<LearnWithViviState> = _uiState.asStateFlow()
@@ -161,10 +161,23 @@ class LearnTopicWithViviViewModel @Inject constructor(
                 onSuccess = { response ->
                     val topicDto = response.topics.firstOrNull { it.id == topicId }
                     topicData = topicDto?.let { mapDtoToTopic(it) }
+                    
+                    // Also store all available topics for topic selector
+                    val topics = response.topics.map { dto ->
+                        ViviTopic(
+                            id = dto.id,
+                            title = dto.title,
+                            description = dto.description,
+                            unlocked = dto.unlocked,
+                            hasConversation = dto.conversation.isNotEmpty()
+                        )
+                    }
+                    
                     _uiState.update {
                         it.copy(
                             topic = topicData,
-                            totalPhrases = topicData?.material?.size ?: 0
+                            totalPhrases = topicData?.material?.size ?: 0,
+                            availableTopics = topics
                         )
                     }
                     Log.d(TAG, "Topic data loaded successfully: ${topicData?.title}")
@@ -1075,6 +1088,68 @@ class LearnTopicWithViviViewModel @Inject constructor(
     fun setContext(context: android.content.Context) {
         appContext = context.applicationContext
     }
+    
+    fun showTopicSelector() {
+        _uiState.update { it.copy(showTopicSelector = true) }
+    }
+    
+    fun hideTopicSelector() {
+        _uiState.update { it.copy(showTopicSelector = false) }
+    }
+    
+    fun switchToTopic(newTopicId: String) {
+        if (newTopicId == topicId) {
+            // Same topic, just close the selector
+            hideTopicSelector()
+            return
+        }
+        
+        Log.d(TAG, "Switching to new topic: $newTopicId")
+        
+        // Update the topic ID
+        topicId = newTopicId
+        savedStateHandle["topicId"] = newTopicId
+        
+        // Reset state
+        phrasesCompleted.clear()
+        currentPhraseIndex = 0
+        pendingModelText = null
+        topicData = null
+        
+        _uiState.update {
+            it.copy(
+                messages = emptyList(),
+                phraseCards = emptyList(),
+                videoSuggestions = emptyList(),
+                activeVideoUrl = null,
+                currentPhraseIndex = 0,
+                phrasesCompleted = 0,
+                topicCompleted = false,
+                showTopicSelector = false,
+                error = null
+            )
+        }
+        
+        // Close current session
+        sessionManager.close()
+        
+        // Reload data and reconnect
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingTopic = true) }
+            
+            val topicSuccess = loadTopicData()
+            
+            _uiState.update { it.copy(isLoadingTopic = false) }
+            
+            if (topicSuccess && topicData != null) {
+                connectToLiveSession()
+            } else {
+                _uiState.update { 
+                    it.copy(error = "Failed to load new topic. Please try again.")
+                }
+            }
+        }
+    }
 
     override fun onCleared() {
         super.onCleared()
@@ -1426,7 +1501,9 @@ data class LearnWithViviState(
     val topicCompleted: Boolean = false,
     val phraseCards: List<PhraseCard> = emptyList(),
     val videoSuggestions: List<VideoSuggestion> = emptyList(),
-    val activeVideoUrl: String? = null
+    val activeVideoUrl: String? = null,
+    val availableTopics: List<ViviTopic> = emptyList(),
+    val showTopicSelector: Boolean = false
 )
 
 data class PhraseCard(
@@ -1441,4 +1518,12 @@ data class VideoSuggestion(
     val searchQuery: String,
     val description: String,
     val dismissed: Boolean = false
+)
+
+data class ViviTopic(
+    val id: String,
+    val title: String,
+    val description: String,
+    val unlocked: Boolean,
+    val hasConversation: Boolean
 )

@@ -295,8 +295,14 @@ fun NavGraph(
             SpeakingLessonScreen(
                 topicId = topicId,
                 onNavigateBack = {
-                    // Always navigate back to SpeakingJourney screen
-                    navController.popBackStack(Screen.SpeakingJourney.route, inclusive = false)
+                    // Prefer popping back to SpeakingJourney if it exists; otherwise navigate to it
+                    val popped = navController.popBackStack(Screen.SpeakingJourney.route, inclusive = false)
+                    if (!popped) {
+                        navController.navigate(Screen.SpeakingJourney.route) {
+                            // Clear anything above Home so stack becomes Home -> SpeakingJourney
+                            popUpTo(Screen.Home.route) { inclusive = false }
+                        }
+                    }
                 },
                 onNavigateToTopicMaster = { tid ->
                     navController.navigate(Screen.TopicMaster.createRoute(tid))
@@ -320,8 +326,24 @@ fun NavGraph(
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             TopicMasterScreen(
                 topicId = topicId,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToLesson = { navController.navigate(Screen.SpeakingLesson.createRoute(topicId)) },
+                onNavigateBack = {
+                    // If threshold met, go to SpeakingJourney; pop if present else navigate and clear TopicMaster
+                    val popped = navController.popBackStack(Screen.SpeakingJourney.route, inclusive = false)
+                    if (!popped) {
+                        navController.navigate(Screen.SpeakingJourney.route) {
+                            // Remove TopicMaster (and any others) so back from journey returns to Home
+                            popUpTo(Screen.Home.route) { inclusive = false }
+                        }
+                    }
+                },
+                onNavigateToLesson = {
+                    // If a SpeakingLesson for this topic exists in back stack, pop to it; else navigate to it
+                    val lessonRoute = Screen.SpeakingLesson.createRoute(topicId)
+                    val poppedToLesson = navController.popBackStack(lessonRoute, inclusive = false)
+                    if (!poppedToLesson) {
+                        navController.navigate(lessonRoute)
+                    }
+                },
                 onNavigateToPronunciationPractice = { navController.navigate(Screen.PronunciationPractice.createRoute(topicId)) },
                 onNavigateToFluencyPractice = { navController.navigate(Screen.FluencyPractice.createRoute(topicId)) },
                 onNavigateToVocabularyPractice = { navController.navigate(Screen.VocabularyPractice.createRoute(topicId)) },

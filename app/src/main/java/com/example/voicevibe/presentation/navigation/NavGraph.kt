@@ -349,7 +349,16 @@ fun NavGraph(
                 onNavigateToVocabularyPractice = { navController.navigate(Screen.VocabularyPractice.createRoute(topicId)) },
                 onNavigateToListeningPractice = { navController.navigate(Screen.ListeningPractice.createRoute(topicId)) },
                 onNavigateToGrammarPractice = { navController.navigate(Screen.GrammarPractice.createRoute(topicId)) },
-                onNavigateToConversation = { navController.navigate(Screen.ConversationPractice.createRoute(topicId)) }
+                onNavigateToConversation = { navController.navigate(Screen.ConversationPractice.createRoute(topicId)) },
+                onNavigateToSpeakingJourney = {
+                    // Navigate to SpeakingJourney screen
+                    val popped = navController.popBackStack(Screen.SpeakingJourney.route, inclusive = false)
+                    if (!popped) {
+                        navController.navigate(Screen.SpeakingJourney.route) {
+                            popUpTo(Screen.Home.route) { inclusive = false }
+                        }
+                    }
+                }
             )
         }
 

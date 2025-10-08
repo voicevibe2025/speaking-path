@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.voicevibe.utils.Constants
@@ -16,6 +17,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.example.voicevibe.presentation.screens.gamification.AchievementFeedItem
+import com.example.voicevibe.presentation.screens.gamification.AchievementItemType
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 // Extension property to get DataStore instance
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
@@ -44,6 +51,11 @@ class TokenManager @Inject constructor(
     private val voiceAccentKey = stringPreferencesKey(Constants.VOICE_ACCENT_KEY)
     private val micPermissionAskedKey = booleanPreferencesKey("mic_permission_asked")
     private val showEmailOnProfileKey = booleanPreferencesKey(Constants.SHOW_EMAIL_ON_PROFILE_KEY)
+    private val achievementHistoryKey = stringPreferencesKey("achievement_history")
+    private val lastProficiencyKey = stringPreferencesKey("last_proficiency")
+    private val lastLevelKey = intPreferencesKey("last_level")
+    
+    private val gson = Gson()
 
     /**
      * Save authentication tokens
@@ -248,6 +260,93 @@ class TokenManager @Inject constructor(
     suspend fun setShowEmailOnProfile(value: Boolean) {
         dataStore.edit { preferences ->
             preferences[showEmailOnProfileKey] = value
+        }
+    }
+
+    /**
+     * Achievement history persistence
+     */
+    fun achievementHistoryFlow(): Flow<List<AchievementFeedItem>> = dataStore.data.map { preferences ->
+        val json = preferences[achievementHistoryKey] ?: return@map emptyList()
+        try {
+            val type = object : TypeToken<List<AchievementHistoryDto>>() {}.type
+            val dtos: List<AchievementHistoryDto> = gson.fromJson(json, type)
+            dtos.map { it.toDomain() }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun saveAchievementHistory(items: List<AchievementFeedItem>) {
+        dataStore.edit { preferences ->
+            val dtos = items.map { AchievementHistoryDto.fromDomain(it) }
+            val json = gson.toJson(dtos)
+            preferences[achievementHistoryKey] = json
+        }
+    }
+
+    /**
+     * Last known proficiency level (for change detection)
+     */
+    fun lastProficiencyFlow(): Flow<String?> = dataStore.data.map { preferences ->
+        preferences[lastProficiencyKey]
+    }
+
+    suspend fun setLastProficiency(proficiency: String) {
+        dataStore.edit { preferences ->
+            preferences[lastProficiencyKey] = proficiency
+        }
+    }
+
+    /**
+     * Last known user level (for change detection)
+     */
+    fun lastLevelFlow(): Flow<Int?> = dataStore.data.map { preferences ->
+        preferences[lastLevelKey]
+    }
+
+    suspend fun setLastLevel(level: Int) {
+        dataStore.edit { preferences ->
+            preferences[lastLevelKey] = level
+        }
+    }
+}
+
+/**
+ * DTO for serializing AchievementFeedItem to JSON
+ */
+private data class AchievementHistoryDto(
+    val type: String,
+    val title: String,
+    val timestamp: String,
+    val timeAgo: String
+) {
+    fun toDomain(): AchievementFeedItem {
+        val itemType = when (type) {
+            "LEVEL" -> AchievementItemType.LEVEL
+            else -> AchievementItemType.PROFICIENCY
+        }
+        val dateTime = try {
+            LocalDateTime.parse(timestamp, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        } catch (e: Exception) {
+            LocalDateTime.now()
+        }
+        return AchievementFeedItem(
+            type = itemType,
+            title = title,
+            timestamp = dateTime,
+            timeAgo = timeAgo
+        )
+    }
+
+    companion object {
+        fun fromDomain(item: AchievementFeedItem): AchievementHistoryDto {
+            return AchievementHistoryDto(
+                type = item.type.name,
+                title = item.title,
+                timestamp = item.timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                timeAgo = item.timeAgo
+            )
         }
     }
 }

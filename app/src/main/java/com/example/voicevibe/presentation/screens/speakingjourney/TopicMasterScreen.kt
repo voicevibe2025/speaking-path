@@ -57,7 +57,8 @@ fun TopicMasterScreen(
     onNavigateToVocabularyPractice: (String) -> Unit,
     onNavigateToListeningPractice: (String) -> Unit,
     onNavigateToGrammarPractice: (String) -> Unit,
-    onNavigateToConversation: (String) -> Unit
+    onNavigateToConversation: (String) -> Unit,
+    onNavigateToSpeakingJourney: () -> Unit = onNavigateBack
 ) {
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
@@ -71,10 +72,17 @@ fun TopicMasterScreen(
     
     val topic = ui.topics.firstOrNull { it.id == topicId }
     val practiceScores = topic?.practiceScores
+    
+    // Find next topic in the list
+    val currentTopicIndex = ui.topics.indexOfFirst { it.id == topicId }
+    val nextTopic = if (currentTopicIndex >= 0 && currentTopicIndex < ui.topics.size - 1) {
+        ui.topics[currentTopicIndex + 1]
+    } else null
 
     // Celebration state: show confetti and play win sound when unlock condition is met
     val context = LocalContext.current
     var showCelebration by remember { mutableStateOf(false) }
+    var showCelebrationDialog by remember { mutableStateOf(false) }
     var celebrationTriggered by rememberSaveable(topicId) { mutableStateOf(false) }
     // Ensure local transcripts are loaded so live pronunciation score can display immediately
     LaunchedEffect(ui.selectedTopicIdx, ui.topics) {
@@ -104,6 +112,7 @@ fun TopicMasterScreen(
         
         if (unlockedNow && !celebrationTriggered) {
             showCelebration = true
+            showCelebrationDialog = true
             try {
                 val mp = MediaPlayer.create(context, R.raw.win)
                 mp?.setOnCompletionListener { player ->
@@ -111,8 +120,6 @@ fun TopicMasterScreen(
                 }
                 mp?.start()
             } catch (_: Throwable) {}
-            delay(2200)
-            showCelebration = false
             celebrationTriggered = true
         } else if (!unlockedNow) {
             // Allow re-trigger if user later satisfies both the threshold and completion
@@ -229,6 +236,22 @@ fun TopicMasterScreen(
         // Celebration overlay on top of everything
         if (showCelebration) {
             ConfettiOverlay()
+        }
+        
+        // Congratulations dialog overlay
+        if (showCelebrationDialog) {
+            CongratulationsOverlay(
+                nextTopicTitle = nextTopic?.title ?: "the next challenge",
+                onContinueJourney = {
+                    showCelebrationDialog = false
+                    showCelebration = false
+                    onNavigateToSpeakingJourney()
+                },
+                onKeepPracticing = {
+                    showCelebrationDialog = false
+                    showCelebration = false
+                }
+            )
         }
     }
 }
@@ -917,6 +940,200 @@ private fun ConfettiOverlay(
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CongratulationsOverlay(
+    nextTopicTitle: String,
+    onContinueJourney: () -> Unit,
+    onKeepPracticing: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.7f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFF1a1a2e)
+            ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 12.dp
+            ),
+            border = BorderStroke(
+                width = 2.dp,
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFF00D9FF),
+                        Color(0xFF8338EC),
+                        Color(0xFFFF006E)
+                    )
+                )
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Trophy icon
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape)
+                        .background(
+                            Brush.radialGradient(
+                                colors = listOf(
+                                    Color(0xFFFFBE0B).copy(alpha = 0.3f),
+                                    Color(0xFFFF006E).copy(alpha = 0.2f)
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.EmojiEvents,
+                        contentDescription = null,
+                        tint = Color(0xFFFFBE0B),
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                // Congratulations text
+                Text(
+                    text = "Congratulations!",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // You've unlocked text
+                Text(
+                    text = "You've unlocked",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = Color.White.copy(alpha = 0.8f),
+                    textAlign = TextAlign.Center
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Next topic title
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White.copy(alpha = 0.1f)
+                    ),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = Color(0xFF00D9FF).copy(alpha = 0.5f)
+                    )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp, horizontal = 20.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = nextTopicTitle,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF00D9FF),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(28.dp))
+                
+                // Continue Journey button (primary)
+                Button(
+                    onClick = onContinueJourney,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent
+                    ),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color(0xFF00D9FF),
+                                        Color(0xFF8338EC)
+                                    )
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "Continue Journey",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Keep Practicing button (secondary)
+                OutlinedButton(
+                    onClick = onKeepPracticing,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(
+                        width = 2.dp,
+                        color = Color.White.copy(alpha = 0.3f)
+                    ),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text(
+                        text = "Keep Practicing",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
                 }
             }
         }

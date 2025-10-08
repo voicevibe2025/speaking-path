@@ -35,19 +35,38 @@ import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.repository.ProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.voicevibe.data.local.TokenManager
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 @HiltViewModel
 class AchievementsSimpleViewModel @Inject constructor(
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
     var uiState by mutableStateOf(AchievementsSimpleUiState())
         private set
 
+    private var lastKnownProficiency: String? = null
+    private var lastKnownLevel: Int? = null
+
     init {
+        loadAchievementHistory()
         load()
+    }
+
+    private fun loadAchievementHistory() {
+        viewModelScope.launch {
+            val history = tokenManager.achievementHistoryFlow().first()
+            lastKnownProficiency = tokenManager.lastProficiencyFlow().first()
+            lastKnownLevel = tokenManager.lastLevelFlow().first()
+            uiState = uiState.copy(items = history.sortedByDescending { it.timestamp })
+        }
     }
 
     fun load() {
@@ -55,47 +74,73 @@ class AchievementsSimpleViewModel @Inject constructor(
             uiState = uiState.copy(isLoading = true, error = null)
             try {
                 val profile = profileRepository.getProfile()
-                val items = buildList<AchievementFeedItem> {
-                    val prof = profile.currentProficiency?.trim()
-                    if (!prof.isNullOrBlank()) {
-                        val profTitle = "Obtained ${prof.replaceFirstChar { it.uppercase() }} proficiency level"
-                        val profTime = profile.recentActivities
-                            ?.firstOrNull { a ->
-                                a.title.contains("proficien", ignoreCase = true) ||
-                                a.title.contains(prof, ignoreCase = true)
-                            }
-                            ?.relativeTime ?: "Recently"
-                        add(
-                            AchievementFeedItem(
-                                type = AchievementItemType.PROFICIENCY,
-                                title = profTitle,
-                                timeAgo = profTime
-                            )
-                        )
-                    }
+                val newAchievements = mutableListOf<AchievementFeedItem>()
+                val now = LocalDateTime.now()
 
-                    val level = profile.currentLevel
-                    if (level != null && level > 0) {
-                        val levelTitle = "Reached level $level"
-                        val levelTime = profile.recentActivities
-                            ?.firstOrNull { a ->
-                                a.title.contains("level", ignoreCase = true) ||
-                                a.type.contains("level", ignoreCase = true)
-                            }
-                            ?.relativeTime ?: "Recently"
-                        add(
-                            AchievementFeedItem(
-                                type = AchievementItemType.LEVEL,
-                                title = levelTitle,
-                                timeAgo = levelTime
-                            )
-                        )
-                    }
+                // Check for new proficiency achievement
+                val prof = profile.currentProficiency?.trim()
+                if (!prof.isNullOrBlank() && prof != lastKnownProficiency) {
+                    val profTitle = "Achieved ${prof.replaceFirstChar { it.uppercase() }} proficiency"
+                    val achievement = AchievementFeedItem(
+                        type = AchievementItemType.PROFICIENCY,
+                        title = profTitle,
+                        timestamp = now,
+                        timeAgo = "Just now"
+                    )
+                    newAchievements.add(achievement)
+                    lastKnownProficiency = prof
+                    tokenManager.setLastProficiency(prof)
                 }
-                uiState = uiState.copy(isLoading = false, items = items)
+
+                // Check for new level achievement
+                val level = profile.currentLevel
+                if (level != null && level > 0 && level != lastKnownLevel) {
+                    val levelTitle = "Reached level $level"
+                    val achievement = AchievementFeedItem(
+                        type = AchievementItemType.LEVEL,
+                        title = levelTitle,
+                        timestamp = now,
+                        timeAgo = "Just now"
+                    )
+                    newAchievements.add(achievement)
+                    lastKnownLevel = level
+                    tokenManager.setLastLevel(level)
+                }
+
+                // Add new achievements to existing list and save
+                if (newAchievements.isNotEmpty()) {
+                    val updatedList = (newAchievements + uiState.items)
+                        .distinctBy { it.title } // Avoid duplicates
+                        .sortedByDescending { it.timestamp }
+                    tokenManager.saveAchievementHistory(updatedList)
+                    uiState = uiState.copy(items = updatedList)
+                }
+
+                // Update relative times for all items
+                val itemsWithUpdatedTime = uiState.items.map { item ->
+                    item.copy(timeAgo = formatRelativeTime(item.timestamp))
+                }
+                uiState = uiState.copy(isLoading = false, items = itemsWithUpdatedTime)
             } catch (e: Exception) {
                 uiState = uiState.copy(isLoading = false, error = e.message ?: "Failed to load achievements")
             }
+        }
+    }
+
+    private fun formatRelativeTime(timestamp: LocalDateTime): String {
+        val now = LocalDateTime.now()
+        val minutes = ChronoUnit.MINUTES.between(timestamp, now)
+        val hours = ChronoUnit.HOURS.between(timestamp, now)
+        val days = ChronoUnit.DAYS.between(timestamp, now)
+
+        return when {
+            minutes < 1 -> "Just now"
+            minutes < 60 -> "$minutes ${if (minutes == 1L) "minute" else "minutes"} ago"
+            hours < 24 -> "$hours ${if (hours == 1L) "hour" else "hours"} ago"
+            days < 7 -> "$days ${if (days == 1L) "day" else "days"} ago"
+            days < 30 -> "${days / 7} ${if (days / 7 == 1L) "week" else "weeks"} ago"
+            days < 365 -> "${days / 30} ${if (days / 30 == 1L) "month" else "months"} ago"
+            else -> "${days / 365} ${if (days / 365 == 1L) "year" else "years"} ago"
         }
     }
 }
@@ -111,7 +156,8 @@ enum class AchievementItemType { PROFICIENCY, LEVEL }
 data class AchievementFeedItem(
     val type: AchievementItemType,
     val title: String,
-    val timeAgo: String
+    val timestamp: LocalDateTime = LocalDateTime.now(),
+    val timeAgo: String = "Just now"
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -210,14 +256,6 @@ fun AchievementScreen(
                                             slideInHorizontally(animationSpec = tween(300, delayMillis = index * 100))
                                 ) {
                                     AchievementRow(item)
-                                }
-                            }
-                            item {
-                                AnimatedVisibility(
-                                    visible = true,
-                                    enter = fadeIn(animationSpec = tween(300, delayMillis = state.items.size * 100))
-                                ) {
-                                    BadgesComingSoon()
                                 }
                             }
                         }
@@ -429,7 +467,7 @@ private fun InfoCard() {
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Track your progress through proficiency levels and milestones. More achievements coming soon!",
+                    text = "Track your progress through proficiency levels and milestones as you advance in your learning journey.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 18.sp
@@ -439,70 +477,6 @@ private fun InfoCard() {
     }
 }
 
-@Composable
-private fun BadgesComingSoon() {
-    val infiniteTransition = rememberInfiniteTransition()
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = -5f,
-        targetValue = 5f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-    
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 4.dp,
-                shape = RoundedCornerShape(20.dp)
-            ),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Outlined.MilitaryTech,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .rotate(rotation),
-                    tint = MaterialTheme.colorScheme.secondary
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = "Badges Coming Soon",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "🎯 Complete daily challenges\n🏆 Master new skills\n⭐ Earn special badges",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                lineHeight = 20.sp
-            )
-        }
-    }
-}
 
 @Composable
 private fun SimpleError(message: String, onRetry: () -> Unit, modifier: Modifier = Modifier) {

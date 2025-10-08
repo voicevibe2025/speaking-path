@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -97,13 +98,10 @@ fun LearnTopicWithViviScreen(
         containerColor = Color.Transparent,
         topBar = {
             LearnTopBar(
-                topicTitle = uiState.topic?.title ?: "Learn with Vivi",
                 isConnected = uiState.isConnected,
                 isConnecting = uiState.isConnecting,
                 isRecording = uiState.isRecording,
                 isRefreshing = isRefreshing,
-                currentPhrase = uiState.currentPhraseIndex + 1,
-                totalPhrases = uiState.totalPhrases,
                 onNavigateBack = onNavigateBack,
                 onRefresh = viewModel::refresh,
                 onChooseTopic = viewModel::showTopicSelector
@@ -201,6 +199,20 @@ fun LearnTopicWithViviScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
                         }
+                        
+                        // Show topic introduction when starting the lesson
+                        // Only show when no phrase cards have been displayed yet
+                        if (uiState.phraseCards.isEmpty()) {
+                            uiState.topic?.let { topic ->
+                                item(key = "topic_intro") {
+                                    TopicIntroductionCard(
+                                        title = topic.title,
+                                        description = topic.description,
+                                        totalPhrases = uiState.totalPhrases
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -272,13 +284,10 @@ fun LearnTopicWithViviScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LearnTopBar(
-    topicTitle: String,
     isConnected: Boolean,
     isConnecting: Boolean,
     isRecording: Boolean,
     isRefreshing: Boolean,
-    currentPhrase: Int,
-    totalPhrases: Int,
     onNavigateBack: () -> Unit,
     onRefresh: () -> Unit,
     onChooseTopic: () -> Unit = {}
@@ -309,29 +318,12 @@ private fun LearnTopBar(
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.School,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = "Learn with Vivi",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
                     Text(
-                        text = topicTitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "Learn with Vivi",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
-
+                    
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -345,15 +337,6 @@ private fun LearnTopBar(
 
                         AnimatedVisibility(visible = isRecording && isConnected) {
                             RecordingIndicator()
-                        }
-
-                        if (totalPhrases > 0) {
-                            Text(
-                                text = "Phrase $currentPhrase/$totalPhrases",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Medium
-                            )
                         }
                     }
                 }
@@ -1100,6 +1083,106 @@ private fun CompletionDialog(
         confirmButton = {},
         dismissButton = {}
     )
+}
+
+@Composable
+private fun TopicIntroductionCard(
+    title: String,
+    description: String,
+    totalPhrases: Int
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Icon
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.School,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(40.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Title
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Description
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Phrases count badge
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.MenuBook,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "$totalPhrases phrases to learn",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Welcome message
+            Text(
+                text = "🎤 Vivi will guide you through each phrase",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center,
+                fontStyle = FontStyle.Italic
+            )
+        }
+    }
 }
 
 @Composable

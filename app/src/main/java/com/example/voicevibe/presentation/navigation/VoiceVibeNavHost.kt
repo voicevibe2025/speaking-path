@@ -20,6 +20,7 @@ import com.example.voicevibe.presentation.screens.main.home.HomeScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
 import com.example.voicevibe.presentation.screens.main.social.SocialFeedScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingLessonScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationLessonScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.ConversationPracticeScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.LearnTopicWithViviScreen
@@ -249,6 +250,32 @@ fun VoiceVibeNavHost(
                 },
                 onNavigateToLearnWithVivi = { topicId ->
                     navController.navigate(Screen.LearnTopicWithVivi.createRoute(topicId))
+                },
+                onNavigateToSpeakingLesson = { topicId ->
+                    navController.navigate(Screen.SpeakingLesson.createRoute(topicId))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.SpeakingLesson.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            SpeakingLessonScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToTopicMaster = { tid ->
+                    navController.navigate(Screen.TopicMaster.createRoute(tid))
+                },
+                onNavigateToLearnWithVivi = { tid ->
+                    navController.navigate(Screen.LearnTopicWithVivi.createRoute(tid))
+                },
+                onNavigateToConversationPractice = { tid ->
+                    navController.navigate(Screen.ConversationPractice.createRoute(tid))
+                },
+                onNavigateToVocabularyLesson = { tid ->
+                    navController.navigate(Screen.VocabularyLesson.createRoute(tid))
                 }
             )
         }

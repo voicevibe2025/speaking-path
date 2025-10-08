@@ -290,7 +290,8 @@ fun SpeakingJourneyScreen(
     onNavigateToTopicMaster: (String) -> Unit,
     onNavigateToConversationPractice: (String) -> Unit = {},
     onNavigateToVocabularyLesson: (String) -> Unit = {},
-    onNavigateToLearnWithVivi: (String) -> Unit = {}
+    onNavigateToLearnWithVivi: (String) -> Unit = {},
+    onNavigateToSpeakingLesson: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -391,94 +392,12 @@ fun SpeakingJourneyScreen(
                         onDismiss = { viewModel.dismissWelcome() }
                     )
                 } else {
-                    // Compute a dynamic height for the Conversation area so the rest fits on screen
-                    val configuration = LocalConfiguration.current
-                    val conversationAreaHeight = remember(configuration) {
-                        val h = configuration.screenHeightDp.toFloat()
-                        // Target ~36% of screen height, bounded between 260dp and 360dp
-                        ((h * 0.55f).coerceIn(305f, 425f)).dp
-                    }
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .verticalScroll(rememberScrollState()),
+                            .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Conversation Lesson area first
-                        ui.topics.getOrNull(ui.selectedTopicIdx)?.let { topic ->
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 16.dp, start = 16.dp, end = 16.dp),
-                                shape = RoundedCornerShape(24.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color.White.copy(alpha = 0.03f)
-                                ),
-                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(conversationAreaHeight)
-                                ) {
-                                    ConversationLessonScreen(
-                                        topicId = topic.id,
-                                        onNavigateBack = {},
-                                        embedded = true,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(conversationAreaHeight)
-                                    )
-                                }
-                            }
-                        }
-
-                        // AI Coach Card (Gemini-as-GRU)
-                        val coachVM: CoachViewModel = hiltViewModel()
-                        val coachUi by coachVM.ui
-                        LaunchedEffect(Unit) { coachVM.refreshIfNeeded() }
-
-                        fun handleNextBestAction(analysis: CoachAnalysisDto) {
-                            val nba = analysis.nextBestActions.firstOrNull()
-                            val currentTopicId = ui.topics.getOrNull(ui.selectedTopicIdx)?.id
-                            if (nba == null) {
-                                currentTopicId?.let { onNavigateToTopicMaster(it) }
-                                return
-                            }
-                            val link = nba.deeplink
-                            try {
-                                val uri = Uri.parse(link)
-                                val segs = uri.pathSegments
-                                // Expecting /speaking/topic/<topicId>/<mode>
-                                val tIdx = segs.indexOfFirst { it.equals("topic", ignoreCase = true) }
-                                val linkTopicId = if (tIdx != -1 && tIdx + 1 < segs.size) segs[tIdx + 1] else "current"
-                                val mode = if (tIdx != -1 && tIdx + 2 < segs.size) segs[tIdx + 2] else "master"
-                                val requestedId = if (linkTopicId == "current") currentTopicId else linkTopicId
-                                // Validate against loaded topics and provide a safe fallback
-                                val targetId = when {
-                                    requestedId != null && ui.topics.any { it.id == requestedId } -> requestedId
-                                    ui.topics.getOrNull(ui.selectedTopicIdx)?.id != null -> ui.topics[ui.selectedTopicIdx].id
-                                    else -> ui.topics.firstOrNull()?.id
-                                }
-                                if (targetId == null) return
-                                when (mode.lowercase(Locale.ROOT)) {
-                                    "conversation" -> onNavigateToConversationPractice(targetId)
-                                    "vocab", "vocabulary" -> onNavigateToVocabularyLesson(targetId)
-                                    else -> onNavigateToTopicMaster(targetId)
-                                }
-                            } catch (_: Throwable) {
-                                currentTopicId?.let { onNavigateToTopicMaster(it) }
-                            }
-                        }
-
-                        coachUi.analysis?.let { analysis: CoachAnalysisDto ->
-                            Spacer(modifier = Modifier.height(12.dp))
-                            AiCoachCard(
-                                analysis = analysis,
-                                onActionClick = { handleNextBestAction(analysis) }
-                            )
-                        }
-                        
                         // Loading/Error states
                         if (ui.isLoading) {
                             Box(
@@ -498,73 +417,18 @@ fun SpeakingJourneyScreen(
                             )
                         }
                         
-                        // Main Content Area (topic-dependent)
-                        ui.topics.getOrNull(ui.selectedTopicIdx)?.let { topic ->
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // Topic selector moved below conversation area
-                            CompactTopicSelector(
+                        // Vertical scrollable list of topic cards
+                        if (ui.topics.isNotEmpty()) {
+                            VerticalTopicList(
                                 topics = ui.topics,
                                 selectedTopicIdx = ui.selectedTopicIdx,
-                                onTopicSelect = { idx ->
-                                    if (ui.topics.getOrNull(idx)?.unlocked == true)
-                                        viewModel.selectTopic(idx)
+                                onTopicClick = { topic ->
+                                    if (topic.unlocked) {
+                                        onNavigateToSpeakingLesson(topic.id)
+                                    }
                                 }
                             )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // Learn with Vivi button
-                            OutlinedButton(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                onClick = { onNavigateToLearnWithVivi(topic.id) },
-                                shape = RoundedCornerShape(20.dp),
-                                border = BorderStroke(2.dp, Color(0xFF667EEA)),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = Color(0xFF667EEA)
-                                )
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.School,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "Learn with Vivi",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            // Master [TOPIC] button at the bottom
-                            Button(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                onClick = { onNavigateToTopicMaster(topic.id) },
-                                shape = RoundedCornerShape(20.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = BrandIndigo,
-                                    contentColor = Color.White
-                                )
-                            ) {
-                                Text(
-                                    text = "Master ${topic.title}",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-
-                            // Keep minimal space at bottom to avoid clipping shadows
-                            Spacer(modifier = Modifier.height(16.dp))
                         }
-                        // Reduce extra bottom space so everything fits
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
 
@@ -885,10 +749,10 @@ private fun MinimalTopBar(
 }
 
 @Composable
-private fun CompactTopicSelector(
+private fun VerticalTopicList(
     topics: List<Topic>,
     selectedTopicIdx: Int,
-    onTopicSelect: (Int) -> Unit
+    onTopicClick: (Topic) -> Unit
 ) {
     val listState = rememberLazyListState()
     
@@ -899,57 +763,34 @@ private fun CompactTopicSelector(
         }
     }
     
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
+    androidx.compose.foundation.lazy.LazyColumn(
+        state = listState,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(vertical = 8.dp),
+        modifier = Modifier.fillMaxSize()
     ) {
-        val headerTitle = topics.getOrNull(selectedTopicIdx)?.title ?: "Topics"
-        Text(
-            text = headerTitle,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            color = Color.White
-        )
-        
-        LazyRow(
-            state = listState,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            itemsIndexed(topics) { index, topic ->
-                ModernTopicCard(
-                    topic = topic,
-                    isSelected = index == selectedTopicIdx,
-                    onClick = { onTopicSelect(index) },
-                    index = index
-                )
-            }
+        itemsIndexed(topics) { index, topic ->
+            VerticalTopicCard(
+                topic = topic,
+                isSelected = index == selectedTopicIdx,
+                onClick = { onTopicClick(topic) },
+                index = index
+            )
         }
-        
-        // Selected topic details removed for the simplified layout
     }
 }
 
 @Composable
-private fun ModernTopicCard(
+private fun VerticalTopicCard(
     topic: Topic,
     isSelected: Boolean,
     onClick: () -> Unit,
     index: Int
 ) {
     val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.05f else 1f,
+        targetValue = if (isSelected) 1.02f else 1f,
         animationSpec = tween(200),
-        label = "ModernTopicCardScale"
-    )
-
-    val borderWidth by animateDpAsState(
-        targetValue = if (isSelected) 3.dp else 0.dp,
-        animationSpec = tween(200),
-        label = "ModernTopicCardBorder"
+        label = "VerticalTopicCardScale"
     )
 
     val context = LocalContext.current
@@ -959,28 +800,31 @@ private fun ModernTopicCard(
 
     Card(
         modifier = Modifier
-            .width(100.dp)
-            .height(136.dp) // More compact to fit without scrolling
+            .fillMaxWidth()
+            .height(120.dp)
             .scale(scale)
             .clickable { if (topic.unlocked) onClick() },
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         border = if (isSelected) {
-            BorderStroke(borderWidth, MaterialTheme.colorScheme.primary)
-        } else null,
+            BorderStroke(2.dp, BrandCyan)
+        } else BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.05f)
+        ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 0.dp
+            defaultElevation = if (isSelected) 8.dp else 2.dp
         )
     ) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
+            modifier = Modifier.fillMaxSize()
         ) {
             // Background Image
             Image(
                 painter = painterResource(id = imageResId),
                 contentDescription = topic.title,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                alpha = 0.3f
             )
 
             // Scrim for text readability
@@ -988,74 +832,116 @@ private fun ModernTopicCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
-                        Brush.verticalGradient(
+                        Brush.horizontalGradient(
                             colors = listOf(
-                                Color.Transparent,
-                                Color.Black.copy(alpha = 0.7f),
-                                Color.Black.copy(alpha = 0.9f)
-                            ),
-                            startY = 300f
+                                Color.Black.copy(alpha = 0.8f),
+                                Color.Transparent
+                            )
                         )
                     )
             )
 
-            Column(
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .fillMaxSize()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Topic Title
-                Text(
-                    text = topic.title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = Color.White
-                )
-
-                // Progress indicator
-                val completedCount = topic.phraseProgress?.completedPhrases?.size ?: 0
-                val progress = completedCount.toFloat() / topic.material.size.coerceAtLeast(1)
-
-                if (topic.unlocked) {
-                    LinearProgressIndicator(
-                        progress = progress.coerceIn(0f, 1f),
-                        modifier = Modifier
-                            .height(4.dp)
-                            .fillMaxWidth(0.7f)
-                            .clip(RoundedCornerShape(3.dp)),
-                        color = if (progress >= 1f) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary,
-                        trackColor = Color.White.copy(alpha = 0.3f)
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "Locked",
-                        tint = Color.White.copy(alpha = 0.7f),
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-            // Completion checkmark
-            if (topic.completed) {
+                // Lock icon or number badge
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp),
-                    contentAlignment = Alignment.TopEnd
+                        .size(56.dp)
+                        .background(
+                            if (topic.unlocked) BrandIndigo else Color.White.copy(alpha = 0.2f),
+                            CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
+                    if (topic.unlocked) {
+                        Text(
+                            text = "${index + 1}",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Locked",
+                            tint = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                // Topic info
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = topic.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = topic.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.7f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    
+                    if (topic.unlocked) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        // Progress indicator
+                        val completedCount = topic.phraseProgress?.completedPhrases?.size ?: 0
+                        val progress = completedCount.toFloat() / topic.material.size.coerceAtLeast(1)
+                        
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            LinearProgressIndicator(
+                                progress = progress.coerceIn(0f, 1f),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(6.dp)
+                                    .clip(RoundedCornerShape(3.dp)),
+                                color = if (progress >= 1f) Color(0xFF4CAF50) else BrandCyan,
+                                trackColor = Color.White.copy(alpha = 0.2f)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "${(progress * 100).toInt()}%",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.9f),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                // Completion checkmark or arrow
+                if (topic.completed) {
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = "Completed",
                         tint = Color(0xFF4CAF50),
-                        modifier = Modifier
-                            .size(24.dp)
-                            .background(Color.White, CircleShape)
+                        modifier = Modifier.size(32.dp)
+                    )
+                } else if (topic.unlocked) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = "Open",
+                        tint = Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.size(32.dp)
                     )
                 }
             }

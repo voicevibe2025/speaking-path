@@ -52,6 +52,9 @@ sealed class Screen(val route: String) {
     }
     // Speaking-only flow (beta)
     object SpeakingJourney : Screen("speaking_journey")
+    object SpeakingLesson : Screen("speaking_lesson/{topicId}") {
+        fun createRoute(topicId: String) = "speaking_lesson/$topicId"
+    }
     object TopicMaster : Screen("topic_master/{topicId}") {
         fun createRoute(topicId: String) = "topic_master/$topicId"
     }

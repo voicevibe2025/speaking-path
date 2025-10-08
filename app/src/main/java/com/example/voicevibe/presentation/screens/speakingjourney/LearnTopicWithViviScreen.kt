@@ -82,6 +82,10 @@ fun LearnTopicWithViviScreen(
                 viewModel.clearCompletionState()
                 viewModel.requestRolePlay()  // Send practice message to Vivi
             },
+            onNewTopic = {
+                viewModel.clearCompletionState()
+                viewModel.showTopicSelector()
+            },
             onFinish = {
                 viewModel.clearCompletionState()
                 onNavigateBack()
@@ -982,6 +986,7 @@ private fun CompletionDialog(
     topicTitle: String,
     phrasesCompleted: Int,
     onContinuePracticing: () -> Unit,
+    onNewTopic: () -> Unit,
     onFinish: () -> Unit
 ) {
     AlertDialog(
@@ -1032,42 +1037,68 @@ private fun CompletionDialog(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Want to practice more or finish the lesson?",
+                    text = "What would you like to do next?",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                // Three buttons in a column
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Practice button
+                    OutlinedButton(
+                        onClick = onContinuePracticing,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Continue Practicing")
+                    }
+                    
+                    // New Topic button
+                    Button(
+                        onClick = onNewTopic,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.School,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Learn New Topic")
+                    }
+                    
+                    // Finish button
+                    Button(
+                        onClick = onFinish,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Finish")
+                    }
+                }
             }
         },
-        dismissButton = {
-            OutlinedButton(
-                onClick = onContinuePracticing,
-                modifier = Modifier.fillMaxWidth(0.48f)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Refresh,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Practice")
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = onFinish,
-                modifier = Modifier.fillMaxWidth(0.48f)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Check,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Finish")
-            }
-        }
+        confirmButton = {},
+        dismissButton = {}
     )
 }
 

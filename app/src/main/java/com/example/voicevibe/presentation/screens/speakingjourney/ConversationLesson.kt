@@ -201,10 +201,6 @@ fun ConversationLessonScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .drawBehind {
-                    // Animated gradient background
-                    drawAnimatedGradient(gradientOffset)
-                }
                 .padding(innerPadding)
         ) {
             when {
@@ -304,7 +300,7 @@ fun ConversationLessonScreen(
                                 playTurn(newIdx)
                             },
                             onPlay = { playTurn(currentIndex) },
-                            onPlayAll = { playAllFrom(0) },
+                            onPlayAll = { playAllFrom(currentIndex) },
                             onStop = {
                                 resetPlaybackFlags()
                                 viewModel.stopPlayback()
@@ -710,11 +706,11 @@ fun ModernControlPanel(
                 enabled = currentIndex > 0,
                 size = if (compact) 40.dp else 48.dp
             ) {
-                Icon(
-                    Icons.Default.SkipPrevious,
-                    contentDescription = "Previous",
-                    tint = Color.White,
-                    modifier = Modifier.size(if (compact) 24.dp else 28.dp)
+                Text(
+                    text = "‹",
+                    color = Color.White,
+                    fontSize = if (compact) 32.sp else 40.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
@@ -737,11 +733,11 @@ fun ModernControlPanel(
                 enabled = currentIndex < conversationSize - 1,
                 size = if (compact) 40.dp else 48.dp
             ) {
-                Icon(
-                    Icons.Default.SkipNext,
-                    contentDescription = "Next",
-                    tint = Color.White,
-                    modifier = Modifier.size(if (compact) 24.dp else 28.dp)
+                Text(
+                    text = "›",
+                    color = Color.White,
+                    fontSize = if (compact) 32.sp else 40.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -775,18 +771,6 @@ fun ModernPlayButton(
     size: Dp = 72.dp,
     iconSize: Dp = 36.dp
 ) {
-    val rotation by animateFloatAsState(
-        targetValue = if (isPlaying) 360f else 0f,
-        animationSpec = if (isPlaying) {
-            infiniteRepeatable(
-                animation = tween(2000, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart
-            )
-        } else {
-            tween(0)
-        }
-    )
-
     Surface(
         modifier = Modifier.size(size),
         shape = CircleShape,
@@ -803,13 +787,12 @@ fun ModernPlayButton(
                         )
                     ),
                     shape = CircleShape
-                )
-                .graphicsLayer { rotationZ = rotation },
+                ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                contentDescription = if (isPlaying) "Pause" else "Play",
+                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.Forum,
+                contentDescription = if (isPlaying) "Stop" else "Start Conversation",
                 tint = Color.White,
                 modifier = Modifier.size(iconSize)
             )

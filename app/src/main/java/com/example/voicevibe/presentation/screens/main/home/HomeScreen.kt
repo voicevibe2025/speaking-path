@@ -168,8 +168,8 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.Transparent),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp)
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                    contentPadding = PaddingValues(vertical = 20.dp, horizontal = 16.dp)
                 ) {
                     // Learning Progress
                     item {
@@ -203,36 +203,6 @@ fun HomeScreen(
                             onViewLeaderboard = onNavigateToLeaderboard,
                             onViewAchievements = onNavigateToAchievements
                         )
-                    }
-
-                    // Current Courses
-                    if (uiState.activeLearningPaths.isNotEmpty()) {
-                        item {
-                            CurrentCoursesSection(
-                                paths = uiState.activeLearningPaths,
-                                onPathClick = viewModel::onContinueLearning
-                            )
-                        }
-                    }
-
-                    // Achievements
-                    if (uiState.badges.isNotEmpty()) {
-                        item {
-                            AchievementsSection(
-                                badges = uiState.badges,
-                                onViewAll = viewModel::onViewAchievements
-                            )
-                        }
-                    }
-
-                    // Social Section
-                    item {
-                        SocialSection(onNavigateToSocialFeed = onNavigateToSocialFeed)
-                    }
-
-                    // Bottom padding
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
             }
@@ -920,231 +890,174 @@ private fun QuickStartSection(
     onNavigateToLearnWithVivi: (String) -> Unit
 ) {
     var showTopicSelectionDialog by remember { mutableStateOf(false) }
-    Column(
-        modifier = Modifier.padding(horizontal = 16.dp)
-    ) {
-        Text(
-            text = "Start Learning",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
+    BoxWithConstraints {
+        val isCompact = maxWidth < 360.dp
+        Column {
+            Text(
+                text = "Start Learning",
+                fontSize = if (isCompact) 18.sp else 20.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-        // Primary Action - Speaking Practice
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onStartPractice() },
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Row(
+            // Primary Action - Speaking Practice (Blue)
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .clickable { onStartPractice() },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF3B82F6)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
-                Box(
+                Row(
                     modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .padding(if (isCompact) 16.dp else 20.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Mic,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Mic,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(if (isCompact) 12.dp else 16.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Start Speaking Practice",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = "Practice speaking with instant feedback",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-            }
-        }
-
-        /*
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Secondary Action - AI Practice
-        
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onPracticeWithAI() },
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF3B82F6)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Psychology,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Practice with Vivi",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = "AI-powered conversation partner",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Start Speaking Practice",
+                            fontSize = if (isCompact) 16.sp else 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "Practice speaking with instant feedback",
+                            fontSize = if (isCompact) 12.sp else 14.sp,
+                            color = Color.White.copy(alpha = 0.8f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
-        }
-        */
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Learn With Vivi - Topic-based Learning
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showTopicSelectionDialog = true },
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Row(
+            // Learn With Vivi - Topic-based Learning (Purple)
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .clickable { showTopicSelectionDialog = true },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF9333EA)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
-                Box(
+                Row(
                     modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .padding(if (isCompact) 16.dp else 20.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.AutoStories,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(if (isCompact) 12.dp else 16.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Learn With Vivi",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = "Learn topics through conversation",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Learn with Vivi",
+                            fontSize = if (isCompact) 16.sp else 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "Learn topics through conversation",
+                            fontSize = if (isCompact) 12.sp else 14.sp,
+                            color = Color.White.copy(alpha = 0.8f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Live Practice - Gemini Live
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onLivePractice() },
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Row(
+            // Live Practice - Gemini Live (Slate/Gray)
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .clickable { onLivePractice() },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF475569)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
-                Box(
+                Row(
                     modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .padding(if (isCompact) 16.dp else 20.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.FlashOn,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.FlashOn,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(if (isCompact) 12.dp else 16.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Practice with Vivi",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = "Practice with AI tutor",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Practice with Vivi",
+                            fontSize = if (isCompact) 16.sp else 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "Practice with AI tutor",
+                            fontSize = if (isCompact) 12.sp else 14.sp,
+                            color = Color.White.copy(alpha = 0.8f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
         }
@@ -1170,48 +1083,54 @@ private fun LearningProgressSection(
     completedLessons: Int
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
-            Text(
-                text = "Progress",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            val isCompact = maxWidth < 360.dp
+            Column {
+                Text(
+                    text = "Progress",
+                    fontSize = if (isCompact) 18.sp else 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                ProgressItem(
-                    icon = Icons.Default.EmojiEvents,
-                    label = "Points",
-                    value = NumberFormat.getNumberInstance(Locale.US).format(totalPoints),
-                    color = PracticeXPYellow
-                )
-                
-                ProgressItem(
-                    icon = Icons.Default.LocalFireDepartment,
-                    label = "Streak",
-                    value = "$currentStreak days",
-                    color = BrandFuchsia
-                )
-                
-                ProgressItem(
-                    icon = Icons.Default.CheckCircle,
-                    label = "Completed",
-                    value = "$completedLessons lessons",
-                    color = PracticeAccuracyGreen
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    ProgressItem(
+                        icon = Icons.Default.EmojiEvents,
+                        label = "Points",
+                        value = NumberFormat.getNumberInstance(Locale.US).format(totalPoints),
+                        color = Color(0xFFFB923C),
+                        isCompact = isCompact
+                    )
+                    
+                    ProgressItem(
+                        icon = Icons.Default.LocalFireDepartment,
+                        label = "Streak",
+                        value = "$currentStreak days",
+                        color = Color(0xFFA855F7),
+                        isCompact = isCompact
+                    )
+                    
+                    ProgressItem(
+                        icon = Icons.Default.CheckCircle,
+                        label = "Completed",
+                        value = "$completedLessons lessons",
+                        color = Color(0xFF4ADE80),
+                        isCompact = isCompact
+                    )
+                }
             }
         }
     }
@@ -1222,36 +1141,47 @@ private fun ProgressItem(
     icon: ImageVector,
     label: String,
     value: String,
-    color: Color
+    color: Color,
+    isCompact: Boolean = false
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.widthIn(max = 120.dp)
     ) {
+        val iconSize = if (isCompact) 48.dp else 64.dp
+        val iconInnerSize = if (isCompact) 24.dp else 32.dp
+        
         Box(
             modifier = Modifier
-                .size(48.dp)
+                .size(iconSize)
                 .clip(CircleShape)
-                .background(color.copy(alpha = 0.1f)),
+                .background(color.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = color,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(iconInnerSize)
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = value,
-            fontSize = 14.sp,
+            fontSize = if (isCompact) 16.sp else 18.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+            color = MaterialTheme.colorScheme.onBackground,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center
         )
         Text(
             text = label,
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            fontSize = if (isCompact) 12.sp else 14.sp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -1262,44 +1192,50 @@ private fun StudyToolsSection(
     onViewLeaderboard: () -> Unit,
     onViewAchievements: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.padding(horizontal = 16.dp)
-    ) {
-        Text(
-            text = "Study Tools",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            StudyToolCard(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Default.MenuBook,
-                title = "Quest",
-                color = BrandIndigo,
-                onClick = onViewPaths
+    BoxWithConstraints {
+        val isCompact = maxWidth < 360.dp
+        val cardSpacing = if (isCompact) 8.dp else 12.dp
+        
+        Column {
+            Text(
+                text = "Study Tools",
+                fontSize = if (isCompact) 18.sp else 20.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            StudyToolCard(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Default.Leaderboard,
-                title = "Leaderboard",
-                color = PracticeXPYellow,
-                onClick = onViewLeaderboard
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(cardSpacing)
+            ) {
+                StudyToolCard(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.Map,
+                    title = "Quest",
+                    color = Color(0xFF3B82F6),
+                    onClick = onViewPaths,
+                    isCompact = isCompact
+                )
 
-            StudyToolCard(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Default.Stars,
-                title = "Achievements",
-                color = BrandFuchsia,
-                onClick = onViewAchievements
-            )
+                StudyToolCard(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.Leaderboard,
+                    title = "Leaderboard",
+                    color = Color(0xFFFB923C),
+                    onClick = onViewLeaderboard,
+                    isCompact = isCompact
+                )
+
+                StudyToolCard(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.Star,
+                    title = "Achievements",
+                    color = Color(0xFFEC4899),
+                    onClick = onViewAchievements,
+                    isCompact = isCompact
+                )
+            }
         }
     }
 }
@@ -1310,36 +1246,51 @@ private fun StudyToolCard(
     icon: ImageVector,
     title: String,
     color: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isCompact: Boolean = false
 ) {
     Card(
         modifier = modifier
             .aspectRatio(1f)
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        border = BorderStroke(1.dp, color.copy(alpha = 0.2f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(if (isCompact) 8.dp else 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+            val iconBgSize = if (isCompact) 40.dp else 48.dp
+            val iconSize = if (isCompact) 20.dp else 24.dp
+            
+            Box(
+                modifier = Modifier
+                    .size(iconBgSize)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(iconSize)
+                )
+            }
+            Spacer(modifier = Modifier.height(if (isCompact) 6.dp else 8.dp))
             Text(
                 text = title,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 12.sp
+                fontSize = if (isCompact) 12.sp else 14.sp,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }

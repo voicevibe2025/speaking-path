@@ -264,7 +264,10 @@ fun VoiceVibeNavHost(
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             SpeakingLessonScreen(
                 topicId = topicId,
-                onNavigateBack = { navController.popBackStack() },
+                onNavigateBack = {
+                    // Always navigate back to SpeakingJourney screen
+                    navController.popBackStack(Screen.SpeakingJourney.route, inclusive = false)
+                },
                 onNavigateToTopicMaster = { tid ->
                     navController.navigate(Screen.TopicMaster.createRoute(tid))
                 },

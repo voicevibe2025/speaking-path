@@ -294,7 +294,10 @@ fun NavGraph(
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             SpeakingLessonScreen(
                 topicId = topicId,
-                onNavigateBack = { navController.popBackStack() },
+                onNavigateBack = {
+                    // Always navigate back to SpeakingJourney screen
+                    navController.popBackStack(Screen.SpeakingJourney.route, inclusive = false)
+                },
                 onNavigateToTopicMaster = { tid ->
                     navController.navigate(Screen.TopicMaster.createRoute(tid))
                 },
@@ -318,6 +321,7 @@ fun NavGraph(
             TopicMasterScreen(
                 topicId = topicId,
                 onNavigateBack = { navController.popBackStack() },
+                onNavigateToLesson = { navController.navigate(Screen.SpeakingLesson.createRoute(topicId)) },
                 onNavigateToPronunciationPractice = { navController.navigate(Screen.PronunciationPractice.createRoute(topicId)) },
                 onNavigateToFluencyPractice = { navController.navigate(Screen.FluencyPractice.createRoute(topicId)) },
                 onNavigateToVocabularyPractice = { navController.navigate(Screen.VocabularyPractice.createRoute(topicId)) },

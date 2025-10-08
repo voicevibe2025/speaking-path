@@ -134,7 +134,7 @@ fun HomeScreen(
 
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(MaterialTheme.colorScheme.background)
+        .background(Color(0xFF0F172A))
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -167,7 +167,7 @@ fun HomeScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Transparent),
+                        .background(Color(0xFF0F172A)),
                     verticalArrangement = Arrangement.spacedBy(20.dp),
                     contentPadding = PaddingValues(vertical = 20.dp, horizontal = 16.dp)
                 ) {
@@ -730,7 +730,7 @@ private fun EducationalTopBar(
                     text = title,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = Color.White
                 )
             }
             
@@ -745,7 +745,7 @@ private fun EducationalTopBar(
                         Icon(
                             imageVector = Icons.Default.Notifications,
                             contentDescription = "Notifications",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = Color.White
                         )
                     }
                 }
@@ -759,7 +759,7 @@ private fun EducationalTopBar(
                         Icon(
                             imageVector = Icons.Default.Message,
                             contentDescription = "Messages",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = Color.White
                         )
                     }
                 }
@@ -768,7 +768,7 @@ private fun EducationalTopBar(
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search Users",
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = Color.White
                     )
                 }
                 // Profile avatar
@@ -777,7 +777,7 @@ private fun EducationalTopBar(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                            .background(Color.White.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
                         if (avatarUrl != null) {
@@ -792,7 +792,7 @@ private fun EducationalTopBar(
                                 text = userInitials,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
+                                color = Color.White
                             )
                         }
                     }
@@ -897,7 +897,7 @@ private fun QuickStartSection(
                 text = "Start Learning",
                 fontSize = if (isCompact) 18.sp else 20.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = Color.White,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -1085,7 +1085,7 @@ private fun LearningProgressSection(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         BoxWithConstraints(
@@ -1099,7 +1099,7 @@ private fun LearningProgressSection(
                     text = "Progress",
                     fontSize = if (isCompact) 18.sp else 20.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = Color.White,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
@@ -1170,7 +1170,7 @@ private fun ProgressItem(
             text = value,
             fontSize = if (isCompact) 16.sp else 18.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = Color.White,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center
@@ -1178,7 +1178,7 @@ private fun ProgressItem(
         Text(
             text = label,
             fontSize = if (isCompact) 12.sp else 14.sp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            color = Color.White.copy(alpha = 0.6f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center
@@ -1201,7 +1201,7 @@ private fun StudyToolsSection(
                 text = "Study Tools",
                 fontSize = if (isCompact) 18.sp else 20.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = Color.White,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -1254,7 +1254,7 @@ private fun StudyToolCard(
             .aspectRatio(1f)
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -1285,7 +1285,7 @@ private fun StudyToolCard(
             Text(
                 text = title,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = Color.White,
                 fontSize = if (isCompact) 12.sp else 14.sp,
                 textAlign = TextAlign.Center,
                 maxLines = 1,

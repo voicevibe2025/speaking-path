@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -801,7 +802,7 @@ private fun VerticalTopicCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
+            .height(136.dp)
             .scale(scale)
             .clickable { if (topic.unlocked) onClick() },
         shape = RoundedCornerShape(20.dp),
@@ -878,8 +879,10 @@ private fun VerticalTopicCard(
 
                 // Topic info
                 Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.Center
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(bottom = 8.dp),
+                    verticalArrangement = Arrangement.Top
                 ) {
                     Text(
                         text = topic.title,
@@ -894,35 +897,50 @@ private fun VerticalTopicCard(
                         text = topic.description,
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.7f),
-                        maxLines = 2,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     
                     if (topic.unlocked) {
                         Spacer(modifier = Modifier.height(8.dp))
-                        // Progress indicator
-                        val completedCount = topic.phraseProgress?.completedPhrases?.size ?: 0
-                        val progress = completedCount.toFloat() / topic.material.size.coerceAtLeast(1)
+                        // Progress indicator: Calculate based on all three practices
+                        val scores = topic.practiceScores
+                        val completedPractices = listOf(
+                            // Pronunciation/Phrase practice
+                            (topic.phraseProgress?.isAllPhrasesCompleted == true) || 
+                            ((scores?.pronunciation ?: 0) > 0),
+                            // Fluency practice
+                            (topic.fluencyProgress?.completed == true) || 
+                            ((scores?.fluency ?: 0) > 0),
+                            // Vocabulary practice
+                            (scores?.vocabulary ?: 0) > 0
+                        ).count { it }
                         
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
+                        val progress = completedPractices / 3f
+                        
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(24.dp)
                         ) {
                             LinearProgressIndicator(
                                 progress = progress.coerceIn(0f, 1f),
                                 modifier = Modifier
-                                    .weight(1f)
+                                    .fillMaxWidth()
                                     .height(6.dp)
+                                    .align(Alignment.CenterStart)
                                     .clip(RoundedCornerShape(3.dp)),
                                 color = if (progress >= 1f) Color(0xFF4CAF50) else BrandCyan,
                                 trackColor = Color.White.copy(alpha = 0.2f)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "${(progress * 100).toInt()}%",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color.White.copy(alpha = 0.9f),
-                                fontWeight = FontWeight.Bold
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .padding(end = 2.dp)
                             )
                         }
                     }

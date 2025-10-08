@@ -51,6 +51,7 @@ import kotlin.math.sin
 fun TopicMasterScreen(
     topicId: String,
     onNavigateBack: () -> Unit,
+    onNavigateToLesson: () -> Unit = onNavigateBack,
     onNavigateToPronunciationPractice: (String) -> Unit,
     onNavigateToFluencyPractice: (String) -> Unit,
     onNavigateToVocabularyPractice: (String) -> Unit,
@@ -146,6 +147,25 @@ fun TopicMasterScreen(
         )
     )
 
+    // Determine back navigation based on completion status
+    val hasReachedThreshold = remember(practiceScores, topic) {
+        val meets = practiceScores?.meetsRequirement == true
+        val allCompleted = (topic?.phraseProgress?.isAllPhrasesCompleted == true) &&
+                           (topic?.fluencyProgress?.completed == true) &&
+                           ((practiceScores?.vocabulary ?: 0) > 0)
+        meets && allCompleted
+    }
+    
+    val handleBackNavigation: () -> Unit = {
+        if (hasReachedThreshold) {
+            // If threshold reached (confetti shown), go back to journey (topic list)
+            onNavigateBack()
+        } else {
+            // If not reached, go back to lesson screen
+            onNavigateToLesson()
+        }
+    }
+
     Box(modifier = Modifier
         .fillMaxSize()
         .background(backgroundBrush)
@@ -156,7 +176,7 @@ fun TopicMasterScreen(
             topBar = {
                 ModernTopBar(
                     title = topic?.title ?: "Master Topic",
-                    onNavigationIconClick = onNavigateBack
+                    onNavigationIconClick = handleBackNavigation
                 )
             }
         ) { innerPadding ->

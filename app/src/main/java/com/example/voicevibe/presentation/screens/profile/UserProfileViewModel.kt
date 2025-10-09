@@ -451,7 +451,7 @@ class UserProfileViewModel @Inject constructor(
  * UI State for User Profile screen
  */
 data class UserProfileUiState(
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val userProfile: UserProfile? = null,
     val activities: List<UserActivity> = emptyList(),
     val isOwnProfile: Boolean = false,

@@ -53,7 +53,6 @@ fun UserProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Full-screen image viewer state
@@ -65,10 +64,15 @@ fun UserProfileScreen(
 
     // Refresh avatar when returning from Settings screen
     val lifecycleOwner = LocalLifecycleOwner.current
+    var hasResumedOnce by remember { mutableStateOf(false) }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                viewModel.refreshProfile()
+                if (hasResumedOnce) {
+                    viewModel.refreshProfile()
+                } else {
+                    hasResumedOnce = true
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -77,7 +81,8 @@ fun UserProfileScreen(
 
     var showMoreOptions by remember { mutableStateOf(false) }
     var showReportDialog by remember { mutableStateOf(false) }
-
+    
+    // Collect one-off events (navigation, toasts)
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
@@ -87,9 +92,7 @@ fun UserProfileScreen(
                 is UserProfileEvent.NavigateToAchievements -> onNavigateToAchievements(event.userId)
                 is UserProfileEvent.NavigateToFollowers -> onNavigateToFollowers(event.userId)
                 is UserProfileEvent.NavigateToFollowing -> onNavigateToFollowing(event.userId)
-                is UserProfileEvent.ShowChallengeDialog -> {
-                    // Handle challenge dialog
-                }
+                is UserProfileEvent.ShowChallengeDialog -> { /* no-op placeholder */ }
                 is UserProfileEvent.ShareProfile -> {
                     snackbarHostState.showSnackbar("Sharing profile")
                 }
@@ -145,19 +148,13 @@ fun UserProfileScreen(
     ) { paddingValues ->
         val error = uiState.error
         val userProfile = uiState.userProfile
-        
-        when {
-            uiState.isLoading -> {
-                LoadingScreen(modifier = Modifier.padding(paddingValues))
-            }
-            error != null -> {
-                ErrorScreen(
-                    message = error,
-                    onRetry = viewModel::refreshProfile,
-                    modifier = Modifier.padding(paddingValues)
-                )
-            }
-            userProfile != null -> {
+
+        if (userProfile != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
                 ProfileContent(
                     profile = userProfile,
                     speakingOverview = uiState.speakingOverview,
@@ -183,8 +180,33 @@ fun UserProfileScreen(
                     onViewAchievements = viewModel::viewAchievements,
                     onViewFollowers = viewModel::viewFollowers,
                     onViewFollowing = viewModel::viewFollowing,
-                    modifier = Modifier.padding(paddingValues)
+                    modifier = Modifier.fillMaxSize()
                 )
+
+                if (uiState.isLoading) {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.TopCenter)
+                    )
+                }
+            }
+        } else {
+            when {
+                uiState.isLoading -> {
+                    LoadingScreen(modifier = Modifier.padding(paddingValues))
+                }
+                error != null -> {
+                    ErrorScreen(
+                        message = error,
+                        onRetry = viewModel::refreshProfile,
+                        modifier = Modifier.padding(paddingValues)
+                    )
+                }
+                else -> {
+                    // Fallback to avoid a blank frame before first load emits
+                    LoadingScreen(modifier = Modifier.padding(paddingValues))
+                }
             }
         }
     }

@@ -14,6 +14,7 @@ import com.example.voicevibe.data.repository.UserRepository
 import com.example.voicevibe.domain.model.SpeakingEvaluation
 import com.example.voicevibe.domain.model.SpeakingSession
 import com.example.voicevibe.domain.model.Resource
+import com.example.voicevibe.utils.TranscriptUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +28,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 @HiltViewModel
 class FluencyPracticeViewModel @Inject constructor(
@@ -260,31 +264,57 @@ class FluencyPracticeViewModel @Inject constructor(
                                     recordingDuration = recordingDuration
                                 )
                                 res2.onSuccess { body ->
-                                    // Update the attempt with Gemini's actual score and feedback
-                                    val geminiScore = body.score
+                                    // Compute objective score locally (more strict and consistent)
+                                    val pausesList = analysis.pauses
+                                    val stutters = analysis.stutterCount
+                                    val mispronCount = analysis.mispronunciations.size
+                                    val objectiveScore = computeObjectiveFluencyScore(
+                                        transcription = body.transcription,
+                                        durationSec = recordingDuration,
+                                        pauses = pausesList,
+                                        stutterCount = stutters,
+                                        mispronCount = mispronCount
+                                    )
+
+                                    // Also sync this objective score back to server so TopicMaster reflects it
+                                    val serverSessionId = try { body.sessionId } catch (_: Throwable) { null }
+                                    val topicIdSafe = topicId
+                                    viewModelScope.launch {
+                                        runCatching {
+                                            journeyRepo.submitFluencyPromptScore(
+                                                topicId = topicIdSafe,
+                                                promptIndex = 0,
+                                                score = objectiveScore,
+                                                sessionId = serverSessionId
+                                            )
+                                        }.onFailure { e ->
+                                            Log.w("FluencyVM", "Failed to sync objective score to server: ${e.message}")
+                                        }
+                                    }
+
+                                    // Update the attempt with objective score and Gemini feedback/transcript
                                     val updatedAttempt = attempt.copy(
-                                        overallScore = geminiScore.toFloat(),
+                                        overallScore = objectiveScore.toFloat(),
                                         feedback = body.feedback,
                                         transcript = body.transcription
                                     )
                                     persistAttempt(context, currentTopicId!!, updatedAttempt)
-                                    
-                                    // Create updated evaluation with Gemini score for UI display
+
+                                    // Create updated evaluation with objective score for UI display
                                     val updatedEval = eval?.copy(
-                                        overallScore = geminiScore.toFloat(),
+                                        overallScore = objectiveScore.toFloat(),
                                         feedback = body.feedback,
                                         suggestions = body.suggestions
                                     )
-                                    
-                                    // For single prompt system, we need to manually check if this completes fluency
-                                    // Score of 75+ completes the fluency practice  
-                                    val isCompleted = geminiScore >= 75
+
+                                    // Completion based on objective score
+                                    val isCompleted = objectiveScore >= 75
                                     val xpGained = if (isCompleted) 50 else 10  // Completion bonus or participation
-                                    
+
                                     _uiState.update { st ->
                                         st.copy(
-                                            showCongrats = true,  // Always show congrats regardless of score
-                                            totalFluencyScore = geminiScore,
+                                            showCongrats = isCompleted,
+                                            totalFluencyScore = objectiveScore,
                                             completionXpGained = if (isCompleted) xpGained else st.completionXpGained,
                                             lastAwardedXp = xpGained,
                                             evaluation = updatedEval,
@@ -294,22 +324,48 @@ class FluencyPracticeViewModel @Inject constructor(
                                         )
                                     }
                                 }.onFailure { e ->
-                                    // Fallback: save the attempt locally even if server submission fails
-                                    persistAttempt(context, currentTopicId!!, attempt)
+                                    // Fallback: compute objective score using available data and save locally
+                                    val pausesList = analysis.pauses
+                                    val stutters = analysis.stutterCount
+                                    val mispronCount = analysis.mispronunciations.size
+                                    val objectiveScore = computeObjectiveFluencyScore(
+                                        transcription = sess?.transcription,
+                                        durationSec = recordingDuration,
+                                        pauses = pausesList,
+                                        stutterCount = stutters,
+                                        mispronCount = mispronCount
+                                    )
+                                    val updatedAttempt = attempt.copy(overallScore = objectiveScore.toFloat())
+                                    persistAttempt(context, currentTopicId!!, updatedAttempt)
                                     _uiState.update { st -> 
                                         st.copy(
                                             error = "Failed to submit to server: ${e.message}",
-                                            pastAttempts = st.pastAttempts + attempt
+                                            evaluation = st.evaluation?.copy(overallScore = objectiveScore.toFloat()) ?: eval?.copy(overallScore = objectiveScore.toFloat()),
+                                            totalFluencyScore = objectiveScore,
+                                            pastAttempts = st.pastAttempts + updatedAttempt
                                         )
                                     }
                                 }
                             } catch (t: Throwable) {
-                                // Fallback: save the attempt locally even if server submission fails
-                                persistAttempt(context, currentTopicId!!, attempt)
+                                // Fallback: compute objective score and save locally
+                                val pausesList = analysis.pauses
+                                val stutters = analysis.stutterCount
+                                val mispronCount = analysis.mispronunciations.size
+                                val objectiveScore = computeObjectiveFluencyScore(
+                                    transcription = sess?.transcription,
+                                    durationSec = (MAX_RECORDING_DURATION - _uiState.value.recordingDuration).toFloat(),
+                                    pauses = pausesList,
+                                    stutterCount = stutters,
+                                    mispronCount = mispronCount
+                                )
+                                val updatedAttempt = attempt.copy(overallScore = objectiveScore.toFloat())
+                                persistAttempt(context, currentTopicId!!, updatedAttempt)
                                 _uiState.update { st ->
                                     st.copy(
                                         error = "Failed to submit: ${t.message}",
-                                        pastAttempts = st.pastAttempts + attempt
+                                        evaluation = st.evaluation?.copy(overallScore = objectiveScore.toFloat()) ?: eval?.copy(overallScore = objectiveScore.toFloat()),
+                                        totalFluencyScore = objectiveScore,
+                                        pastAttempts = st.pastAttempts + updatedAttempt
                                     )
                                 }
                             }
@@ -318,7 +374,7 @@ class FluencyPracticeViewModel @Inject constructor(
                         _uiState.update {
                             it.copy(
                                 isSubmitting = false,
-                                evaluation = eval,
+                                evaluation = _uiState.value.evaluation ?: eval,
                                 session = sess,
                                 latestAnalysis = analysis,
                                 showResults = true
@@ -342,6 +398,50 @@ class FluencyPracticeViewModel @Inject constructor(
             if (text.contains("-")) 2 else 0
         }
         return FluencyAnalysis(pauses = pauses, stutterCount = stutters, mispronunciations = mis)
+    }
+
+    // Objective fluency scoring derived from measurable signals
+    private fun computeObjectiveFluencyScore(
+        transcription: String?,
+        durationSec: Float,
+        pauses: List<Float>?,
+        stutterCount: Int,
+        mispronCount: Int
+    ): Int {
+        val dur = if (durationSec > 0f) durationSec else 0f
+        val raw = (transcription ?: "").trim()
+        val originalWords = if (raw.isNotEmpty()) raw.split(Regex("\\s+")).filter { it.isNotBlank() } else emptyList()
+        val collapsed = TranscriptUtils.collapseRepeats(raw, force = true)
+        val cleanedWords = if (collapsed.isNotEmpty()) collapsed.split(Regex("\\s+")).filter { it.isNotBlank() } else emptyList()
+
+        val originalCount = originalWords.size
+        val cleanedCount = cleanedWords.size
+        val repeatsRemoved = max(0, originalCount - cleanedCount)
+        val repeatRatio = if (originalCount > 0) repeatsRemoved.toFloat() / originalCount.toFloat() else 0f
+
+        val minutes = if (dur > 0f) dur / 60f else 1f
+        val wpm = if (dur > 0f) cleanedCount / minutes else 0f
+
+        // Speech rate score (ideal ~140 wpm, tolerance ±60)
+        val target = 140f
+        val allowed = 60f
+        val rateDiff = abs(wpm - target)
+        val rateScore = (100f - (rateDiff / allowed) * 100f).coerceIn(0f, 100f)
+
+        // Time coverage score (full credit near 28-30s)
+        val timeScore = (min(1f, dur / 28f) * 100f).coerceIn(0f, 100f)
+
+        // Penalties
+        val pList = pauses ?: emptyList()
+        val longPausesCount = pList.count { it >= 1.0f }
+        val pausePenalty = min(18f, (longPausesCount * 3).toFloat())
+        val stutterPenalty = min(16f, (stutterCount * 4).toFloat())
+        val repetitionPenalty = min(16f, repeatRatio * 40f)
+        val mispronPenalty = min(18f, (mispronCount * 3).toFloat())
+
+        val base = rateScore * 0.6f + timeScore * 0.4f
+        val score = (base - (pausePenalty + stutterPenalty + repetitionPenalty + mispronPenalty)).toInt()
+        return score.coerceIn(0, 100)
     }
 
     fun playRecording(path: String) {

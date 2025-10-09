@@ -339,6 +339,8 @@ fun FluencyPracticeScreen(
                     ui = ui,
                     onContinue = {
                         viewModel.dismissCongrats()
+                        // Refresh topics so TopicMaster shows updated fluency score immediately
+                        journeyVM.reloadTopics()
                         onNavigateBack()
                     }
                 )

@@ -106,7 +106,8 @@ fun LazyListScope.OverviewTabContent(
                 )
                 PerformanceMetric(
                     label = "Grammar",
-                    value = profile.grammarScore,
+                    value = (overview?.averageGrammar?.takeIf { it > 0f }
+                        ?: profile.grammarScore),
                     color = MaterialTheme.colorScheme.tertiary
                 )
             }
@@ -463,7 +464,8 @@ fun OverviewTab(
                     // Grammar (not implemented yet)
                     PerformanceMetric(
                         label = "Grammar",
-                        value = profile.grammarScore,
+                        value = (overview?.averageGrammar?.takeIf { it > 0f }
+                            ?: profile.grammarScore),
                         color = MaterialTheme.colorScheme.tertiary
                     )
                 }

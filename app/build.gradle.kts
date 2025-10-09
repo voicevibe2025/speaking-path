@@ -218,6 +218,9 @@ dependencies {
     // Timber
     implementation(libs.timber)
 
+    // Notification Badge
+    implementation(libs.shortcut.badger)
+
     // Gemini
     implementation(libs.gemini.generativeai)
 

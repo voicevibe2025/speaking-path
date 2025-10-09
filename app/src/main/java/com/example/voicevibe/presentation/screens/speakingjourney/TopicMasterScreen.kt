@@ -79,7 +79,7 @@ fun TopicMasterScreen(
         ui.topics[currentTopicIndex + 1]
     } else null
 
-    // Celebration state: show confetti and play win sound when unlock condition is met
+    // Celebration state: show confetti and play celebration sound when unlock condition is met
     val context = LocalContext.current
     var showCelebration by remember { mutableStateOf(false) }
     var showCelebrationDialog by remember { mutableStateOf(false) }
@@ -114,7 +114,7 @@ fun TopicMasterScreen(
             showCelebration = true
             showCelebrationDialog = true
             try {
-                val mp = MediaPlayer.create(context, R.raw.win)
+                val mp = MediaPlayer.create(context, R.raw.celebration)
                 mp?.setOnCompletionListener { player ->
                     try { player.release() } catch (_: Throwable) {}
                 }
@@ -382,8 +382,8 @@ fun PracticeCardsSection(
             description = "Master the rules",
             icon = Icons.Default.Spellcheck,
             gradient = listOf(Color(0xFF06FFA5), Color(0xFF00C896)),
-            score = 0, // Not implemented yet
-            maxScore = 100,
+            score = practiceScores?.grammar ?: 0,
+            maxScore = practiceScores?.maxGrammar ?: 100,
             onClick = { onNavigateToGrammarPractice(topicId) }
         )
     )

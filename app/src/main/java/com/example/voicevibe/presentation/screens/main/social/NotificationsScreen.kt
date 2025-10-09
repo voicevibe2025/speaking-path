@@ -22,7 +22,6 @@ import coil.compose.SubcomposeAsyncImage
 import com.example.voicevibe.domain.model.SocialNotification
 import com.example.voicevibe.presentation.screens.main.home.HomeViewModel
 import com.example.voicevibe.ui.theme.BrandIndigo
-import com.example.voicevibe.ui.theme.NeutralWhite
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -46,6 +45,7 @@ fun NotificationsScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text("Notifications") },
@@ -117,7 +117,7 @@ private fun NotificationRow(
         else -> notif.type
     }
 
-    Surface(color = NeutralWhite) {
+    Surface(color = MaterialTheme.colorScheme.surface) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

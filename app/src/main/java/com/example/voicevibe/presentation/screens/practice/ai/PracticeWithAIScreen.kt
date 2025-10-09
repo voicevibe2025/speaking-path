@@ -425,6 +425,7 @@ fun ChatScreen(viewModel: PracticeWithAIViewModel) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .imePadding()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)

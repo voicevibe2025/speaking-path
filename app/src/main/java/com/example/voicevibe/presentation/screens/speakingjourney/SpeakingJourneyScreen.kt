@@ -181,13 +181,15 @@ data class PracticeScores(
     val fluency: Int,
     val vocabulary: Int,
     val listening: Int? = null,
+    val grammar: Int? = null,
     val average: Float,
     val meetsRequirement: Boolean,
     // Maxima for correct percentage calculations on the client
     val maxPronunciation: Int,
     val maxFluency: Int,
     val maxVocabulary: Int,
-    val maxListening: Int? = null
+    val maxListening: Int? = null,
+    val maxGrammar: Int? = null
 )
 
 data class Topic(
@@ -362,13 +364,8 @@ fun SpeakingJourneyScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFF1A2642))
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.background_blue),
-            contentDescription = "Background",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
         FloatingParticles()
 
         Scaffold(
@@ -802,7 +799,7 @@ private fun VerticalTopicCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(136.dp)
+            .height(120.dp)
             .scale(scale)
             .clickable { if (topic.unlocked) onClick() },
         shape = RoundedCornerShape(20.dp),
@@ -881,7 +878,7 @@ private fun VerticalTopicCard(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(bottom = 8.dp),
+                        .padding(bottom = 0.dp),
                     verticalArrangement = Arrangement.Top
                 ) {
                     Text(
@@ -921,7 +918,7 @@ private fun VerticalTopicCard(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(24.dp)
+                                .height(20.dp)
                         ) {
                             LinearProgressIndicator(
                                 progress = progress.coerceIn(0f, 1f),

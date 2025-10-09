@@ -70,14 +70,10 @@ fun SpeakingLessonScreen(
     )
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF1A2642))
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.background_blue),
-            contentDescription = "Background",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
         FloatingParticles()
 
         Scaffold(

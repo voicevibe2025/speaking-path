@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
@@ -54,6 +55,9 @@ class MainActivity : ComponentActivity() {
         
         super.onCreate(savedInstanceState)
         
+        // Enable edge-to-edge display
+        //WindowCompat.setDecorFitsSystemWindows(window, false)
+        
         // Keep splash screen visible while loading
         splashScreen.setKeepOnScreenCondition {
             splashScreenStateFlow.value
@@ -70,7 +74,7 @@ class MainActivity : ComponentActivity() {
         
         setContent {
             // Force app-wide dark theme and disable dynamic color
-            VoiceVibeTheme(darkTheme = false, dynamicColor = true) {
+            VoiceVibeTheme(darkTheme = true, dynamicColor = false) {
                 VoiceVibeApp()
             }
         }

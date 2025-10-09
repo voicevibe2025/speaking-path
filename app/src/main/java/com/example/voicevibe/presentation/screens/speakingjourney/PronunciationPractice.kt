@@ -138,7 +138,7 @@ fun PronunciationPracticeScreen(
     var lastDisplayedIndex by remember(topic?.id) { mutableStateOf(displayedIndex) }
     LaunchedEffect(displayedIndex) {
         if (displayedIndex > lastDisplayedIndex) {
-            playSoundRaw("nice") // expects res/raw/nice.mp3
+            playSoundRaw("correct") // expects res/raw/correct.mp3
         }
         lastDisplayedIndex = displayedIndex
     }

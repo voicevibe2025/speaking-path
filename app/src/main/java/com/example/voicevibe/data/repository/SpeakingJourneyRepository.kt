@@ -23,6 +23,11 @@ import com.example.voicevibe.data.remote.api.SubmitListeningAnswerRequestDto
 import com.example.voicevibe.data.remote.api.SubmitListeningAnswerResponseDto
 import com.example.voicevibe.data.remote.api.CompleteListeningPracticeRequestDto
 import com.example.voicevibe.data.remote.api.CompleteListeningPracticeResponseDto
+import com.example.voicevibe.data.remote.api.StartGrammarPracticeResponseDto
+import com.example.voicevibe.data.remote.api.SubmitGrammarAnswerRequestDto
+import com.example.voicevibe.data.remote.api.SubmitGrammarAnswerResponseDto
+import com.example.voicevibe.data.remote.api.CompleteGrammarPracticeRequestDto
+import com.example.voicevibe.data.remote.api.CompleteGrammarPracticeResponseDto
 import com.example.voicevibe.data.remote.api.ConversationSubmissionResultDto
 import com.example.voicevibe.data.remote.api.JourneyActivityDto
 import com.example.voicevibe.domain.model.ActivityType
@@ -328,6 +333,65 @@ class SpeakingJourneyRepository @Inject constructor(
             val res = api.completeListeningPractice(
                 topicId,
                 CompleteListeningPracticeRequestDto(sessionId = sessionId)
+            )
+            if (res.isSuccessful) {
+                val body = res.body() ?: return Result.failure(Exception("Empty response"))
+                Result.success(body)
+            } else {
+                Result.failure(Exception("HTTP ${res.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    // --- Grammar Practice ---
+    suspend fun startGrammarPractice(
+        topicId: String
+    ): Result<StartGrammarPracticeResponseDto> {
+        return try {
+            val res = api.startGrammarPractice(topicId)
+            if (res.isSuccessful) {
+                val body = res.body() ?: return Result.failure(Exception("Empty response"))
+                Result.success(body)
+            } else {
+                Result.failure(Exception("HTTP ${res.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    suspend fun submitGrammarAnswer(
+        topicId: String,
+        sessionId: String,
+        questionId: String,
+        selected: String
+    ): Result<SubmitGrammarAnswerResponseDto> {
+        return try {
+            val res = api.submitGrammarAnswer(
+                topicId,
+                SubmitGrammarAnswerRequestDto(sessionId = sessionId, questionId = questionId, selected = selected)
+            )
+            if (res.isSuccessful) {
+                val body = res.body() ?: return Result.failure(Exception("Empty response"))
+                Result.success(body)
+            } else {
+                Result.failure(Exception("HTTP ${res.code()}"))
+            }
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
+
+    suspend fun completeGrammarPractice(
+        topicId: String,
+        sessionId: String
+    ): Result<CompleteGrammarPracticeResponseDto> {
+        return try {
+            val res = api.completeGrammarPractice(
+                topicId,
+                CompleteGrammarPracticeRequestDto(sessionId = sessionId)
             )
             if (res.isSuccessful) {
                 val body = res.body() ?: return Result.failure(Exception("Empty response"))

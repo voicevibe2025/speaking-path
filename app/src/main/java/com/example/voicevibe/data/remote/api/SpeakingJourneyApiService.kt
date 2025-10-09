@@ -111,6 +111,24 @@ interface SpeakingJourneyApiService {
         @Path("topicId") topicId: String,
         @Body body: CompleteListeningPracticeRequestDto
     ): Response<CompleteListeningPracticeResponseDto>
+
+    // --- Grammar Practice ---
+    @POST("speaking/topics/{topicId}/grammar/start")
+    suspend fun startGrammarPractice(
+        @Path("topicId") topicId: String
+    ): Response<StartGrammarPracticeResponseDto>
+
+    @POST("speaking/topics/{topicId}/grammar/answer")
+    suspend fun submitGrammarAnswer(
+        @Path("topicId") topicId: String,
+        @Body body: SubmitGrammarAnswerRequestDto
+    ): Response<SubmitGrammarAnswerResponseDto>
+
+    @POST("speaking/topics/{topicId}/grammar/complete")
+    suspend fun completeGrammarPractice(
+        @Path("topicId") topicId: String,
+        @Body body: CompleteGrammarPracticeRequestDto
+    ): Response<CompleteGrammarPracticeResponseDto>
 }
 
 data class SpeakingTopicsResponse(
@@ -141,13 +159,15 @@ data class PracticeScoresDto(
     val fluency: Int,
     val vocabulary: Int,
     val listening: Int? = null,
+    val grammar: Int? = null,
     val average: Float,
     val meetsRequirement: Boolean,
     // Added maxima for correct percentage computation client-side
     val maxPronunciation: Int,
     val maxFluency: Int,
     val maxVocabulary: Int,
-    val maxListening: Int? = null
+    val maxListening: Int? = null,
+    val maxGrammar: Int? = null
 )
 
 data class SpeakingTopicDto(
@@ -343,6 +363,47 @@ data class CompleteListeningPracticeResponseDto(
     val totalScore: Int,
     val xpAwarded: Int,
     val listeningTotalScore: Int,
+    val topicCompleted: Boolean
+)
+
+// --- Grammar Practice DTOs ---
+data class GrammarQuestionDto(
+    val id: String,
+    val sentence: String,
+    val options: List<String>
+)
+
+data class StartGrammarPracticeResponseDto(
+    val sessionId: String,
+    val totalQuestions: Int,
+    val questions: List<GrammarQuestionDto>
+)
+
+data class SubmitGrammarAnswerRequestDto(
+    val sessionId: String,
+    val questionId: String,
+    val selected: String
+)
+
+data class SubmitGrammarAnswerResponseDto(
+    val correct: Boolean,
+    val xpAwarded: Int,
+    val nextIndex: Int?,
+    val completed: Boolean,
+    val totalScore: Int
+)
+
+data class CompleteGrammarPracticeRequestDto(
+    val sessionId: String
+)
+
+data class CompleteGrammarPracticeResponseDto(
+    val success: Boolean,
+    val totalQuestions: Int,
+    val correctCount: Int,
+    val totalScore: Int,
+    val xpAwarded: Int,
+    val grammarTotalScore: Int,
     val topicCompleted: Boolean
 )
 

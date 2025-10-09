@@ -124,6 +124,8 @@ class UserProfileViewModel @Inject constructor(
                     var fluencyCount = 0
                     var vocabSum = 0f
                     var vocabCount = 0
+                    var grammarSum = 0f
+                    var grammarCount = 0
 
                     val perTopicAverages = mutableListOf<Float>()
 
@@ -148,12 +150,21 @@ class UserProfileViewModel @Inject constructor(
                                 vocabSum += v
                                 vocabCount++
                             }
+                            // Grammar (optional)
+                            val mg = ps.maxGrammar ?: 0
+                            val g = ps.grammar ?: 0
+                            if (mg > 0 && g > 0) {
+                                val v = (g.toFloat() / mg.toFloat()) * 100f
+                                grammarSum += v
+                                grammarCount++
+                            }
 
                             // Per-topic overall average (only include available metrics)
                             val metrics = buildList<Float> {
                                 if (ps.maxPronunciation > 0) add((ps.pronunciation.toFloat() / ps.maxPronunciation.toFloat()) * 100f)
                                 if (ps.maxFluency > 0) add((ps.fluency.toFloat() / ps.maxFluency.toFloat()) * 100f)
                                 if (ps.maxVocabulary > 0) add((ps.vocabulary.toFloat() / ps.maxVocabulary.toFloat()) * 100f)
+                                if ((ps.maxGrammar ?: 0) > 0 && (ps.grammar ?: 0) > 0) add(((ps.grammar ?: 0).toFloat() / (ps.maxGrammar ?: 1).toFloat()) * 100f)
                             }
                             if (metrics.isNotEmpty()) {
                                 perTopicAverages.add(metrics.average().toFloat())
@@ -164,6 +175,7 @@ class UserProfileViewModel @Inject constructor(
                     val avgPron = if (pronCount > 0) pronSum / pronCount else 0f
                     val avgFlu = if (fluencyCount > 0) fluencySum / fluencyCount else 0f
                     val avgVocab = if (vocabCount > 0) vocabSum / vocabCount else 0f
+                    val avgGrammar = if (grammarCount > 0) grammarSum / grammarCount else 0f
 
                     // Improvement rate: recent avg (last 3) - early avg (first 3)
                     val window = kotlin.math.max(1, kotlin.math.min(3, perTopicAverages.size / 2))
@@ -178,6 +190,7 @@ class UserProfileViewModel @Inject constructor(
                         averagePronunciation = avgPron.coerceIn(0f, 100f),
                         averageFluency = avgFlu.coerceIn(0f, 100f),
                         averageVocabulary = avgVocab.coerceIn(0f, 100f),
+                        averageGrammar = avgGrammar.coerceIn(0f, 100f),
                         improvementRate = improvement,
                         completedTopics = completedTopics,
                         totalPracticeMinutes = 0, // Not available from speaking_journey endpoints yet
@@ -189,12 +202,13 @@ class UserProfileViewModel @Inject constructor(
                     _uiState.update { it.copy(speakingOverviewLoading = false, speakingOverviewError = err.message) }
                 }
             } else {
-                // Target user: use data from profile stats
+                // Target user: use data from profile (server-computed)
                 _uiState.value.userProfile?.let { profile ->
                     val overview = SpeakingOverview(
                         averagePronunciation = profile.stats.averageAccuracy,
                         averageFluency = profile.stats.averageFluency,
                         averageVocabulary = 0f, // Not available in stats, set to 0
+                        averageGrammar = profile.grammarScore,
                         improvementRate = profile.stats.improvementRate,
                         completedTopics = profile.stats.completedLessons,
                         totalPracticeMinutes = profile.stats.totalPracticeMinutes,

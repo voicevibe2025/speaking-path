@@ -6,6 +6,7 @@ import com.example.voicevibe.data.local.TokenManager
 import com.example.voicevibe.data.remote.api.AuthApi
 import com.example.voicevibe.data.remote.dto.auth.*
 import com.example.voicevibe.domain.model.Resource
+import com.example.voicevibe.utils.NotificationBadgeHelper
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
@@ -204,6 +205,9 @@ class AuthRepository @Inject constructor(
 
             // Clear local data regardless of API response
             tokenManager.clearAll()
+            
+            // Clear app icon notification badge
+            NotificationBadgeHelper.removeBadge(context)
 
             // Sign out from Firebase and Google to force account selection on next login
             try {
@@ -242,6 +246,8 @@ class AuthRepository @Inject constructor(
         } catch (e: Exception) {
             // Clear local data even if API call fails
             tokenManager.clearAll()
+            // Clear app icon notification badge
+            NotificationBadgeHelper.removeBadge(context)
             Resource.Success(Unit)
         }
     }

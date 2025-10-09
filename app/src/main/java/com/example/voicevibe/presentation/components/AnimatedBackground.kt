@@ -2,6 +2,7 @@ package com.example.voicevibe.presentation.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -18,12 +19,13 @@ import kotlin.math.sin
 @Composable
 fun AnimatedBackground(animatedOffset: Float) {
     Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            painter = painterResource(id = R.drawable.background),
-            contentDescription = "Background Image",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+        // This is the new code
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF0C092A)) // Or any other color you prefer
         )
+
 
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width

@@ -1,5 +1,6 @@
 package com.example.voicevibe.presentation.screens.main.home
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.ai.AiChatPrewarmManager
@@ -16,6 +17,7 @@ import com.example.voicevibe.domain.model.Post
 import com.example.voicevibe.domain.model.PostComment
 import com.example.voicevibe.domain.model.UserProgress
 import com.example.voicevibe.domain.model.SocialNotification
+import com.example.voicevibe.utils.NotificationBadgeHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -28,6 +30,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val application: Application,
     private val prewarmManager: AiChatPrewarmManager,
     private val userRepository: UserRepository,
     private val learningPathRepository: LearningPathRepository,
@@ -206,7 +209,12 @@ class HomeViewModel @Inject constructor(
     fun loadUnreadNotificationsCount() {
         viewModelScope.launch {
             when (val res = socialRepository.getUnreadNotificationCount()) {
-                is Resource.Success -> _uiState.update { it.copy(unreadNotifications = res.data ?: 0) }
+                is Resource.Success -> {
+                    val count = res.data ?: 0
+                    _uiState.update { it.copy(unreadNotifications = count) }
+                    // Update app icon badge
+                    NotificationBadgeHelper.updateBadge(application, count)
+                }
                 else -> {}
             }
         }
@@ -239,6 +247,8 @@ class HomeViewModel @Inject constructor(
             _uiState.update { state ->
                 val updated = state.notifications.map { if (it.id == id) it.copy(read = true) else it }
                 val newCount = (state.unreadNotifications - 1).coerceAtLeast(0)
+                // Update app icon badge
+                NotificationBadgeHelper.updateBadge(application, newCount)
                 state.copy(notifications = updated, unreadNotifications = newCount)
             }
         }
@@ -247,6 +257,8 @@ class HomeViewModel @Inject constructor(
     fun markAllNotificationsRead() {
         viewModelScope.launch {
             socialRepository.markAllNotificationsRead()
+            // Remove app icon badge when all notifications are read
+            NotificationBadgeHelper.removeBadge(application)
             _uiState.update { it.copy(unreadNotifications = 0, notifications = it.notifications.map { n -> n.copy(read = true) }) }
         }
     }

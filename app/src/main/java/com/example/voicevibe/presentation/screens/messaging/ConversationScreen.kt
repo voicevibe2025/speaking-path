@@ -314,6 +314,7 @@ private fun MessageInputBar(
     ) {
         Row(
             modifier = Modifier
+                .imePadding()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .navigationBarsPadding(),
             verticalAlignment = Alignment.Bottom

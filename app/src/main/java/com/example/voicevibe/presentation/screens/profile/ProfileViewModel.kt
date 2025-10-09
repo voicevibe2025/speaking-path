@@ -189,7 +189,7 @@ class ProfileViewModel @Inject constructor(
                 _speakingScore.value = (userProfile.speakingScore ?: 0f) / 100f
                 _fluencyScore.value = (userProfile.fluencyScore ?: 0f) / 100f
                 _listeningScore.value = (userProfile.listeningScore ?: 0f) / 100f
-                _grammarScore.value = 0f // Grammar not implemented yet
+                _grammarScore.value = (userProfile.grammarScore ?: 0f) / 100f
                 _vocabularyScore.value = (userProfile.vocabularyScore ?: 0f) / 100f
                 _pronunciationScore.value = (userProfile.pronunciationScore ?: 0f) / 100f
 
@@ -204,6 +204,8 @@ class ProfileViewModel @Inject constructor(
                     .onSuccess { resp ->
                         var pronSum = 0f
                         var pronCount = 0
+                        var gramSum = 0f
+                        var gramCount = 0
                         resp.topics.forEach { t ->
                             val ps = t.practiceScores
                             if (ps != null && ps.maxPronunciation > 0) {
@@ -211,10 +213,21 @@ class ProfileViewModel @Inject constructor(
                                 pronSum += v
                                 pronCount++
                             }
+                            if (ps != null && (ps.maxGrammar ?: 0) > 0 && (ps.grammar ?: 0) > 0) {
+                                val mg = ps.maxGrammar!!.toFloat()
+                                val g = ps.grammar!!.toFloat()
+                                val gv = (g / mg) * 100f
+                                gramSum += gv
+                                gramCount++
+                            }
                         }
                         if (pronCount > 0) {
                             val avgPron = (pronSum / pronCount).coerceIn(0f, 100f)
                             _pronunciationScore.value = avgPron / 100f
+                        }
+                        if (gramCount > 0) {
+                            val avgGram = (gramSum / gramCount).coerceIn(0f, 100f)
+                            _grammarScore.value = avgGram / 100f
                         }
                     }
                     .onFailure { /* keep server value on failure */ }

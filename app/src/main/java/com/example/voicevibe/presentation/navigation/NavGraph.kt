@@ -65,6 +65,7 @@ import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLess
 import com.example.voicevibe.presentation.screens.speakingjourney.LearnTopicWithViviScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.FluencyPracticeScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyPracticeScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.GrammarPracticeScreen
 
 @Composable
 fun NavGraph(
@@ -411,10 +412,8 @@ fun NavGraph(
             arguments = listOf(navArgument("topicId") { type = NavType.StringType })
         ) { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
-            PlaceholderPracticeScreen(
+            GrammarPracticeScreen(
                 topicId = topicId,
-                practiceType = "Grammar",
-                icon = Icons.Default.FormatQuote,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

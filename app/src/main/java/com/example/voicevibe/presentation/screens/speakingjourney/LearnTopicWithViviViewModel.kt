@@ -1479,12 +1479,14 @@ class LearnTopicWithViviViewModel @Inject constructor(
                     fluency = ps.fluency,
                     vocabulary = ps.vocabulary,
                     listening = ps.listening,
+                    grammar = ps.grammar,
                     average = ps.average,
                     meetsRequirement = ps.meetsRequirement,
                     maxPronunciation = ps.maxPronunciation,
                     maxFluency = ps.maxFluency,
                     maxVocabulary = ps.maxVocabulary,
-                    maxListening = ps.maxListening
+                    maxListening = ps.maxListening,
+                    maxGrammar = ps.maxGrammar
                 )
             },
             conversationScore = dto.conversationScore,

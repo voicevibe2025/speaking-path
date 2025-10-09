@@ -20,7 +20,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.SubcomposeAsyncImage
 import com.example.voicevibe.domain.model.UserProfile
 import com.example.voicevibe.ui.theme.BrandIndigo
-import com.example.voicevibe.ui.theme.NeutralWhite
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +46,7 @@ fun FollowersFollowingScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text("Followers & Following") },
@@ -146,7 +146,7 @@ private fun UserListItem(
     onClick: () -> Unit
 ) {
     Surface(
-        color = NeutralWhite,
+        color = MaterialTheme.colorScheme.surface,
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(

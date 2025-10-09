@@ -1,6 +1,7 @@
 package com.example.voicevibe.presentation.screens.main.home
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.ai.AiChatPrewarmManager
@@ -41,6 +42,10 @@ class HomeViewModel @Inject constructor(
     private val speakingJourneyRepository: SpeakingJourneyRepository
 ) : ViewModel() {
 
+    private val prefs by lazy { application.getSharedPreferences("voicevibe_prefs", Context.MODE_PRIVATE) }
+    private val KEY_ACH_LAST_SEEN = "achievements_last_seen_total"
+    private val KEY_LEVEL_LAST_SEEN = "level_last_seen"
+
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
@@ -54,6 +59,7 @@ class HomeViewModel @Inject constructor(
         loadUnreadNotificationsCount()
         loadUnreadMessagesCount()
         loadSpeakingTopics()
+        loadAchievementsBadge()
         // Pre-warm Vivi greeting in background so Free Practice opens instantly
         try {
             prewarmManager.prewarm()
@@ -69,6 +75,43 @@ class HomeViewModel @Inject constructor(
                         _uiState.update { it.copy(posts = res.data ?: emptyList()) }
                     }
                     else -> {}
+                }
+            }
+        }
+    }
+
+    private fun loadAchievementsBadge() {
+        viewModelScope.launch {
+            // Prefer using the unlocked achievements count to determine new items
+            val achRes = gamificationRepository.getUserAchievements()
+            if (achRes is Resource.Success) {
+                val list = achRes.data ?: emptyList()
+                val unlockedCount = list.count { it.isUnlocked }
+                if (!prefs.contains(KEY_ACH_LAST_SEEN)) {
+                    prefs.edit().putInt(KEY_ACH_LAST_SEEN, unlockedCount).apply()
+                    _uiState.update { it.copy(hasNewAchievements = it.hasNewAchievements || false) }
+                } else {
+                    val lastSeen = prefs.getInt(KEY_ACH_LAST_SEEN, 0)
+                    val hasNew = unlockedCount > lastSeen
+                    _uiState.update { it.copy(hasNewAchievements = it.hasNewAchievements || hasNew) }
+                }
+            } else {
+                // Fallback to stats if achievements call fails
+                when (val res = gamificationRepository.getAchievementStats()) {
+                    is Resource.Success -> {
+                        val stats = res.data
+                        if (stats != null) {
+                            if (!prefs.contains(KEY_ACH_LAST_SEEN)) {
+                                prefs.edit().putInt(KEY_ACH_LAST_SEEN, stats.totalUnlocked).apply()
+                                _uiState.update { it.copy(hasNewAchievements = it.hasNewAchievements || false) }
+                            } else {
+                                val lastSeen = prefs.getInt(KEY_ACH_LAST_SEEN, 0)
+                                val hasNew = (stats.totalUnlocked > lastSeen) || (stats.recentUnlocks.isNotEmpty())
+                                _uiState.update { it.copy(hasNewAchievements = it.hasNewAchievements || hasNew) }
+                            }
+                        }
+                    }
+                    else -> { /* keep previous state */ }
                 }
             }
         }
@@ -297,17 +340,27 @@ class HomeViewModel @Inject constructor(
                 // Generate user initials
                 val userInitials = generateInitials(displayName)
 
+                val newLevel = userProfile.currentLevel ?: 1
+                if (!prefs.contains(KEY_LEVEL_LAST_SEEN)) {
+                    // Persist initial level so we can detect future level-ups
+                    prefs.edit().putInt(KEY_LEVEL_LAST_SEEN, newLevel).apply()
+                }
+                val lastSeenLevel = prefs.getInt(KEY_LEVEL_LAST_SEEN, newLevel)
+                val leveledUp = newLevel > lastSeenLevel
+
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         userName = displayName,
-                        userLevel = userProfile.currentLevel ?: 1,
+                        userLevel = newLevel,
                         userInitials = userInitials,
                         avatarUrl = avatarUrl,
                         totalPoints = userProfile.totalPointsEarned ?: (userProfile.experiencePoints ?: 0),
                         currentStreak = userProfile.streakDays ?: 0,
                         // Completed should reflect Speaking Journey topics completed from backend profile
-                        completedLessons = userProfile.lessonsCompleted ?: 0
+                        completedLessons = userProfile.lessonsCompleted ?: 0,
+                        // If the user leveled up since last seen, surface the badge
+                        hasNewAchievements = it.hasNewAchievements || leveledUp
                     )
                 }
             } catch (e: IOException) {
@@ -398,6 +451,23 @@ class HomeViewModel @Inject constructor(
 
     fun onViewAchievements() {
         viewModelScope.launch {
+            // Mark achievements as seen (persist last seen count)
+            val achRes = gamificationRepository.getUserAchievements()
+            if (achRes is Resource.Success) {
+                val unlockedCount = (achRes.data ?: emptyList()).count { it.isUnlocked }
+                prefs.edit().putInt(KEY_ACH_LAST_SEEN, unlockedCount).apply()
+            } else {
+                val res = gamificationRepository.getAchievementStats()
+                if (res is Resource.Success) {
+                    res.data?.let { stats ->
+                        prefs.edit().putInt(KEY_ACH_LAST_SEEN, stats.totalUnlocked).apply()
+                    }
+                }
+            }
+            // Also mark current level as seen
+            val currentLevel = _uiState.value.userLevel
+            prefs.edit().putInt(KEY_LEVEL_LAST_SEEN, currentLevel).apply()
+            _uiState.update { it.copy(hasNewAchievements = false) }
             _events.emit(HomeEvent.NavigateToAchievements)
         }
     }
@@ -409,6 +479,7 @@ class HomeViewModel @Inject constructor(
         loadUnreadNotificationsCount()
         loadUnreadMessagesCount()
         loadSpeakingTopics()
+        loadAchievementsBadge()
     }
 
     private fun loadSpeakingTopics() {
@@ -451,6 +522,7 @@ data class HomeUiState(
     val unreadMessages: Int = 0,
     val notifications: List<SocialNotification> = emptyList(),
     val viviTopics: List<ViviTopic> = emptyList(),
+    val hasNewAchievements: Boolean = false,
 )
 
 /**

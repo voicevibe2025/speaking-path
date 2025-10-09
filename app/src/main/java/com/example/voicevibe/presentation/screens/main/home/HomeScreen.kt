@@ -202,7 +202,8 @@ fun HomeScreen(
                         StudyToolsSection(
                             onViewPaths = viewModel::onViewAllPaths,
                             onViewLeaderboard = onNavigateToLeaderboard,
-                            onViewAchievements = onNavigateToAchievements
+                            onViewAchievements = viewModel::onViewAchievements,
+                            hasNewAchievements = uiState.hasNewAchievements
                         )
                     }
                 }
@@ -1196,7 +1197,8 @@ private fun ProgressItem(
 private fun StudyToolsSection(
     onViewPaths: () -> Unit,
     onViewLeaderboard: () -> Unit,
-    onViewAchievements: () -> Unit
+    onViewAchievements: () -> Unit,
+    hasNewAchievements: Boolean = false
 ) {
     BoxWithConstraints {
         val isCompact = maxWidth < 360.dp
@@ -1239,7 +1241,8 @@ private fun StudyToolsSection(
                     title = "Achievements",
                     color = Color(0xFFEC4899),
                     onClick = onViewAchievements,
-                    isCompact = isCompact
+                    isCompact = isCompact,
+                    showBadge = hasNewAchievements
                 )
             }
         }
@@ -1253,50 +1256,66 @@ private fun StudyToolCard(
     title: String,
     color: Color,
     onClick: () -> Unit,
-    isCompact: Boolean = false
+    isCompact: Boolean = false,
+    showBadge: Boolean = false
 ) {
-    Card(
-        modifier = modifier
-            .aspectRatio(1f)
-            .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF243454)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
+    Box(modifier = modifier.aspectRatio(1f)) {
+        Card(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(if (isCompact) 8.dp else 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .clickable { onClick() },
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF243454)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            val iconBgSize = if (isCompact) 40.dp else 48.dp
-            val iconSize = if (isCompact) 20.dp else 24.dp
-            
-            Box(
+            Column(
                 modifier = Modifier
-                    .size(iconBgSize)
-                    .clip(CircleShape)
-                    .background(color.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
+                    .fillMaxSize()
+                    .padding(if (isCompact) 8.dp else 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = color,
-                    modifier = Modifier.size(iconSize)
+                val iconBgSize = if (isCompact) 40.dp else 48.dp
+                val iconSize = if (isCompact) 20.dp else 24.dp
+                
+                Box(
+                    modifier = Modifier
+                        .size(iconBgSize)
+                        .clip(CircleShape)
+                        .background(color.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = color,
+                        modifier = Modifier.size(iconSize)
+                    )
+                }
+                Spacer(modifier = Modifier.height(if (isCompact) 6.dp else 8.dp))
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White,
+                    fontSize = if (isCompact) 12.sp else 14.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
-            Spacer(modifier = Modifier.height(if (isCompact) 6.dp else 8.dp))
-            Text(
-                text = title,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White,
-                fontSize = if (isCompact) 12.sp else 14.sp,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth()
+        }
+        
+        // Badge indicator
+        if (showBadge) {
+            Box(
+                modifier = Modifier
+                    .size(12.dp)
+                    .align(Alignment.TopEnd)
+                    .offset(x = (-6).dp, y = 6.dp)
+                    .clip(CircleShape)
+                    .background(Color.Red)
+                    .border(2.dp, Color(0xFF243454), CircleShape)
             )
         }
     }

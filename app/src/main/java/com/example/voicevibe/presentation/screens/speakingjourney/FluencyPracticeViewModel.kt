@@ -211,12 +211,12 @@ class FluencyPracticeViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            _uiState.update { it.copy(isSubmitting = true, error = null) }
+            _uiState.update { it.copy(isSubmitting = true, error = null, submissionMessages = listOf("Transcribing your audio recording ...")) }
             practiceRepo.submitRecording(promptId, filePath).collectLatest { res ->
                 when (res) {
                     is Resource.Loading -> _uiState.update { it.copy(isSubmitting = true) }
                     is Resource.Error -> {
-                        _uiState.update { it.copy(isSubmitting = false, error = res.message ?: "Submission failed") }
+                        _uiState.update { it.copy(isSubmitting = false, error = res.message ?: "Submission failed", submissionMessages = emptyList()) }
                     }
                     is Resource.Success -> {
                         val sessionId = res.data?.sessionId
@@ -233,6 +233,8 @@ class FluencyPracticeViewModel @Inject constructor(
                             is Resource.Success -> ss.data
                             else -> null
                         }
+                        // Update: move to fluency analysis stage after transcription/evaluation data is available
+                        _uiState.update { it.copy(submissionMessages = it.submissionMessages + "Analyzing fluency ...") }
                         val analysis = buildAnalysisFromEvaluation(eval, sess)
                         val serverUrl = sess?.audioUrl
                         val chosenAudio = if (serverUrl != null && (serverUrl.startsWith("http://") || serverUrl.startsWith("https://"))) serverUrl else filePath
@@ -258,6 +260,8 @@ class FluencyPracticeViewModel @Inject constructor(
                                 val audioFile = File(filePath)
                                 // Calculate actual elapsed time (MAX_RECORDING_DURATION - remaining time)
                                 val recordingDuration = (MAX_RECORDING_DURATION - _uiState.value.recordingDuration).toFloat()
+                                // Update: coherence analysis (Gemini-based)
+                                _uiState.update { it.copy(submissionMessages = it.submissionMessages + "Analyzing coherence ...") }
                                 val res2 = journeyRepo.submitFluencyRecording(
                                     topicId = topicId,
                                     audioFile = audioFile,
@@ -377,7 +381,8 @@ class FluencyPracticeViewModel @Inject constructor(
                                 evaluation = _uiState.value.evaluation ?: eval,
                                 session = sess,
                                 latestAnalysis = analysis,
-                                showResults = true
+                                showResults = true,
+                                submissionMessages = emptyList()
                             )
                         }
                     }
@@ -635,6 +640,7 @@ data class FluencyUiState(
     val recordingDuration: Int = 0,
     val audioFilePath: String? = null,
     val isSubmitting: Boolean = false,
+    val submissionMessages: List<String> = emptyList(),
     val evaluation: SpeakingEvaluation? = null,
     val session: SpeakingSession? = null,
     val showResults: Boolean = false,

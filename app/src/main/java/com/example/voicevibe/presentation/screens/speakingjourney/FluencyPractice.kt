@@ -257,6 +257,7 @@ fun FluencyPracticeScreen(
                             recordingState = ui.recordingState,
                             duration = ui.recordingDuration,
                             isSubmitting = ui.isSubmitting,
+                            submissionMessages = ui.submissionMessages,
                             onStart = {
                                 if (audioPermission.status.isGranted) {
                                     viewModel.startRecording(context)
@@ -459,6 +460,7 @@ private fun ModernRecordingArea(
     recordingState: RecordingState,
     duration: Int,
     isSubmitting: Boolean,
+    submissionMessages: List<String>,
     onStart: () -> Unit,
     onStop: () -> Unit,
     onRetry: () -> Unit,
@@ -657,6 +659,38 @@ private fun ModernRecordingArea(
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
+                            }
+                        }
+                    }
+
+                    // Progressive submission messages
+                    if (isSubmitting && submissionMessages.isNotEmpty()) {
+                        Spacer(Modifier.height(12.dp))
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFF37474F).copy(alpha = 0.3f))
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            submissionMessages.forEachIndexed { idx, msg ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(14.dp),
+                                        color = Color(0xFF64B5F6),
+                                        strokeWidth = 2.dp
+                                    )
+                                    Text(
+                                        text = msg,
+                                        fontSize = 14.sp,
+                                        color = Color(0xFFE0E0E0),
+                                        fontWeight = if (idx == submissionMessages.lastIndex) FontWeight.SemiBold else FontWeight.Normal
+                                    )
+                                }
                             }
                         }
                     }

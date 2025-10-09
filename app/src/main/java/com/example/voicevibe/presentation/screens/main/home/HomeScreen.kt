@@ -86,6 +86,7 @@ fun HomeScreen(
     onNavigateToUserSearch: () -> Unit = {},
     onNavigateToMessages: () -> Unit = {},
     onNavigateToLearnWithVivi: (String) -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -141,7 +142,6 @@ fun HomeScreen(
             containerColor = Color.Transparent,
             topBar = {
                 EducationalTopBar(
-                    title = "VozVibe",
                     avatarUrl = uiState.avatarUrl,
                     userInitials = uiState.userInitials ?: "VV",
                     unreadNotifications = uiState.unreadNotifications,
@@ -152,8 +152,9 @@ fun HomeScreen(
                     onMessagesClick = {
                         onNavigateToMessages()
                     },
-                    onNavigationIconClick = onNavigateToProfile,
-                    onSearchClick = onNavigateToUserSearch
+                    onAvatarClick = onNavigateToProfile,
+                    onSearchClick = onNavigateToUserSearch,
+                    onSettingsClick = onNavigateToSettings
                 )
             }
         ) { innerPadding ->
@@ -693,15 +694,15 @@ private fun relativeTime(ts: LocalDateTime): String {
 
 @Composable
 private fun EducationalTopBar(
-    title: String,
     avatarUrl: String?,
     userInitials: String,
     unreadNotifications: Int,
     unreadMessages: Int,
     onNotificationsClick: () -> Unit,
     onMessagesClick: () -> Unit,
-    onNavigationIconClick: () -> Unit,
-    onSearchClick: () -> Unit
+    onAvatarClick: () -> Unit,
+    onSearchClick: () -> Unit,
+    onSettingsClick: () -> Unit
 ) {
     Surface(
         color = Color.Transparent,
@@ -714,24 +715,34 @@ private fun EducationalTopBar(
                 .statusBarsPadding(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left group: Logo and text
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+            // Left: Profile avatar
+            IconButton(
+                onClick = onAvatarClick,
+                modifier = Modifier.size(40.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
-                    contentDescription = "VoiceVibe Logo",
+                Box(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = title,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
+                        .background(Color.White.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (avatarUrl != null) {
+                        SubcomposeAsyncImage(
+                            model = avatarUrl,
+                            contentDescription = "Profile Picture",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Text(
+                            text = userInitials,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
             }
             
             // Flexible space between left and right groups
@@ -770,7 +781,7 @@ private fun EducationalTopBar(
                         }
                     }) {
                         Icon(
-                            imageVector = Icons.Default.Message,
+                            imageVector = Icons.Outlined.Message,
                             contentDescription = "Messages",
                             tint = Color.White
                         )
@@ -787,34 +798,16 @@ private fun EducationalTopBar(
                         tint = Color.White
                     )
                 }
-                // Profile avatar
+                // Settings gear icon
                 IconButton(
-                    onClick = onNavigationIconClick,
+                    onClick = onSettingsClick,
                     modifier = Modifier.size(40.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (avatarUrl != null) {
-                            SubcomposeAsyncImage(
-                                model = avatarUrl,
-                                contentDescription = "Profile Picture",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        } else {
-                            Text(
-                                text = userInitials,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = Color.White
+                    )
                 }
             }
         }

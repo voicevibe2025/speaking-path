@@ -113,12 +113,20 @@ fun TopicMasterScreen(
         if (unlockedNow && !celebrationTriggered) {
             showCelebration = true
             showCelebrationDialog = true
+            // Play both sound effects simultaneously
             try {
-                val mp = MediaPlayer.create(context, R.raw.celebration)
-                mp?.setOnCompletionListener { player ->
+                val celebratePlayer = MediaPlayer.create(context, R.raw.celebrate)
+                celebratePlayer?.setOnCompletionListener { player ->
                     try { player.release() } catch (_: Throwable) {}
                 }
-                mp?.start()
+                celebratePlayer?.start()
+            } catch (_: Throwable) {}
+            try {
+                val applausePlayer = MediaPlayer.create(context, R.raw.applause)
+                applausePlayer?.setOnCompletionListener { player ->
+                    try { player.release() } catch (_: Throwable) {}
+                }
+                applausePlayer?.start()
             } catch (_: Throwable) {}
             celebrationTriggered = true
         } else if (!unlockedNow) {
@@ -233,11 +241,6 @@ fun TopicMasterScreen(
             }
         }
 
-        // Celebration overlay on top of everything
-        if (showCelebration) {
-            ConfettiOverlay()
-        }
-        
         // Congratulations dialog overlay
         if (showCelebrationDialog) {
             CongratulationsOverlay(
@@ -252,6 +255,11 @@ fun TopicMasterScreen(
                     showCelebration = false
                 }
             )
+        }
+        
+        // Confetti overlay rendered last so it appears on top
+        if (showCelebration) {
+            ConfettiOverlay()
         }
     }
 }

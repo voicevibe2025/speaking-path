@@ -226,6 +226,9 @@ fun NavGraph(
                 },
                 onNavigateToLearnWithVivi = { topicId ->
                     navController.navigate(Screen.LearnTopicWithVivi.createRoute(topicId))
+                },
+                onNavigateToSettings = {
+                    navController.navigate(Screen.Settings.route)
                 }
             )
         }

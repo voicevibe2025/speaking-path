@@ -120,49 +120,54 @@ fun ProfileScreen(
             )
         )
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp)
         ) {
             // Profile Header
-            ProfileHeader(
-                userName = userName,
-                level = proficiency,
-                currentXp = xp,
-                totalXp = totalXp,
-                nextLevelXp = nextLevelXp,
-                streak = streak,
-                avatarUrl = avatarUrl,
-                userInitials = userInitials,
-                onAvatarClick = {
-                    if (avatarUrl != null) showAvatarViewer = true
-                }
-            )
+            item {
+                ProfileHeader(
+                    userName = userName,
+                    level = proficiency,
+                    currentXp = xp,
+                    totalXp = totalXp,
+                    nextLevelXp = nextLevelXp,
+                    streak = streak,
+                    avatarUrl = avatarUrl,
+                    userInitials = userInitials,
+                    onAvatarClick = {
+                        if (avatarUrl != null) showAvatarViewer = true
+                    }
+                )
+            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // Spacing before tabs
+            item { Spacer(modifier = Modifier.height(24.dp)) }
 
             // Tab Row
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = Color.Transparent,
-                modifier = Modifier.clip(RoundedCornerShape(12.dp))
-            ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
-                        text = { Text(title) }
-                    )
+            item {
+                TabRow(
+                    selectedTabIndex = selectedTab,
+                    containerColor = Color.Transparent,
+                    modifier = Modifier.clip(RoundedCornerShape(12.dp))
+                ) {
+                    tabs.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTab == index,
+                            onClick = { selectedTab = index },
+                            text = { Text(title) }
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Spacing after tabs
+            item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // Tab Content
+            // Tab Content (no inner scrolling)
             when (selectedTab) {
                 0 -> {
-                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    item {
                         QuickStatsGrid(
                             practiceHours = practiceHours,
                             lessonsCompleted = lessonsCompleted,
@@ -171,17 +176,22 @@ fun ProfileScreen(
                             followersCount = followersCount,
                             followingCount = followingCount
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        // About Me section
-                        bio?.takeIf { it.isNotBlank() }?.let { bioText ->
-                            AboutMeCard(bio = bioText)
-                            Spacer(modifier = Modifier.height(16.dp))
+                    }
+                    // About Me section
+                    if (!bio.isNullOrBlank()) {
+                        item {
+                            AboutMeCard(bio = bio!!)
                         }
+                        item { Spacer(modifier = Modifier.height(16.dp)) }
+                    }
+                    item {
                         RecentAchievements(
                             achievements = recentAchievements,
                             onNavigateToAchievements = onNavigateToAchievements
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                    item { Spacer(modifier = Modifier.height(16.dp)) }
+                    item {
                         LearningPreferences(
                             dailyGoal = dailyPracticeGoal,
                             focus = learningGoal,
@@ -191,7 +201,7 @@ fun ProfileScreen(
                     }
                 }
                 1 -> {
-                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    item {
                         ProgressTab(
                             speakingScore = speakingScore,
                             fluencyScore = fluencyScore,
@@ -205,17 +215,20 @@ fun ProfileScreen(
                         )
                     }
                 }
-                2 -> ActivityTab(activities = activities)
+                2 -> {
+                    // Use LazyListScope-based content to avoid nested scrolling
+                    ActivityTabContent(activities = activities)
+                }
             }
+        }
 
-            // Full-screen avatar viewer
-            if (showAvatarViewer && avatarUrl != null) {
-                FullScreenImageViewer(
-                    imageUrl = avatarUrl!!,
-                    contentDescription = "Avatar",
-                    onDismiss = { showAvatarViewer = false }
-                )
-            }
+        // Full-screen avatar viewer
+        if (showAvatarViewer && avatarUrl != null) {
+            FullScreenImageViewer(
+                imageUrl = avatarUrl!!,
+                contentDescription = "Avatar",
+                onDismiss = { showAvatarViewer = false }
+            )
         }
     }
 }

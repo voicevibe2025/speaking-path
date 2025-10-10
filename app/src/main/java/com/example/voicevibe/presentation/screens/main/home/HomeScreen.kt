@@ -952,7 +952,7 @@ private fun QuickStartSection(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Start Speaking Practice",
+                            text = "Practice Speaking",
                             fontSize = if (isCompact) 16.sp else 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
@@ -960,7 +960,7 @@ private fun QuickStartSection(
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
-                            text = "Practice speaking with instant feedback",
+                            text = "Practice speaking with selected topic",
                             fontSize = if (isCompact) 12.sp else 14.sp,
                             color = Color.White.copy(alpha = 0.8f),
                             maxLines = 2,
@@ -1016,7 +1016,7 @@ private fun QuickStartSection(
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
-                            text = "Learn topics through conversation",
+                            text = "Learn common phrases with Vivi",
                             fontSize = if (isCompact) 12.sp else 14.sp,
                             color = Color.White.copy(alpha = 0.8f),
                             maxLines = 2,
@@ -1070,7 +1070,7 @@ private fun QuickStartSection(
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
-                            text = "Practice with AI tutor",
+                            text = "Practice speaking with AI tutor",
                             fontSize = if (isCompact) 12.sp else 14.sp,
                             color = Color.White.copy(alpha = 0.8f),
                             maxLines = 2,

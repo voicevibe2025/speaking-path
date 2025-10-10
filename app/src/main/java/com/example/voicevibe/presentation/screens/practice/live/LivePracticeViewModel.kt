@@ -362,9 +362,12 @@ class LivePracticeViewModel @Inject constructor(
 
                         if (payload.turnComplete) {
                             pendingModelText = null
-                            // Play sound effect when Vivi completes a message in text mode
+                            // Play sound effect when Vivi completes a message in text mode (with delay)
                             if (!state.voiceMode) {
-                                soundEffectPlayer.play(R.raw.new_message)
+                                viewModelScope.launch {
+                                    delay(500) // Delay sound only, not the message display
+                                    soundEffectPlayer.play(R.raw.new_message)
+                                }
                             }
                         }
 

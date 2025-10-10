@@ -590,7 +590,6 @@ private fun ProfileHeader(
 
             // Level and XP - centered
             Row(
-{{ ... }}
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.padding(vertical = 4.dp)
             ) {

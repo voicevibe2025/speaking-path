@@ -61,10 +61,11 @@ fun VoiceVibeTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb()
+            // Make status bar transparent to show background gradient
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
             window.navigationBarColor = colorScheme.background.toArgb()
             WindowCompat.getInsetsController(window, view).apply {
-                isAppearanceLightStatusBars = !darkTheme
+                isAppearanceLightStatusBars = false // Keep icons light for dark background
                 isAppearanceLightNavigationBars = !darkTheme
             }
         }

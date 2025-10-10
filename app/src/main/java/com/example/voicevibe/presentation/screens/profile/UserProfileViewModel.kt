@@ -197,17 +197,30 @@ class UserProfileViewModel @Inject constructor(
                         totalWordsLearned = totalWords
                     )
 
-                    _uiState.update { it.copy(speakingOverviewLoading = false, speakingOverview = overview) }
+                    // Also inject these more accurate averages into the profile shown on the UI
+                    _uiState.update { state ->
+                        val updatedProfile = state.userProfile?.copy(
+                            pronunciationScore = if (overview.averagePronunciation > 0f) overview.averagePronunciation else state.userProfile.pronunciationScore,
+                            fluencyScore = if (overview.averageFluency > 0f) overview.averageFluency else state.userProfile.fluencyScore,
+                            vocabularyScore = if (overview.averageVocabulary > 0f) overview.averageVocabulary else state.userProfile.vocabularyScore,
+                            grammarScore = if (overview.averageGrammar > 0f) overview.averageGrammar else state.userProfile.grammarScore
+                        )
+                        state.copy(
+                            speakingOverviewLoading = false,
+                            speakingOverview = overview,
+                            userProfile = updatedProfile ?: state.userProfile
+                        )
+                    }
                 }.onFailure { err ->
                     _uiState.update { it.copy(speakingOverviewLoading = false, speakingOverviewError = err.message) }
                 }
             } else {
-                // Target user: use data from profile (server-computed)
+                // Target user: prefer server-computed per-skill scores on UserProfile (0..100)
                 _uiState.value.userProfile?.let { profile ->
                     val overview = SpeakingOverview(
-                        averagePronunciation = profile.stats.averageAccuracy,
-                        averageFluency = profile.stats.averageFluency,
-                        averageVocabulary = 0f, // Not available in stats, set to 0
+                        averagePronunciation = profile.pronunciationScore,
+                        averageFluency = profile.fluencyScore,
+                        averageVocabulary = profile.vocabularyScore,
                         averageGrammar = profile.grammarScore,
                         improvementRate = profile.stats.improvementRate,
                         completedTopics = profile.stats.completedLessons,

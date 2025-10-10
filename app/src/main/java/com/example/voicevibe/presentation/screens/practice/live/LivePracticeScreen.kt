@@ -111,7 +111,6 @@ fun LivePracticeScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(padding)
-                            .imePadding()
                     ) {
                         PullToRefreshBox(
                             isRefreshing = isRefreshing,

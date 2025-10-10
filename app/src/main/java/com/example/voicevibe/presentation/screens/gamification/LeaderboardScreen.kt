@@ -562,10 +562,11 @@ private fun LeaderboardEntryCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Rank and change
+            // Left side: Rank, avatar, and name
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
                     "#${entry.rank}",
@@ -576,104 +577,107 @@ private fun LeaderboardEntryCard(
 
                 RankChangeIndicator(entry.change)
 
-                // User info
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                // Avatar
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (!entry.avatarUrl.isNullOrBlank()) {
-                            SubcomposeAsyncImage(
-                                model = entry.avatarUrl,
-                                contentDescription = "Avatar",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize(),
-                                loading = {
-                                    Text(
-                                        text = initials,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
-                                },
-                                error = {
-                                    Text(
-                                        text = initials,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
-                                }
-                            )
-                        } else {
-                            Text(
-                                text = initials,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
+                    if (!entry.avatarUrl.isNullOrBlank()) {
+                        SubcomposeAsyncImage(
+                            model = entry.avatarUrl,
+                            contentDescription = "Avatar",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                            loading = {
+                                Text(
+                                    text = initials,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            },
+                            error = {
+                                Text(
+                                    text = initials,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+                        )
+                    } else {
+                        Text(
+                            text = initials,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                // Name and level info
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            entry.displayName,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        if (entry.isCurrentUser) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            ) {
+                                Text(
+                                    "YOU",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                )
+                            }
                         }
                     }
 
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                entry.displayName,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Medium
-                            )
-                            if (entry.isCurrentUser) {
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Surface(
-                                    shape = RoundedCornerShape(4.dp),
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(horizontal = 4.dp)
-                                ) {
-                                    Text(
-                                        "YOU",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                                    )
-                                }
-                            }
-                        }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Level ${entry.level}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
 
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "Level ${entry.level}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-
-                            if (entry.streakDays > 0) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        Icons.Default.LocalFireDepartment,
-                                        contentDescription = "Streak",
-                                        modifier = Modifier.size(12.dp),
-                                        tint = Color(0xFFFF6B35)
-                                    )
-                                    Text(
-                                        "${entry.streakDays}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color(0xFFFF6B35)
-                                    )
-                                }
+                        if (entry.streakDays > 0) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.LocalFireDepartment,
+                                    contentDescription = "Streak",
+                                    modifier = Modifier.size(12.dp),
+                                    tint = Color(0xFFFF6B35)
+                                )
+                                Text(
+                                    "${entry.streakDays}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFFFF6B35)
+                                )
                             }
                         }
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.width(8.dp))
 
             // Score and actions
             Column(

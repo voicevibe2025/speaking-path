@@ -4,8 +4,10 @@ import android.util.Base64
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.voicevibe.R
 import com.example.voicevibe.audio.AudioPlayer
 import com.example.voicevibe.audio.AudioRecorder
+import com.example.voicevibe.audio.SoundEffectPlayer
 import com.example.voicevibe.data.ai.LiveSessionManager
 import com.example.voicevibe.data.repository.AiEvaluationRepository
 import com.example.voicevibe.data.repository.CoachRepository
@@ -41,6 +43,7 @@ class LivePracticeViewModel @Inject constructor(
     private val coachRepository: CoachRepository,
     private val userRepository: UserRepository,
     private val tokenManager: TokenManager,
+    private val soundEffectPlayer: SoundEffectPlayer,
     private val gson: Gson
 ) : ViewModel() {
 
@@ -209,6 +212,12 @@ class LivePracticeViewModel @Inject constructor(
     fun sendMessage(message: String) {
         if (message.isBlank()) return
         pendingModelText = null
+        
+        // Play sound effect when user sends message in text mode
+        if (!uiState.value.voiceMode) {
+            soundEffectPlayer.play(R.raw.message_sent)
+        }
+        
         _uiState.update {
             it.copy(
                 messages = it.messages + LiveMessage(message, isFromUser = true),
@@ -353,6 +362,10 @@ class LivePracticeViewModel @Inject constructor(
 
                         if (payload.turnComplete) {
                             pendingModelText = null
+                            // Play sound effect when Vivi completes a message in text mode
+                            if (!state.voiceMode) {
+                                soundEffectPlayer.play(R.raw.new_message)
+                            }
                         }
 
                         state.copy(

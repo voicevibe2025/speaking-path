@@ -717,79 +717,34 @@ private fun ModernMessageBubble(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = alignment
     ) {
-        Row(
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = if (message.isFromUser) Arrangement.End else Arrangement.Start
+        // Message bubble
+        Surface(
+            modifier = Modifier
+                .widthIn(max = 280.dp)
+                .animateContentSize(),
+            shape = RoundedCornerShape(
+                topStart = 20.dp,
+                topEnd = 20.dp,
+                bottomStart = if (message.isFromUser) 20.dp else 4.dp,
+                bottomEnd = if (message.isFromUser) 4.dp else 20.dp
+            ),
+            color = if (message.isFromUser) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            },
+            shadowElevation = if (isLastMessage) 2.dp else 1.dp
         ) {
-            // AI Avatar
-            if (!message.isFromUser) {
-                Surface(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape),
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Outlined.SmartToy,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-
-            // Message bubble
-            Surface(
-                modifier = Modifier
-                    .widthIn(max = 280.dp)
-                    .animateContentSize(),
-                shape = RoundedCornerShape(
-                    topStart = 20.dp,
-                    topEnd = 20.dp,
-                    bottomStart = if (message.isFromUser) 20.dp else 4.dp,
-                    bottomEnd = if (message.isFromUser) 4.dp else 20.dp
-                ),
+            Text(
+                text = message.text,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                style = MaterialTheme.typography.bodyMedium,
                 color = if (message.isFromUser) {
-                    MaterialTheme.colorScheme.primary
+                    MaterialTheme.colorScheme.onPrimary
                 } else {
-                    MaterialTheme.colorScheme.surfaceVariant
-                },
-                shadowElevation = if (isLastMessage) 2.dp else 1.dp
-            ) {
-                Text(
-                    text = message.text,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (message.isFromUser) {
-                        MaterialTheme.colorScheme.onPrimary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    }
-                )
-            }
-
-            // User indicator
-            if (message.isFromUser) {
-                Spacer(modifier = Modifier.width(8.dp))
-                Surface(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape),
-                    color = MaterialTheme.colorScheme.secondaryContainer
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Outlined.Person,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    }
+                    MaterialTheme.colorScheme.onSurfaceVariant
                 }
-            }
+            )
         }
     }
 }
@@ -798,7 +753,7 @@ private fun ModernMessageBubble(
 private fun TypingIndicator() {
     Row(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.padding(start = 40.dp, top = 8.dp)
+        modifier = Modifier.padding(top = 8.dp)
     ) {
         repeat(3) { index ->
             val infiniteTransition = rememberInfiniteTransition(label = "typing_$index")

@@ -163,7 +163,7 @@ private fun UserRow(user: UserProfile, onClick: () -> Unit) {
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(user.displayName.ifBlank { user.username }, fontWeight = FontWeight.Bold, color = NeutralDarkGray)
+                Text(user.displayName.ifBlank { user.username }, fontWeight = FontWeight.Bold, color = NeutralDarkGray, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text("@${user.username}", fontSize = 12.sp, color = AccentBlueGray)
             }
             Icon(Icons.Filled.Person, contentDescription = null, tint = AccentBlueGray)

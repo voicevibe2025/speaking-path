@@ -482,7 +482,9 @@ private fun ProfileHeader(
                 Text(
                     nameToShow,
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 if (profile.isVerified) {
                     Spacer(modifier = Modifier.width(4.dp))

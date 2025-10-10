@@ -179,6 +179,7 @@ fun ProfileScreen(
                     }
                     // About Me section
                     if (!bio.isNullOrBlank()) {
+                        item { Spacer(modifier = Modifier.height(16.dp)) }
                         item {
                             AboutMeCard(bio = bio!!)
                         }

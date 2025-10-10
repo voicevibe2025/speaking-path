@@ -574,22 +574,23 @@ private fun ProfileHeader(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // TODO: Challenge button - Hidden until functionality is implemented
                 // Second row: Challenge button (full width)
-                OutlinedButton(
-                    onClick = onChallengeClick,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.SportsKabaddi, contentDescription = "Challenge")
-                    Spacer(Modifier.width(6.dp))
-                    Text("Challenge")
-                }
+                // OutlinedButton(
+                //     onClick = onChallengeClick,
+                //     modifier = Modifier.fillMaxWidth()
+                // ) {
+                //     Icon(Icons.Default.SportsKabaddi, contentDescription = "Challenge")
+                //     Spacer(Modifier.width(6.dp))
+                //     Text("Challenge")
+                // }
 
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
             // Level and XP - centered
             Row(
-                verticalAlignment = Alignment.CenterVertically,
+{{ ... }}
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.padding(vertical = 4.dp)
             ) {

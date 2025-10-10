@@ -98,9 +98,10 @@ fun LeaderboardScreen(
                     IconButton(onClick = { showFilterDialog = true }) {
                         Icon(Icons.Default.FilterList, "Filter")
                     }
-                    IconButton(onClick = viewModel::shareRank) {
-                        Icon(Icons.Default.Share, "Share")
-                    }
+                    // TODO: Share button - Hidden until functionality is implemented
+                    // IconButton(onClick = viewModel::shareRank) {
+                    //     Icon(Icons.Default.Share, "Share")
+                    // }
                     IconButton(onClick = viewModel::refreshLeaderboard) {
                         Icon(Icons.Default.Refresh, "Refresh")
                     }

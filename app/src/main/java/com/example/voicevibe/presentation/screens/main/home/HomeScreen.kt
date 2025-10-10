@@ -133,9 +133,17 @@ fun HomeScreen(
         }
     }
 
+    val backgroundBrush = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF0A1128),
+            Color(0xFF1E2761),
+            Color(0xFF0A1128)
+        )
+    )
+    
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(Color(0xFF1A2642)) // Slightly brighter with more blue tint
+        .background(backgroundBrush)
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -167,8 +175,7 @@ fun HomeScreen(
             ) {
                 LazyColumn(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0xFF1A2642)),
+                        .fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(20.dp),
                     contentPadding = PaddingValues(vertical = 20.dp, horizontal = 16.dp)
                 ) {

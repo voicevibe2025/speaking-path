@@ -34,17 +34,7 @@ fun ModernTopBar(
 ) {
     TopAppBar(
         modifier = Modifier
-            .padding(horizontal = 20.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(
-                Brush.horizontalGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.05f),
-                        Color.White.copy(alpha = 0.1f),
-                        Color.White.copy(alpha = 0.05f)
-                    )
-                )
-            ),
+            .padding(horizontal = 20.dp, vertical = 8.dp),
         title = {
             Text(
                 text = title,

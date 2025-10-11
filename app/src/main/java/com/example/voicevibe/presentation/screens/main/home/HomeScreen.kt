@@ -930,7 +930,7 @@ private fun QuickStartSection(
         val isCompact = maxWidth < 360.dp
         Column {
             Text(
-                text = "Start Learning",
+                text = "START LEARNING",
                 fontSize = if (isCompact) 18.sp else 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White,
@@ -1122,7 +1122,7 @@ private fun LearningProgressSection(
             val isCompact = maxWidth < 360.dp
             Column {
                 Text(
-                    text = "Progress",
+                    text = "PROGRESS",
                     fontSize = if (isCompact) 18.sp else 20.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White,
@@ -1228,7 +1228,7 @@ private fun StudyToolsSection(
         
         Column {
             Text(
-                text = "Study Tools",
+                text = "STUDY TOOLS",
                 fontSize = if (isCompact) 18.sp else 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White,

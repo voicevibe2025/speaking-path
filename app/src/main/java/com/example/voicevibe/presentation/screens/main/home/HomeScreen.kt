@@ -1892,9 +1892,9 @@ private fun GlassmorphismChatOverlay(
     val listState = rememberLazyListState()
     val recordPermission = rememberPermissionState(android.Manifest.permission.RECORD_AUDIO)
     
-    // Set voice mode on mount
-    LaunchedEffect(isVoiceMode) {
-        viewModel.setVoiceMode(isVoiceMode)
+    // Initialize mode and ensure a connection for that mode
+    LaunchedEffect(Unit) {
+        viewModel.prepareModeAndConnect(isVoiceMode)
     }
     
     // Auto-scroll to bottom when messages change

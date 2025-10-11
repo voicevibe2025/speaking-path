@@ -432,6 +432,26 @@ class LivePracticeViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Set the desired mode and ensure a connection exists for that mode.
+     * If the mode actually changed, setVoiceMode() will trigger reconnection.
+     * If the mode did not change and we're currently disconnected, connect now.
+     */
+    fun prepareModeAndConnect(desiredVoiceMode: Boolean) {
+        val wasVoice = uiState.value.voiceMode
+        setVoiceMode(desiredVoiceMode)
+        if (wasVoice == desiredVoiceMode) {
+            // Mode unchanged. Only connect if not already connected/connecting.
+            viewModelScope.launch {
+                val state = _uiState.value
+                if (!state.isConnected && !state.isConnecting) {
+                    ensureCoachAnalysis()
+                    connectToLiveSession()
+                }
+            }
+        }
+    }
+
     fun toggleVoiceMode() {
         setVoiceMode(!uiState.value.voiceMode)
     }

@@ -662,9 +662,36 @@ class LivePracticeViewModel @Inject constructor(
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
+    
+    fun disconnect() {
+        viewModelScope.launch {
+            // Stop recording if active
+            if (_uiState.value.isRecording) {
+                recorder.stop()
+            }
+            
+            // Stop playback if active
+            player.stop()
+            
+            // Close the WebSocket session
+            sessionManager.close()
+            
+            // Reset state
+            _uiState.update {
+                LiveChatState(
+                    isConnecting = false,
+                    isConnected = false,
+                    messages = emptyList()
+                )
+            }
+            
+            Log.d("LivePracticeViewModel", "Disconnected from Gemini Live session")
+        }
+    }
 
     override fun onCleared() {
         super.onCleared()
+        disconnect()
     }
 
     private fun buildSystemInstruction(): String {

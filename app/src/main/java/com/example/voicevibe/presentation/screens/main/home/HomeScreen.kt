@@ -263,7 +263,10 @@ fun HomeScreen(
             GlassmorphismChatOverlay(
                 viewModel = livePracticeViewModel,
                 isVoiceMode = false,
-                onDismiss = { showChatOverlay = false }
+                onDismiss = {
+                    livePracticeViewModel.disconnect()
+                    showChatOverlay = false
+                }
             )
         }
         
@@ -276,7 +279,10 @@ fun HomeScreen(
             GlassmorphismChatOverlay(
                 viewModel = livePracticeViewModel,
                 isVoiceMode = true,
-                onDismiss = { showVoiceChatOverlay = false }
+                onDismiss = {
+                    livePracticeViewModel.disconnect()
+                    showVoiceChatOverlay = false
+                }
             )
         }
 
@@ -1120,16 +1126,6 @@ private fun LearningProgressSection(
         ) {
             val isCompact = maxWidth < 360.dp
             Column {
-                Text(
-                    text = "PROGRESS",
-                    fontSize = if (isCompact) 18.sp else 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),

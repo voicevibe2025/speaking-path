@@ -41,6 +41,8 @@ import com.example.voicevibe.presentation.components.FullScreenImageViewer
 fun ProfileScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToAchievements: () -> Unit,
+    onNavigateToFollowers: () -> Unit,
+    onNavigateToFollowing: () -> Unit,
     onNavigateBack: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
@@ -148,11 +150,15 @@ fun ProfileScreen(
                     totalXp = totalXp,
                     nextLevelXp = nextLevelXp,
                     streak = streak,
+                    followersCount = followersCount,
+                    followingCount = followingCount,
                     avatarUrl = avatarUrl,
                     userInitials = userInitials,
                     onAvatarClick = {
                         if (avatarUrl != null) showAvatarViewer = true
-                    }
+                    },
+                    onFollowersClick = onNavigateToFollowers,
+                    onFollowingClick = onNavigateToFollowing
                 )
             }
 
@@ -187,9 +193,7 @@ fun ProfileScreen(
                             practiceHours = practiceHours,
                             lessonsCompleted = lessonsCompleted,
                             recordingsCount = recordingsCount,
-                            avgScore = avgScore,
-                            followersCount = followersCount,
-                            followingCount = followingCount
+                            avgScore = avgScore
                         )
                     }
                     // About Me section
@@ -258,9 +262,13 @@ fun ProfileHeader(
     totalXp: Int,
     nextLevelXp: Int,
     streak: Int,
+    followersCount: Int,
+    followingCount: Int,
     avatarUrl: String?,
     userInitials: String,
-    onAvatarClick: (() -> Unit)? = null
+    onAvatarClick: (() -> Unit)? = null,
+    onFollowersClick: (() -> Unit)? = null,
+    onFollowingClick: (() -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
@@ -410,6 +418,91 @@ fun ProfileHeader(
                 color = Color.White
             )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Followers and Following
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Followers
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .then(
+                        if (onFollowersClick != null) Modifier.clickable { onFollowersClick() } else Modifier
+                    )
+            ) {
+                Text(
+                    text = followersCount.toString(),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        Icons.Default.Group,
+                        contentDescription = "Followers",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Followers",
+                        fontSize = 12.sp,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
+                }
+            }
+
+            // Divider
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .height(40.dp)
+                    .background(Color.White.copy(alpha = 0.3f))
+            )
+
+            // Following
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .then(
+                        if (onFollowingClick != null) Modifier.clickable { onFollowingClick() } else Modifier
+                    )
+            ) {
+                Text(
+                    text = followingCount.toString(),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = "Following",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Following",
+                        fontSize = 12.sp,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -418,9 +511,7 @@ fun QuickStatsGrid(
     practiceHours: Float,
     lessonsCompleted: Int,
     recordingsCount: Int,
-    avgScore: Float,
-    followersCount: Int,
-    followingCount: Int
+    avgScore: Float
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -483,28 +574,6 @@ fun QuickStatsGrid(
                     label = "Avg Score",
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.error
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                StatCard(
-                    icon = Icons.Default.Group,
-                    value = followersCount.toString(),
-                    label = "Followers",
-                    modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colorScheme.primary
-                )
-                StatCard(
-                    icon = Icons.Default.Person,
-                    value = followingCount.toString(),
-                    label = "Following",
-                    modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colorScheme.secondary
                 )
             }
         }

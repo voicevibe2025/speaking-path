@@ -689,6 +689,12 @@ fun NavGraph(
                 onNavigateToAchievements = {
                     navController.navigate(Screen.Achievements.route)
                 },
+                onNavigateToFollowers = {
+                    navController.navigate(Screen.FollowersFollowing.createRoute(userId = null, tab = 0))
+                },
+                onNavigateToFollowing = {
+                    navController.navigate(Screen.FollowersFollowing.createRoute(userId = null, tab = 1))
+                },
                 onNavigateBack = {
                     navController.popBackStack()
                 }

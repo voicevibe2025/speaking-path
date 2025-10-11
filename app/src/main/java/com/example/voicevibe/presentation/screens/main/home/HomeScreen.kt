@@ -40,6 +40,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.runtime.saveable.rememberSaveable
+import kotlin.math.roundToInt
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -175,20 +181,6 @@ fun HomeScreen(
                     onSearchClick = onNavigateToUserSearch,
                     onSettingsClick = onNavigateToSettings
                 )
-            },
-            floatingActionButton = {
-                ViviFAB(
-                    showMenu = showFabMenu,
-                    onToggleMenu = { showFabMenu = !showFabMenu },
-                    onChatClick = {
-                        showFabMenu = false
-                        showChatOverlay = true
-                    },
-                    onVoiceClick = {
-                        showFabMenu = false
-                        showVoiceChatOverlay = true
-                    }
-                )
             }
         ) { innerPadding ->
             PullToRefreshBox(
@@ -251,6 +243,84 @@ fun HomeScreen(
                         )
                     }
                 }
+            }
+        }
+        
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            val density = LocalDensity.current
+            val margin = 16.dp
+            val fabSize = 56.dp
+
+            val maxWidthPx = with(density) { maxWidth.toPx() }
+            val maxHeightPx = with(density) { maxHeight.toPx() }
+            val marginPx = with(density) { margin.toPx() }
+            val fabSizePx = with(density) { fabSize.toPx() }
+
+            var offsetRight by rememberSaveable { mutableStateOf(0f) }
+            var offsetBottom by rememberSaveable { mutableStateOf(0f) }
+            var posInitialized by rememberSaveable { mutableStateOf(false) }
+
+            LaunchedEffect(maxWidthPx, maxHeightPx) {
+                val minOffsetRight = marginPx
+                val maxOffsetRight = maxWidthPx - fabSizePx - marginPx
+                val minOffsetBottom = marginPx
+                val maxOffsetBottom = maxHeightPx - fabSizePx - marginPx
+                if (!posInitialized) {
+                    offsetRight = minOffsetRight
+                    offsetBottom = minOffsetBottom
+                    posInitialized = true
+                } else {
+                    val left = maxWidthPx - offsetRight - fabSizePx
+                    val top = maxHeightPx - offsetBottom - fabSizePx
+                    val clampedLeft = left.coerceIn(marginPx, maxWidthPx - fabSizePx - marginPx)
+                    val clampedTop = top.coerceIn(marginPx, maxHeightPx - fabSizePx - marginPx)
+                    offsetRight = (maxWidthPx - clampedLeft - fabSizePx).coerceIn(minOffsetRight, maxOffsetRight)
+                    offsetBottom = (maxHeightPx - clampedTop - fabSizePx).coerceIn(minOffsetBottom, maxOffsetBottom)
+                }
+            }
+
+            val fabLeftPx = maxWidthPx - offsetRight - fabSizePx
+            val fabTopPx = maxHeightPx - offsetBottom - fabSizePx
+            val menuOnRight = fabLeftPx < maxWidthPx / 2f
+
+            Box(
+                modifier = Modifier
+                    .then(
+                        if (menuOnRight) Modifier.align(Alignment.BottomStart) else Modifier.align(Alignment.BottomEnd)
+                    )
+                    .offset {
+                        if (menuOnRight) {
+                            IntOffset(fabLeftPx.roundToInt(), -offsetBottom.roundToInt())
+                        } else {
+                            IntOffset(-offsetRight.roundToInt(), -offsetBottom.roundToInt())
+                        }
+                    }
+                    .pointerInput(maxWidthPx, maxHeightPx) {
+                        detectDragGestures { _, dragAmount ->
+                            val newLeft = (maxWidthPx - offsetRight - fabSizePx) + dragAmount.x
+                            val newTop = (maxHeightPx - offsetBottom - fabSizePx) + dragAmount.y
+                            val clampedLeft = newLeft.coerceIn(marginPx, maxWidthPx - fabSizePx - marginPx)
+                            val clampedTop = newTop.coerceIn(marginPx, maxHeightPx - fabSizePx - marginPx)
+                            offsetRight = maxWidthPx - clampedLeft - fabSizePx
+                            offsetBottom = maxHeightPx - clampedTop - fabSizePx
+                        }
+                    }
+            ) {
+                ViviFAB(
+                    showMenu = showFabMenu,
+                    menuOnRight = menuOnRight,
+                    onToggleMenu = { showFabMenu = !showFabMenu },
+                    onChatClick = {
+                        showFabMenu = false
+                        showChatOverlay = true
+                    },
+                    onVoiceClick = {
+                        showFabMenu = false
+                        showVoiceChatOverlay = true
+                    }
+                )
             }
         }
         
@@ -800,6 +870,13 @@ private fun EducationalTopBar(
                 Box(
                     modifier = Modifier
                         .size(40.dp)
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.linearGradient(
+                                colors = listOf(BrandCyan, BrandIndigo, BrandFuchsia)
+                            ),
+                            shape = CircleShape
+                        )
                         .clip(CircleShape)
                         .background(Color.Transparent),
                     contentAlignment = Alignment.Center
@@ -1772,12 +1849,13 @@ private fun GlassmorphismDivider() {
 @Composable
 private fun ViviFAB(
     showMenu: Boolean,
+    menuOnRight: Boolean,
     onToggleMenu: () -> Unit,
     onChatClick: () -> Unit,
     onVoiceClick: () -> Unit
 ) {
     Column(
-        horizontalAlignment = Alignment.End,
+        horizontalAlignment = if (menuOnRight) Alignment.Start else Alignment.End,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         // Menu options
@@ -1787,7 +1865,7 @@ private fun ViviFAB(
             exit = fadeOut() + shrinkVertically()
         ) {
             Column(
-                horizontalAlignment = Alignment.End,
+                horizontalAlignment = if (menuOnRight) Alignment.Start else Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Voice option
@@ -1795,28 +1873,54 @@ private fun ViviFAB(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.surface,
-                        shadowElevation = 4.dp
-                    ) {
-                        Text(
-                            text = "Voice Chat",
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                    FloatingActionButton(
-                        onClick = onVoiceClick,
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Mic,
-                            contentDescription = "Voice Chat",
-                            tint = Color.White
-                        )
+                    if (menuOnRight) {
+                        FloatingActionButton(
+                            onClick = onVoiceClick,
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Mic,
+                                contentDescription = "Voice Chat",
+                                tint = Color.White
+                            )
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            shadowElevation = 4.dp
+                        ) {
+                            Text(
+                                text = "Voice Chat",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    } else {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            shadowElevation = 4.dp
+                        ) {
+                            Text(
+                                text = "Voice Chat",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                        FloatingActionButton(
+                            onClick = onVoiceClick,
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Mic,
+                                contentDescription = "Voice Chat",
+                                tint = Color.White
+                            )
+                        }
                     }
                 }
                 
@@ -1825,28 +1929,54 @@ private fun ViviFAB(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.surface,
-                        shadowElevation = 4.dp
-                    ) {
-                        Text(
-                            text = "Text Chat",
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                    FloatingActionButton(
-                        onClick = onChatClick,
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Chat,
-                            contentDescription = "Text Chat",
-                            tint = Color.White
-                        )
+                    if (menuOnRight) {
+                        FloatingActionButton(
+                            onClick = onChatClick,
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Chat,
+                                contentDescription = "Text Chat",
+                                tint = Color.White
+                            )
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            shadowElevation = 4.dp
+                        ) {
+                            Text(
+                                text = "Text Chat",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    } else {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            shadowElevation = 4.dp
+                        ) {
+                            Text(
+                                text = "Text Chat",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                        FloatingActionButton(
+                            onClick = onChatClick,
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Chat,
+                                contentDescription = "Text Chat",
+                                tint = Color.White
+                            )
+                        }
                     }
                 }
             }

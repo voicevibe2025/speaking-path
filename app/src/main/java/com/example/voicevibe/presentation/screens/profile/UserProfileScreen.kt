@@ -103,49 +103,64 @@ fun UserProfileScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    val userProfile = uiState.userProfile
-                    if (!uiState.isOwnProfile && userProfile != null) {
-                        Text(
-                            userProfile.displayName,
-                            fontWeight = FontWeight.Bold
-                        )
-                    } else {
-                        Text("Profile", fontWeight = FontWeight.Bold)
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, "Back")
-                    }
-                },
-                actions = {
-                    if (uiState.isOwnProfile) {
-                        IconButton(onClick = onNavigateToSettings) {
-                            Icon(Icons.Default.Settings, "Settings")
+    val backgroundBrush = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF0A1128),
+            Color(0xFF1E2761),
+            Color(0xFF0A1128)
+        )
+    )
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundBrush)
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        val userProfile = uiState.userProfile
+                        if (!uiState.isOwnProfile && userProfile != null) {
+                            Text(
+                                userProfile.displayName,
+                                fontWeight = FontWeight.Bold
+                            )
+                        } else {
+                            Text("Profile", fontWeight = FontWeight.Bold)
                         }
-                        IconButton(onClick = onNavigateToEditProfile) {
-                            Icon(Icons.Default.Edit, "Edit Profile")
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.Default.ArrowBack, "Back")
                         }
-                    } else {
-                        IconButton(onClick = viewModel::shareProfile) {
-                            Icon(Icons.Default.Share, "Share")
+                    },
+                    actions = {
+                        if (uiState.isOwnProfile) {
+                            IconButton(onClick = onNavigateToSettings) {
+                                Icon(Icons.Default.Settings, "Settings")
+                            }
+                            IconButton(onClick = onNavigateToEditProfile) {
+                                Icon(Icons.Default.Edit, "Edit Profile")
+                            }
+                        } else {
+                            IconButton(onClick = viewModel::shareProfile) {
+                                Icon(Icons.Default.Share, "Share")
+                            }
+                            IconButton(onClick = { showMoreOptions = true }) {
+                                Icon(Icons.Default.MoreVert, "More")
+                            }
                         }
-                        IconButton(onClick = { showMoreOptions = true }) {
-                            Icon(Icons.Default.MoreVert, "More")
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    )
                 )
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
+            },
+            snackbarHost = { SnackbarHost(snackbarHostState) }
+        ) { paddingValues ->
         val error = uiState.error
         val userProfile = uiState.userProfile
 
@@ -208,6 +223,7 @@ fun UserProfileScreen(
                     LoadingScreen(modifier = Modifier.padding(paddingValues))
                 }
             }
+        }
         }
     }
 
@@ -305,7 +321,7 @@ private fun ProfileContent(
         item {
             TabRow(
                 selectedTabIndex = selectedTab.ordinal,
-                containerColor = MaterialTheme.colorScheme.surface
+                containerColor = Color.Transparent
             ) {
                 ProfileTab.values().forEach { tab ->
                     Tab(
@@ -484,7 +500,8 @@ private fun ProfileHeader(
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = Color.White
                 )
                 if (profile.isVerified) {
                     Spacer(modifier = Modifier.width(4.dp))
@@ -510,7 +527,7 @@ private fun ProfileHeader(
                 Text(
                     "@${profile.username}",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color.White.copy(alpha = 0.6f)
                 )
             }
 
@@ -520,13 +537,13 @@ private fun ProfileHeader(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
                     color = Color.Transparent
                 ) {
                     Text(
                         bio,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = Color.White.copy(alpha = 0.7f),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(12.dp)
                     )
@@ -597,13 +614,14 @@ private fun ProfileHeader(
             ) {
                 Surface(
                     shape = RoundedCornerShape(4.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer
+                    color = Color(0xFF3B82F6).copy(alpha = 0.3f)
                 ) {
                     Text(
                         "Level ${profile.level}",
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -611,7 +629,8 @@ private fun ProfileHeader(
                 Column(horizontalAlignment = Alignment.Start) {
                     Text(
                         "Level XP: ${profile.xp} / $threshold",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White
                     )
                     Spacer(Modifier.height(2.dp))
                     LinearProgressIndicator(
@@ -627,7 +646,7 @@ private fun ProfileHeader(
                     Text(
                         "Total XP: ${profile.totalXp}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = Color.White.copy(alpha = 0.6f)
                     )
                 }
                 if (profile.streakDays > 0) {
@@ -694,12 +713,13 @@ private fun StatItem(
         Text(
             value,
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = Color.White
         )
         Text(
             label,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = Color.White.copy(alpha = 0.6f)
         )
     }
 }

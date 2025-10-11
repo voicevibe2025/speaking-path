@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -54,6 +56,9 @@ import com.example.voicevibe.domain.model.LearningPath
 import com.example.voicevibe.presentation.components.*
 import com.example.voicevibe.domain.model.PostComment
 import com.example.voicevibe.ui.theme.*
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -87,12 +92,18 @@ fun HomeScreen(
     onNavigateToMessages: () -> Unit = {},
     onNavigateToLearnWithVivi: (String) -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    livePracticeViewModel: com.example.voicevibe.presentation.screens.practice.live.LivePracticeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var isRefreshing by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val pullToRefreshState = rememberPullToRefreshState()
+    
+    // FAB and overlay states
+    var showFabMenu by remember { mutableStateOf(false) }
+    var showChatOverlay by remember { mutableStateOf(false) }
+    var showVoiceChatOverlay by remember { mutableStateOf(false) }
 
     // Refresh avatar when returning from Settings screen
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -164,6 +175,20 @@ fun HomeScreen(
                     onSearchClick = onNavigateToUserSearch,
                     onSettingsClick = onNavigateToSettings
                 )
+            },
+            floatingActionButton = {
+                ViviFAB(
+                    showMenu = showFabMenu,
+                    onToggleMenu = { showFabMenu = !showFabMenu },
+                    onChatClick = {
+                        showFabMenu = false
+                        showChatOverlay = true
+                    },
+                    onVoiceClick = {
+                        showFabMenu = false
+                        showVoiceChatOverlay = true
+                    }
+                )
             }
         ) { innerPadding ->
             PullToRefreshBox(
@@ -227,6 +252,32 @@ fun HomeScreen(
                     }
                 }
             }
+        }
+        
+        // Chat Overlay (Text Mode)
+        AnimatedVisibility(
+            visible = showChatOverlay,
+            enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+            exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+        ) {
+            GlassmorphismChatOverlay(
+                viewModel = livePracticeViewModel,
+                isVoiceMode = false,
+                onDismiss = { showChatOverlay = false }
+            )
+        }
+        
+        // Voice Chat Overlay
+        AnimatedVisibility(
+            visible = showVoiceChatOverlay,
+            enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+            exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+        ) {
+            GlassmorphismChatOverlay(
+                viewModel = livePracticeViewModel,
+                isVoiceMode = true,
+                onDismiss = { showVoiceChatOverlay = false }
+            )
         }
 
     }
@@ -1046,58 +1097,6 @@ private fun QuickStartSection(
                     )
                 }
             }
-            // Live Practice - Gemini Live (Slate/Gray)
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onLivePractice() },
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(if (isCompact) 16.dp else 20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(CircleShape)
-                            .background(Color.Transparent),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.FlashOn,
-                            contentDescription = null,
-                            tint = Color(0xFFFBBF24),
-                            modifier = Modifier.size(36.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = "Practice with Vivi",
-                        fontSize = if (isCompact) 16.sp else 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Practice speaking with AI tutor",
-                        fontSize = if (isCompact) 12.sp else 14.sp,
-                        color = Color.White.copy(alpha = 0.8f),
-                        textAlign = TextAlign.Center,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
         }
     }
 }
@@ -1771,5 +1770,616 @@ private fun GlassmorphismDivider() {
                 )
             )
     )
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+private fun ViviFAB(
+    showMenu: Boolean,
+    onToggleMenu: () -> Unit,
+    onChatClick: () -> Unit,
+    onVoiceClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Menu options
+        AnimatedVisibility(
+            visible = showMenu,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Voice option
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        shadowElevation = 4.dp
+                    ) {
+                        Text(
+                            text = "Voice Chat",
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    FloatingActionButton(
+                        onClick = onVoiceClick,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Mic,
+                            contentDescription = "Voice Chat",
+                            tint = Color.White
+                        )
+                    }
+                }
+                
+                // Text chat option
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        shadowElevation = 4.dp
+                    ) {
+                        Text(
+                            text = "Text Chat",
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    FloatingActionButton(
+                        onClick = onChatClick,
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Chat,
+                            contentDescription = "Text Chat",
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
+        }
+        
+        // Main FAB
+        FloatingActionButton(
+            onClick = onToggleMenu,
+            containerColor = BrandIndigo,
+            modifier = Modifier.size(56.dp)
+        ) {
+            AnimatedContent(
+                targetState = showMenu,
+                transitionSpec = {
+                    fadeIn() + scaleIn() with fadeOut() + scaleOut()
+                },
+                label = "fab_icon"
+            ) { isOpen ->
+                Icon(
+                    imageVector = if (isOpen) Icons.Default.Close else Icons.Default.SmartToy,
+                    contentDescription = if (isOpen) "Close menu" else "Chat with Vivi",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalPermissionsApi::class,
+    ExperimentalAnimationApi::class
+)
+@Composable
+private fun GlassmorphismChatOverlay(
+    viewModel: com.example.voicevibe.presentation.screens.practice.live.LivePracticeViewModel,
+    isVoiceMode: Boolean,
+    onDismiss: () -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var inputText by remember { mutableStateOf("") }
+    val listState = rememberLazyListState()
+    val recordPermission = rememberPermissionState(android.Manifest.permission.RECORD_AUDIO)
+    
+    // Set voice mode on mount
+    LaunchedEffect(isVoiceMode) {
+        viewModel.setVoiceMode(isVoiceMode)
+    }
+    
+    // Auto-scroll to bottom when messages change
+    LaunchedEffect(uiState.messages.size, uiState.showTypingIndicator) {
+        if (!isVoiceMode && uiState.messages.isNotEmpty()) {
+            listState.animateScrollToItem(0)
+        }
+    }
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onDismiss() }
+    ) {
+        // Glassmorphism card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .fillMaxHeight(0.85f)
+                .align(Alignment.Center)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) { /* Prevent dismiss when clicking inside */ },
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White.copy(alpha = 0.1f)
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF1E2761).copy(alpha = 0.95f),
+                                Color(0xFF0A1128).copy(alpha = 0.95f)
+                            )
+                        )
+                    )
+                    .blur(0.dp)
+                    .border(
+                        width = 1.dp,
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.3f),
+                                Color.White.copy(alpha = 0.1f)
+                            )
+                        ),
+                        shape = RoundedCornerShape(24.dp)
+                    )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(20.dp)
+                ) {
+                    // Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(BrandIndigo.copy(alpha = 0.3f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.SmartToy,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Vivi",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(if (uiState.isConnected) Color(0xFF4CAF50) else Color.Gray)
+                                    )
+                                    Text(
+                                        text = if (uiState.isConnected) "Online" else "Connecting...",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.White.copy(alpha = 0.7f)
+                                    )
+                                    if (isVoiceMode) {
+                                        Surface(
+                                            color = BrandIndigo.copy(alpha = 0.3f),
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.GraphicEq,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(12.dp),
+                                                    tint = Color.White
+                                                )
+                                                Text(
+                                                    text = "VOICE",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color.White,
+                                                    fontSize = 10.sp
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Chat content
+                    if (isVoiceMode) {
+                        // Voice mode UI
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(32.dp)
+                            ) {
+                                // Voice visual indicator
+                                AnimatedContent(
+                                    targetState = uiState.isAiSpeaking,
+                                    transitionSpec = {
+                                        scaleIn() + fadeIn() with scaleOut() + fadeOut()
+                                    },
+                                    label = "voice_indicator"
+                                ) { speaking ->
+                                    if (speaking) {
+                                        VoiceSpeakingIndicator()
+                                    } else {
+                                        VoiceMicButton(
+                                            isRecording = uiState.isRecording,
+                                            isConnected = uiState.isConnected,
+                                            onClick = {
+                                                if (recordPermission.status.isGranted) {
+                                                    viewModel.toggleRecording()
+                                                } else {
+                                                    recordPermission.launchPermissionRequest()
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                                
+                                // Status text
+                                Text(
+                                    text = when {
+                                        !uiState.isConnected -> "Connecting..."
+                                        uiState.isAiSpeaking -> "Vivi is speaking..."
+                                        uiState.isRecording -> "Listening..."
+                                        else -> "Tap to speak"
+                                    },
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = Color.White.copy(alpha = 0.9f),
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                    } else {
+                        // Text mode UI
+                        LazyColumn(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            state = listState,
+                            reverseLayout = true,
+                            verticalArrangement = Arrangement.Bottom,
+                            contentPadding = PaddingValues(vertical = 8.dp)
+                        ) {
+                            if (uiState.showTypingIndicator) {
+                                item(key = "typing") {
+                                    TypingIndicatorBubble()
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+                            }
+                            
+                            itemsIndexed(
+                                items = uiState.messages.reversed(),
+                                key = { index, msg -> "msg_${msg.hashCode()}_$index" }
+                            ) { index, message ->
+                                ChatBubble(message = message)
+                                if (index < uiState.messages.size - 1) {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // Input area
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Surface(
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(20.dp),
+                                color = Color.White.copy(alpha = 0.15f)
+                            ) {
+                                OutlinedTextField(
+                                    value = inputText,
+                                    onValueChange = { inputText = it },
+                                    placeholder = {
+                                        Text(
+                                            "Type a message...",
+                                            color = Color.White.copy(alpha = 0.5f)
+                                        )
+                                    },
+                                    enabled = uiState.isConnected,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedTextColor = Color.White,
+                                        unfocusedTextColor = Color.White,
+                                        focusedBorderColor = Color.Transparent,
+                                        unfocusedBorderColor = Color.Transparent,
+                                        disabledBorderColor = Color.Transparent,
+                                        cursorColor = Color.White
+                                    ),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    maxLines = 3
+                                )
+                            }
+                            
+                            FloatingActionButton(
+                                onClick = {
+                                    val text = inputText.trim()
+                                    if (text.isNotEmpty() && uiState.isConnected) {
+                                        viewModel.sendMessage(text)
+                                        inputText = ""
+                                    }
+                                },
+                                containerColor = if (inputText.isNotBlank() && uiState.isConnected) {
+                                    BrandIndigo
+                                } else {
+                                    Color.Gray.copy(alpha = 0.3f)
+                                },
+                                modifier = Modifier.size(48.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Send,
+                                    contentDescription = "Send",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChatBubble(message: com.example.voicevibe.domain.model.LiveMessage) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = if (message.isFromUser) Alignment.CenterEnd else Alignment.CenterStart
+    ) {
+        Surface(
+            modifier = Modifier.widthIn(max = 280.dp),
+            shape = RoundedCornerShape(
+                topStart = 16.dp,
+                topEnd = 16.dp,
+                bottomStart = if (message.isFromUser) 16.dp else 4.dp,
+                bottomEnd = if (message.isFromUser) 4.dp else 16.dp
+            ),
+            color = if (message.isFromUser) {
+                BrandIndigo.copy(alpha = 0.8f)
+            } else {
+                Color.White.copy(alpha = 0.15f)
+            }
+        ) {
+            Text(
+                text = message.text,
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+private fun TypingIndicatorBubble() {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.padding(start = 8.dp)
+    ) {
+        repeat(3) { index ->
+            val infiniteTransition = rememberInfiniteTransition(label = "typing_$index")
+            val offsetY by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = -8f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(400, easing = EaseInOut),
+                    repeatMode = RepeatMode.Reverse,
+                    initialStartOffset = StartOffset(index * 100)
+                ),
+                label = "offset_$index"
+            )
+            
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .graphicsLayer { translationY = offsetY }
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.6f))
+            )
+        }
+    }
+}
+
+@Composable
+private fun VoiceMicButton(
+    isRecording: Boolean,
+    isConnected: Boolean,
+    onClick: () -> Unit
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "mic_pulse")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = if (isRecording) 1.1f else 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = EaseInOut),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "scale"
+    )
+    
+    Box(contentAlignment = Alignment.Center) {
+        // Outer rings when recording
+        if (isRecording && isConnected) {
+            repeat(3) { index ->
+                val ringScale by infiniteTransition.animateFloat(
+                    initialValue = 1f,
+                    targetValue = 1.5f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1500, easing = EaseOut),
+                        repeatMode = RepeatMode.Restart,
+                        initialStartOffset = StartOffset(index * 400)
+                    ),
+                    label = "ring_$index"
+                )
+                val ringAlpha by infiniteTransition.animateFloat(
+                    initialValue = 0.3f,
+                    targetValue = 0f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1500, easing = EaseOut),
+                        repeatMode = RepeatMode.Restart,
+                        initialStartOffset = StartOffset(index * 400)
+                    ),
+                    label = "alpha_$index"
+                )
+                
+                Box(
+                    modifier = Modifier
+                        .size(140.dp)
+                        .scale(ringScale)
+                        .alpha(ringAlpha)
+                        .border(
+                            width = 2.dp,
+                            color = Color.White,
+                            shape = CircleShape
+                        )
+                )
+            }
+        }
+        
+        // Main button
+        FloatingActionButton(
+            onClick = onClick,
+            containerColor = if (isRecording) Color.Red else BrandIndigo,
+            modifier = Modifier
+                .size(120.dp)
+                .scale(scale)
+        ) {
+            Icon(
+                imageVector = if (isRecording) Icons.Default.Stop else Icons.Default.Mic,
+                contentDescription = if (isRecording) "Stop" else "Record",
+                tint = Color.White,
+                modifier = Modifier.size(48.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun VoiceSpeakingIndicator() {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.size(160.dp)
+    ) {
+        // Animated waves
+        repeat(4) { index ->
+            val infiniteTransition = rememberInfiniteTransition(label = "wave_$index")
+            val scale by infiniteTransition.animateFloat(
+                initialValue = 0.8f + (index * 0.1f),
+                targetValue = 1.2f + (index * 0.1f),
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1000 + (index * 200), easing = EaseInOut),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "scale_$index"
+            )
+            val alpha by infiniteTransition.animateFloat(
+                initialValue = 0.3f - (index * 0.05f),
+                targetValue = 0.1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1000 + (index * 200), easing = EaseInOut),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "alpha_$index"
+            )
+            
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .scale(scale)
+                    .alpha(alpha),
+                shape = CircleShape,
+                color = Color.White.copy(alpha = 0.3f)
+            ) {}
+        }
+        
+        // Center icon
+        Surface(
+            modifier = Modifier.size(100.dp),
+            shape = CircleShape,
+            color = BrandIndigo.copy(alpha = 0.8f)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Outlined.RecordVoiceOver,
+                    contentDescription = null,
+                    modifier = Modifier.size(50.dp),
+                    tint = Color.White
+                )
+            }
+        }
+    }
 }
 

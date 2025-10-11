@@ -98,33 +98,47 @@ fun ProfileScreen(
     val monthlyXpEarned by viewModel.monthlyXpEarned
     val monthlyLessonsCompleted by viewModel.monthlyLessonsCompleted
 
-    Column(
+    val backgroundBrush = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF0A1128),
+            Color(0xFF1E2761),
+            Color(0xFF0A1128)
+        )
+    )
+    
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(backgroundBrush)
     ) {
-        // Top Bar
-        TopAppBar(
-            title = { Text("Profile", fontWeight = FontWeight.Bold) },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                }
-            },
-            actions = {
-                IconButton(onClick = onNavigateToSettings) {
-                    Icon(Icons.Default.Settings, contentDescription = "Settings")
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
-        )
-
-        LazyColumn(
+        Scaffold(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp)
-        ) {
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = { Text("Profile", fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = onNavigateToSettings) {
+                            Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    )
+                )
+            }
+        ) { innerPadding ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentPadding = PaddingValues(16.dp)
+            ) {
             // Profile Header
             item {
                 ProfileHeader(
@@ -222,6 +236,7 @@ fun ProfileScreen(
                     ActivityTabContent(activities = activities)
                 }
             }
+            }
         }
 
         // Full-screen avatar viewer
@@ -312,7 +327,7 @@ fun ProfileHeader(
             text = userName,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            color = Color.White,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -323,7 +338,7 @@ fun ProfileHeader(
         Text(
             text = level,
             fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+            color = Color.White.copy(alpha = 0.7f)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -340,12 +355,14 @@ fun ProfileHeader(
                 Text(
                     text = "$currentXp XP",
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White
                 )
                 Text(
                     text = "$nextLevelXp XP",
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White
                 )
             }
 
@@ -364,7 +381,7 @@ fun ProfileHeader(
             Text(
                 text = "Total XP: $totalXp",
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.White.copy(alpha = 0.6f)
             )
         }
 
@@ -375,7 +392,7 @@ fun ProfileHeader(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .background(
-                    MaterialTheme.colorScheme.tertiaryContainer,
+                    Color(0xFFFB923C).copy(alpha = 0.2f),
                     RoundedCornerShape(20.dp)
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -383,14 +400,14 @@ fun ProfileHeader(
             Icon(
                 Icons.Default.Whatshot,
                 contentDescription = "Streak",
-                tint = MaterialTheme.colorScheme.tertiary,
+                tint = Color(0xFFFB923C),
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "$streak Day Streak",
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onTertiaryContainer
+                color = Color.White
             )
         }
     }
@@ -407,7 +424,11 @@ fun QuickStatsGrid(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -417,7 +438,8 @@ fun QuickStatsGrid(
             Text(
                 text = "Quick Stats",
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -500,8 +522,9 @@ fun StatCard(
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = color.copy(alpha = 0.1f)
-        )
+            containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -525,7 +548,7 @@ fun StatCard(
             Text(
                 text = label,
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.6f),
                 maxLines = 2
             )
         }
@@ -536,7 +559,11 @@ fun StatCard(
 fun AboutMeCard(bio: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -546,7 +573,8 @@ fun AboutMeCard(bio: String) {
             Text(
                 text = "About Me",
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -554,7 +582,7 @@ fun AboutMeCard(bio: String) {
             Text(
                 text = bio,
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.7f),
                 lineHeight = 20.sp
             )
         }
@@ -568,7 +596,11 @@ fun RecentAchievements(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -583,7 +615,8 @@ fun RecentAchievements(
                 Text(
                     text = "Recent Achievements",
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
                 TextButton(onClick = onNavigateToAchievements) {
                     Text("View All")
@@ -610,7 +643,7 @@ fun RecentAchievements(
                 Text(
                     text = "No recent achievements yet. Keep practicing to earn your first badge!",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color.White.copy(alpha = 0.6f),
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
             }
@@ -678,12 +711,13 @@ fun AchievementItem(
             Text(
                 text = title,
                 fontWeight = FontWeight.Medium,
-                fontSize = 14.sp
+                fontSize = 14.sp,
+                color = Color.White
             )
             Text(
                 text = description,
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.White.copy(alpha = 0.6f)
             )
         }
     }
@@ -698,7 +732,11 @@ fun LearningPreferences(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -708,7 +746,8 @@ fun LearningPreferences(
             Text(
                 text = "Learning Preferences",
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -733,10 +772,10 @@ fun PreferenceChip(text: String, icon: ImageVector) {
             icon,
             contentDescription = null,
             modifier = Modifier.size(20.dp),
-            tint = MaterialTheme.colorScheme.primary
+            tint = Color(0xFF3B82F6)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text, fontSize = 14.sp)
+        Text(text, fontSize = 14.sp, color = Color.White)
     }
 }
 
@@ -786,7 +825,11 @@ fun SkillsProgressCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -796,7 +839,8 @@ fun SkillsProgressCard(
             Text(
                 text = "Performance",
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -883,7 +927,11 @@ fun MonthlyProgressCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -893,7 +941,8 @@ fun MonthlyProgressCard(
             Text(
                 text = "This Month",
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -923,19 +972,20 @@ fun MonthStatItem(label: String, value: String, icon: ImageVector) {
         Icon(
             icon,
             contentDescription = label,
-            tint = MaterialTheme.colorScheme.primary,
+            tint = Color(0xFF3B82F6),
             modifier = Modifier.size(24.dp)
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = value,
             fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = Color.White
         )
         Text(
             text = label,
             fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = Color.White.copy(alpha = 0.6f)
         )
     }
 }
@@ -946,7 +996,11 @@ fun MonthStatItem(label: String, value: String, icon: ImageVector) {
 fun RecentActivityCard(activities: List<com.example.voicevibe.data.model.Activity>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -956,7 +1010,8 @@ fun RecentActivityCard(activities: List<com.example.voicevibe.data.model.Activit
             Text(
                 text = "Recent Activity",
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -966,7 +1021,7 @@ fun RecentActivityCard(activities: List<com.example.voicevibe.data.model.Activit
                 Text(
                     text = "No recent activities yet. Start practicing to see your activity here!",
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color.White.copy(alpha = 0.6f),
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
             } else {
@@ -1033,12 +1088,13 @@ fun ActivityItem(
             Text(
                 text = title,
                 fontSize = 14.sp,
-                lineHeight = 20.sp
+                lineHeight = 20.sp,
+                color = Color.White
             )
             Text(
                 text = time,
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.White.copy(alpha = 0.6f)
             )
         }
     }

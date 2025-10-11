@@ -249,29 +249,64 @@ fun SettingsScreen(
             // Logout Button
             Spacer(modifier = Modifier.height(8.dp))
 
-            Button(
-                onClick = { showLogoutDialog = true },
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error
+                    .clickable { showLogoutDialog = true },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.Transparent
                 ),
-                shape = RoundedCornerShape(12.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Icon(
-                    Icons.Default.Logout,
-                    contentDescription = "Logout",
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Logout", fontSize = 16.sp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Logout,
+                        contentDescription = "Logout",
+                        tint = Color(0xFFEF4444),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "Logout",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFEF4444)
+                    )
+                }
             }
 
                 // Bottom spacing
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
+    }
+
+    // Glassmorphism Divider
+    @Composable
+    fun GlassmorphismDivider() {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.White.copy(alpha = 0.2f),
+                            Color.White.copy(alpha = 0.3f),
+                            Color.White.copy(alpha = 0.2f),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
     }
 
     // Logout Confirmation Dialog
@@ -1424,8 +1459,9 @@ fun UserProfileSection(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+            containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
@@ -1438,7 +1474,7 @@ fun UserProfileSection(
                 modifier = Modifier
                     .size(60.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
+                    .background(Color(0xFF3B82F6))
                     .clickable { onChangeAvatar() },
                 contentAlignment = Alignment.Center
             ) {
@@ -1490,19 +1526,19 @@ fun UserProfileSection(
                     text = userName,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = Color.White
                 )
                 if (userEmail.isNotBlank()) {
                     Text(
                         text = userEmail,
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        color = Color.White.copy(alpha = 0.7f)
                     )
                 }
                 Text(
                     text = membershipStatus,
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = Color(0xFF3B82F6),
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -1512,7 +1548,7 @@ fun UserProfileSection(
                 Icon(
                     Icons.Default.Edit,
                     contentDescription = "Change Avatar",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = Color(0xFF3B82F6)
                 )
             }
         }
@@ -1528,8 +1564,9 @@ fun SettingsSection(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+            containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -1540,7 +1577,7 @@ fun SettingsSection(
                 text = title,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+                color = Color.White,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
             content()
@@ -1567,7 +1604,7 @@ fun SettingsItem(
             modifier = Modifier
                 .size(40.dp)
                 .background(
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                    Color.White.copy(alpha = 0.1f),
                     CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -1575,7 +1612,7 @@ fun SettingsItem(
             Icon(
                 icon,
                 contentDescription = title,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = Color(0xFF3B82F6),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -1586,19 +1623,20 @@ fun SettingsItem(
             Text(
                 text = title,
                 fontSize = 15.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                color = Color.White
             )
             Text(
                 text = subtitle,
                 fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.White.copy(alpha = 0.6f)
             )
         }
 
         Icon(
             Icons.Default.ChevronRight,
             contentDescription = "Navigate",
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            tint = Color.White.copy(alpha = 0.6f),
             modifier = Modifier.size(20.dp)
         )
     }
@@ -1623,7 +1661,7 @@ fun SettingsToggleItem(
             modifier = Modifier
                 .size(40.dp)
                 .background(
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                    Color.White.copy(alpha = 0.1f),
                     CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -1631,7 +1669,7 @@ fun SettingsToggleItem(
             Icon(
                 icon,
                 contentDescription = title,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = Color(0xFF3B82F6),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -1642,12 +1680,13 @@ fun SettingsToggleItem(
             Text(
                 text = title,
                 fontSize = 15.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                color = Color.White
             )
             Text(
                 text = subtitle,
                 fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.White.copy(alpha = 0.6f)
             )
         }
 
@@ -1656,8 +1695,8 @@ fun SettingsToggleItem(
             onCheckedChange = onCheckedChange,
             enabled = enabled,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.primary,
-                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                checkedThumbColor = Color(0xFF3B82F6),
+                checkedTrackColor = Color(0xFF3B82F6).copy(alpha = 0.3f)
             )
         )
     }

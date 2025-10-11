@@ -957,7 +957,7 @@ private fun QuickStartSection(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(72.dp)
                             .clip(CircleShape)
                             .background(Color.Transparent),
                         contentAlignment = Alignment.Center
@@ -966,7 +966,7 @@ private fun QuickStartSection(
                             imageVector = Icons.Default.Mic,
                             contentDescription = null,
                             tint = Color(0xFF3B82F6),
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(36.dp)
                         )
                     }
 
@@ -992,9 +992,6 @@ private fun QuickStartSection(
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             // Learn With Vivi - Topic-based Learning (Purple)
             Card(
                 modifier = Modifier
@@ -1014,7 +1011,7 @@ private fun QuickStartSection(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(72.dp)
                             .clip(CircleShape)
                             .background(Color.Transparent),
                         contentAlignment = Alignment.Center
@@ -1023,7 +1020,7 @@ private fun QuickStartSection(
                             imageVector = Icons.AutoMirrored.Filled.MenuBook,
                             contentDescription = null,
                             tint = Color(0xFF9333EA),
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(36.dp)
                         )
                     }
 
@@ -1049,9 +1046,6 @@ private fun QuickStartSection(
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             // Live Practice - Gemini Live (Slate/Gray)
             Card(
                 modifier = Modifier
@@ -1069,7 +1063,7 @@ private fun QuickStartSection(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(72.dp)
                             .clip(CircleShape)
                             .background(Color.Transparent),
                         contentAlignment = Alignment.Center
@@ -1078,7 +1072,7 @@ private fun QuickStartSection(
                             imageVector = Icons.Default.FlashOn,
                             contentDescription = null,
                             tint = Color(0xFFFBBF24),
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(36.dp)
                         )
                     }
 

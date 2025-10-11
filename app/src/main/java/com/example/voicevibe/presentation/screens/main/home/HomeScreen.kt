@@ -176,7 +176,7 @@ fun HomeScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(0.dp),
                     contentPadding = PaddingValues(vertical = 20.dp, horizontal = 16.dp)
                 ) {
                     // Learning Progress
@@ -186,6 +186,12 @@ fun HomeScreen(
                             currentStreak = uiState.currentStreak,
                             completedLessons = uiState.completedLessons
                         )
+                    }
+                    
+                    item {
+                        Spacer(modifier = Modifier.height(20.dp))
+                        GlassmorphismDivider()
+                        Spacer(modifier = Modifier.height(20.dp))
                     }
 
                     // Quick Start Actions - Highlighted
@@ -202,6 +208,12 @@ fun HomeScreen(
                                 onNavigateToLearnWithVivi = onNavigateToLearnWithVivi
                             )
                         }
+                    }
+                    
+                    item {
+                        Spacer(modifier = Modifier.height(20.dp))
+                        GlassmorphismDivider()
+                        Spacer(modifier = Modifier.height(20.dp))
                     }
 
                     // Study Tools
@@ -732,7 +744,7 @@ private fun EducationalTopBar(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f)),
+                        .background(Color.Transparent),
                     contentAlignment = Alignment.Center
                 ) {
                     if (avatarUrl != null) {
@@ -922,7 +934,10 @@ private fun QuickStartSection(
                 fontSize = if (isCompact) 18.sp else 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White,
-                modifier = Modifier.padding(bottom = 16.dp)
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
             )
 
             // Primary Action - Speaking Practice (Blue)
@@ -931,49 +946,50 @@ private fun QuickStartSection(
                     .fillMaxWidth()
                     .clickable { onStartPractice() },
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF3B82F6)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(if (isCompact) 16.dp else 20.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Box(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.2f)),
+                            .background(Color.Transparent),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Mic,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = Color(0xFF3B82F6),
                             modifier = Modifier.size(24.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(if (isCompact) 12.dp else 16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Practice Speaking",
-                            fontSize = if (isCompact) 16.sp else 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Text(
-                            text = "Practice speaking with selected topic",
-                            fontSize = if (isCompact) 12.sp else 14.sp,
-                            color = Color.White.copy(alpha = 0.8f),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                    Text(
+                        text = "Practice Speaking",
+                        fontSize = if (isCompact) 16.sp else 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Practice speaking with selected topic",
+                        fontSize = if (isCompact) 12.sp else 14.sp,
+                        color = Color.White.copy(alpha = 0.8f),
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
 
@@ -987,49 +1003,50 @@ private fun QuickStartSection(
                         defaultTopicId?.let { onNavigateToLearnWithVivi(it) }
                     },
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF9333EA)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(if (isCompact) 16.dp else 20.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Box(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.2f)),
+                            .background(Color.Transparent),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.MenuBook,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = Color(0xFF9333EA),
                             modifier = Modifier.size(24.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(if (isCompact) 12.dp else 16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Learn with Vivi",
-                            fontSize = if (isCompact) 16.sp else 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Text(
-                            text = "Learn common phrases with Vivi",
-                            fontSize = if (isCompact) 12.sp else 14.sp,
-                            color = Color.White.copy(alpha = 0.8f),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                    Text(
+                        text = "Learn with Vivi",
+                        fontSize = if (isCompact) 16.sp else 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Learn common phrases with Vivi",
+                        fontSize = if (isCompact) 12.sp else 14.sp,
+                        color = Color.White.copy(alpha = 0.8f),
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
 
@@ -1041,49 +1058,50 @@ private fun QuickStartSection(
                     .fillMaxWidth()
                     .clickable { onLivePractice() },
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF475569)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(if (isCompact) 16.dp else 20.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Box(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.2f)),
+                            .background(Color.Transparent),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.FlashOn,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = Color(0xFFFBBF24),
                             modifier = Modifier.size(24.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(if (isCompact) 12.dp else 16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Practice with Vivi",
-                            fontSize = if (isCompact) 16.sp else 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Text(
-                            text = "Practice speaking with AI tutor",
-                            fontSize = if (isCompact) 12.sp else 14.sp,
-                            color = Color.White.copy(alpha = 0.8f),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                    Text(
+                        text = "Practice with Vivi",
+                        fontSize = if (isCompact) 16.sp else 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Practice speaking with AI tutor",
+                        fontSize = if (isCompact) 12.sp else 14.sp,
+                        color = Color.White.copy(alpha = 0.8f),
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
         }
@@ -1099,8 +1117,8 @@ private fun LearningProgressSection(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF243454)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         BoxWithConstraints(
             modifier = Modifier
@@ -1114,7 +1132,10 @@ private fun LearningProgressSection(
                     fontSize = if (isCompact) 18.sp else 20.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
                 )
 
                 Row(
@@ -1169,7 +1190,7 @@ private fun ProgressItem(
             modifier = Modifier
                 .size(iconSize)
                 .clip(CircleShape)
-                .background(color.copy(alpha = 0.15f)),
+                .background(Color.Transparent),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -1217,7 +1238,10 @@ private fun StudyToolsSection(
                 fontSize = if (isCompact) 18.sp else 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White,
-                modifier = Modifier.padding(bottom = 16.dp)
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
             )
 
             Row(
@@ -1272,8 +1296,8 @@ private fun StudyToolCard(
                 .fillMaxSize()
                 .clickable { onClick() },
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF243454)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -1289,7 +1313,7 @@ private fun StudyToolCard(
                     modifier = Modifier
                         .size(iconBgSize)
                         .clip(CircleShape)
-                        .background(color.copy(alpha = 0.15f)),
+                        .background(Color.Transparent),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -1732,6 +1756,26 @@ private fun TopicSelectionDialog(
                 Text("Close", color = BrandIndigo)
             }
         }
+    )
+}
+
+@Composable
+private fun GlassmorphismDivider() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(
+                Brush.horizontalGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        Color.White.copy(alpha = 0.2f),
+                        Color.White.copy(alpha = 0.3f),
+                        Color.White.copy(alpha = 0.2f),
+                        Color.Transparent
+                    )
+                )
+            )
     )
 }
 

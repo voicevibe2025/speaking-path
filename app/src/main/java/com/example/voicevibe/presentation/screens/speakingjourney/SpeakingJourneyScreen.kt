@@ -361,10 +361,18 @@ fun SpeakingJourneyScreen(
         label = "gradient"
     )
 
+    val backgroundBrush = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF0A1128),
+            Color(0xFF1E2761),
+            Color(0xFF0A1128)
+        )
+    )
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1A2642))
+            .background(backgroundBrush)
     ) {
         FloatingParticles()
 

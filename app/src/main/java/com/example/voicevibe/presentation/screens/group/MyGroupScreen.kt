@@ -1,6 +1,10 @@
 package com.example.voicevibe.presentation.screens.group
 
 import androidx.compose.foundation.background
+import androidx.compose.animation.core.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,6 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -33,9 +39,11 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun MyGroupScreen(
     onBackPressed: () -> Unit,
+    onNavigateToHome: () -> Unit = {},
     viewModel: GroupViewModel = hiltViewModel()
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
+    var selectedNavTab by remember { mutableIntStateOf(1) } // Group tab selected
     val tabs = listOf("Members", "Chat")
 
     val membersState by viewModel.membersState.collectAsState()
@@ -92,6 +100,18 @@ fun MyGroupScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
+            )
+        },
+        bottomBar = {
+            FloatingBottomNavigationForGroup(
+                selectedTab = selectedNavTab,
+                onTabSelected = { index ->
+                    selectedNavTab = index
+                    when (index) {
+                        0 -> onNavigateToHome()
+                        1 -> { /* Already on Group */ }
+                    }
+                }
             )
         }
     ) { paddingValues ->
@@ -556,5 +576,111 @@ private fun parseColor(hexColor: String): Color {
         Color(0xFF000000 or colorInt)
     } catch (e: Exception) {
         Color(0xFF1976D2) // Default blue
+    }
+}
+
+/**
+ * Floating Bottom Navigation Bar for Group Screen
+ */
+@Composable
+fun FloatingBottomNavigationForGroup(
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        shape = RoundedCornerShape(28.dp),
+        color = Color(0xFF1E2761).copy(alpha = 0.95f),
+        tonalElevation = 8.dp,
+        shadowElevation = 8.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp, horizontal = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Home Tab
+            FloatingNavItemForGroup(
+                icon = Icons.Filled.Home,
+                label = "Home",
+                selected = selectedTab == 0,
+                onClick = { onTabSelected(0) }
+            )
+            
+            // Group Tab
+            FloatingNavItemForGroup(
+                icon = Icons.Filled.Groups,
+                label = "Group",
+                selected = selectedTab == 1,
+                onClick = { onTabSelected(1) }
+            )
+        }
+    }
+}
+
+/**
+ * Single Navigation Item for Group Screen
+ */
+@Composable
+fun FloatingNavItemForGroup(
+    icon: ImageVector,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val animatedAlpha by animateFloatAsState(
+        targetValue = if (selected) 1f else 0.6f,
+        animationSpec = tween(300),
+        label = "alpha"
+    )
+    
+    val animatedScale by animateFloatAsState(
+        targetValue = if (selected) 1.1f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "scale"
+    )
+    
+    val accentColor = Color(0xFF00BCD4) // Cyan
+    
+    Surface(
+        onClick = onClick,
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = animatedScale
+                scaleY = animatedScale
+            },
+        shape = RoundedCornerShape(20.dp),
+        color = if (selected) accentColor.copy(alpha = 0.2f) else Color.Transparent
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                modifier = Modifier.size(28.dp),
+                tint = if (selected) accentColor else Color.White.copy(alpha = animatedAlpha)
+            )
+            
+            Spacer(modifier = Modifier.height(4.dp))
+            
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = if (selected) accentColor else Color.White.copy(alpha = animatedAlpha),
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+            )
+        }
     }
 }

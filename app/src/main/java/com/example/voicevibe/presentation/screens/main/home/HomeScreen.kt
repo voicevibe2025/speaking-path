@@ -98,6 +98,7 @@ fun HomeScreen(
     onNavigateToMessages: () -> Unit = {},
     onNavigateToLearnWithVivi: (String) -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToMyGroup: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     livePracticeViewModel: com.example.voicevibe.presentation.screens.practice.live.LivePracticeViewModel = hiltViewModel()
 ) {
@@ -158,6 +159,8 @@ fun HomeScreen(
         )
     )
     
+    var selectedTab by remember { mutableStateOf(0) }
+
     Box(modifier = Modifier
         .fillMaxSize()
         .background(backgroundBrush)
@@ -180,6 +183,18 @@ fun HomeScreen(
                     onAvatarClick = onNavigateToProfile,
                     onSearchClick = onNavigateToUserSearch,
                     onSettingsClick = onNavigateToSettings
+                )
+            },
+            bottomBar = {
+                FloatingBottomNavigation(
+                    selectedTab = selectedTab,
+                    onTabSelected = { index ->
+                        selectedTab = index
+                        when (index) {
+                            0 -> { /* Already on Home */ }
+                            1 -> onNavigateToMyGroup()
+                        }
+                    }
                 )
             }
         ) { innerPadding ->
@@ -2505,6 +2520,110 @@ private fun VoiceSpeakingIndicator() {
                     tint = Color.White
                 )
             }
+        }
+    }
+}
+
+/**
+ * Floating Bottom Navigation Bar
+ */
+@Composable
+fun FloatingBottomNavigation(
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        shape = RoundedCornerShape(28.dp),
+        color = Color(0xFF1E2761).copy(alpha = 0.95f),
+        tonalElevation = 8.dp,
+        shadowElevation = 8.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp, horizontal = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Home Tab
+            FloatingNavItem(
+                icon = Icons.Filled.Home,
+                label = "Home",
+                selected = selectedTab == 0,
+                onClick = { onTabSelected(0) }
+            )
+            
+            // Group Tab
+            FloatingNavItem(
+                icon = Icons.Filled.Groups,
+                label = "Group",
+                selected = selectedTab == 1,
+                onClick = { onTabSelected(1) }
+            )
+        }
+    }
+}
+
+/**
+ * Single Navigation Item
+ */
+@Composable
+fun FloatingNavItem(
+    icon: ImageVector,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val animatedAlpha by animateFloatAsState(
+        targetValue = if (selected) 1f else 0.6f,
+        animationSpec = tween(300),
+        label = "alpha"
+    )
+    
+    val animatedScale by animateFloatAsState(
+        targetValue = if (selected) 1.1f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "scale"
+    )
+    
+    Surface(
+        onClick = onClick,
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = animatedScale
+                scaleY = animatedScale
+            },
+        shape = RoundedCornerShape(20.dp),
+        color = if (selected) BrandCyan.copy(alpha = 0.2f) else Color.Transparent
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                modifier = Modifier.size(28.dp),
+                tint = if (selected) BrandCyan else Color.White.copy(alpha = animatedAlpha)
+            )
+            
+            Spacer(modifier = Modifier.height(4.dp))
+            
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = if (selected) BrandCyan else Color.White.copy(alpha = animatedAlpha),
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+            )
         }
     }
 }

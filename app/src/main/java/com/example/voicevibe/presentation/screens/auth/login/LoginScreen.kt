@@ -57,6 +57,7 @@ fun LoginScreen(
     onNavigateToRegister: () -> Unit,
     onNavigateToForgotPassword: () -> Unit,
     onNavigateToHome: () -> Unit,
+    onNavigateToGroupSelection: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -69,7 +70,14 @@ fun LoginScreen(
         viewModel.loginEvent.collect { event ->
             when (event) {
                 is LoginEvent.Success -> {
+                    // Deprecated - keeping for backward compatibility
                     onNavigateToHome()
+                }
+                is LoginEvent.NavigateToHome -> {
+                    onNavigateToHome()
+                }
+                is LoginEvent.NavigateToGroupSelection -> {
+                    onNavigateToGroupSelection()
                 }
                 is LoginEvent.NetworkError -> {
                     snackbarHostState.showSnackbar(

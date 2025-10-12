@@ -3,6 +3,7 @@ package com.example.voicevibe.presentation.screens.auth.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.repository.AuthRepository
+import com.example.voicevibe.data.repository.UserRepository
 import com.example.voicevibe.domain.model.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -14,7 +15,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     // UI State
@@ -51,7 +53,7 @@ class LoginViewModel @Inject constructor(
                     }
                     is Resource.Success -> {
                         _uiState.update { it.copy(isLoading = false) }
-                        _loginEvent.emit(LoginEvent.Success)
+                        checkGroupStatusAndNavigate()
                     }
                     is Resource.Error -> {
                         _uiState.update {
@@ -118,7 +120,7 @@ class LoginViewModel @Inject constructor(
                     }
                     is Resource.Success -> {
                         _uiState.update { it.copy(isLoading = false) }
-                        _loginEvent.emit(LoginEvent.Success)
+                        checkGroupStatusAndNavigate()
                     }
                     is Resource.Error -> {
                         _uiState.update {
@@ -127,6 +129,30 @@ class LoginViewModel @Inject constructor(
                                 generalError = resource.message ?: "Google sign-in failed"
                             )
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun checkGroupStatusAndNavigate() {
+        viewModelScope.launch {
+            userRepository.getCurrentUser().collect { resource ->
+                when (resource) {
+                    is Resource.Success -> {
+                        val hasGroup = resource.data?.hasGroup ?: false
+                        if (hasGroup) {
+                            _loginEvent.emit(LoginEvent.NavigateToHome)
+                        } else {
+                            _loginEvent.emit(LoginEvent.NavigateToGroupSelection)
+                        }
+                    }
+                    is Resource.Error -> {
+                        // If we can't check, default to home
+                        _loginEvent.emit(LoginEvent.NavigateToHome)
+                    }
+                    is Resource.Loading -> {
+                        // Keep loading
                     }
                 }
             }
@@ -152,5 +178,7 @@ data class LoginUiState(
  */
 sealed class LoginEvent {
     object Success : LoginEvent()
+    object NavigateToHome : LoginEvent()
+    object NavigateToGroupSelection : LoginEvent()
     object NetworkError : LoginEvent()
 }

@@ -3,6 +3,7 @@ package com.example.voicevibe.presentation.screens.auth.register
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.repository.AuthRepository
+import com.example.voicevibe.data.repository.UserRepository
 import com.example.voicevibe.domain.model.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -14,7 +15,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     // UI State
@@ -77,7 +79,7 @@ class RegisterViewModel @Inject constructor(
                     }
                     is Resource.Success -> {
                         _uiState.update { it.copy(isLoading = false) }
-                        _registerEvent.emit(RegisterEvent.Success)
+                        checkGroupStatusAndNavigate()
                     }
                     is Resource.Error -> {
                         _uiState.update {
@@ -207,7 +209,7 @@ class RegisterViewModel @Inject constructor(
                     }
                     is Resource.Success -> {
                         _uiState.update { it.copy(isLoading = false) }
-                        _registerEvent.emit(RegisterEvent.Success)
+                        checkGroupStatusAndNavigate()
                     }
                     is Resource.Error -> {
                         _uiState.update {
@@ -216,6 +218,30 @@ class RegisterViewModel @Inject constructor(
                                 generalError = resource.message ?: "Google sign-in failed"
                             )
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun checkGroupStatusAndNavigate() {
+        viewModelScope.launch {
+            userRepository.getCurrentUser().collect { resource ->
+                when (resource) {
+                    is Resource.Success -> {
+                        val hasGroup = resource.data?.hasGroup ?: false
+                        if (hasGroup) {
+                            _registerEvent.emit(RegisterEvent.NavigateToHome)
+                        } else {
+                            _registerEvent.emit(RegisterEvent.NavigateToGroupSelection)
+                        }
+                    }
+                    is Resource.Error -> {
+                        // If we can't check, default to home
+                        _registerEvent.emit(RegisterEvent.NavigateToHome)
+                    }
+                    is Resource.Loading -> {
+                        // Keep loading
                     }
                 }
             }
@@ -259,5 +285,7 @@ enum class PasswordStrength {
  */
 sealed class RegisterEvent {
     object Success : RegisterEvent()
+    object NavigateToHome : RegisterEvent()
+    object NavigateToGroupSelection : RegisterEvent()
     object NetworkError : RegisterEvent()
 }

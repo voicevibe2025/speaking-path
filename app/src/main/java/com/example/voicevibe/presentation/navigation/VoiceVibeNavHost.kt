@@ -31,6 +31,8 @@ import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeChatS
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLessonScreen
 import com.example.voicevibe.presentation.screens.gamification.AchievementScreen
 import com.example.voicevibe.presentation.screens.profile.MyReportsScreen
+import com.example.voicevibe.presentation.screens.group.GroupSelectionScreen
+import com.example.voicevibe.presentation.screens.group.MyGroupScreen
 
 /**
  * Main navigation host for the VoiceVibe app
@@ -94,6 +96,11 @@ fun VoiceVibeNavHost(
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
+                },
+                onNavigateToGroupSelection = {
+                    navController.navigate(Screen.GroupSelection.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             )
         }
@@ -112,6 +119,12 @@ fun VoiceVibeNavHost(
                 },
                 onNavigateToTerms = {
                     navController.navigate(Screen.TermsOfService.route)
+                },
+                onNavigateToGroupSelection = {
+                    navController.navigate(Screen.GroupSelection.route) {
+                        popUpTo(Screen.Register.route) { inclusive = true }
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             )
         }
@@ -156,7 +169,8 @@ fun VoiceVibeNavHost(
                 onNavigateToMessages = { navController.navigate(Screen.Messages.route) },
                 onNavigateToLearnWithVivi = { topicId ->
                     navController.navigate(Screen.LearnTopicWithVivi.createRoute(topicId))
-                }
+                },
+                onNavigateToMyGroup = { navController.navigate(Screen.MyGroup.route) }
             )
         }
 
@@ -388,6 +402,35 @@ fun VoiceVibeNavHost(
             TopicPracticeChatScreen(
                 topicId = topicId,
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Group Selection Screen
+        composable(route = Screen.GroupSelection.route) {
+            GroupSelectionScreen(
+                onGroupSelected = {
+                    // After joining group, navigate to home
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.GroupSelection.route) { inclusive = true }
+                    }
+                },
+                onBackPressed = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // My Group Screen
+        composable(route = Screen.MyGroup.route) {
+            MyGroupScreen(
+                onBackPressed = {
+                    navController.popBackStack()
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                }
             )
         }
     }

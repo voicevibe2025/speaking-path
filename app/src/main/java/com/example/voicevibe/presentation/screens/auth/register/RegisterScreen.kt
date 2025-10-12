@@ -57,6 +57,7 @@ fun RegisterScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToTerms: () -> Unit,
+    onNavigateToGroupSelection: () -> Unit,
     viewModel: RegisterViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -69,11 +70,26 @@ fun RegisterScreen(
         viewModel.registerEvent.collect { event ->
             when (event) {
                 is RegisterEvent.Success -> {
+                    // Deprecated - keeping for backward compatibility
                     snackbarHostState.showSnackbar(
                         message = "Registration successful! Welcome to VoiceVibe!",
                         duration = SnackbarDuration.Short
                     )
                     onNavigateToHome()
+                }
+                is RegisterEvent.NavigateToHome -> {
+                    snackbarHostState.showSnackbar(
+                        message = "Registration successful! Welcome to VoiceVibe!",
+                        duration = SnackbarDuration.Short
+                    )
+                    onNavigateToHome()
+                }
+                is RegisterEvent.NavigateToGroupSelection -> {
+                    snackbarHostState.showSnackbar(
+                        message = "Registration successful! Please choose your group.",
+                        duration = SnackbarDuration.Short
+                    )
+                    onNavigateToGroupSelection()
                 }
                 is RegisterEvent.NetworkError -> {
                     snackbarHostState.showSnackbar(

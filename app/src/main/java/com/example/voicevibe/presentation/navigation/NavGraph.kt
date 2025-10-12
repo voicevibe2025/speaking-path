@@ -148,6 +148,11 @@ fun NavGraph(
                 },
                 onNavigateToForgotPassword = {
                     navController.navigate(Screen.ForgotPassword.route)
+                },
+                onNavigateToGroupSelection = {
+                    navController.navigate(Screen.GroupSelection.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             )
         }
@@ -164,6 +169,11 @@ fun NavGraph(
                 },
                 onNavigateToTerms = {
                     navController.navigate(Screen.TermsOfService.route)
+                },
+                onNavigateToGroupSelection = {
+                    navController.navigate(Screen.GroupSelection.route) {
+                        popUpTo(Screen.Register.route) { inclusive = true }
+                    }
                 }
             )
         }
@@ -236,6 +246,9 @@ fun NavGraph(
                 },
                 onNavigateToSettings = {
                     navController.navigate(Screen.Settings.route)
+                },
+                onNavigateToMyGroup = {
+                    navController.navigate(Screen.MyGroup.route)
                 }
             )
         }
@@ -880,6 +893,11 @@ fun NavGraph(
             MyGroupScreen(
                 onBackPressed = {
                     navController.popBackStack()
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
                 }
             )
         }

@@ -43,7 +43,12 @@ data class UserProfile(
     val fluencyScore: Float = 0f,          // fluency_total_score average
     val vocabularyScore: Float = 0f,       // vocabulary_total_score average
     val listeningScore: Float = 0f,        // listening_total_score average
-    val grammarScore: Float = 0f           // not implemented yet
+    val grammarScore: Float = 0f,          // not implemented yet
+    // Group membership
+    val groupId: Int? = null,
+    val groupName: String? = null,
+    val groupDisplayName: String? = null,
+    val hasGroup: Boolean = false
 )
 
 /**

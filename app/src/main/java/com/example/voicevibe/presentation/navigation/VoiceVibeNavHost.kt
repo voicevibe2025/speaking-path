@@ -61,6 +61,11 @@ fun VoiceVibeNavHost(
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
+                },
+                onNavigateToGroupSelection = {
+                    navController.navigate(Screen.GroupSelection.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
                 }
             )
         }

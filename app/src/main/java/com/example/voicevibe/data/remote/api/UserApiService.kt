@@ -89,6 +89,38 @@ interface UserApiService {
     
     @PATCH("users/profile/")
     suspend fun updateProfileFields(@Body fields: Map<String, String>): Response<UserProfile>
+    
+    // Group endpoints
+    @GET("users/groups/")
+    suspend fun getGroups(): Response<List<GroupDto>>
+    
+    @GET("users/groups/check/")
+    suspend fun checkGroupStatus(): Response<GroupStatusDto>
+    
+    @POST("users/groups/{id}/join/")
+    suspend fun joinGroup(@Path("id") groupId: Int): Response<JoinGroupResponse>
+    
+    @GET("users/groups/members/")
+    suspend fun getMyGroupMembers(): Response<GroupMembersDto>
+    
+    @GET("users/groups/{id}/members/")
+    suspend fun getGroupMembers(@Path("id") groupId: Int): Response<GroupMembersDto>
+    
+    @GET("users/groups/messages/")
+    suspend fun getMyGroupMessages(
+        @Query("limit") limit: Int = 50,
+        @Query("offset") offset: Int = 0
+    ): Response<GroupMessagesDto>
+    
+    @GET("users/groups/{id}/messages/")
+    suspend fun getGroupMessages(
+        @Path("id") groupId: Int,
+        @Query("limit") limit: Int = 50,
+        @Query("offset") offset: Int = 0
+    ): Response<GroupMessagesDto>
+    
+    @POST("users/groups/messages/send/")
+    suspend fun sendGroupMessage(@Body request: SendGroupMessageRequest): Response<SendGroupMessageResponse>
 }
 
 data class ChangePasswordResponse(
@@ -155,4 +187,70 @@ data class ReportItem(
     val status: String,
     @SerializedName("created_at")
     val createdAt: String
+)
+
+// Group DTOs
+data class GroupDto(
+    val id: Int,
+    val name: String,
+    val displayName: String,
+    val description: String,
+    val icon: String,
+    val color: String,
+    val memberCount: Int,
+    @SerializedName("created_at")
+    val createdAt: String
+)
+
+data class GroupMemberDto(
+    val userId: Int,
+    val username: String,
+    val displayName: String,
+    val avatarUrl: String?,
+    val level: Int,
+    val xp: Int,
+    val streakDays: Int
+)
+
+data class GroupMessageDto(
+    val id: Int,
+    val groupId: Int,
+    val groupName: String,
+    val senderId: Int,
+    val senderName: String,
+    val senderAvatar: String?,
+    val message: String,
+    val timestamp: String
+)
+
+data class GroupStatusDto(
+    val hasGroup: Boolean,
+    val group: GroupDto?
+)
+
+data class GroupMembersDto(
+    val group: GroupDto,
+    val members: List<GroupMemberDto>,
+    val totalMembers: Int
+)
+
+data class GroupMessagesDto(
+    val group: GroupDto,
+    val messages: List<GroupMessageDto>,
+    val hasMore: Boolean
+)
+
+data class JoinGroupResponse(
+    val success: Boolean,
+    val message: String,
+    val profile: UserProfile?
+)
+
+data class SendGroupMessageRequest(
+    val message: String
+)
+
+data class SendGroupMessageResponse(
+    val success: Boolean,
+    val message: GroupMessageDto
 )

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.local.TokenManager
 import com.example.voicevibe.data.repository.AuthRepository
 import com.example.voicevibe.data.repository.AiEvaluationRepository
+import com.example.voicevibe.data.repository.UserRepository
 import com.example.voicevibe.domain.model.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -21,6 +22,7 @@ import javax.inject.Inject
 class SplashViewModel @Inject constructor(
     private val tokenManager: TokenManager,
     private val authRepository: AuthRepository,
+    private val userRepository: UserRepository,
     private val splashScreenStateFlow: MutableStateFlow<Boolean>,
     private val aiEvalRepo: AiEvaluationRepository,
 ) : ViewModel() {
@@ -75,8 +77,8 @@ class SplashViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = false) }
             // Fire-and-forget ASR prewarm so first transcription is fast
             prewarmAsr()
-            _navigationEvent.emit(SplashNavigationEvent.NavigateToHome)
-            splashScreenStateFlow.value = false
+            // Check if user has selected a group
+            checkGroupStatus()
         } else {
             refreshToken()
         }
@@ -100,8 +102,8 @@ class SplashViewModel @Inject constructor(
                 _uiState.update { it.copy(isLoading = false) }
                 // Fire-and-forget ASR prewarm after successful refresh
                 prewarmAsr()
-                _navigationEvent.emit(SplashNavigationEvent.NavigateToHome)
-                splashScreenStateFlow.value = false
+                // Check if user has selected a group
+                checkGroupStatus()
             }
             is Resource.Error -> {
                 _uiState.update { it.copy(isLoading = false) }
@@ -109,6 +111,32 @@ class SplashViewModel @Inject constructor(
                 tokenManager.clearAll()
                 _navigationEvent.emit(SplashNavigationEvent.NavigateToLogin)
                 splashScreenStateFlow.value = false
+            }
+        }
+    }
+
+    private suspend fun checkGroupStatus() {
+        // Get user profile to check group status
+        userRepository.getCurrentUser().collect { resource ->
+            when (resource) {
+                is Resource.Success -> {
+                    val hasGroup = resource.data?.hasGroup ?: false
+                    if (hasGroup) {
+                        _navigationEvent.emit(SplashNavigationEvent.NavigateToHome)
+                    } else {
+                        _navigationEvent.emit(SplashNavigationEvent.NavigateToGroupSelection)
+                    }
+                    splashScreenStateFlow.value = false
+                }
+                is Resource.Error -> {
+                    // If profile fetch fails, still go to home
+                    // User can select group later from settings
+                    _navigationEvent.emit(SplashNavigationEvent.NavigateToHome)
+                    splashScreenStateFlow.value = false
+                }
+                is Resource.Loading -> {
+                    // Keep loading
+                }
             }
         }
     }
@@ -144,4 +172,5 @@ sealed class SplashNavigationEvent {
     object NavigateToOnboarding : SplashNavigationEvent()
     object NavigateToLogin : SplashNavigationEvent()
     object NavigateToHome : SplashNavigationEvent()
+    object NavigateToGroupSelection : SplashNavigationEvent()
 }

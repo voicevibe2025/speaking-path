@@ -155,6 +155,10 @@ sealed class Screen(val route: String) {
     object PrivacyPolicy : Screen("privacy_policy")
     object TermsOfService : Screen("terms_of_service")
     object CommunityGuidelines : Screen("community_guidelines")
+    
+    // Groups (Collectivism Feature)
+    object GroupSelection : Screen("group_selection")
+    object MyGroup : Screen("my_group")
 }
 
 /**
@@ -167,7 +171,7 @@ enum class BottomNavItem(
 ) {
     HOME(Screen.Home, "Home", "home"),
     PRACTICE(Screen.Practice, "Practice", "mic"),
-    PATHS(Screen.LearningPaths, "Paths", "school"),
+    GROUP(Screen.MyGroup, "Group", "people"),
     ACHIEVEMENTS(Screen.Achievements, "Achievements", "trophy"),
     PROFILE(Screen.Profile, "Profile", "person")
 }

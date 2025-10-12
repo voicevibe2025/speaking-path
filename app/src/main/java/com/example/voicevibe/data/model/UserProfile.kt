@@ -90,8 +90,16 @@ data class UserProfile(
     @SerializedName("followersCount")
     val followersCount: Int? = null,
     @SerializedName("followingCount")
-    val followingCount: Int? = null
-    ,
+    val followingCount: Int? = null,
     @SerializedName("isOnline")
-    val isOnline: Boolean? = null
+    val isOnline: Boolean? = null,
+    // Group fields
+    @SerializedName("groupId")
+    val groupId: Int? = null,
+    @SerializedName("groupName")
+    val groupName: String? = null,
+    @SerializedName("groupDisplayName")
+    val groupDisplayName: String? = null,
+    @SerializedName("hasGroup")
+    val hasGroup: Boolean? = null
 )

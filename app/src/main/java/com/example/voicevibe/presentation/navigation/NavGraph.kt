@@ -66,6 +66,8 @@ import com.example.voicevibe.presentation.screens.speakingjourney.LearnTopicWith
 import com.example.voicevibe.presentation.screens.speakingjourney.FluencyPracticeScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyPracticeScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.GrammarPracticeScreen
+import com.example.voicevibe.presentation.screens.group.GroupSelectionScreen
+import com.example.voicevibe.presentation.screens.group.MyGroupScreen
 
 @Composable
 fun NavGraph(
@@ -91,6 +93,11 @@ fun NavGraph(
                 },
                 onNavigateToHome = {
                     navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                },
+                onNavigateToGroupSelection = {
+                    navController.navigate(Screen.GroupSelection.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
@@ -849,6 +856,30 @@ fun NavGraph(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToProfile = { targetUserId ->
                     navController.navigate(Screen.UserProfile.createRoute(targetUserId))
+                }
+            )
+        }
+
+        // Group Selection Screen
+        composable(Screen.GroupSelection.route) {
+            GroupSelectionScreen(
+                onGroupSelected = {
+                    // After joining group, navigate to home
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.GroupSelection.route) { inclusive = true }
+                    }
+                },
+                onBackPressed = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // My Group Screen
+        composable(Screen.MyGroup.route) {
+            MyGroupScreen(
+                onBackPressed = {
+                    navController.popBackStack()
                 }
             )
         }

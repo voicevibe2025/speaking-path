@@ -95,7 +95,12 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
         fluencyScore = this.fluencyScore ?: 0f,
         vocabularyScore = this.vocabularyScore ?: 0f,
         listeningScore = this.listeningScore ?: 0f,
-        grammarScore = this.grammarScore ?: 0f
+        grammarScore = this.grammarScore ?: 0f,
+        // Group fields
+        groupId = this.groupId,
+        groupName = this.groupName,
+        groupDisplayName = this.groupDisplayName,
+        hasGroup = this.hasGroup ?: false
     )
 }
 

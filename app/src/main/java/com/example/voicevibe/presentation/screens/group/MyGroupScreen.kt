@@ -5,6 +5,8 @@ import androidx.compose.animation.core.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -40,6 +42,7 @@ import java.time.format.DateTimeFormatter
 fun MyGroupScreen(
     onBackPressed: () -> Unit,
     onNavigateToHome: () -> Unit = {},
+    onNavigateToUserProfile: (Int) -> Unit = {},
     viewModel: GroupViewModel = hiltViewModel()
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -48,11 +51,14 @@ fun MyGroupScreen(
 
     val membersState by viewModel.membersState.collectAsState()
     val messagesState by viewModel.messagesState.collectAsState()
+    val currentUserId by viewModel.currentUserId.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.loadMyGroupMembers()
         viewModel.loadMyGroupMessages()
     }
+
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         topBar = {
@@ -113,7 +119,8 @@ fun MyGroupScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -142,9 +149,14 @@ fun MyGroupScreen(
             }
 
             // Content
-            when (selectedTab) {
-                0 -> MembersTab(membersState, viewModel)
-                1 -> ChatTab(messagesState, viewModel)
+            if (selectedTab == 0) {
+                MembersTab(
+                    membersState = membersState,
+                    onNavigateToUserProfile = onNavigateToUserProfile,
+                    onRetry = { viewModel.loadMyGroupMembers() }
+                )
+            } else {
+                ChatTab(messagesState, viewModel, currentUserId, snackbarHostState)
             }
         }
     }
@@ -153,7 +165,8 @@ fun MyGroupScreen(
 @Composable
 private fun MembersTab(
     membersState: Resource<Pair<com.example.voicevibe.domain.model.Group, List<GroupMember>>>,
-    viewModel: GroupViewModel
+    onNavigateToUserProfile: (Int) -> Unit,
+    onRetry: () -> Unit = {}
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         when (membersState) {
@@ -177,7 +190,7 @@ private fun MembersTab(
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { viewModel.loadMyGroupMembers() }) {
+                    Button(onClick = onRetry) {
                         Text("Retry")
                     }
                 }
@@ -230,7 +243,11 @@ private fun MembersTab(
 
                     // Members list (sorted by XP)
                     items(members) { member ->
-                        MemberCard(member, members.indexOf(member) + 1)
+                        MemberCard(
+                            member = member,
+                            rank = members.indexOf(member) + 1,
+                            onClick = { onNavigateToUserProfile(member.userId) }
+                        )
                     }
                 }
             }
@@ -239,8 +256,13 @@ private fun MembersTab(
 }
 
 @Composable
-private fun MemberCard(member: GroupMember, rank: Int) {
+private fun MemberCard(
+    member: GroupMember,
+    rank: Int,
+    onClick: () -> Unit = {}
+) {
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -353,10 +375,15 @@ private fun MemberCard(member: GroupMember, rank: Int) {
 @Composable
 private fun ChatTab(
     messagesState: Resource<Triple<com.example.voicevibe.domain.model.Group, List<GroupMessage>, Boolean>>,
-    viewModel: GroupViewModel
+    viewModel: GroupViewModel,
+    currentUserId: Int?,
+    snackbar: SnackbarHostState
 ) {
     var messageText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
+    val deleteState by viewModel.deleteMessageState.collectAsState()
+    val pendingDeletedIds = remember { mutableStateListOf<Int>() }
+    var deletingId by remember { mutableStateOf<Int?>(null) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Messages list
@@ -420,22 +447,54 @@ private fun ChatTab(
                             )
                         }
                     } else {
+                        // Apply optimistic local deletion filter
+                        val visibleMessages = messages.filter { it.id !in pendingDeletedIds }
+
                         LazyColumn(
                             state = listState,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.fillMaxSize().imePadding(),
                             contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            reverseLayout = false
+                            reverseLayout = true,
+                            verticalArrangement = Arrangement.Bottom
                         ) {
-                            items(messages) { message ->
-                                MessageItem(message)
+                            val reversed = visibleMessages.reversed()
+                            items(items = reversed, key = { it.id }) { message ->
+                                MessageItem(
+                                    message = message,
+                                    isCurrentUser = message.senderId == currentUserId,
+                                    onDeleteMessage = {
+                                        deletingId = message.id
+                                        pendingDeletedIds.add(message.id)
+                                        viewModel.deleteMessage(message.id)
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
                             }
                         }
                         
-                        // Auto-scroll to bottom on new messages
+                        // Auto-scroll to bottom on new messages (item 0 is bottom in reverseLayout)
                         LaunchedEffect(messages.size) {
                             if (messages.isNotEmpty()) {
-                                listState.animateScrollToItem(messages.size - 1)
+                                listState.animateScrollToItem(0)
+                            }
+                        }
+
+                        // Show delete result and revert optimistic removal on failure
+                        LaunchedEffect(deleteState) {
+                            when (val state = deleteState) {
+                                is Resource.Error -> {
+                                    deletingId?.let { id -> pendingDeletedIds.remove(id) }
+                                    val msg = state.message ?: "Failed to delete message"
+                                    snackbar.showSnackbar(msg)
+                                    viewModel.resetDeleteMessageState()
+                                    deletingId = null
+                                }
+                                is Resource.Success -> {
+                                    // Keep removed; optionally show success
+                                    viewModel.resetDeleteMessageState()
+                                    deletingId = null
+                                }
+                                else -> { /* ignore loading/null */ }
                             }
                         }
                     }
@@ -504,36 +563,76 @@ private fun ChatTab(
 }
 
 @Composable
-private fun MessageItem(message: GroupMessage) {
+private fun MessageItem(
+    message: GroupMessage,
+    isCurrentUser: Boolean,
+    onDeleteMessage: () -> Unit = {}
+) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    
+    // Delete confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Message") },
+            text = { Text("Are you sure you want to delete this message?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteMessage()
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+    
     Row(
         modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = if (isCurrentUser) Arrangement.End else Arrangement.Start,
         verticalAlignment = Alignment.Top
     ) {
-        // Avatar
-        AsyncImage(
-            model = message.senderAvatar,
-            contentDescription = message.senderName,
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
+        if (!isCurrentUser) {
+            // Avatar for other users (left side)
+            AsyncImage(
+                model = message.senderAvatar,
+                contentDescription = message.senderName,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+        }
 
         // Message content
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier.widthIn(max = 280.dp),
+            horizontalAlignment = if (isCurrentUser) Alignment.End else Alignment.Start
+        ) {
+            // Sender name and time
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = if (isCurrentUser) Arrangement.End else Arrangement.Start,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    message.senderName,
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontWeight = FontWeight.Bold
+                if (!isCurrentUser) {
+                    Text(
+                        message.senderName,
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                )
+                    Spacer(modifier = Modifier.width(6.dp))
+                }
                 Text(
                     formatMessageTime(message.timestamp),
                     style = MaterialTheme.typography.bodySmall,
@@ -541,18 +640,71 @@ private fun MessageItem(message: GroupMessage) {
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Text(
-                    message.message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(12.dp)
-                )
-            }
+            
+            // Message bubble with long-press to delete
+            MessageBubble(
+                message = message.message,
+                isCurrentUser = isCurrentUser,
+                onLongPress = if (isCurrentUser) {
+                    { showDeleteDialog = true }
+                } else null
+            )
         }
+
+        if (isCurrentUser) {
+            Spacer(modifier = Modifier.width(8.dp))
+            // Avatar for current user (right side)
+            AsyncImage(
+                model = message.senderAvatar,
+                contentDescription = message.senderName,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun MessageBubble(
+    message: String,
+    isCurrentUser: Boolean,
+    onLongPress: (() -> Unit)?
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = if (isCurrentUser) {
+                Color(0xFF00BCD4) // Cyan for current user
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            }
+        ),
+        shape = RoundedCornerShape(
+            topStart = if (isCurrentUser) 16.dp else 4.dp,
+            topEnd = if (isCurrentUser) 4.dp else 16.dp,
+            bottomStart = 16.dp,
+            bottomEnd = 16.dp
+        )
+    ) {
+        Text(
+            message,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier
+                .then(
+                    if (onLongPress != null) {
+                        Modifier.combinedClickable(
+                            onClick = { },
+                            onLongClick = onLongPress
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
+                .padding(12.dp),
+            color = if (isCurrentUser) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

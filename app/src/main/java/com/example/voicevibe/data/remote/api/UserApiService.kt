@@ -121,6 +121,13 @@ interface UserApiService {
     
     @POST("users/groups/messages/send/")
     suspend fun sendGroupMessage(@Body request: SendGroupMessageRequest): Response<SendGroupMessageResponse>
+    
+    @DELETE("users/groups/messages/{id}/delete/")
+    suspend fun deleteGroupMessage(@Path("id") messageId: Int): Response<DeleteMessageResponse>
+
+    // Fallback: some environments may expose delete at the resource URL without a trailing 'delete/'
+    @DELETE("users/groups/messages/{id}/")
+    suspend fun deleteGroupMessagePlain(@Path("id") messageId: Int): Response<Unit>
 }
 
 data class ChangePasswordResponse(
@@ -253,4 +260,9 @@ data class SendGroupMessageRequest(
 data class SendGroupMessageResponse(
     val success: Boolean,
     val message: GroupMessageDto
+)
+
+data class DeleteMessageResponse(
+    val success: Boolean,
+    val message: String? = null
 )

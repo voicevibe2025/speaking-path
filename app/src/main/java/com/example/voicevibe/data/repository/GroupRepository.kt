@@ -177,4 +177,43 @@ class GroupRepository @Inject constructor(
             Resource.Error(e.message ?: "Unknown error occurred")
         }
     }
+    
+    /**
+     * Delete a message from the group chat
+     */
+    suspend fun deleteMessage(messageId: Int): Resource<Boolean> {
+        return try {
+            // Prefer plain resource DELETE (/) first to avoid 404 from '/delete/'
+            val plain = apiService.deleteGroupMessagePlain(messageId)
+            if (plain.isSuccessful) {
+                return Resource.Success(true)
+            }
+
+            // Fallback: try '/delete/' endpoint
+            val response = apiService.deleteGroupMessage(messageId)
+            if (response.isSuccessful) {
+                return Resource.Success(response.body()?.success ?: true)
+            }
+
+            // Prefer friendly message for 404s
+            if (plain.code() == 404 && response.code() == 404) {
+                return Resource.Error("Server doesn't support deleting group messages yet")
+            }
+
+            val errorBody = plain.errorBody()?.string() ?: response.errorBody()?.string()
+            Resource.Error(errorBody ?: "Failed to delete message")
+        } catch (e: Exception) {
+            // Final fallback: try plain endpoint inside catch in case primary threw
+            return try {
+                val fallback = apiService.deleteGroupMessagePlain(messageId)
+                if (fallback.isSuccessful) Resource.Success(true)
+                else {
+                    if (fallback.code() == 404) Resource.Error("Server doesn't support deleting group messages yet")
+                    else Resource.Error(fallback.errorBody()?.string() ?: "Failed to delete message")
+                }
+            } catch (e2: Exception) {
+                Resource.Error(e2.message ?: "Unknown error occurred")
+            }
+        }
+    }
 }

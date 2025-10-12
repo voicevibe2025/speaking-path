@@ -39,6 +39,23 @@ class GroupViewModel @Inject constructor(
     private val _sendMessageState = MutableStateFlow<Resource<GroupMessage>?>(null)
     val sendMessageState: StateFlow<Resource<GroupMessage>?> = _sendMessageState.asStateFlow()
 
+    private val _deleteMessageState = MutableStateFlow<Resource<Boolean>?>(null)
+    val deleteMessageState: StateFlow<Resource<Boolean>?> = _deleteMessageState.asStateFlow()
+
+    private val _currentUserId = MutableStateFlow<Int?>(null)
+    val currentUserId: StateFlow<Int?> = _currentUserId.asStateFlow()
+
+    init {
+        // Load current user ID on initialization
+        viewModelScope.launch {
+            userRepository.getCurrentUser().collect { resource ->
+                if (resource is Resource.Success) {
+                    _currentUserId.value = resource.data?.id?.toIntOrNull()
+                }
+            }
+        }
+    }
+
     /**
      * Load all available groups
      */
@@ -92,6 +109,19 @@ class GroupViewModel @Inject constructor(
     }
 
     /**
+     * Silently refresh messages without showing loading state (prevents flicker)
+     */
+    private fun refreshMessagesQuietly(limit: Int = 50, offset: Int = 0) {
+        viewModelScope.launch {
+            val result = groupRepository.getMyGroupMessages(limit, offset)
+            // Only update if successful, to avoid clearing current messages on error
+            if (result is Resource.Success) {
+                _messagesState.value = result
+            }
+        }
+    }
+
+    /**
      * Send a message to the group chat
      */
     fun sendMessage(message: String) {
@@ -100,9 +130,10 @@ class GroupViewModel @Inject constructor(
             val result = groupRepository.sendMessage(message)
             _sendMessageState.value = result
             
-            // Reload messages if successful
+            // Silently refresh to get the new message from server without flickering
             if (result is Resource.Success) {
-                loadMyGroupMessages()
+                kotlinx.coroutines.delay(150) // Small delay to ensure server processed it
+                refreshMessagesQuietly()
             }
         }
     }
@@ -119,5 +150,23 @@ class GroupViewModel @Inject constructor(
      */
     fun resetJoinGroupState() {
         _joinGroupState.value = Resource.Loading()
+    }
+    
+    /**
+     * Delete a message from the group chat
+     */
+    fun deleteMessage(messageId: Int) {
+        viewModelScope.launch {
+            _deleteMessageState.value = Resource.Loading()
+            val result = groupRepository.deleteMessage(messageId)
+            _deleteMessageState.value = result
+
+            // Don't reload - UI already handles optimistic deletion
+            // The message will stay removed in the optimistic UI
+        }
+    }
+
+    fun resetDeleteMessageState() {
+        _deleteMessageState.value = null
     }
 }

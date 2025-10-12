@@ -2535,18 +2535,18 @@ fun FloatingBottomNavigation(
 ) {
     Surface(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
-        shape = RoundedCornerShape(28.dp),
-        color = Color(0xFF1E2761).copy(alpha = 0.95f),
-        tonalElevation = 8.dp,
-        shadowElevation = 8.dp
+            .wrapContentWidth()
+            .padding(horizontal = 32.dp, vertical = 12.dp),
+        shape = RoundedCornerShape(50.dp),
+        color = Color(0xFF0A0A0A).copy(alpha = 0.95f),
+        tonalElevation = 4.dp,
+        shadowElevation = 6.dp
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+                .wrapContentWidth()
+                .padding(vertical = 4.dp, horizontal = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Home Tab
@@ -2580,49 +2580,43 @@ fun FloatingNavItem(
     modifier: Modifier = Modifier
 ) {
     val animatedAlpha by animateFloatAsState(
-        targetValue = if (selected) 1f else 0.6f,
+        targetValue = if (selected) 1f else 0.5f,
         animationSpec = tween(300),
         label = "alpha"
     )
     
-    val animatedScale by animateFloatAsState(
-        targetValue = if (selected) 1.1f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "scale"
-    )
-    
     Surface(
         onClick = onClick,
-        modifier = modifier
-            .graphicsLayer {
-                scaleX = animatedScale
-                scaleY = animatedScale
-            },
-        shape = RoundedCornerShape(20.dp),
-        color = if (selected) BrandCyan.copy(alpha = 0.2f) else Color.Transparent
+        modifier = modifier,
+        shape = RoundedCornerShape(50.dp),
+        color = if (selected) {
+            Brush.horizontalGradient(
+                colors = listOf(
+                    Color(0xFF00BCD4),
+                    Color(0xFF5B86E5)
+                )
+            ).let { Color(0xFF00BCD4) }
+        } else Color.Transparent
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Row(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = label,
-                modifier = Modifier.size(28.dp),
-                tint = if (selected) BrandCyan else Color.White.copy(alpha = animatedAlpha)
+                modifier = Modifier.size(20.dp),
+                tint = if (selected) Color.White else Color.White.copy(alpha = animatedAlpha)
             )
             
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = if (selected) BrandCyan else Color.White.copy(alpha = animatedAlpha),
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                style = MaterialTheme.typography.labelMedium,
+                color = if (selected) Color.White else Color.White.copy(alpha = animatedAlpha),
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
             )
         }
     }

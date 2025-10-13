@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -47,6 +48,11 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.runtime.saveable.rememberSaveable
 import kotlin.math.roundToInt
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import kotlin.math.sqrt
+import kotlin.random.Random
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -151,20 +157,14 @@ fun HomeScreen(
         }
     }
 
-    val backgroundBrush = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFF0A1128),
-            Color(0xFF1E2761),
-            Color(0xFF0A1128)
-        )
-    )
-    
     var selectedTab by remember { mutableStateOf(0) }
 
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(backgroundBrush)
     ) {
+        // Ethereal gradient background with network overlay
+        EtherealNetworkBackground()
+        
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = Color.Transparent,
@@ -2618,6 +2618,150 @@ fun FloatingNavItem(
                 color = if (selected) Color.White else Color.White.copy(alpha = animatedAlpha),
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
             )
+        }
+    }
+}
+
+/**
+ * Data class representing a particle (dot) in the network
+ */
+private data class NetworkParticle(
+    val x: Float,
+    val y: Float,
+    val speedX: Float,
+    val speedY: Float,
+    val size: Float
+)
+
+/**
+ * Ethereal Network Background with gradient and animated glowing dots/lines
+ */
+@Composable
+private fun EtherealNetworkBackground() {
+    // Gradient colors: soft light blue → deeper indigo/purple
+    val gradientColors = listOf(
+        Color(0xFFB8D4F1), // Soft light blue
+        Color(0xFF8CB4E8), // Medium light blue
+        Color(0xFF6B8DD6), // Deeper blue
+        Color(0xFF5367B8), // Indigo
+        Color(0xFF4A4E96), // Deep indigo
+        Color(0xFF3D3A7C)  // Purple-indigo
+    )
+
+    // Remember particles with mutable positions
+    val particlePositions = remember {
+        mutableStateOf(
+            List(35) { // 35 particles for low-density network
+                NetworkParticle(
+                    x = Random.nextFloat(),
+                    y = Random.nextFloat(),
+                    speedX = (Random.nextFloat() - 0.5f) * 0.0008f,
+                    speedY = (Random.nextFloat() - 0.5f) * 0.0008f,
+                    size = Random.nextFloat() * 3f + 2f
+                )
+            }
+        )
+    }
+    
+    LaunchedEffect(Unit) {
+        while (true) {
+            withFrameMillis {
+                // Update particle positions
+                particlePositions.value = particlePositions.value.map { particle ->
+                    var newX = particle.x + particle.speedX
+                    var newY = particle.y + particle.speedY
+                    
+                    // Wrap around edges
+                    if (newX < 0f) newX = 1f
+                    if (newX > 1f) newX = 0f
+                    if (newY < 0f) newY = 1f
+                    if (newY > 1f) newY = 0f
+                    
+                    particle.copy(x = newX, y = newY)
+                }
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = gradientColors
+                )
+            )
+    ) {
+        // Network overlay with dots and lines
+        Canvas(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            val width = size.width
+            val height = size.height
+            
+            // Get current particle positions in screen coordinates
+            val particles = particlePositions.value
+            val updatedPositions = particles.map { particle ->
+                Offset(particle.x * width, particle.y * height)
+            }
+            
+            // Draw connecting lines between nearby particles
+            val maxConnectionDistance = 200f
+            for (i in updatedPositions.indices) {
+                for (j in i + 1 until updatedPositions.size) {
+                    val pos1 = updatedPositions[i]
+                    val pos2 = updatedPositions[j]
+                    
+                    val dx = pos2.x - pos1.x
+                    val dy = pos2.y - pos1.y
+                    val distance = sqrt(dx * dx + dy * dy)
+                    
+                    if (distance < maxConnectionDistance) {
+                        // Calculate alpha based on distance (closer = more visible)
+                        val alpha = (1f - distance / maxConnectionDistance) * 0.25f
+                        
+                        drawLine(
+                            color = Color.White.copy(alpha = alpha),
+                            start = pos1,
+                            end = pos2,
+                            strokeWidth = 1f
+                        )
+                    }
+                }
+            }
+            
+            // Draw glowing dots
+            updatedPositions.forEachIndexed { index, position ->
+                val particle = particles[index]
+                
+                // Outer glow (larger, more transparent)
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.15f),
+                    radius = particle.size * 3f,
+                    center = position
+                )
+                
+                // Middle glow
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.3f),
+                    radius = particle.size * 1.8f,
+                    center = position
+                )
+                
+                // Inner bright dot
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.8f),
+                    radius = particle.size,
+                    center = position
+                )
+                
+                // Core bright center
+                drawCircle(
+                    color = Color.White,
+                    radius = particle.size * 0.5f,
+                    center = position
+                )
+            }
         }
     }
 }

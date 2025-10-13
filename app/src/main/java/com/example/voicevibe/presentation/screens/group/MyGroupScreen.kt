@@ -30,7 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.example.voicevibe.domain.model.GroupMember
 import com.example.voicevibe.domain.model.GroupMessage
 import com.example.voicevibe.domain.model.Resource
@@ -302,14 +302,37 @@ private fun MemberCard(
             Spacer(modifier = Modifier.width(12.dp))
 
             // Avatar
-            AsyncImage(
-                model = member.avatarUrl,
-                contentDescription = member.displayName,
+            Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (member.avatarUrl.isNullOrBlank()) {
+                    Text(
+                        text = member.displayName.take(2).uppercase(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    SubcomposeAsyncImage(
+                        model = member.avatarUrl,
+                        contentDescription = member.displayName,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        error = {
+                            Text(
+                                text = member.displayName.take(2).uppercase(),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.width(12.dp))
 
@@ -604,14 +627,37 @@ private fun MessageItem(
     ) {
         if (!isCurrentUser) {
             // Avatar for other users (left side)
-            AsyncImage(
-                model = message.senderAvatar,
-                contentDescription = message.senderName,
+            Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (message.senderAvatar.isNullOrBlank()) {
+                    Text(
+                        text = message.senderName.take(2).uppercase(),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    SubcomposeAsyncImage(
+                        model = message.senderAvatar,
+                        contentDescription = message.senderName,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        error = {
+                            Text(
+                                text = message.senderName.take(2).uppercase(),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    )
+                }
+            }
             Spacer(modifier = Modifier.width(8.dp))
         }
 
@@ -657,14 +703,37 @@ private fun MessageItem(
         if (isCurrentUser) {
             Spacer(modifier = Modifier.width(8.dp))
             // Avatar for current user (right side)
-            AsyncImage(
-                model = message.senderAvatar,
-                contentDescription = message.senderName,
+            Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (message.senderAvatar.isNullOrBlank()) {
+                    Text(
+                        text = message.senderName.take(2).uppercase(),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    SubcomposeAsyncImage(
+                        model = message.senderAvatar,
+                        contentDescription = message.senderName,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        error = {
+                            Text(
+                                text = message.senderName.take(2).uppercase(),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    )
+                }
+            }
         }
     }
 }

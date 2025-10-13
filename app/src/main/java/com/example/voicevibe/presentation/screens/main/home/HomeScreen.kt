@@ -2638,26 +2638,27 @@ private data class NetworkParticle(
  */
 @Composable
 private fun EtherealNetworkBackground() {
-    // Gradient colors: soft light blue → deeper indigo/purple
+    // Gradient colors: darker edges → light center (middle light source)
     val gradientColors = listOf(
-        Color(0xFFB8D4F1), // Soft light blue
-        Color(0xFF8CB4E8), // Medium light blue
-        Color(0xFF6B8DD6), // Deeper blue
-        Color(0xFF5367B8), // Indigo
-        Color(0xFF4A4E96), // Deep indigo
-        Color(0xFF3D3A7C)  // Purple-indigo
+        Color(0xFF3D3A7C),  // Deep purple-indigo (top)
+        Color(0xFF4A4E96),  // Deep indigo
+        Color(0xFF6B8DD6),  // Deeper blue
+        Color(0xFFB8D4F1),  // Soft light blue (center - brightest)
+        Color(0xFF6B8DD6),  // Deeper blue
+        Color(0xFF4A4E96),  // Deep indigo
+        Color(0xFF3D3A7C)   // Deep purple-indigo (bottom)
     )
 
     // Remember particles with mutable positions
     val particlePositions = remember {
         mutableStateOf(
-            List(35) { // 35 particles for low-density network
+            List(18) { // 18 particles for ultra-subtle network
                 NetworkParticle(
                     x = Random.nextFloat(),
                     y = Random.nextFloat(),
-                    speedX = (Random.nextFloat() - 0.5f) * 0.0008f,
-                    speedY = (Random.nextFloat() - 0.5f) * 0.0008f,
-                    size = Random.nextFloat() * 3f + 2f
+                    speedX = (Random.nextFloat() - 0.5f) * 0.0003f,
+                    speedY = (Random.nextFloat() - 0.5f) * 0.0003f,
+                    size = Random.nextFloat() * 1.5f + 1f // Smaller: 1-2.5px instead of 2-5px
                 )
             }
         )

@@ -2638,13 +2638,13 @@ private data class NetworkParticle(
  */
 @Composable
 private fun EtherealNetworkBackground() {
-    // Gradient colors: darker edges → light center (middle light source)
+    // Gradient colors: darker edges → very subtle light center (middle light source)
     val gradientColors = listOf(
         Color(0xFF3D3A7C),  // Deep purple-indigo (top)
         Color(0xFF4A4E96),  // Deep indigo
-        Color(0xFF6B8DD6),  // Deeper blue
-        Color(0xFFB8D4F1),  // Soft light blue (center - brightest)
-        Color(0xFF6B8DD6),  // Deeper blue
+        Color(0xFF5367B8),  // Indigo
+        Color(0xFF5C72BE),  // Slightly lighter indigo (center - very subtle)
+        Color(0xFF5367B8),  // Indigo
         Color(0xFF4A4E96),  // Deep indigo
         Color(0xFF3D3A7C)   // Deep purple-indigo (bottom)
     )

@@ -3,9 +3,11 @@ package com.example.voicevibe.data.mapper
 import com.example.voicevibe.data.remote.api.GroupDto
 import com.example.voicevibe.data.remote.api.GroupMemberDto
 import com.example.voicevibe.data.remote.api.GroupMessageDto
+import com.example.voicevibe.data.remote.api.MaterialDto
 import com.example.voicevibe.domain.model.Group
 import com.example.voicevibe.domain.model.GroupMember
 import com.example.voicevibe.domain.model.GroupMessage
+import com.example.voicevibe.domain.model.Material
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -53,6 +55,19 @@ fun GroupMessageDto.toDomain(): GroupMessage {
         senderAvatar = this.senderAvatar,
         message = this.message,
         timestamp = parseToLocalDateTime(this.timestamp)
+    )
+}
+
+/**
+ * Map MaterialDto to domain Material
+ */
+fun MaterialDto.toDomain(): Material {
+    return Material(
+        id = this.id,
+        title = this.title,
+        description = this.description,
+        sequence = this.sequence,
+        type = this.type
     )
 }
 

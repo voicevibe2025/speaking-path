@@ -8,6 +8,7 @@ import com.example.voicevibe.domain.model.UserProfile as DomainUserProfile
 import com.example.voicevibe.domain.model.UserProgress
 import com.example.voicevibe.domain.model.UserActivity
 import com.example.voicevibe.domain.model.Resource
+import com.example.voicevibe.domain.model.UnifiedSearchResults
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -102,6 +103,38 @@ class UserRepository @Inject constructor(
                 Resource.Success(list)
             } else {
                 Resource.Error("Failed to search users")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
+    /**
+     * Unified search across users, groups, and materials
+     */
+    suspend fun unifiedSearch(query: String): Resource<UnifiedSearchResults> {
+        return try {
+            val response = apiService.unifiedSearch(query)
+            if (response.isSuccessful) {
+                response.body()?.let { data ->
+                    val users = data.users.map { user ->
+                        user.toDomain().copy(
+                            avatarUrl = user.avatarUrl?.let { normalizeUrl(it) }
+                        )
+                    }
+                    val groups = data.groups.map { it.toDomain() }
+                    val materials = data.materials.map { it.toDomain() }
+                    
+                    Resource.Success(
+                        UnifiedSearchResults(
+                            users = users,
+                            groups = groups,
+                            materials = materials
+                        )
+                    )
+                } ?: Resource.Error("Failed to search: empty response")
+            } else {
+                Resource.Error("Failed to search")
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unknown error occurred")

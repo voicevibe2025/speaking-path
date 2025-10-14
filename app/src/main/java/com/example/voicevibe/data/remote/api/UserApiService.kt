@@ -39,6 +39,9 @@ interface UserApiService {
     @GET("users/search/")
     suspend fun searchUsers(@Query("query") query: String): Response<List<UserProfile>>
     
+    @GET("users/search/unified/")
+    suspend fun unifiedSearch(@Query("query") query: String): Response<UnifiedSearchResponse>
+    
     @POST("users/follow/{id}/")
     suspend fun followUser(@Path("id") userId: String): Response<Unit>
     
@@ -265,4 +268,19 @@ data class SendGroupMessageResponse(
 data class DeleteMessageResponse(
     val success: Boolean,
     val message: String? = null
+)
+
+// Unified Search DTOs
+data class UnifiedSearchResponse(
+    val users: List<UserProfile>,
+    val groups: List<GroupDto>,
+    val materials: List<MaterialDto>
+)
+
+data class MaterialDto(
+    val id: String,
+    val title: String,
+    val description: String,
+    val sequence: Int,
+    val type: String
 )

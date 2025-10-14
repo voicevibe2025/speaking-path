@@ -56,16 +56,19 @@ class AchievementsSimpleViewModel @Inject constructor(
     private var lastKnownLevel: Int? = null
 
     init {
-        loadAchievementHistory()
-        load()
+        loadAndRefresh()
     }
 
-    private fun loadAchievementHistory() {
+    private fun loadAndRefresh() {
         viewModelScope.launch {
+            // First, load existing history and last-known values (MUST complete first)
             val history = tokenManager.achievementHistoryFlow().first()
             lastKnownProficiency = tokenManager.lastProficiencyFlow().first()
             lastKnownLevel = tokenManager.lastLevelFlow().first()
             uiState = uiState.copy(items = history.sortedByDescending { it.timestamp })
+            
+            // Then check for new achievements
+            load()
         }
     }
 
@@ -81,13 +84,17 @@ class AchievementsSimpleViewModel @Inject constructor(
                 val prof = profile.currentProficiency?.trim()
                 if (!prof.isNullOrBlank() && prof != lastKnownProficiency) {
                     val profTitle = "Achieved ${prof.replaceFirstChar { it.uppercase() }} proficiency"
-                    val achievement = AchievementFeedItem(
-                        type = AchievementItemType.PROFICIENCY,
-                        title = profTitle,
-                        timestamp = now,
-                        timeAgo = "Just now"
-                    )
-                    newAchievements.add(achievement)
+                    // Only add if this exact achievement doesn't already exist
+                    val existingAchievement = uiState.items.find { it.title == profTitle }
+                    if (existingAchievement == null) {
+                        val achievement = AchievementFeedItem(
+                            type = AchievementItemType.PROFICIENCY,
+                            title = profTitle,
+                            timestamp = now,
+                            timeAgo = "Just now"
+                        )
+                        newAchievements.add(achievement)
+                    }
                     lastKnownProficiency = prof
                     tokenManager.setLastProficiency(prof)
                 }
@@ -96,13 +103,17 @@ class AchievementsSimpleViewModel @Inject constructor(
                 val level = profile.currentLevel
                 if (level != null && level > 0 && level != lastKnownLevel) {
                     val levelTitle = "Reached level $level"
-                    val achievement = AchievementFeedItem(
-                        type = AchievementItemType.LEVEL,
-                        title = levelTitle,
-                        timestamp = now,
-                        timeAgo = "Just now"
-                    )
-                    newAchievements.add(achievement)
+                    // Only add if this exact achievement doesn't already exist
+                    val existingAchievement = uiState.items.find { it.title == levelTitle }
+                    if (existingAchievement == null) {
+                        val achievement = AchievementFeedItem(
+                            type = AchievementItemType.LEVEL,
+                            title = levelTitle,
+                            timestamp = now,
+                            timeAgo = "Just now"
+                        )
+                        newAchievements.add(achievement)
+                    }
                     lastKnownLevel = level
                     tokenManager.setLastLevel(level)
                 }
@@ -110,7 +121,6 @@ class AchievementsSimpleViewModel @Inject constructor(
                 // Add new achievements to existing list and save
                 if (newAchievements.isNotEmpty()) {
                     val updatedList = (newAchievements + uiState.items)
-                        .distinctBy { it.title } // Avoid duplicates
                         .sortedByDescending { it.timestamp }
                     tokenManager.saveAchievementHistory(updatedList)
                     uiState = uiState.copy(items = updatedList)

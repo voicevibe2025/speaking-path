@@ -46,7 +46,6 @@ fun MyGroupScreen(
     viewModel: GroupViewModel = hiltViewModel()
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    var selectedNavTab by remember { mutableIntStateOf(1) } // Group tab selected
     val tabs = listOf("Members", "Chat")
 
     val membersState by viewModel.membersState.collectAsState()
@@ -107,21 +106,6 @@ fun MyGroupScreen(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
-        },
-        bottomBar = {
-            // Hide bottom navigation when in chat tab
-            if (selectedTab != 1) {
-                FloatingBottomNavigationForGroup(
-                    selectedTab = selectedNavTab,
-                    onTabSelected = { index ->
-                        selectedNavTab = index
-                        when (index) {
-                            0 -> onNavigateToHome()
-                            1 -> { /* Already on Group */ }
-                        }
-                    }
-                )
-            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->

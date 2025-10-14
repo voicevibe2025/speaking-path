@@ -41,7 +41,7 @@ class SpeakingJourneyViewModel @Inject constructor(
     val uiState: State<SpeakingJourneyUiState> get() = _uiState
 
     init {
-        reloadTopics(showWelcomeOnLoad = true)
+        reloadTopics()
         fetchGamificationProfile()
         // Observe preferred TTS voice selection
         viewModelScope.launch {
@@ -229,7 +229,7 @@ class SpeakingJourneyViewModel @Inject constructor(
         }
     }
 
-    fun reloadTopics(showWelcomeOnLoad: Boolean = false, onComplete: (() -> Unit)? = null) {
+    fun reloadTopics(onComplete: (() -> Unit)? = null) {
         viewModelScope.launch {
             val prevSelectedId = _uiState.value.topics.getOrNull(_uiState.value.selectedTopicIdx)?.id
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
@@ -323,7 +323,6 @@ class SpeakingJourneyViewModel @Inject constructor(
                         topics = mapped,
                         userProfile = userProfile,
                         selectedTopicIdx = newIndex.coerceIn(0, (mapped.size - 1).coerceAtLeast(0)),
-                        showWelcome = showWelcomeOnLoad,
                         isLoading = false
                     )
                     onComplete?.invoke()
@@ -409,8 +408,6 @@ class SpeakingJourneyViewModel @Inject constructor(
             android.util.Log.d("SpeakingJourneyViewModel", "ERROR: Topic ID $topicId not found!")
         }
     }
-
-    fun dismissWelcome() { _uiState.value = _uiState.value.copy(showWelcome = false) }
 
     fun setStage(stage: Stage) { _uiState.value = _uiState.value.copy(stage = stage) }
 

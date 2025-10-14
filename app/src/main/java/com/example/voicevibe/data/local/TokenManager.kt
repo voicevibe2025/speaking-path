@@ -54,6 +54,7 @@ class TokenManager @Inject constructor(
     private val achievementHistoryKey = stringPreferencesKey("achievement_history")
     private val lastProficiencyKey = stringPreferencesKey("last_proficiency")
     private val lastLevelKey = intPreferencesKey("last_level")
+    private val celebratedTopicsKey = stringPreferencesKey(Constants.CELEBRATED_TOPICS_KEY)
     
     private val gson = Gson()
 
@@ -309,6 +310,39 @@ class TokenManager @Inject constructor(
         dataStore.edit { preferences ->
             preferences[lastLevelKey] = level
         }
+    }
+
+    /**
+     * Celebrated topics tracking (to prevent re-showing celebration overlay)
+     */
+    suspend fun getCelebratedTopics(): Set<String> {
+        return dataStore.data.map { preferences ->
+            val json = preferences[celebratedTopicsKey] ?: return@map emptySet<String>()
+            try {
+                val type = object : TypeToken<Set<String>>() {}.type
+                gson.fromJson<Set<String>>(json, type)
+            } catch (e: Exception) {
+                emptySet()
+            }
+        }.first()
+    }
+
+    suspend fun markTopicAsCelebrated(topicId: String) {
+        dataStore.edit { preferences ->
+            val current = try {
+                val json = preferences[celebratedTopicsKey] ?: "[]"
+                val type = object : TypeToken<Set<String>>() {}.type
+                gson.fromJson<Set<String>>(json, type).toMutableSet()
+            } catch (e: Exception) {
+                mutableSetOf()
+            }
+            current.add(topicId)
+            preferences[celebratedTopicsKey] = gson.toJson(current)
+        }
+    }
+
+    suspend fun hasTopicBeenCelebrated(topicId: String): Boolean {
+        return getCelebratedTopics().contains(topicId)
     }
 }
 

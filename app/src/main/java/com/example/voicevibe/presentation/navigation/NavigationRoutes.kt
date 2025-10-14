@@ -133,6 +133,7 @@ sealed class Screen(val route: String) {
 
     // Gamification
     object Leaderboard : Screen("leaderboard")
+    object LingoLeague : Screen("lingo_league")
     object BadgesCollection : Screen("badges")
     object DailyChallenge : Screen("daily_challenge")
 

@@ -170,7 +170,8 @@ fun VoiceVibeNavHost(
                 onNavigateToLearnWithVivi = { topicId ->
                     navController.navigate(Screen.LearnTopicWithVivi.createRoute(topicId))
                 },
-                onNavigateToMyGroup = { navController.navigate(Screen.MyGroup.route) }
+                onNavigateToMyGroup = { navController.navigate(Screen.MyGroup.route) },
+                onNavigateToSpeakingJourney = { navController.navigate(Screen.SpeakingJourney.route) }
             )
         }
 
@@ -195,7 +196,8 @@ fun VoiceVibeNavHost(
                 onNavigateToLearningPath = { _ ->
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
-                }
+                },
+                onNavigateToSpeakingJourney = { navController.navigate(Screen.SpeakingJourney.route) }
             )
         }
 
@@ -219,7 +221,8 @@ fun VoiceVibeNavHost(
                 onNavigateToLearningPath = { _ ->
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
-                }
+                },
+                onNavigateToSpeakingJourney = { navController.navigate(Screen.SpeakingJourney.route) }
             )
         }
 
@@ -247,7 +250,8 @@ fun VoiceVibeNavHost(
                 onNavigateToLearningPath = { _ ->
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
-                }
+                },
+                onNavigateToSpeakingJourney = { navController.navigate(Screen.SpeakingJourney.route) }
             )
         }
 
@@ -272,7 +276,8 @@ fun VoiceVibeNavHost(
                 },
                 onNavigateToSpeakingLesson = { topicId ->
                     navController.navigate(Screen.SpeakingLesson.createRoute(topicId))
-                }
+                },
+                onNavigateToHome = { navController.navigate(Screen.Home.route) }
             )
         }
 

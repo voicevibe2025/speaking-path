@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.voicevibe.R
 import com.example.voicevibe.data.remote.api.CoachAnalysisDto
-import com.example.voicevibe.presentation.components.FloatingParticles
 import com.example.voicevibe.presentation.components.ModernTopBar
 import com.example.voicevibe.ui.theme.BrandCyan
 import com.example.voicevibe.ui.theme.BrandFuchsia
@@ -82,8 +81,6 @@ fun SpeakingLessonScreen(
             .fillMaxSize()
             .background(backgroundBrush)
     ) {
-        FloatingParticles()
-
         Scaffold(
             containerColor = Color.Transparent,
             topBar = {

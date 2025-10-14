@@ -28,6 +28,7 @@ import com.example.voicevibe.presentation.screens.learning.LearningPathDetailScr
 import com.example.voicevibe.presentation.screens.learning.LessonDetailScreen
 import com.example.voicevibe.presentation.screens.gamification.AchievementScreen
 import com.example.voicevibe.presentation.screens.gamification.LeaderboardScreen
+import com.example.voicevibe.presentation.screens.gamification.LingoLeagueScreen
 import com.example.voicevibe.presentation.screens.profile.ProfileScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsScreen
  import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
@@ -232,6 +233,9 @@ fun NavGraph(
                 onNavigateToLeaderboard = {
                     navController.navigate(Screen.Leaderboard.route)
                 },
+                onNavigateToLingoLeague = {
+                    navController.navigate(Screen.LingoLeague.route)
+                },
                 onNavigateToSocialFeed = { navController.navigate(Screen.SocialFeed.createRoute()) },
                 onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                 onNavigateToUserSearch = { navController.navigate(Screen.UserSearch.route) },
@@ -250,6 +254,9 @@ fun NavGraph(
                 },
                 onNavigateToMyGroup = {
                     navController.navigate(Screen.MyGroup.route)
+                },
+                onNavigateToSpeakingJourney = {
+                    navController.navigate(Screen.SpeakingJourney.route)
                 }
             )
         }
@@ -308,7 +315,8 @@ fun NavGraph(
                 },
                 onNavigateToSpeakingLesson = { topicId ->
                     navController.navigate(Screen.SpeakingLesson.createRoute(topicId))
-                }
+                },
+                onNavigateToHome = { navController.navigate(Screen.Home.route) }
             )
         }
 
@@ -636,6 +644,17 @@ fun NavGraph(
                 },
                 onNavigateToGroupProfile = { groupId ->
                     navController.navigate(Screen.GroupProfile.createRoute(groupId))
+                },
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.LingoLeague.route) {
+            LingoLeagueScreen(
+                onNavigateToProfile = { userId ->
+                    navController.navigate(Screen.UserProfile.createRoute(userId))
                 },
                 onNavigateBack = {
                     navController.popBackStack()

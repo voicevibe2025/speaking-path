@@ -45,6 +45,8 @@ import android.media.MediaPlayer
 import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.sin
+import com.example.voicevibe.data.local.TokenManager
+import dagger.hilt.android.EntryPointAccessors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,6 +65,15 @@ fun TopicMasterScreen(
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
     val ui by viewModel.uiState
     
+    // Get TokenManager from application context
+    val context = LocalContext.current
+    val tokenManager = remember {
+        EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            TokenManagerEntryPoint::class.java
+        ).tokenManager()
+    }
+    
     // Ensure the correct topic is selected in the ViewModel state
     LaunchedEffect(topicId, ui.topics) {
         if (ui.topics.any { it.id == topicId }) {
@@ -80,10 +91,19 @@ fun TopicMasterScreen(
     } else null
 
     // Celebration state: show confetti and play celebration sound when unlock condition is met
-    val context = LocalContext.current
     var showCelebration by remember { mutableStateOf(false) }
     var showCelebrationDialog by remember { mutableStateOf(false) }
-    var celebrationTriggered by rememberSaveable(topicId) { mutableStateOf(false) }
+    
+    // Check if this topic has already been celebrated (persistent across sessions)
+    var hasBeenCelebrated by remember(topicId) { mutableStateOf(false) }
+    var hasBeenCelebratedLoaded by remember(topicId) { mutableStateOf(false) }
+    // Track previous unlocked state to detect transitions only
+    var prevUnlocked: Boolean? by remember(topicId) { mutableStateOf(null) }
+    
+    LaunchedEffect(topicId) {
+        hasBeenCelebrated = tokenManager.hasTopicBeenCelebrated(topicId)
+        hasBeenCelebratedLoaded = true
+    }
     // Ensure local transcripts are loaded so live pronunciation score can display immediately
     LaunchedEffect(ui.selectedTopicIdx, ui.topics) {
         viewModel.loadTranscriptsForCurrentTopic(context)
@@ -93,24 +113,36 @@ fun TopicMasterScreen(
         practiceScores?.meetsRequirement,
         topic?.phraseProgress?.isAllPhrasesCompleted,
         topic?.fluencyProgress?.completed,
-        practiceScores?.vocabulary
+        practiceScores?.vocabulary,
+        hasBeenCelebratedLoaded
     ) {
+        if (!hasBeenCelebratedLoaded) return@LaunchedEffect
         val meets = practiceScores?.meetsRequirement == true
         val allCompleted = (topic?.phraseProgress?.isAllPhrasesCompleted == true) &&
                            (topic?.fluencyProgress?.completed == true) &&
                            ((practiceScores?.vocabulary ?: 0) > 0)
         val unlockedNow = meets && allCompleted
-        
+
         // Debug logging
         Log.d("TopicMaster", "Debug unlock check for topic ${topic?.title}:")
         Log.d("TopicMaster", "  meetsRequirement: ${practiceScores?.meetsRequirement}")
         Log.d("TopicMaster", "  phraseProgress.isAllPhrasesCompleted: ${topic?.phraseProgress?.isAllPhrasesCompleted}")
         Log.d("TopicMaster", "  fluencyProgress.completed: ${topic?.fluencyProgress?.completed}")
         Log.d("TopicMaster", "  vocabulary score: ${practiceScores?.vocabulary}")
-        Log.d("TopicMaster", "  meets: $meets, allCompleted: $allCompleted, unlockedNow: $unlockedNow")
-        Log.d("TopicMaster", "  celebrationTriggered: $celebrationTriggered")
-        
-        if (unlockedNow && !celebrationTriggered) {
+        Log.d("TopicMaster", "  unlockedNow: $unlockedNow, prevUnlocked: $prevUnlocked, hasBeenCelebrated: $hasBeenCelebrated (loaded=$hasBeenCelebratedLoaded)")
+
+        // First evaluation after load: seed celebrated state silently for already-unlocked topics
+        if (prevUnlocked == null) {
+            prevUnlocked = unlockedNow
+            if (unlockedNow && !hasBeenCelebrated) {
+                tokenManager.markTopicAsCelebrated(topicId)
+                hasBeenCelebrated = true
+            }
+            return@LaunchedEffect
+        }
+
+        // Only trigger celebration on transition from locked -> unlocked
+        if (prevUnlocked == false && unlockedNow && !hasBeenCelebrated) {
             showCelebration = true
             showCelebrationDialog = true
             // Play both sound effects simultaneously
@@ -128,11 +160,13 @@ fun TopicMasterScreen(
                 }
                 applausePlayer?.start()
             } catch (_: Throwable) {}
-            celebrationTriggered = true
-        } else if (!unlockedNow) {
-            // Allow re-trigger if user later satisfies both the threshold and completion
-            celebrationTriggered = false
+
+            // Mark this topic as celebrated permanently
+            tokenManager.markTopicAsCelebrated(topicId)
+            hasBeenCelebrated = true
         }
+
+        prevUnlocked = unlockedNow
     }
 
     // Ensure we refresh topics when returning to this screen (e.g., after practices)
@@ -1146,4 +1180,13 @@ private fun CongratulationsOverlay(
             }
         }
     }
+}
+
+/**
+ * Hilt EntryPoint to access TokenManager from Composable without ViewModel
+ */
+@dagger.hilt.EntryPoint
+@dagger.hilt.InstallIn(dagger.hilt.components.SingletonComponent::class)
+interface TokenManagerEntryPoint {
+    fun tokenManager(): TokenManager
 }

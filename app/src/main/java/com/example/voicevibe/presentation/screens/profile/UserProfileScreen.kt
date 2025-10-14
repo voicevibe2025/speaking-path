@@ -146,9 +146,6 @@ fun UserProfileScreen(
                                 Icon(Icons.Default.Edit, "Edit Profile")
                             }
                         } else {
-                            IconButton(onClick = viewModel::shareProfile) {
-                                Icon(Icons.Default.Share, "Share")
-                            }
                             IconButton(onClick = { showMoreOptions = true }) {
                                 Icon(Icons.Default.MoreVert, "More")
                             }

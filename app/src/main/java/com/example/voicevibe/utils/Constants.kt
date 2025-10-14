@@ -6,13 +6,13 @@ package com.example.voicevibe.utils
 object Constants {
     // API Configuration
     //const val BASE_URL = "http://10.0.2.2:8000/api/v1/" // For Android emulator
-    const val BASE_URL = "http://10.40.213.136:8000/api/v1/" // For physical device (replace with your IP)
-    //const val BASE_URL = "https://speaking-path-server-production.up.railway.app/api/v1/" // Production
+    //const val BASE_URL = "http://10.40.213.136:8000/api/v1/" // For physical device (replace with your IP)
+    const val BASE_URL = "https://speaking-path-server-production.up.railway.app/api/v1/" // Production
 
     // WebSocket Configuration
     //const val WS_BASE_URL = "ws://10.0.2.2:8000/ws/" // For Android emulator
-    const val WS_BASE_URL = "ws://10.40.213.136:8000/ws/" // For physical device
-    //const val WS_BASE_URL = "wss://speaking-path-server-production.up.railway.app/ws/" // Production
+    //const val WS_BASE_URL = "ws://10.40.213.136:8000/ws/" // For physical device
+    const val WS_BASE_URL = "wss://speaking-path-server-production.up.railway.app/ws/" // Production
 
     // DataStore Keys
     const val PREFERENCES_NAME = "voicevibe_preferences"
@@ -27,6 +27,7 @@ object Constants {
     const val TTS_VOICE_ID_KEY = "tts_voice_id"
     const val VOICE_ACCENT_KEY = "voice_accent"
     const val SHOW_EMAIL_ON_PROFILE_KEY = "show_email_on_profile"
+    const val CELEBRATED_TOPICS_KEY = "celebrated_topics"
 
     // Temporary feature flag: lock Speaking-only Journey to ON
     const val LOCK_SPEAKING_ONLY_ON = true

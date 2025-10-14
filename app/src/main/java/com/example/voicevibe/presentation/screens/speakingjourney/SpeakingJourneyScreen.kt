@@ -212,7 +212,6 @@ data class SpeakingJourneyUiState(
     val gamificationProfile: GamificationProfile? = null,
     val selectedTopicIdx: Int = 0,
     val stage: Stage = Stage.MATERIAL,
-    val showWelcome: Boolean = false,
     val phraseRecordingState: PhraseRecordingState = PhraseRecordingState.IDLE,
     val phraseSubmissionResult: PhraseSubmissionResultUi? = null,
     val conversationRecordingState: PhraseRecordingState = PhraseRecordingState.IDLE,
@@ -285,7 +284,8 @@ fun SpeakingJourneyScreen(
     onNavigateToConversationPractice: (String) -> Unit = {},
     onNavigateToVocabularyLesson: (String) -> Unit = {},
     onNavigateToLearnWithVivi: (String) -> Unit = {},
-    onNavigateToSpeakingLesson: (String) -> Unit = {}
+    onNavigateToSpeakingLesson: (String) -> Unit = {},
+    onNavigateToHome: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -321,6 +321,9 @@ fun SpeakingJourneyScreen(
     // Observe preferred voice id from Settings (to be used when ElevenLabs is wired)
     val settingsVM: SettingsViewModel = hiltViewModel()
     val preferredVoiceId = settingsVM.ttsVoiceId.value
+    
+    // Bottom navigation state
+    var selectedTab by remember { mutableStateOf(1) } // 1 = Learn tab
 
     // ViewModel state
     val viewModel: SpeakingJourneyViewModel = hiltViewModel()
@@ -354,6 +357,18 @@ fun SpeakingJourneyScreen(
                     title = "Speaking Journey",
                     onNavigationIconClick = onNavigateBack
                 )
+            },
+            bottomBar = {
+                com.example.voicevibe.presentation.screens.main.home.FloatingBottomNavigation(
+                    selectedTab = selectedTab,
+                    onTabSelected = { index ->
+                        selectedTab = index
+                        when (index) {
+                            0 -> onNavigateToHome()
+                            1 -> { /* Already on Learn */ }
+                        }
+                    }
+                )
             }
         ) { innerPadding: PaddingValues ->
             Box(
@@ -361,51 +376,42 @@ fun SpeakingJourneyScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                // Show welcome screen if needed
-                if (ui.showWelcome) {
-                    ModernWelcomeScreen(
-                        userProfile = ui.userProfile,
-                        currentTopic = ui.topics.getOrNull(ui.selectedTopicIdx),
-                        onDismiss = { viewModel.dismissWelcome() }
-                    )
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        // Loading/Error states
-                        if (ui.isLoading) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(32.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                ModernLoadingIndicator()
-                            }
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Loading/Error states
+                    if (ui.isLoading) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            ModernLoadingIndicator()
                         }
-                        
-                        ui.error?.let { err ->
-                            ErrorCard(
-                                error = err,
-                                onRetry = { viewModel.reloadTopics() }
-                            )
-                        }
-                        
-                        // Vertical scrollable list of topic cards
-                        if (ui.topics.isNotEmpty()) {
-                            VerticalTopicList(
-                                topics = ui.topics,
-                                selectedTopicIdx = ui.selectedTopicIdx,
-                                onTopicClick = { topic ->
-                                    if (topic.unlocked) {
-                                        onNavigateToSpeakingLesson(topic.id)
-                                    }
+                    }
+                    
+                    ui.error?.let { err ->
+                        ErrorCard(
+                            error = err,
+                            onRetry = { viewModel.reloadTopics() }
+                        )
+                    }
+                    
+                    // Vertical scrollable list of topic cards
+                    if (ui.topics.isNotEmpty()) {
+                        VerticalTopicList(
+                            topics = ui.topics,
+                            selectedTopicIdx = ui.selectedTopicIdx,
+                            onTopicClick = { topic ->
+                                if (topic.unlocked) {
+                                    onNavigateToSpeakingLesson(topic.id)
                                 }
-                            )
-                        }
+                            }
+                        )
                     }
                 }
 
@@ -787,8 +793,8 @@ private fun VerticalTopicCard(
             BorderStroke(1.5.dp, Brush.horizontalGradient(listOf(BrandCyan, BrandIndigo)))
         } else BorderStroke(1.dp, Color.White.copy(alpha = 0.15f)),
         colors = CardDefaults.cardColors(
-            // Glassmorphism effect
-            containerColor = Color.White.copy(alpha = 0.08f)
+            // Transparent card - background is handled by inner Column
+            containerColor = Color.Transparent
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (isSelected) 4.dp else 0.dp
@@ -799,7 +805,7 @@ private fun VerticalTopicCard(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
                 .background(
-                    // Additional glassmorphism layer with gradient
+                    // Same gradient background for all cards
                     Brush.horizontalGradient(
                         colors = listOf(
                             Color.White.copy(alpha = 0.03f),
@@ -2006,97 +2012,6 @@ data class Particle(
 
 private fun ClosedFloatingPointRange<Float>.random(): Float {
     return start + kotlin.random.Random.nextFloat() * (endInclusive - start)
-}
-
-@Composable
-private fun ModernWelcomeScreen(
-    userProfile: UserProfile?,
-    currentTopic: Topic?,
-    onDismiss: () -> Unit
-) {
-    // Auto-dismiss after 8 seconds, but user can tap to skip
-    LaunchedEffect(Unit) {
-        delay(8000)
-        onDismiss()
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-            .clickable { onDismiss() },
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (userProfile?.firstVisit == true) {
-            // First-time user welcome
-            Text(
-                text = "Welcome to Speaking Journey",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White // Changed for better contrast
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            currentTopic?.let { topic ->
-                Text(
-                    text = "Lesson ${topic.title.substringBefore(':').takeIf { it.contains("Lesson") } ?: "1"}: ${topic.title}",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White.copy(alpha = 0.9f) // Changed for better contrast
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "In this lesson, you will learn ${topic.description.lowercase()}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White.copy(alpha = 0.8f) // Changed for better contrast
-                )
-            }
-        } else {
-            // Returning user welcome
-            Text(
-                text = "Welcome back!",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White // Changed for better contrast
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            if (!userProfile?.lastVisitedTopicTitle.isNullOrBlank()) {
-                Text(
-                    text = "Last time you were learning about:",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White.copy(alpha = 0.8f) // Changed for better contrast
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = userProfile?.lastVisitedTopicTitle ?: "",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White.copy(alpha = 0.9f) // Changed for better contrast
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Want to continue?",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White // Changed for better contrast
-                )
-            } else {
-                Text(
-                    text = "Ready to continue your journey?",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White // Changed for better contrast
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-        Text(
-            text = "Tap anywhere to continue",
-            style = MaterialTheme.typography.labelMedium,
-            color = Color.White.copy(alpha = 0.7f) // Changed for better contrast
-        )
-    }
 }
 
 @Composable

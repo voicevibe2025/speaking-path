@@ -106,6 +106,8 @@ fun HomeScreen(
     onNavigateToLearnWithVivi: (String) -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
     onNavigateToMyGroup: () -> Unit = {},
+    onNavigateToSpeakingJourney: () -> Unit = {},
+    onNavigateToLingoLeague: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     livePracticeViewModel: com.example.voicevibe.presentation.screens.practice.live.LivePracticeViewModel = hiltViewModel()
 ) {
@@ -183,7 +185,8 @@ fun HomeScreen(
                     },
                     onAvatarClick = onNavigateToProfile,
                     onSearchClick = onNavigateToUserSearch,
-                    onSettingsClick = onNavigateToSettings
+                    onSettingsClick = onNavigateToSettings,
+                    onGroupsClick = onNavigateToMyGroup
                 )
             },
             bottomBar = {
@@ -193,7 +196,7 @@ fun HomeScreen(
                         selectedTab = index
                         when (index) {
                             0 -> { /* Already on Home */ }
-                            1 -> onNavigateToMyGroup()
+                            1 -> onNavigateToSpeakingJourney()
                         }
                     }
                 )
@@ -252,7 +255,7 @@ fun HomeScreen(
                     // Study Tools
                     item {
                         StudyToolsSection(
-                            onViewPaths = viewModel::onViewAllPaths,
+                            onViewLingoLeague = onNavigateToLingoLeague,
                             onViewLeaderboard = onNavigateToLeaderboard,
                             onViewAchievements = viewModel::onViewAchievements,
                             hasNewAchievements = uiState.hasNewAchievements
@@ -865,7 +868,8 @@ private fun EducationalTopBar(
     onMessagesClick: () -> Unit,
     onAvatarClick: () -> Unit,
     onSearchClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onGroupsClick: () -> Unit
 ) {
     Surface(
         color = Color.Transparent,
@@ -939,6 +943,17 @@ private fun EducationalTopBar(
                             tint = Color.White
                         )
                     }
+                }
+                // Groups button
+                IconButton(
+                    onClick = onGroupsClick,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Groups,
+                        contentDescription = "Groups",
+                        tint = Color.White
+                    )
                 }
                 // Messages icon with badge
                 IconButton(
@@ -1076,7 +1091,7 @@ private fun SkillsRadarChart(
         
         Column {
             Text(
-                text = "YOUR SKILLS",
+                text = "PERFORMANCE",
                 fontSize = if (isCompact) 18.sp else 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White,
@@ -1101,7 +1116,7 @@ private fun SkillsRadarChart(
                     RadarChartView(
                         skills = listOf(
                             SkillData("Pronunciation", pronunciationScore, BrandCyan),
-                            SkillData("Fluency", fluencyScore, BrandIndigo),
+                            SkillData("Fluency", fluencyScore, Color(0xFFFBBF24)), // Bright yellow for better contrast
                             SkillData("Vocabulary", vocabularyScore, BrandFuchsia),
                             SkillData("Grammar", grammarScore, Color(0xFFFB923C)),
                             SkillData("Comprehension", listeningScore, Color(0xFF4ADE80))
@@ -1219,7 +1234,7 @@ private fun ProgressItem(
 
 @Composable
 private fun StudyToolsSection(
-    onViewPaths: () -> Unit,
+    onViewLingoLeague: () -> Unit,
     onViewLeaderboard: () -> Unit,
     onViewAchievements: () -> Unit,
     hasNewAchievements: Boolean = false
@@ -1230,7 +1245,7 @@ private fun StudyToolsSection(
         
         Column {
             Text(
-                text = "STUDY TOOLS",
+                text = "MILESTONES",
                 fontSize = if (isCompact) 18.sp else 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White,
@@ -1246,10 +1261,10 @@ private fun StudyToolsSection(
             ) {
                 StudyToolCard(
                     modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Map,
-                    title = "Quest",
-                    color = Color(0xFF3B82F6),
-                    onClick = onViewPaths,
+                    icon = Icons.Default.EmojiEvents,
+                    title = "Lingo League",
+                    color = Color(0xFFFFD700),
+                    onClick = onViewLingoLeague,
                     isCompact = isCompact
                 )
 
@@ -2369,6 +2384,7 @@ private fun VoiceMicButton(
         FloatingActionButton(
             onClick = onClick,
             containerColor = if (isRecording) Color.Red else BrandIndigo,
+            shape = CircleShape,
             modifier = Modifier
                 .size(120.dp)
                 .scale(scale)
@@ -2472,10 +2488,10 @@ fun FloatingBottomNavigation(
                 onClick = { onTabSelected(0) }
             )
             
-            // Group Tab
+            // Learn Tab
             FloatingNavItem(
-                icon = Icons.Filled.Groups,
-                label = "Group",
+                icon = Icons.AutoMirrored.Filled.MenuBook,
+                label = "Learn",
                 selected = selectedTab == 1,
                 onClick = { onTabSelected(1) }
             )

@@ -1,6 +1,5 @@
 package com.example.voicevibe.presentation.screens.gamification
 
-import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -9,19 +8,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -31,26 +25,27 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.SubcomposeAsyncImage
-import com.example.voicevibe.R
 import com.example.voicevibe.domain.model.*
 import com.example.voicevibe.presentation.components.LoadingScreen
 import com.example.voicevibe.presentation.components.ErrorScreen
 import kotlinx.coroutines.launch
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LeaderboardScreen(
+fun LingoLeagueScreen(
     onNavigateToProfile: (String) -> Unit,
-    onNavigateToGroupProfile: (Int) -> Unit,
     onNavigateBack: () -> Unit,
     viewModel: LeaderboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
+    // Set to Lingo League mode on launch
+    LaunchedEffect(Unit) {
+        viewModel.selectLeaderboardType(LeaderboardType.LINGO_LEAGUE)
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -65,7 +60,6 @@ fun LeaderboardScreen(
                     listState.animateScrollToItem(event.position)
                 }
                 is LeaderboardEvent.ShareRank -> {
-                    // Handle share intent
                     snackbarHostState.showSnackbar("Sharing rank #${event.rank}")
                 }
                 is LeaderboardEvent.ShowChallengeDialog -> {
@@ -86,7 +80,7 @@ fun LeaderboardScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Leaderboard",
+                        "Lingo League",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -96,16 +90,9 @@ fun LeaderboardScreen(
                     }
                 },
                 actions = {
-                    // Only show filter in Individual mode
-                    if (uiState.selectedMode == LeaderboardMode.INDIVIDUAL) {
-                        IconButton(onClick = { showFilterDialog = true }) {
-                            Icon(Icons.Default.FilterList, "Filter")
-                        }
+                    IconButton(onClick = { showFilterDialog = true }) {
+                        Icon(Icons.Default.FilterList, "Filter")
                     }
-                    // TODO: Share button - Hidden until functionality is implemented
-                    // IconButton(onClick = viewModel::shareRank) {
-                    //     Icon(Icons.Default.Share, "Share")
-                    // }
                     IconButton(onClick = viewModel::refreshLeaderboard) {
                         Icon(Icons.Default.Refresh, "Refresh")
                     }
@@ -117,15 +104,12 @@ fun LeaderboardScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            // Only show FAB for Individual mode
-            if (uiState.selectedMode == LeaderboardMode.INDIVIDUAL) {
-                ExtendedFloatingActionButton(
-                    onClick = viewModel::scrollToCurrentUser,
-                    icon = { Icon(Icons.Default.Person, "My Position") },
-                    text = { Text("My Position") },
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            }
+            ExtendedFloatingActionButton(
+                onClick = viewModel::scrollToCurrentUser,
+                icon = { Icon(Icons.Default.Person, "My Position") },
+                text = { Text("My Position") },
+                containerColor = MaterialTheme.colorScheme.primary
+            )
         }
     ) { paddingValues ->
         val currentError = uiState.error
@@ -147,94 +131,70 @@ fun LeaderboardScreen(
                         .fillMaxSize()
                         .padding(paddingValues)
                 ) {
-                    // Mode Switcher (Individual/Group)
-                    LeaderboardModeTabs(
-                        selectedMode = uiState.selectedMode,
-                        onModeSelected = viewModel::selectMode,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    // Competition Stats Card (only for Individual mode)
-                    if (uiState.selectedMode == LeaderboardMode.INDIVIDUAL) {
-                        uiState.competitionStats?.let { stats ->
-                            CompetitionStatsCard(
-                                stats = stats,
-                                onViewLeague = { showLeagueDialog = true },
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        }
-                    }
-
-                    // Leaderboard Type Tabs (only for Individual mode)
-                    if (uiState.selectedMode == LeaderboardMode.INDIVIDUAL) {
-                        LeaderboardTypeTabs(
-                            selectedType = uiState.selectedType,
-                            onTypeSelected = viewModel::selectLeaderboardType,
-                            modifier = Modifier.fillMaxWidth()
+                    // Competition Stats Card
+                    uiState.competitionStats?.let { stats ->
+                        CompetitionStatsCard(
+                            stats = stats,
+                            onViewLeague = { showLeagueDialog = true },
+                            modifier = Modifier.padding(16.dp)
                         )
                     }
 
-                    // Leaderboard List (Individual or Group)
-                    when (uiState.selectedMode) {
-                        LeaderboardMode.INDIVIDUAL -> {
-                            uiState.leaderboardData?.let { data ->
-                                LazyColumn(
-                                    state = listState,
-                                    contentPadding = PaddingValues(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    // Top 3 Podium
-                                    if (data.entries.size >= 3) {
-                                        item {
-                                            TopThreePodium(
-                                                entries = data.entries.take(3),
-                                                onUserClick = { viewModel.viewUserProfile(it) }
-                                            )
-                                            Spacer(modifier = Modifier.height(16.dp))
-                                        }
-                                    }
+                    // Lingo League Skill Sub-Tabs
+                    LingoLeagueSkillTabs(
+                        selectedSkill = uiState.selectedLingoLeagueSkill,
+                        onSkillSelected = viewModel::selectLingoLeagueSkill,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                                    // Rest of leaderboard
-                                    items(
-                                        items = if (data.entries.size >= 3) data.entries.drop(3) else data.entries,
-                                        key = { it.userId }
-                                    ) { entry ->
-                                        LeaderboardEntryCard(
-                                            entry = entry,
-                                            onClick = { viewModel.viewUserProfile(entry.userId) },
-                                            onFollow = { viewModel.followUser(entry.userId) },
-                                            onChallenge = { viewModel.challengeUser(entry.userId) }
+                    // Leaderboard List
+                    uiState.leaderboardData?.let { data ->
+                        LazyColumn(
+                            state = listState,
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Top 3 Podium
+                            if (data.entries.size >= 3) {
+                                item {
+                                    TopThreePodium(
+                                        entries = data.entries.take(3),
+                                        onUserClick = { viewModel.viewUserProfile(it) }
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                }
+                            }
+
+                            // Rest of leaderboard
+                            items(
+                                items = if (data.entries.size >= 3) data.entries.drop(3) else data.entries,
+                                key = { it.userId }
+                            ) { entry ->
+                                LeaderboardEntryCard(
+                                    entry = entry,
+                                    onClick = { viewModel.viewUserProfile(entry.userId) },
+                                    onFollow = { viewModel.followUser(entry.userId) },
+                                    onChallenge = { viewModel.challengeUser(entry.userId) }
+                                )
+                            }
+
+                            // Load more indicator
+                            if (data.entries.size < data.totalParticipants) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            "Showing ${data.entries.size} of ${data.totalParticipants} participants",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
-                                    }
-
-                                    // Load more indicator
-                                    if (data.entries.size < data.totalParticipants) {
-                                        item {
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(16.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(
-                                                    "Showing ${data.entries.size} of ${data.totalParticipants} participants",
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            }
-                                        }
                                     }
                                 }
                             }
-                        }
-                        LeaderboardMode.GROUP -> {
-                            GroupLeaderboardList(
-                                entries = uiState.groupLeaderboardEntries,
-                                onGroupClick = { groupId ->
-                                    onNavigateToGroupProfile(groupId)
-                                },
-                                modifier = Modifier.fillMaxSize()
-                            )
                         }
                     }
                 }
@@ -255,7 +215,6 @@ fun LeaderboardScreen(
     // Filter Dialog
     if (showFilterDialog) {
         FilterDialog(
-            selectedType = uiState.selectedType,
             selectedFilter = uiState.selectedFilter,
             onFilterSelected = { filter ->
                 viewModel.selectFilter(filter)
@@ -391,379 +350,41 @@ private fun StatItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LeaderboardModeTabs(
-    selectedMode: LeaderboardMode,
-    onModeSelected: (LeaderboardMode) -> Unit,
+private fun LingoLeagueSkillTabs(
+    selectedSkill: LeaderboardFilter,
+    onSkillSelected: (LeaderboardFilter) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val modes = listOf(
-        LeaderboardMode.INDIVIDUAL to "Individual",
-        LeaderboardMode.GROUP to "Group"
+    val skills = listOf(
+        LeaderboardFilter.PRONUNCIATION to "Pronunciation",
+        LeaderboardFilter.FLUENCY to "Fluency",
+        LeaderboardFilter.VOCABULARY to "Vocabulary",
+        LeaderboardFilter.GRAMMAR to "Grammar",
+        LeaderboardFilter.LISTENING to "Listening",
+        LeaderboardFilter.CONVERSATION to "Conversation"
     )
 
-    val selectedIndex = modes.indexOfFirst { it.first == selectedMode }.coerceAtLeast(0)
-
-    TabRow(
-        selectedTabIndex = selectedIndex,
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-        contentColor = MaterialTheme.colorScheme.primary
-    ) {
-        modes.forEachIndexed { index, (mode, label) ->
-            Tab(
-                selected = index == selectedIndex,
-                onClick = { onModeSelected(mode) },
-                text = { 
-                    Text(
-                        label,
-                        fontWeight = if (index == selectedIndex) FontWeight.Bold else FontWeight.Normal
-                    ) 
-                }
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun LeaderboardTypeTabs(
-    selectedType: LeaderboardType,
-    onTypeSelected: (LeaderboardType) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val types = listOf(
-        LeaderboardType.DAILY to "Daily",
-        LeaderboardType.WEEKLY to "Weekly",
-        LeaderboardType.MONTHLY to "Monthly",
-        LeaderboardType.ALL_TIME to "All Time",
-        LeaderboardType.FRIENDS to "Friends"
-    )
-
-    val selectedIndex = types.indexOfFirst { it.first == selectedType }.coerceAtLeast(0)
+    val selectedIndex = skills.indexOfFirst { it.first == selectedSkill }.coerceAtLeast(0)
 
     ScrollableTabRow(
         selectedTabIndex = selectedIndex,
         modifier = modifier,
         edgePadding = 16.dp,
-        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+        contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
     ) {
-        types.forEachIndexed { index, (type, label) ->
+        skills.forEachIndexed { index, (skill, label) ->
             Tab(
                 selected = index == selectedIndex,
-                onClick = { onTypeSelected(type) },
-                text = { Text(label) }
-            )
-        }
-    }
-}
-
-
-@Composable
-private fun GroupLeaderboardList(
-    entries: List<GroupLeaderboardEntry>,
-    onGroupClick: (Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    if (entries.isEmpty()) {
-        Box(
-            modifier = modifier,
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    Icons.Default.Groups,
-                    contentDescription = "No groups",
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    "Loading group leaderboard...",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    } else {
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = modifier
-        ) {
-            // Top 3 Podium for groups
-            if (entries.size >= 3) {
-                item {
-                    GroupTopThreePodium(
-                        entries = entries.take(3),
-                        onGroupClick = onGroupClick
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
-
-            // Rest of group leaderboard
-            items(
-                items = if (entries.size >= 3) entries.drop(3) else entries,
-                key = { it.groupId }
-            ) { entry ->
-                GroupLeaderboardCard(
-                    entry = entry,
-                    onClick = { onGroupClick(entry.groupId) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun GroupTopThreePodium(
-    entries: List<GroupLeaderboardEntry>,
-    onGroupClick: (Int) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.Bottom
-    ) {
-        // Second place
-        if (entries.size > 1) {
-            GroupPodiumItem(
-                entry = entries[1],
-                rank = 2,
-                height = 100.dp,
-                onClick = { onGroupClick(entries[1].groupId) }
-            )
-        }
-
-        // First place
-        if (entries.isNotEmpty()) {
-            GroupPodiumItem(
-                entry = entries[0],
-                rank = 1,
-                height = 120.dp,
-                onClick = { onGroupClick(entries[0].groupId) }
-            )
-        }
-
-        // Third place
-        if (entries.size > 2) {
-            GroupPodiumItem(
-                entry = entries[2],
-                rank = 3,
-                height = 80.dp,
-                onClick = { onGroupClick(entries[2].groupId) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun GroupPodiumItem(
-    entry: GroupLeaderboardEntry,
-    rank: Int,
-    height: Dp,
-    onClick: () -> Unit
-) {
-    val medalColor = when (rank) {
-        1 -> Color(0xFFFFD700)
-        2 -> Color(0xFFC0C0C0)
-        3 -> Color(0xFFCD7F32)
-        else -> MaterialTheme.colorScheme.surface
-    }
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { onClick() }
-    ) {
-        // Group icon with color
-        Box(
-            modifier = Modifier
-                .size(60.dp)
-                .clip(CircleShape)
-                .border(3.dp, medalColor, CircleShape)
-                .background(parseColor(entry.color)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = entry.icon,
-                fontSize = 28.sp
-            )
-        }
-
-        // Medal badge
-        Surface(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .offset(y = 8.dp),
-            shape = CircleShape,
-            color = medalColor,
-            shadowElevation = 4.dp
-        ) {
-            Text(
-                text = rank.toString(),
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-        }
-
-        Text(
-            entry.displayName,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-
-        Text(
-            "${entry.totalScore} XP",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Box(
-            modifier = Modifier
-                .width(80.dp)
-                .height(height)
-                .padding(top = 8.dp)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            medalColor.copy(alpha = 0.3f),
-                            medalColor.copy(alpha = 0.1f)
-                        )
-                    ),
-                    shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
-                )
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun GroupLeaderboardCard(
-    entry: GroupLeaderboardEntry,
-    onClick: () -> Unit
-) {
-    val backgroundColor = if (entry.isCurrentUserGroup) {
-        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-    } else {
-        MaterialTheme.colorScheme.surface
-    }
-
-    Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Left side: Rank, icon, and name
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    "#${entry.rank}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.width(40.dp)
-                )
-
-                // Group icon with color
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(parseColor(entry.color)),
-                    contentAlignment = Alignment.Center
-                ) {
+                onClick = { onSkillSelected(skill) },
+                text = {
                     Text(
-                        text = entry.icon,
-                        fontSize = 24.sp
+                        label,
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
-
-                // Group name and member count
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            entry.displayName,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false)
-                        )
-                        if (entry.isCurrentUserGroup) {
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Surface(
-                                shape = RoundedCornerShape(4.dp),
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 4.dp)
-                            ) {
-                                Text(
-                                    "YOUR GROUP",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.People,
-                            contentDescription = "Members",
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            "${entry.memberCount} members",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // Right side: Total XP
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    "${entry.totalScore} XP",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+            )
         }
-    }
-}
-
-// Helper function to parse color string
-private fun parseColor(colorString: String): Color {
-    return try {
-        Color(android.graphics.Color.parseColor(colorString))
-    } catch (e: Exception) {
-        Color.Gray
     }
 }
 
@@ -1200,7 +821,6 @@ private fun LeagueInfoDialog(
 
 @Composable
 private fun FilterDialog(
-    selectedType: LeaderboardType,
     selectedFilter: LeaderboardFilter,
     onFilterSelected: (LeaderboardFilter) -> Unit,
     onDismiss: () -> Unit
@@ -1210,23 +830,14 @@ private fun FilterDialog(
         title = { Text("Filter Leaderboard") },
         text = {
             Column {
-                val filtersToShow = if (selectedType == LeaderboardType.LINGO_LEAGUE) {
-                    // For Lingo League, show time-based filters
-                    listOf(
-                        LeaderboardFilter.DAILY_XP to "Daily",
-                        LeaderboardFilter.WEEKLY_XP to "Weekly",
-                        LeaderboardFilter.MONTHLY_XP to "Monthly",
-                        LeaderboardFilter.OVERALL_XP to "All Time"
-                    )
-                } else {
-                    listOf(
-                        LeaderboardFilter.OVERALL_XP to "XP (total)",
-                        LeaderboardFilter.STREAK to "Streak",
-                        LeaderboardFilter.ACCURACY to "Accuracy",
-                        LeaderboardFilter.PRACTICE_TIME to "Practice time",
-                        LeaderboardFilter.ACHIEVEMENTS to "Proficiency (topics completed)"
-                    )
-                }
+                // For Lingo League, show time-based filters
+                val filtersToShow = listOf(
+                    LeaderboardFilter.DAILY_XP to "Daily",
+                    LeaderboardFilter.WEEKLY_XP to "Weekly",
+                    LeaderboardFilter.MONTHLY_XP to "Monthly",
+                    LeaderboardFilter.OVERALL_XP to "All Time"
+                )
+                
                 filtersToShow.forEach { (filter, label) ->
                     Row(
                         modifier = Modifier
@@ -1257,36 +868,6 @@ private fun FilterDialog(
             }
         }
     )
-}
-
-@Composable
-private fun ErrorScreen(
-    message: String,
-    onRetry: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            Icons.Default.ErrorOutline,
-            contentDescription = "Error",
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.error
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            message,
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onRetry) {
-            Text("Retry")
-        }
-    }
 }
 
 private fun getLeagueColor(tier: LeagueTier): Color {

@@ -414,7 +414,9 @@ private fun LeaderboardModeTabs(
 
     TabRow(
         selectedTabIndex = selectedIndex,
-        modifier = modifier
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+        contentColor = MaterialTheme.colorScheme.primary
     ) {
         modes.forEachIndexed { index, (mode, label) ->
             Tab(
@@ -452,7 +454,9 @@ private fun LeaderboardTypeTabs(
     ScrollableTabRow(
         selectedTabIndex = selectedIndex,
         modifier = modifier,
-        edgePadding = 16.dp
+        edgePadding = 16.dp,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
     ) {
         types.forEachIndexed { index, (type, label) ->
             Tab(
@@ -486,7 +490,8 @@ private fun LingoLeagueSkillTabs(
         selectedTabIndex = selectedIndex,
         modifier = modifier,
         edgePadding = 16.dp,
-        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+        contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
     ) {
         skills.forEachIndexed { index, (skill, label) ->
             Tab(

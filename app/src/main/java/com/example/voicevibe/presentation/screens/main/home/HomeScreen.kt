@@ -235,9 +235,7 @@ fun HomeScreen(
                             QuickStartSection(
                                 onStartPractice = viewModel::onStartPractice,
                                 onPracticeWithAI = onNavigateToPracticeAI,
-                                onLivePractice = onNavigateToLivePractice,
-                                viviTopics = uiState.viviTopics,
-                                onNavigateToLearnWithVivi = onNavigateToLearnWithVivi
+                                onLivePractice = onNavigateToLivePractice
                             )
                         }
                     }
@@ -1066,15 +1064,8 @@ private fun WelcomeSection(
 private fun QuickStartSection(
     onStartPractice: () -> Unit,
     onPracticeWithAI: () -> Unit,
-    onLivePractice: () -> Unit,
-    viviTopics: List<ViviTopic>,
-    onNavigateToLearnWithVivi: (String) -> Unit
+    onLivePractice: () -> Unit
 ) {
-    // Find the first unlocked topic, or fallback to first topic
-    val defaultTopicId = remember(viviTopics) {
-        viviTopics.firstOrNull { it.unlocked }?.id ?: viviTopics.firstOrNull()?.id
-    }
-    
     BoxWithConstraints {
         val isCompact = maxWidth < 360.dp
         Column {
@@ -1133,60 +1124,6 @@ private fun QuickStartSection(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Practice speaking with selected topic",
-                        fontSize = if (isCompact) 12.sp else 14.sp,
-                        color = Color.White.copy(alpha = 0.8f),
-                        textAlign = TextAlign.Center,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-            // Learn With Vivi - Topic-based Learning (Purple)
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { 
-                        defaultTopicId?.let { onNavigateToLearnWithVivi(it) }
-                    },
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(if (isCompact) 16.dp else 20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(CircleShape)
-                            .background(Color.Transparent),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.MenuBook,
-                            contentDescription = null,
-                            tint = Color(0xFF9333EA),
-                            modifier = Modifier.size(36.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = "Learn with Vivi",
-                        fontSize = if (isCompact) 16.sp else 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Learn common phrases with Vivi",
                         fontSize = if (isCompact) 12.sp else 14.sp,
                         color = Color.White.copy(alpha = 0.8f),
                         textAlign = TextAlign.Center,

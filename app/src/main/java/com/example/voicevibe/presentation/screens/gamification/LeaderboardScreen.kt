@@ -42,6 +42,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun LeaderboardScreen(
     onNavigateToProfile: (String) -> Unit,
+    onNavigateToGroupProfile: (Int) -> Unit,
     onNavigateBack: () -> Unit,
     viewModel: LeaderboardViewModel = hiltViewModel()
 ) {
@@ -238,6 +239,9 @@ fun LeaderboardScreen(
                         LeaderboardMode.GROUP -> {
                             GroupLeaderboardList(
                                 entries = uiState.groupLeaderboardEntries,
+                                onGroupClick = { groupId ->
+                                    onNavigateToGroupProfile(groupId)
+                                },
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
@@ -502,6 +506,7 @@ private fun LingoLeagueSkillTabs(
 @Composable
 private fun GroupLeaderboardList(
     entries: List<GroupLeaderboardEntry>,
+    onGroupClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (entries.isEmpty()) {
@@ -533,7 +538,10 @@ private fun GroupLeaderboardList(
             // Top 3 Podium for groups
             if (entries.size >= 3) {
                 item {
-                    GroupTopThreePodium(entries = entries.take(3))
+                    GroupTopThreePodium(
+                        entries = entries.take(3),
+                        onGroupClick = onGroupClick
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
@@ -543,7 +551,10 @@ private fun GroupLeaderboardList(
                 items = if (entries.size >= 3) entries.drop(3) else entries,
                 key = { it.groupId }
             ) { entry ->
-                GroupLeaderboardCard(entry = entry)
+                GroupLeaderboardCard(
+                    entry = entry,
+                    onClick = { onGroupClick(entry.groupId) }
+                )
             }
         }
     }
@@ -551,7 +562,8 @@ private fun GroupLeaderboardList(
 
 @Composable
 private fun GroupTopThreePodium(
-    entries: List<GroupLeaderboardEntry>
+    entries: List<GroupLeaderboardEntry>,
+    onGroupClick: (Int) -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -563,7 +575,8 @@ private fun GroupTopThreePodium(
             GroupPodiumItem(
                 entry = entries[1],
                 rank = 2,
-                height = 100.dp
+                height = 100.dp,
+                onClick = { onGroupClick(entries[1].groupId) }
             )
         }
 
@@ -572,7 +585,8 @@ private fun GroupTopThreePodium(
             GroupPodiumItem(
                 entry = entries[0],
                 rank = 1,
-                height = 120.dp
+                height = 120.dp,
+                onClick = { onGroupClick(entries[0].groupId) }
             )
         }
 
@@ -581,7 +595,8 @@ private fun GroupTopThreePodium(
             GroupPodiumItem(
                 entry = entries[2],
                 rank = 3,
-                height = 80.dp
+                height = 80.dp,
+                onClick = { onGroupClick(entries[2].groupId) }
             )
         }
     }
@@ -591,7 +606,8 @@ private fun GroupTopThreePodium(
 private fun GroupPodiumItem(
     entry: GroupLeaderboardEntry,
     rank: Int,
-    height: Dp
+    height: Dp,
+    onClick: () -> Unit
 ) {
     val medalColor = when (rank) {
         1 -> Color(0xFFFFD700)
@@ -601,7 +617,8 @@ private fun GroupPodiumItem(
     }
 
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable { onClick() }
     ) {
         // Group icon with color
         Box(
@@ -668,9 +685,11 @@ private fun GroupPodiumItem(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GroupLeaderboardCard(
-    entry: GroupLeaderboardEntry
+    entry: GroupLeaderboardEntry,
+    onClick: () -> Unit
 ) {
     val backgroundColor = if (entry.isCurrentUserGroup) {
         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
@@ -679,6 +698,7 @@ private fun GroupLeaderboardCard(
     }
 
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {

@@ -45,6 +45,10 @@ class GroupViewModel @Inject constructor(
     private val _currentUserId = MutableStateFlow<Int?>(null)
     val currentUserId: StateFlow<Int?> = _currentUserId.asStateFlow()
 
+    // Unified UI state for GroupProfileScreen
+    private val _uiState = MutableStateFlow(GroupProfileUiState())
+    val uiState: StateFlow<GroupProfileUiState> = _uiState.asStateFlow()
+
     init {
         // Load current user ID on initialization
         viewModelScope.launch {
@@ -52,6 +56,16 @@ class GroupViewModel @Inject constructor(
                 if (resource is Resource.Success) {
                     _currentUserId.value = resource.data?.id?.toIntOrNull()
                 }
+            }
+        }
+
+        // Load current user's group ID
+        viewModelScope.launch {
+            val statusResult = groupRepository.checkGroupStatus()
+            if (statusResult is Resource.Success) {
+                _uiState.value = _uiState.value.copy(
+                    currentUserGroupId = statusResult.data?.group?.id
+                )
             }
         }
     }
@@ -169,4 +183,45 @@ class GroupViewModel @Inject constructor(
     fun resetDeleteMessageState() {
         _deleteMessageState.value = null
     }
+
+    /**
+     * Load a specific group's profile and members
+     */
+    fun loadGroupProfile(groupId: Int) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+
+            val membersResult = groupRepository.getGroupMembers(groupId)
+            
+            when (membersResult) {
+                is Resource.Success -> {
+                    val (group, members) = membersResult.data ?: return@launch
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        selectedGroup = group,
+                        groupMembers = members,
+                        error = null
+                    )
+                }
+                is Resource.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = membersResult.message ?: "Failed to load group"
+                    )
+                }
+                else -> {}
+            }
+        }
+    }
 }
+
+/**
+ * UI State for GroupProfileScreen
+ */
+data class GroupProfileUiState(
+    val isLoading: Boolean = false,
+    val selectedGroup: Group? = null,
+    val groupMembers: List<GroupMember> = emptyList(),
+    val currentUserGroupId: Int? = null,
+    val error: String? = null
+)

@@ -68,6 +68,7 @@ import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyPrac
 import com.example.voicevibe.presentation.screens.speakingjourney.GrammarPracticeScreen
 import com.example.voicevibe.presentation.screens.group.GroupSelectionScreen
 import com.example.voicevibe.presentation.screens.group.MyGroupScreen
+import com.example.voicevibe.presentation.screens.group.GroupProfileScreen
 
 @Composable
 fun NavGraph(
@@ -633,6 +634,9 @@ fun NavGraph(
                 onNavigateToProfile = { userId ->
                     navController.navigate(Screen.UserProfile.createRoute(userId))
                 },
+                onNavigateToGroupProfile = { groupId ->
+                    navController.navigate(Screen.GroupProfile.createRoute(groupId))
+                },
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -901,6 +905,26 @@ fun NavGraph(
                 },
                 onNavigateToUserProfile = { userId ->
                     navController.navigate(Screen.UserProfile.createRoute(userId.toString()))
+                }
+            )
+        }
+
+        // Group Profile Screen
+        composable(
+            route = Screen.GroupProfile.route,
+            arguments = listOf(navArgument("groupId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val groupId = backStackEntry.arguments?.getInt("groupId") ?: 0
+            GroupProfileScreen(
+                groupId = groupId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToUserProfile = { userId ->
+                    navController.navigate(Screen.UserProfile.createRoute(userId))
+                },
+                onNavigateToGroupChat = {
+                    navController.navigate(Screen.MyGroup.route)
                 }
             )
         }

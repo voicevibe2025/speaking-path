@@ -159,6 +159,9 @@ sealed class Screen(val route: String) {
     // Groups (Collectivism Feature)
     object GroupSelection : Screen("group_selection")
     object MyGroup : Screen("my_group")
+    object GroupProfile : Screen("group_profile/{groupId}") {
+        fun createRoute(groupId: Int) = "group_profile/$groupId"
+    }
 }
 
 /**

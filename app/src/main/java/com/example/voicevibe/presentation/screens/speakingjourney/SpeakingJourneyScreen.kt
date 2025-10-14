@@ -48,6 +48,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DirectionsBus
@@ -793,80 +795,78 @@ private fun VerticalTopicCard(
     onClick: () -> Unit,
     index: Int
 ) {
+    var isExpanded by remember { mutableStateOf(false) }
+    
     val scale by animateFloatAsState(
         targetValue = if (isSelected) 1.02f else 1f,
         animationSpec = tween(200),
         label = "VerticalTopicCardScale"
     )
 
-    val context = LocalContext.current
-    val imageResId = remember(topic.title) {
-        getTopicDrawableId(context, topic.title)
-    }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
             .scale(scale)
-            .clickable { if (topic.unlocked) onClick() },
-        shape = RoundedCornerShape(20.dp),
+            .animateContentSize(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            ),
+        shape = RoundedCornerShape(16.dp),
         border = if (isSelected) {
-            BorderStroke(2.dp, BrandCyan)
-        } else BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
+            BorderStroke(1.5.dp, Brush.horizontalGradient(listOf(BrandCyan, BrandIndigo)))
+        } else BorderStroke(1.dp, Color.White.copy(alpha = 0.15f)),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.05f)
+            // Glassmorphism effect
+            containerColor = Color.White.copy(alpha = 0.08f)
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 8.dp else 2.dp
+            defaultElevation = if (isSelected) 4.dp else 0.dp
         )
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // Background Image
-            Image(
-                painter = painterResource(id = imageResId),
-                contentDescription = topic.title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                alpha = 0.3f
-            )
-
-            // Scrim for text readability
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = 0.8f),
-                                Color.Transparent
-                            )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    // Additional glassmorphism layer with gradient
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.03f),
+                            Color(0xFF64B5F6).copy(alpha = 0.05f)
                         )
                     )
-            )
-
+                )
+        ) {
+            // Main card content (always visible)
             Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp),
+                    .fillMaxWidth()
+                    .clickable { if (topic.unlocked) onClick() }
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Lock icon or number badge
                 Box(
                     modifier = Modifier
-                        .size(56.dp)
+                        .size(44.dp)
                         .background(
-                            if (topic.unlocked) BrandIndigo else Color.White.copy(alpha = 0.2f),
-                            CircleShape
+                            brush = if (topic.unlocked) {
+                                Brush.linearGradient(listOf(BrandCyan, BrandIndigo))
+                            } else {
+                                Brush.linearGradient(listOf(
+                                    Color.White.copy(alpha = 0.15f),
+                                    Color.White.copy(alpha = 0.1f)
+                                ))
+                            },
+                            shape = CircleShape
                         ),
                     contentAlignment = Alignment.Center
                 ) {
                     if (topic.unlocked) {
                         Text(
                             text = "${index + 1}",
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
@@ -874,101 +874,191 @@ private fun VerticalTopicCard(
                         Icon(
                             imageVector = Icons.Default.Lock,
                             contentDescription = "Locked",
-                            tint = Color.White.copy(alpha = 0.7f),
-                            modifier = Modifier.size(28.dp)
+                            tint = Color.White.copy(alpha = 0.6f),
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
                 // Topic info
                 Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(bottom = 0.dp),
-                    verticalArrangement = Arrangement.Top
+                    modifier = Modifier.weight(1f)
                 ) {
                     Text(
                         text = topic.title,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = topic.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White.copy(alpha = 0.7f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
                     
                     if (topic.unlocked) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        // Progress indicator: Calculate based on all three practices
+                        Spacer(modifier = Modifier.height(6.dp))
+                        // Compact progress indicator
                         val scores = topic.practiceScores
                         val completedPractices = listOf(
-                            // Pronunciation/Phrase practice
                             (topic.phraseProgress?.isAllPhrasesCompleted == true) || 
                             ((scores?.pronunciation ?: 0) > 0),
-                            // Fluency practice
                             (topic.fluencyProgress?.completed == true) || 
                             ((scores?.fluency ?: 0) > 0),
-                            // Vocabulary practice
                             (scores?.vocabulary ?: 0) > 0
                         ).count { it }
                         
                         val progress = completedPractices / 3f
                         
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(20.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             LinearProgressIndicator(
                                 progress = progress.coerceIn(0f, 1f),
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(6.dp)
-                                    .align(Alignment.CenterStart)
-                                    .clip(RoundedCornerShape(3.dp)),
+                                    .weight(1f)
+                                    .height(4.dp)
+                                    .clip(RoundedCornerShape(2.dp)),
                                 color = if (progress >= 1f) Color(0xFF4CAF50) else BrandCyan,
-                                trackColor = Color.White.copy(alpha = 0.2f)
+                                trackColor = Color.White.copy(alpha = 0.15f)
                             )
                             Text(
                                 text = "${(progress * 100).toInt()}%",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .padding(end = 2.dp)
+                                color = Color.White.copy(alpha = 0.7f),
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     }
                 }
 
-                // Completion checkmark or arrow
-                if (topic.completed) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Completed",
-                        tint = Color(0xFF4CAF50),
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Right side icons
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Completion checkmark
+                    if (topic.completed) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "Completed",
+                            tint = Color(0xFF4CAF50),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    
+                    // Expand/collapse icon
+                    IconButton(
+                        onClick = { isExpanded = !isExpanded },
                         modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = if (isExpanded) "Collapse" else "Expand",
+                            tint = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+            
+            // Expanded content
+            if (isExpanded) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Color.White.copy(alpha = 0.03f)
+                        )
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    // Divider
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(Color.White.copy(alpha = 0.1f))
                     )
-                } else if (topic.unlocked) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "Open",
-                        tint = Color.White.copy(alpha = 0.7f),
-                        modifier = Modifier.size(32.dp)
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    // Description
+                    Text(
+                        text = topic.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.8f),
+                        lineHeight = 20.sp
                     )
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    // Topic stats
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Vocabulary count
+                        TopicStatItem(
+                            label = "Vocabulary",
+                            value = "${topic.vocabulary.size}",
+                            icon = Icons.Default.School
+                        )
+                        
+                        // Phrases count
+                        TopicStatItem(
+                            label = "Phrases",
+                            value = "${topic.material.size}",
+                            icon = Icons.Default.RecordVoiceOver
+                        )
+                        
+                        // Conversation turns
+                        TopicStatItem(
+                            label = "Dialogue",
+                            value = "${topic.conversation.size}",
+                            icon = Icons.AutoMirrored.Filled.VolumeUp
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun TopicStatItem(
+    label: String,
+    value: String,
+    icon: ImageVector
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .background(
+                color = Color.White.copy(alpha = 0.05f),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = BrandCyan,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.White.copy(alpha = 0.6f)
+        )
     }
 }
 

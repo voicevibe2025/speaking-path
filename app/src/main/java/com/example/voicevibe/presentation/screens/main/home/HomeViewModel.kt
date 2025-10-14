@@ -360,7 +360,13 @@ class HomeViewModel @Inject constructor(
                         // Completed should reflect Speaking Journey topics completed from backend profile
                         completedLessons = userProfile.lessonsCompleted ?: 0,
                         // If the user leveled up since last seen, surface the badge
-                        hasNewAchievements = it.hasNewAchievements || leveledUp
+                        hasNewAchievements = it.hasNewAchievements || leveledUp,
+                        // Skill scores from profile
+                        pronunciationScore = userProfile.pronunciationScore ?: 0f,
+                        fluencyScore = userProfile.fluencyScore ?: 0f,
+                        vocabularyScore = userProfile.vocabularyScore ?: 0f,
+                        grammarScore = userProfile.grammarScore ?: 0f,
+                        listeningScore = userProfile.listeningScore ?: 0f
                     )
                 }
             } catch (e: IOException) {
@@ -523,6 +529,12 @@ data class HomeUiState(
     val notifications: List<SocialNotification> = emptyList(),
     val viviTopics: List<ViviTopic> = emptyList(),
     val hasNewAchievements: Boolean = false,
+    // Skill scores for radar chart
+    val pronunciationScore: Float = 0f,
+    val fluencyScore: Float = 0f,
+    val vocabularyScore: Float = 0f,
+    val grammarScore: Float = 0f,
+    val listeningScore: Float = 0f,
 )
 
 /**

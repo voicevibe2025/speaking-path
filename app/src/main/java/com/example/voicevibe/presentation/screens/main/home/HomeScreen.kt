@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -226,16 +227,18 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(20.dp))
                     }
 
-                    // Quick Start Actions - Highlighted
+                    // Skills Radar Chart
                     item {
                         AnimatedVisibility(
                             visible = isVisible,
                             enter = fadeIn(animationSpec = tween(400, 100))
                         ) {
-                            QuickStartSection(
-                                onStartPractice = viewModel::onStartPractice,
-                                onPracticeWithAI = onNavigateToPracticeAI,
-                                onLivePractice = onNavigateToLivePractice
+                            SkillsRadarChart(
+                                pronunciationScore = uiState.pronunciationScore,
+                                fluencyScore = uiState.fluencyScore,
+                                vocabularyScore = uiState.vocabularyScore,
+                                grammarScore = uiState.grammarScore,
+                                listeningScore = uiState.listeningScore
                             )
                         }
                     }
@@ -1061,16 +1064,19 @@ private fun WelcomeSection(
 }
 
 @Composable
-private fun QuickStartSection(
-    onStartPractice: () -> Unit,
-    onPracticeWithAI: () -> Unit,
-    onLivePractice: () -> Unit
+private fun SkillsRadarChart(
+    pronunciationScore: Float,
+    fluencyScore: Float,
+    vocabularyScore: Float,
+    grammarScore: Float,
+    listeningScore: Float
 ) {
     BoxWithConstraints {
         val isCompact = maxWidth < 360.dp
+        
         Column {
             Text(
-                text = "START LEARNING",
+                text = "YOUR SKILLS",
                 fontSize = if (isCompact) 18.sp else 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White,
@@ -1080,55 +1086,27 @@ private fun QuickStartSection(
                     .padding(bottom = 16.dp)
             )
 
-            // Primary Action - Speaking Practice (Blue)
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onStartPractice() },
-                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(if (isCompact) 16.dp else 20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(CircleShape)
-                            .background(Color.Transparent),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Mic,
-                            contentDescription = null,
-                            tint = Color(0xFF3B82F6),
-                            modifier = Modifier.size(36.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = "Practice Speaking",
-                        fontSize = if (isCompact) 16.sp else 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Practice speaking with selected topic",
-                        fontSize = if (isCompact) 12.sp else 14.sp,
-                        color = Color.White.copy(alpha = 0.8f),
-                        textAlign = TextAlign.Center,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                    RadarChartView(
+                        skills = listOf(
+                            SkillData("Pronunciation", pronunciationScore, BrandCyan),
+                            SkillData("Fluency", fluencyScore, BrandIndigo),
+                            SkillData("Vocabulary", vocabularyScore, BrandFuchsia),
+                            SkillData("Grammar", grammarScore, Color(0xFFFB923C)),
+                            SkillData("Comprehension", listeningScore, Color(0xFF4ADE80))
+                        ),
+                        modifier = Modifier.size(if (isCompact) 280.dp else 320.dp)
                     )
                 }
             }
@@ -2699,6 +2677,150 @@ private fun EtherealNetworkBackground() {
                     radius = particle.size * 0.5f,
                     center = position
                 )
+            }
+        }
+    }
+}
+
+/**
+ * Data class for skill in radar chart
+ */
+private data class SkillData(
+    val name: String,
+    val score: Float,
+    val color: Color
+)
+
+/**
+ * Radar chart composable to display skill scores
+ */
+@Composable
+private fun RadarChartView(
+    skills: List<SkillData>,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val center = Offset(size.width / 2f, size.height / 2f)
+            val radius = (size.minDimension / 2f) * 0.7f
+            val angleStep = (2 * Math.PI / skills.size).toFloat()
+            
+            // Draw background circles (grid)
+            val gridLevels = 5
+            for (i in 1..gridLevels) {
+                val levelRadius = radius * (i.toFloat() / gridLevels)
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.1f),
+                    radius = levelRadius,
+                    center = center,
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1f)
+                )
+            }
+            
+            // Draw axis lines for each skill
+            skills.forEachIndexed { index, skill ->
+                val angle = angleStep * index - Math.PI.toFloat() / 2f
+                val endX = center.x + radius * kotlin.math.cos(angle)
+                val endY = center.y + radius * kotlin.math.sin(angle)
+                
+                drawLine(
+                    color = Color.White.copy(alpha = 0.2f),
+                    start = center,
+                    end = Offset(endX, endY),
+                    strokeWidth = 1f
+                )
+            }
+            
+            // Calculate data points
+            val dataPoints = skills.mapIndexed { index, skill ->
+                val angle = angleStep * index - Math.PI.toFloat() / 2f
+                val scoreRadius = radius * (skill.score / 100f).coerceIn(0f, 1f)
+                Offset(
+                    x = center.x + scoreRadius * kotlin.math.cos(angle),
+                    y = center.y + scoreRadius * kotlin.math.sin(angle)
+                )
+            }
+            
+            // Draw filled polygon
+            if (dataPoints.isNotEmpty()) {
+                val path = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(dataPoints[0].x, dataPoints[0].y)
+                    for (i in 1 until dataPoints.size) {
+                        lineTo(dataPoints[i].x, dataPoints[i].y)
+                    }
+                    close()
+                }
+                
+                // Fill with gradient
+                drawPath(
+                    path = path,
+                    color = BrandCyan.copy(alpha = 0.3f)
+                )
+                
+                // Draw outline
+                drawPath(
+                    path = path,
+                    color = BrandCyan.copy(alpha = 0.8f),
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.5f)
+                )
+                
+                // Draw data points as circles
+                dataPoints.forEachIndexed { index, point ->
+                    drawCircle(
+                        color = skills[index].color,
+                        radius = 6f,
+                        center = point
+                    )
+                    drawCircle(
+                        color = Color.White,
+                        radius = 3f,
+                        center = point
+                    )
+                }
+            }
+        }
+        
+        // Draw labels using Text composables
+        BoxWithConstraints(modifier = Modifier.matchParentSize()) {
+            val center = Offset(maxWidth.value / 2f, maxHeight.value / 2f)
+            val radius = (minOf(maxWidth.value, maxHeight.value) / 2f) * 0.7f
+            val labelRadius = radius * 1.25f
+            val angleStep = (2 * Math.PI / skills.size).toFloat()
+            
+            skills.forEachIndexed { index, skill ->
+                val angle = angleStep * index - Math.PI.toFloat() / 2f
+                val labelX = center.x + labelRadius * kotlin.math.cos(angle)
+                val labelY = center.y + labelRadius * kotlin.math.sin(angle)
+                
+                Column(
+                    modifier = Modifier
+                        .offset(
+                            x = labelX.dp - 40.dp,
+                            y = labelY.dp - 20.dp
+                        )
+                        .width(80.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = skill.name,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = "${skill.score.toInt()}",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = skill.color,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }

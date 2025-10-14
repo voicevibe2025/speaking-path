@@ -103,6 +103,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameMillis
+import kotlin.math.sqrt
+import kotlin.random.Random
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -130,31 +133,17 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
 import java.util.Locale
-import androidx.compose.foundation.Image
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import com.example.voicevibe.R
-import android.content.Context
-import androidx.annotation.DrawableRes
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 
-import com.example.voicevibe.presentation.components.FloatingParticles
 import com.example.voicevibe.presentation.components.ModernTopBar
 import com.example.voicevibe.ui.theme.BrandCyan
 import com.example.voicevibe.ui.theme.BrandIndigo
 import com.example.voicevibe.ui.theme.BrandFuchsia
 import com.example.voicevibe.data.remote.api.CoachAnalysisDto
 import com.example.voicevibe.presentation.screens.speakingjourney.CoachViewModel
-
-@DrawableRes
-private fun getTopicDrawableId(context: Context, topicTitle: String): Int {
-    val resourceName = topicTitle.lowercase(Locale.ROOT).replace(" ", "_").replace("-", "_")
-    val resourceId = context.resources.getIdentifier(resourceName, "drawable", context.packageName)
-    // A fallback drawable should be created with this name to avoid crashes
-    return if (resourceId != 0) resourceId else R.drawable.ic_launcher_background
-}
 
 enum class Stage { MATERIAL, PRACTICE }
 
@@ -351,32 +340,12 @@ fun SpeakingJourneyScreen(
         viewModel.loadTranscriptsForCurrentTopic(context)
     }
     
-    // Animated brand background (matches HomeScreen style)
-    val backgroundTransition = rememberInfiniteTransition(label = "background")
-    val animatedOffset by backgroundTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(20000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "gradient"
-    )
-
-    val backgroundBrush = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFF0A1128),
-            Color(0xFF1E2761),
-            Color(0xFF0A1128)
-        )
-    )
-    
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundBrush)
     ) {
-        FloatingParticles()
+        // Ethereal gradient background with network overlay (same as HomeScreen)
+        EtherealNetworkBackground()
 
         Scaffold(
             containerColor = Color.Transparent,
@@ -828,6 +797,7 @@ private fun VerticalTopicCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
                 .background(
                     // Additional glassmorphism layer with gradient
                     Brush.horizontalGradient(
@@ -969,9 +939,6 @@ private fun VerticalTopicCard(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            Color.White.copy(alpha = 0.03f)
-                        )
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
                     // Divider
@@ -979,7 +946,7 @@ private fun VerticalTopicCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(1.dp)
-                            .background(Color.White.copy(alpha = 0.1f))
+                            .background(Color.White.copy(alpha = 0.15f))
                     )
                     
                     Spacer(modifier = Modifier.height(12.dp))
@@ -2646,6 +2613,151 @@ private fun ModernTranscriptSection(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Data class representing a particle (dot) in the network
+ */
+private data class NetworkParticle(
+    val x: Float,
+    val y: Float,
+    val speedX: Float,
+    val speedY: Float,
+    val size: Float
+)
+
+/**
+ * Ethereal Network Background with gradient and animated glowing dots/lines
+ */
+@Composable
+private fun EtherealNetworkBackground() {
+    // Gradient colors: darker edges → very subtle light center (middle light source)
+    val gradientColors = listOf(
+        Color(0xFF3D3A7C),  // Deep purple-indigo (top)
+        Color(0xFF4A4E96),  // Deep indigo
+        Color(0xFF5367B8),  // Indigo
+        Color(0xFF5C72BE),  // Slightly lighter indigo (center - very subtle)
+        Color(0xFF5367B8),  // Indigo
+        Color(0xFF4A4E96),  // Deep indigo
+        Color(0xFF3D3A7C)   // Deep purple-indigo (bottom)
+    )
+
+    // Remember particles with mutable positions
+    val particlePositions = remember {
+        mutableStateOf(
+            List(18) { // 18 particles for ultra-subtle network
+                NetworkParticle(
+                    x = Random.nextFloat(),
+                    y = Random.nextFloat(),
+                    speedX = (Random.nextFloat() - 0.5f) * 0.0003f,
+                    speedY = (Random.nextFloat() - 0.5f) * 0.0003f,
+                    size = Random.nextFloat() * 1.5f + 1f // Smaller: 1-2.5px instead of 2-5px
+                )
+            }
+        )
+    }
+    
+    LaunchedEffect(Unit) {
+        while (true) {
+            withFrameMillis {
+                // Update particle positions
+                particlePositions.value = particlePositions.value.map { particle ->
+                    var newX = particle.x + particle.speedX
+                    var newY = particle.y + particle.speedY
+                    
+                    // Wrap around edges
+                    if (newX < 0f) newX = 1f
+                    if (newX > 1f) newX = 0f
+                    if (newY < 0f) newY = 1f
+                    if (newY > 1f) newY = 0f
+                    
+                    particle.copy(x = newX, y = newY)
+                }
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = gradientColors
+                )
+            )
+    ) {
+        // Network overlay with dots and lines
+        Canvas(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            val width = size.width
+            val height = size.height
+            
+            // Get current particle positions in screen coordinates
+            val particles = particlePositions.value
+            val updatedPositions = particles.map { particle ->
+                Offset(particle.x * width, particle.y * height)
+            }
+            
+            // Draw connecting lines between nearby particles
+            val maxConnectionDistance = 200f
+            for (i in updatedPositions.indices) {
+                for (j in i + 1 until updatedPositions.size) {
+                    val pos1 = updatedPositions[i]
+                    val pos2 = updatedPositions[j]
+                    
+                    val dx = pos2.x - pos1.x
+                    val dy = pos2.y - pos1.y
+                    val distance = sqrt(dx * dx + dy * dy)
+                    
+                    if (distance < maxConnectionDistance) {
+                        // Calculate alpha based on distance (closer = more visible)
+                        val alpha = (1f - distance / maxConnectionDistance) * 0.25f
+                        
+                        drawLine(
+                            color = Color.White.copy(alpha = alpha),
+                            start = pos1,
+                            end = pos2,
+                            strokeWidth = 1f
+                        )
+                    }
+                }
+            }
+            
+            // Draw glowing dots
+            updatedPositions.forEachIndexed { index, position ->
+                val particle = particles[index]
+                
+                // Outer glow (larger, more transparent)
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.15f),
+                    radius = particle.size * 3f,
+                    center = position
+                )
+                
+                // Middle glow
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.3f),
+                    radius = particle.size * 1.8f,
+                    center = position
+                )
+                
+                // Inner bright dot
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.8f),
+                    radius = particle.size,
+                    center = position
+                )
+                
+                // Core bright center
+                drawCircle(
+                    color = Color.White,
+                    radius = particle.size * 0.5f,
+                    center = position
+                )
             }
         }
     }

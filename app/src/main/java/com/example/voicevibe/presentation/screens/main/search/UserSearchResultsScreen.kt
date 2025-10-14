@@ -10,6 +10,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +32,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.SubcomposeAsyncImage
 import com.example.voicevibe.domain.model.UserProfile
+import com.example.voicevibe.domain.model.Group
+import com.example.voicevibe.domain.model.SearchMaterial
+import com.example.voicevibe.domain.model.SearchFilter
 import com.example.voicevibe.presentation.components.OnlineStatusIndicator
 import com.example.voicevibe.ui.theme.*
 
@@ -37,6 +43,8 @@ import com.example.voicevibe.ui.theme.*
 fun UserSearchResultsScreen(
     onNavigateBack: () -> Unit,
     onOpenUserProfile: (String) -> Unit,
+    onOpenGroup: (Int) -> Unit = {},
+    onOpenMaterial: (String) -> Unit = {},
     viewModel: UserSearchViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -54,7 +62,7 @@ fun UserSearchResultsScreen(
                     OutlinedTextField(
                         value = uiState.query,
                         onValueChange = viewModel::onQueryChange,
-                        placeholder = { Text("Search users", color = NeutralWhite.copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        placeholder = { Text("Search users, groups, materials", color = NeutralWhite.copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis) },
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -95,20 +103,27 @@ fun UserSearchResultsScreen(
             if (uiState.isLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
+            
+            // Filter tabs
+            FilterTabs(
+                selectedFilter = uiState.selectedFilter,
+                onFilterChange = viewModel::onFilterChange
+            )
 
-            if (uiState.results.isEmpty() && uiState.query.length < 2 && uiState.error == null) {
+            if (uiState.users.isEmpty() && uiState.groups.isEmpty() && uiState.materials.isEmpty() && uiState.query.length < 2 && uiState.error == null) {
                 EmptyState()
             } else if (uiState.error != null) {
                 ErrorState(uiState.error!!)
             } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(vertical = 8.dp)
-                ) {
-                    items(uiState.results) { user ->
-                        UserRow(user = user, onClick = { onOpenUserProfile(user.id) })
-                    }
-                }
+                SearchResults(
+                    filter = uiState.selectedFilter,
+                    users = uiState.users,
+                    groups = uiState.groups,
+                    materials = uiState.materials,
+                    onUserClick = onOpenUserProfile,
+                    onGroupClick = onOpenGroup,
+                    onMaterialClick = onOpenMaterial
+                )
             }
         }
     }
@@ -172,6 +187,173 @@ private fun UserRow(user: UserProfile, onClick: () -> Unit) {
 }
 
 @Composable
+private fun FilterTabs(
+    selectedFilter: SearchFilter,
+    onFilterChange: (SearchFilter) -> Unit
+) {
+    ScrollableTabRow(
+        selectedTabIndex = selectedFilter.ordinal,
+        containerColor = BrandIndigo,
+        contentColor = NeutralWhite,
+        edgePadding = 0.dp
+    ) {
+        SearchFilter.values().forEach { filter ->
+            Tab(
+                selected = selectedFilter == filter,
+                onClick = { onFilterChange(filter) },
+                text = {
+                    Text(
+                        text = when (filter) {
+                            SearchFilter.ALL -> "All"
+                            SearchFilter.USERS -> "Users"
+                            SearchFilter.GROUPS -> "Groups"
+                            SearchFilter.MATERIALS -> "Materials"
+                        },
+                        fontWeight = if (selectedFilter == filter) FontWeight.Bold else FontWeight.Normal
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchResults(
+    filter: SearchFilter,
+    users: List<UserProfile>,
+    groups: List<Group>,
+    materials: List<SearchMaterial>,
+    onUserClick: (String) -> Unit,
+    onGroupClick: (Int) -> Unit,
+    onMaterialClick: (String) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 8.dp)
+    ) {
+        when (filter) {
+            SearchFilter.ALL -> {
+                // Show users
+                items(users) { user ->
+                    UserRow(user = user, onClick = { onUserClick(user.id) })
+                }
+                // Show groups
+                items(groups) { group ->
+                    GroupRow(group = group, onClick = { onGroupClick(group.id) })
+                }
+                // Show materials
+                items(materials) { material ->
+                    MaterialRow(material = material, onClick = { onMaterialClick(material.id) })
+                }
+            }
+            SearchFilter.USERS -> {
+                items(users) { user ->
+                    UserRow(user = user, onClick = { onUserClick(user.id) })
+                }
+            }
+            SearchFilter.GROUPS -> {
+                items(groups) { group ->
+                    GroupRow(group = group, onClick = { onGroupClick(group.id) })
+                }
+            }
+            SearchFilter.MATERIALS -> {
+                items(materials) { material ->
+                    MaterialRow(material = material, onClick = { onMaterialClick(material.id) })
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GroupRow(group: Group, onClick: () -> Unit) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = NeutralWhite
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(BrandCyan.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(group.icon, fontSize = 20.sp)
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(group.displayName, fontWeight = FontWeight.Bold, color = NeutralDarkGray, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("${group.memberCount} members", fontSize = 12.sp, color = AccentBlueGray)
+            }
+            Icon(Icons.Filled.Group, contentDescription = null, tint = AccentBlueGray)
+        }
+    }
+}
+
+@Composable
+private fun MaterialRow(material: SearchMaterial, onClick: () -> Unit) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = NeutralWhite
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (material.completed) BrandFuchsia.copy(alpha = 0.2f) else BrandIndigo.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Filled.Book,
+                    contentDescription = null,
+                    tint = if (material.completed) BrandFuchsia else BrandIndigo
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(material.title, fontWeight = FontWeight.Bold, color = NeutralDarkGray, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, false))
+                    if (material.completed) {
+                        Spacer(Modifier.width(4.dp))
+                        Text("✓", color = BrandFuchsia, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                Text(
+                    material.description.ifBlank { "Topic ${material.sequence}" },
+                    fontSize = 12.sp,
+                    color = AccentBlueGray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            if (!material.unlocked) {
+                Icon(Icons.Default.Lock, contentDescription = "Locked", tint = AccentBlueGray, modifier = Modifier.size(20.dp))
+            }
+        }
+    }
+}
+
+@Composable
 private fun EmptyState() {
     Column(
         modifier = Modifier
@@ -179,9 +361,9 @@ private fun EmptyState() {
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Find friends", fontWeight = FontWeight.Bold, color = NeutralWhite, fontSize = 18.sp)
+        Text("Search VozVibe", fontWeight = FontWeight.Bold, color = NeutralWhite, fontSize = 18.sp)
         Spacer(Modifier.height(4.dp))
-        Text("Search by name or username", color = NeutralWhite.copy(alpha = 0.9f))
+        Text("Find users, groups, and learning materials", color = NeutralWhite.copy(alpha = 0.9f))
     }
 }
 

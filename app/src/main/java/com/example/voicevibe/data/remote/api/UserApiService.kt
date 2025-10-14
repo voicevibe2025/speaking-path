@@ -39,6 +39,12 @@ interface UserApiService {
     @GET("users/search/")
     suspend fun searchUsers(@Query("query") query: String): Response<List<UserProfile>>
     
+    @GET("users/search/unified/")
+    suspend fun unifiedSearch(
+        @Query("query") query: String,
+        @Query("type") type: String = "all"
+    ): Response<com.example.voicevibe.data.model.UnifiedSearchResponseDto>
+    
     @POST("users/follow/{id}/")
     suspend fun followUser(@Path("id") userId: String): Response<Unit>
     

@@ -107,6 +107,45 @@ class UserRepository @Inject constructor(
             Resource.Error(e.message ?: "Unknown error occurred")
         }
     }
+    
+    /**
+     * Unified search across users, groups, and materials
+     */
+    suspend fun unifiedSearch(
+        query: String,
+        type: String = "all"
+    ): Resource<com.example.voicevibe.domain.model.UnifiedSearchResponse> {
+        return try {
+            val response = apiService.unifiedSearch(query, type)
+            if (response.isSuccessful) {
+                response.body()?.let { dto ->
+                    val domainResponse = com.example.voicevibe.domain.model.UnifiedSearchResponse(
+                        users = dto.users.map { data ->
+                            data.toDomain().copy(
+                                avatarUrl = data.avatarUrl?.let { normalizeUrl(it) }
+                            )
+                        },
+                        groups = dto.groups.map { it.toDomain() },
+                        materials = dto.materials.map { materialDto ->
+                            com.example.voicevibe.domain.model.SearchMaterial(
+                                id = materialDto.id,
+                                title = materialDto.title,
+                                description = materialDto.description,
+                                sequence = materialDto.sequence,
+                                unlocked = materialDto.unlocked,
+                                completed = materialDto.completed
+                            )
+                        }
+                    )
+                    Resource.Success(domainResponse)
+                } ?: Resource.Error("Empty response")
+            } else {
+                Resource.Error("Failed to search")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
 
     /**
      * Get current user ID

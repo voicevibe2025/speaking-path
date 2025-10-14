@@ -673,6 +673,12 @@ fun NavGraph(
                 onNavigateBack = { navController.popBackStack() },
                 onOpenUserProfile = { userId ->
                     navController.navigate(Screen.UserProfile.createRoute(userId))
+                },
+                onOpenGroup = { groupId ->
+                    navController.navigate(Screen.GroupProfile.createRoute(groupId))
+                },
+                onOpenMaterial = { topicId ->
+                    navController.navigate(Screen.TopicMaster.createRoute(topicId))
                 }
             )
         }

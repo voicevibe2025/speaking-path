@@ -74,6 +74,9 @@ enum class LeaderboardFilter {
     PRONUNCIATION,
     FLUENCY,
     VOCABULARY,
+    GRAMMAR,
+    LISTENING,
+    CONVERSATION,
     TOPICS_COMPLETED
 }
 

@@ -51,6 +51,9 @@ class LeaderboardViewModel @Inject constructor(
             LeaderboardFilter.PRONUNCIATION -> data.entries
             LeaderboardFilter.FLUENCY -> data.entries
             LeaderboardFilter.VOCABULARY -> data.entries
+            LeaderboardFilter.GRAMMAR -> data.entries
+            LeaderboardFilter.LISTENING -> data.entries
+            LeaderboardFilter.CONVERSATION -> data.entries
             LeaderboardFilter.TOPICS_COMPLETED -> data.entries
         }
         // If no change in order, keep original ranks
@@ -66,7 +69,12 @@ class LeaderboardViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
 
             val type = _uiState.value.selectedType
-            val filter = _uiState.value.selectedFilter
+            // For Lingo League, use the selected skill as the filter for the backend
+            val filter = if (type == LeaderboardType.LINGO_LEAGUE) {
+                _uiState.value.selectedLingoLeagueSkill
+            } else {
+                _uiState.value.selectedFilter
+            }
 
             when (val result = repository.getLeaderboard(type, filter, refresh = refresh)) {
                 is Resource.Success -> {
@@ -141,16 +149,9 @@ class LeaderboardViewModel @Inject constructor(
 
     fun selectLeaderboardType(type: LeaderboardType) {
         if (_uiState.value.selectedType != type) {
-            val currentFilter = _uiState.value.selectedFilter
-            val leagueFilters = setOf(
-                LeaderboardFilter.PRONUNCIATION,
-                LeaderboardFilter.FLUENCY,
-                LeaderboardFilter.VOCABULARY,
-                LeaderboardFilter.TOPICS_COMPLETED
-            )
             val newFilter = when (type) {
-                LeaderboardType.LINGO_LEAGUE -> if (currentFilter in leagueFilters) currentFilter else LeaderboardFilter.PRONUNCIATION
-                else -> if (currentFilter in leagueFilters) LeaderboardFilter.OVERALL_XP else currentFilter
+                LeaderboardType.LINGO_LEAGUE -> LeaderboardFilter.DAILY_XP // Default to Daily time filter for Lingo League
+                else -> LeaderboardFilter.OVERALL_XP
             }
             _uiState.update {
                 it.copy(selectedType = type, selectedFilter = newFilter)
@@ -163,6 +164,15 @@ class LeaderboardViewModel @Inject constructor(
         if (_uiState.value.selectedFilter != filter) {
             _uiState.update {
                 it.copy(selectedFilter = filter)
+            }
+            loadLeaderboard(refresh = false)
+        }
+    }
+
+    fun selectLingoLeagueSkill(skill: LeaderboardFilter) {
+        if (_uiState.value.selectedLingoLeagueSkill != skill) {
+            _uiState.update {
+                it.copy(selectedLingoLeagueSkill = skill)
             }
             loadLeaderboard(refresh = false)
         }
@@ -277,6 +287,7 @@ data class LeaderboardUiState(
     val competitionStats: CompetitionStats? = null,
     val selectedType: LeaderboardType = LeaderboardType.WEEKLY,
     val selectedFilter: LeaderboardFilter = LeaderboardFilter.OVERALL_XP,
+    val selectedLingoLeagueSkill: LeaderboardFilter = LeaderboardFilter.PRONUNCIATION,
     val error: String? = null
 )
 

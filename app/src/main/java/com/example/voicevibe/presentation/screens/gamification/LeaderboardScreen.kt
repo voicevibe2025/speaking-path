@@ -156,6 +156,15 @@ fun LeaderboardScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
+                    // Lingo League Skill Sub-Tabs (shown only when Lingo League is selected)
+                    if (uiState.selectedType == LeaderboardType.LINGO_LEAGUE) {
+                        LingoLeagueSkillTabs(
+                            selectedSkill = uiState.selectedLingoLeagueSkill,
+                            onSkillSelected = viewModel::selectLingoLeagueSkill,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
                     // Leaderboard List
                     uiState.leaderboardData?.let { data ->
                         LazyColumn(
@@ -386,6 +395,45 @@ private fun LeaderboardTypeTabs(
                 selected = index == selectedIndex,
                 onClick = { onTypeSelected(type) },
                 text = { Text(label) }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LingoLeagueSkillTabs(
+    selectedSkill: LeaderboardFilter,
+    onSkillSelected: (LeaderboardFilter) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val skills = listOf(
+        LeaderboardFilter.PRONUNCIATION to "Pronunciation",
+        LeaderboardFilter.FLUENCY to "Fluency",
+        LeaderboardFilter.VOCABULARY to "Vocabulary",
+        LeaderboardFilter.GRAMMAR to "Grammar",
+        LeaderboardFilter.LISTENING to "Listening",
+        LeaderboardFilter.CONVERSATION to "Conversation"
+    )
+
+    val selectedIndex = skills.indexOfFirst { it.first == selectedSkill }.coerceAtLeast(0)
+
+    ScrollableTabRow(
+        selectedTabIndex = selectedIndex,
+        modifier = modifier,
+        edgePadding = 16.dp,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+    ) {
+        skills.forEachIndexed { index, (skill, label) ->
+            Tab(
+                selected = index == selectedIndex,
+                onClick = { onSkillSelected(skill) },
+                text = { 
+                    Text(
+                        label,
+                        style = MaterialTheme.typography.bodyMedium
+                    ) 
+                }
             )
         }
     }
@@ -835,11 +883,12 @@ private fun FilterDialog(
         text = {
             Column {
                 val filtersToShow = if (selectedType == LeaderboardType.LINGO_LEAGUE) {
+                    // For Lingo League, show time-based filters
                     listOf(
-                        LeaderboardFilter.PRONUNCIATION to "Pronunciation",
-                        LeaderboardFilter.FLUENCY to "Fluency",
-                        LeaderboardFilter.VOCABULARY to "Vocabulary",
-                        LeaderboardFilter.TOPICS_COMPLETED to "Topics Completed"
+                        LeaderboardFilter.DAILY_XP to "Daily",
+                        LeaderboardFilter.WEEKLY_XP to "Weekly",
+                        LeaderboardFilter.MONTHLY_XP to "Monthly",
+                        LeaderboardFilter.OVERALL_XP to "All Time"
                     )
                 } else {
                     listOf(

@@ -2708,29 +2708,29 @@ private fun RadarChartView(
             val radius = (size.minDimension / 2f) * 0.7f
             val angleStep = (2 * Math.PI / skills.size).toFloat()
             
-            // Draw background circles (grid)
+            // Draw background circles (grid) - increased visibility
             val gridLevels = 5
             for (i in 1..gridLevels) {
                 val levelRadius = radius * (i.toFloat() / gridLevels)
                 drawCircle(
-                    color = Color.White.copy(alpha = 0.1f),
+                    color = Color.White.copy(alpha = 0.25f),
                     radius = levelRadius,
                     center = center,
-                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1f)
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5f)
                 )
             }
             
-            // Draw axis lines for each skill
+            // Draw axis lines for each skill - increased visibility
             skills.forEachIndexed { index, skill ->
                 val angle = angleStep * index - Math.PI.toFloat() / 2f
                 val endX = center.x + radius * kotlin.math.cos(angle)
                 val endY = center.y + radius * kotlin.math.sin(angle)
                 
                 drawLine(
-                    color = Color.White.copy(alpha = 0.2f),
+                    color = Color.White.copy(alpha = 0.35f),
                     start = center,
                     end = Offset(endX, endY),
-                    strokeWidth = 1f
+                    strokeWidth = 1.5f
                 )
             }
             
@@ -2754,26 +2754,46 @@ private fun RadarChartView(
                     close()
                 }
                 
-                // Fill with gradient
+                // Fill with brighter gradient for better visibility
                 drawPath(
                     path = path,
-                    color = BrandCyan.copy(alpha = 0.3f)
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            BrandCyan.copy(alpha = 0.5f),
+                            BrandCyan.copy(alpha = 0.25f)
+                        ),
+                        center = center,
+                        radius = radius
+                    )
                 )
                 
-                // Draw outline
+                // Draw brighter outline with glow effect
                 drawPath(
                     path = path,
-                    color = BrandCyan.copy(alpha = 0.8f),
+                    color = Color.White.copy(alpha = 0.4f),
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4f)
+                )
+                drawPath(
+                    path = path,
+                    color = BrandCyan,
                     style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.5f)
                 )
                 
-                // Draw data points as circles
+                // Draw data points as circles with glow
                 dataPoints.forEachIndexed { index, point ->
+                    // Outer glow
                     drawCircle(
-                        color = skills[index].color,
-                        radius = 6f,
+                        color = skills[index].color.copy(alpha = 0.3f),
+                        radius = 10f,
                         center = point
                     )
+                    // Main dot
+                    drawCircle(
+                        color = skills[index].color,
+                        radius = 7f,
+                        center = point
+                    )
+                    // Inner highlight
                     drawCircle(
                         color = Color.White,
                         radius = 3f,
@@ -2804,21 +2824,37 @@ private fun RadarChartView(
                         .width(80.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Skill name with shadow for better visibility
                     Text(
                         text = skill.name,
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = androidx.compose.ui.text.TextStyle(
+                            shadow = androidx.compose.ui.graphics.Shadow(
+                                color = Color.Black.copy(alpha = 0.5f),
+                                offset = Offset(1f, 1f),
+                                blurRadius = 3f
+                            )
+                        )
                     )
+                    // Score with bright color and shadow
                     Text(
                         text = "${skill.score.toInt()}",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
                         color = skill.color,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        style = androidx.compose.ui.text.TextStyle(
+                            shadow = androidx.compose.ui.graphics.Shadow(
+                                color = Color.Black.copy(alpha = 0.6f),
+                                offset = Offset(1f, 1f),
+                                blurRadius = 2f
+                            )
+                        )
                     )
                 }
             }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.util.Log
 import com.example.voicevibe.data.repository.GamificationRepository
+import com.example.voicevibe.data.repository.GroupRepository
 import com.example.voicevibe.domain.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -17,7 +18,8 @@ import kotlin.comparisons.thenByDescending
  */
 @HiltViewModel
 class LeaderboardViewModel @Inject constructor(
-    private val repository: GamificationRepository
+    private val repository: GamificationRepository,
+    private val groupRepository: GroupRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LeaderboardUiState())
@@ -29,6 +31,7 @@ class LeaderboardViewModel @Inject constructor(
     init {
         loadLeaderboard()
         loadCompetitionStats()
+        loadGroupLeaderboard()
     }
 
     private fun applySorting(data: LeaderboardData, filter: LeaderboardFilter): LeaderboardData {
@@ -212,8 +215,12 @@ class LeaderboardViewModel @Inject constructor(
     }
 
     fun refreshLeaderboard() {
-        loadLeaderboard(refresh = true)
-        loadCompetitionStats()
+        if (_uiState.value.selectedMode == LeaderboardMode.GROUP) {
+            loadGroupLeaderboard()
+        } else {
+            loadLeaderboard(refresh = true)
+            loadCompetitionStats()
+        }
     }
 
     fun shareRank() {
@@ -269,6 +276,79 @@ class LeaderboardViewModel @Inject constructor(
             _events.emit(LeaderboardEvent.ScrollToPosition(targetIndex))
         }
     }
+
+    fun selectMode(mode: LeaderboardMode) {
+        if (_uiState.value.selectedMode != mode) {
+            _uiState.update {
+                it.copy(selectedMode = mode)
+            }
+        }
+    }
+
+    private fun loadGroupLeaderboard() {
+        viewModelScope.launch {
+            // First get current user's group
+            val groupStatusResult = groupRepository.checkGroupStatus()
+            val currentUserGroupId = if (groupStatusResult is Resource.Success) {
+                groupStatusResult.data?.group?.id
+            } else null
+
+            // Fetch all groups
+            when (val groupsResult = groupRepository.getGroups()) {
+                is Resource.Success -> {
+                    val groups = groupsResult.data ?: emptyList()
+                    val groupEntries = mutableListOf<GroupLeaderboardEntry>()
+
+                    // For each group, fetch members and calculate total XP
+                    groups.forEach { group ->
+                        when (val membersResult = groupRepository.getGroupMembers(group.id)) {
+                            is Resource.Success -> {
+                                val (_, members) = membersResult.data ?: return@forEach
+                                val totalXp = members.sumOf { it.xp }
+                                
+                                groupEntries.add(
+                                    GroupLeaderboardEntry(
+                                        rank = 0, // Will be assigned after sorting
+                                        groupId = group.id,
+                                        groupName = group.name,
+                                        displayName = group.displayName,
+                                        icon = group.icon,
+                                        color = group.color,
+                                        totalScore = totalXp,
+                                        memberCount = members.size,
+                                        isCurrentUserGroup = group.id == currentUserGroupId
+                                    )
+                                )
+                            }
+                            else -> {
+                                Log.w("LeaderboardVM", "Failed to load members for group ${group.name}")
+                            }
+                        }
+                    }
+
+                    // Sort by total XP descending and assign ranks
+                    val sortedEntries = groupEntries
+                        .sortedByDescending { it.totalScore }
+                        .mapIndexed { index, entry -> entry.copy(rank = index + 1) }
+
+                    _uiState.update {
+                        it.copy(
+                            groupLeaderboardEntries = sortedEntries,
+                            currentUserGroupId = currentUserGroupId
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    Log.e("LeaderboardVM", "Failed to load groups: ${groupsResult.message}")
+                }
+                else -> {}
+            }
+        }
+    }
+
+    fun refreshGroupLeaderboard() {
+        loadGroupLeaderboard()
+    }
 }
 
 private fun normalizeUrl(url: String): String {
@@ -285,9 +365,12 @@ data class LeaderboardUiState(
     val isLoading: Boolean = false,
     val leaderboardData: LeaderboardData? = null,
     val competitionStats: CompetitionStats? = null,
+    val selectedMode: LeaderboardMode = LeaderboardMode.INDIVIDUAL,
     val selectedType: LeaderboardType = LeaderboardType.WEEKLY,
     val selectedFilter: LeaderboardFilter = LeaderboardFilter.OVERALL_XP,
     val selectedLingoLeagueSkill: LeaderboardFilter = LeaderboardFilter.PRONUNCIATION,
+    val groupLeaderboardEntries: List<GroupLeaderboardEntry> = emptyList(),
+    val currentUserGroupId: Int? = null,
     val error: String? = null
 )
 

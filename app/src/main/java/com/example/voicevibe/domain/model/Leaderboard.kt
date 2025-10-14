@@ -4,6 +4,14 @@ import java.time.LocalDateTime
 import com.example.voicevibe.domain.model.RewardType
 
 /**
+ * Leaderboard mode (Individual vs Group)
+ */
+enum class LeaderboardMode {
+    INDIVIDUAL,
+    GROUP
+}
+
+/**
  * Leaderboard entry representing a user's position
  */
 data class LeaderboardEntry(
@@ -23,6 +31,22 @@ data class LeaderboardEntry(
     val weeklyXp: Int = 0,
     val monthlyXp: Int = 0,
     val badge: UserBadge? = null
+)
+
+/**
+ * Group leaderboard entry representing a group's position
+ */
+data class GroupLeaderboardEntry(
+    val rank: Int,
+    val groupId: Int,
+    val groupName: String,
+    val displayName: String,
+    val icon: String,
+    val color: String,
+    val totalScore: Int,
+    val memberCount: Int,
+    val isCurrentUserGroup: Boolean = false,
+    val change: RankChange = RankChange.NONE
 )
 
 /**

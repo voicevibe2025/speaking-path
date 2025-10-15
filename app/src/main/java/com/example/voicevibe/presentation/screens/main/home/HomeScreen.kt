@@ -308,6 +308,25 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(20.dp))
                     }
 
+                    // Practice Current Topic Section
+                    item {
+                        AnimatedVisibility(
+                            visible = isVisible && uiState.viviTopics.any { it.unlocked && !it.completed },
+                            enter = fadeIn(animationSpec = tween(400, 300)) + slideInVertically()
+                        ) {
+                            PracticeCurrentTopicSection(
+                                currentTopic = uiState.viviTopics.firstOrNull { it.unlocked && !it.completed },
+                                onPracticeClick = { viewModel.navigateToCurrentTopic() }
+                            )
+                        }
+                    }
+                    
+                    item {
+                        Spacer(modifier = Modifier.height(20.dp))
+                        GlassmorphismDivider()
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
+
                     // Study Tools
                     item {
                         StudyToolsSection(
@@ -459,6 +478,91 @@ private fun SocialSection(
             modifier = Modifier.padding(bottom = 12.dp)
         )
         SocialFeedEntryCard(onClick = onNavigateToSocialFeed)
+    }
+}
+
+@Composable
+private fun PracticeCurrentTopicSection(
+    currentTopic: ViviTopic?,
+    onPracticeClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onPracticeClick),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            BrandCyan.copy(alpha = 0.15f),
+                            BrandIndigo.copy(alpha = 0.15f),
+                            BrandFuchsia.copy(alpha = 0.15f)
+                        )
+                    )
+                )
+                .padding(20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Icon
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(BrandCyan, BrandIndigo)
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PlayArrow,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                // Content
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Complete Your Topic",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = currentTopic?.title ?: "No topic to complete",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                
+                // Arrow
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    tint = BrandIndigo,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
     }
 }
 

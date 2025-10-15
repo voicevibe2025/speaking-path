@@ -311,13 +311,13 @@ class FluencyPracticeViewModel @Inject constructor(
                                         suggestions = body.suggestions
                                     )
 
-                                    // Completion based on objective score
-                                    val isCompleted = objectiveScore >= 75
-                                    val xpGained = if (isCompleted) 50 else 10  // Completion bonus or participation
+                                    // Always show congratulations overlay regardless of score
+                                    val isCompleted = true // Changed from: objectiveScore >= 75
+                                    val xpGained = if (objectiveScore >= 75) 50 else 10  // Completion bonus or participation
 
                                     _uiState.update { st ->
                                         st.copy(
-                                            showCongrats = isCompleted,
+                                            showCongrats = true,
                                             totalFluencyScore = objectiveScore,
                                             completionXpGained = if (isCompleted) xpGained else st.completionXpGained,
                                             lastAwardedXp = xpGained,

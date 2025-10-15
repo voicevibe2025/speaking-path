@@ -501,6 +501,7 @@ class HomeViewModel @Inject constructor(
                         title = dto.title,
                         description = dto.description,
                         unlocked = dto.unlocked,
+                        completed = dto.completed,
                         hasConversation = dto.conversation.isNotEmpty()
                     )
                 }
@@ -576,6 +577,16 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+    fun navigateToCurrentTopic() {
+        viewModelScope.launch {
+            // Find the first unlocked topic that needs completion
+            val currentTopic = _uiState.value.viviTopics.firstOrNull { it.unlocked && !it.completed }
+            if (currentTopic != null) {
+                _events.emit(HomeEvent.NavigateToTopicMaster(currentTopic.id))
+            }
+        }
+    }
 }
 
 /**
@@ -619,6 +630,7 @@ data class ViviTopic(
     val title: String,
     val description: String,
     val unlocked: Boolean,
+    val completed: Boolean,
     val hasConversation: Boolean
 )
 

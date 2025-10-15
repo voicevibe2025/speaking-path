@@ -3,6 +3,9 @@ package com.example.voicevibe.presentation.screens.speakingjourney
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.voicevibe.R
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -233,15 +237,26 @@ fun ConversationLessonScreen(
                 }
                 else -> {
                     val current = conversation.getOrNull(currentIndex)
-                    val isSpeakerA = current?.speaker.equals("A", ignoreCase = true)
                     val playing = currentlyPlayingId == current?.text
-
                     val compact = embedded
+                    
+                    // Auto-scroll to current phrase
+                    val listState = rememberLazyListState()
+                    val coroutineScope = rememberCoroutineScope()
+                    
+                    LaunchedEffect(currentIndex) {
+                        if (currentIndex in conversation.indices) {
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(currentIndex)
+                            }
+                        }
+                    }
+
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(horizontal = if (compact) 16.dp else 20.dp),
-                        verticalArrangement = if (compact) Arrangement.Top else Arrangement.SpaceBetween,
+                        verticalArrangement = Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         // Progress indicator
@@ -252,43 +267,34 @@ fun ConversationLessonScreen(
                             compact = compact
                         )
 
-                        // Speakers section with modern avatars
-                        ModernSpeakersSection(
-                            isSpeakerA = isSpeakerA,
-                            isPlaying = playing,
-                            modifier = Modifier.padding(vertical = if (compact) 12.dp else 24.dp),
-                            compact = compact
-                        )
+                        Spacer(modifier = Modifier.height(if (compact) 12.dp else 16.dp))
 
-                        // Modern speech bubble (flexes to fill remaining space when compact)
-                        current?.let { turn ->
-                            if (compact) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f, fill = true)
-                                ) {
-                                    ModernSpeechBubble(
-                                        text = turn.text,
-                                        isSpeakerA = isSpeakerA,
-                                        isPlaying = playing,
-                                        primaryGradient = primaryGradient,
-                                        secondaryGradient = secondaryGradient,
-                                        compact = true
-                                    )
-                                }
-                            } else {
-                                ModernSpeechBubble(
+                        // All conversation phrases list
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(if (compact) 12.dp else 16.dp),
+                            contentPadding = PaddingValues(vertical = if (compact) 8.dp else 16.dp)
+                        ) {
+                            itemsIndexed(conversation) { index, turn ->
+                                val isCurrent = index == currentIndex
+                                val isSpeakerA = turn.speaker.equals("A", ignoreCase = true)
+                                ConversationPhraseItem(
                                     text = turn.text,
+                                    isCurrent = isCurrent,
                                     isSpeakerA = isSpeakerA,
-                                    isPlaying = playing,
-                                    primaryGradient = primaryGradient,
-                                    secondaryGradient = secondaryGradient,
-                                    compact = false
+                                    isPlaying = playing && isCurrent,
+                                    onClick = { 
+                                        playTurn(index)
+                                    },
+                                    compact = compact
                                 )
                             }
                         }
+
+                        Spacer(modifier = Modifier.height(if (compact) 12.dp else 16.dp))
 
                         // Modern control panel
                         ModernControlPanel(
@@ -383,13 +389,9 @@ fun ConversationProgress(
                         .clip(RoundedCornerShape(2.dp))
                         .background(
                             if (isActive) {
-                                Brush.horizontalGradient(
-                                    listOf(Color(0xFF667EEA), Color(0xFFF093FB))
-                                )
+                                Color.White.copy(alpha = 0.6f) // White with low opacity
                             } else {
-                                Brush.horizontalGradient(
-                                    listOf(Color(0x33FFFFFF), Color(0x33FFFFFF))
-                                )
+                                Color.White.copy(alpha = 0.15f) // Very transparent white
                             }
                         )
                         .graphicsLayer { scaleX = width }
@@ -402,6 +404,86 @@ fun ConversationProgress(
             color = Color.White.copy(alpha = 0.7f),
             fontSize = if (compact) 11.sp else 12.sp,
             fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+fun ConversationPhraseItem(
+    text: String,
+    isCurrent: Boolean,
+    isSpeakerA: Boolean,
+    isPlaying: Boolean,
+    onClick: () -> Unit,
+    compact: Boolean = false
+) {
+    val scale by animateFloatAsState(
+        targetValue = if (isCurrent) 1.0f else 0.95f,
+        animationSpec = spring(dampingRatio = 0.7f)
+    )
+    
+    // Speaker-specific colors: purple for A, orange for B
+    val textColor = when {
+        isCurrent && isSpeakerA -> Color(0xFFB565D8) // Purple/Magenta for Speaker A
+        isCurrent && !isSpeakerA -> Color(0xFFFF9800) // Orange for Speaker B
+        else -> Color(0xFF4FC3F7) // Cyan for inactive phrases
+    }
+    
+    val fontSize = if (isCurrent) {
+        if (compact) 20.sp else 24.sp // Larger for current
+    } else {
+        if (compact) 14.sp else 16.sp // Smaller for others
+    }
+    
+    val fontWeight = if (isCurrent) FontWeight.SemiBold else FontWeight.Normal
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clickable(onClick = onClick)
+            .padding(horizontal = if (compact) 8.dp else 12.dp)
+    ) {
+        // Show sound wave animation for currently playing phrase
+        if (isPlaying && isCurrent) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Column {
+                    SoundWaveAnimation(
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(if (compact) 16.dp else 20.dp)
+                            .padding(bottom = 8.dp)
+                    )
+                }
+            }
+        }
+        
+        Text(
+            text = text,
+            color = textColor,
+            fontSize = fontSize,
+            fontWeight = fontWeight,
+            textAlign = TextAlign.Start,
+            lineHeight = if (isCurrent) {
+                if (compact) 28.sp else 32.sp
+            } else {
+                if (compact) 20.sp else 24.sp
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    vertical = if (isCurrent) {
+                        if (compact) 8.dp else 12.dp
+                    } else {
+                        if (compact) 4.dp else 6.dp
+                    }
+                )
         )
     }
 }
@@ -684,22 +766,14 @@ fun ModernControlPanel(
     modifier: Modifier = Modifier,
     compact: Boolean = false
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(32.dp),
-        color = Color.White.copy(alpha = 0.08f),
-        border = BorderStroke(
-            width = 1.dp,
-            color = Color.White.copy(alpha = 0.1f)
-        )
+    // Transparent container - no card background
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = if (compact) 10.dp else 16.dp, horizontal = if (compact) 16.dp else 24.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = if (compact) 10.dp else 16.dp, horizontal = if (compact) 16.dp else 24.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
             // Previous button
             ModernControlButton(
                 onClick = onPrevious,
@@ -741,7 +815,6 @@ fun ModernControlPanel(
                 )
             }
         }
-    }
 }
 
 @Composable
@@ -771,34 +844,38 @@ fun ModernPlayButton(
     size: Dp = 72.dp,
     iconSize: Dp = 36.dp
 ) {
-    Surface(
-        modifier = Modifier.size(size),
-        shape = CircleShape,
-        color = Color.Transparent
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFF667EEA),
-                            Color(0xFFF093FB)
-                        )
-                    ),
-                    shape = CircleShape
+    // Glassmorphism effect
+    Box(
+        modifier = Modifier
+            .size(size)
+            .background(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.2f),
+                        Color.White.copy(alpha = 0.1f)
+                    )
                 ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.Forum,
-                contentDescription = if (isPlaying) "Stop" else "Start Conversation",
-                tint = Color.White,
-                modifier = Modifier.size(iconSize)
+                shape = CircleShape
             )
-        }
+            .border(
+                width = 1.5.dp,
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.4f),
+                        Color.White.copy(alpha = 0.1f)
+                    )
+                ),
+                shape = CircleShape
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.Forum,
+            contentDescription = if (isPlaying) "Stop" else "Start Conversation",
+            tint = Color.White,
+            modifier = Modifier.size(iconSize)
+        )
     }
-
 }
 
 fun DrawScope.drawAnimatedGradient(offset: Float) {

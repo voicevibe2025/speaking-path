@@ -380,6 +380,7 @@ fun PracticeCardsSection(
             gradient = listOf(Color(0xFFFF006E), Color(0xFFFF4081)),
             score = pronScoreForUi,
             maxScore = practiceScores?.maxPronunciation ?: 100,
+            isRequired = true,
             onClick = { onNavigateToPronunciationPractice(topicId) }
         ),
         PracticeItem(
@@ -389,6 +390,7 @@ fun PracticeCardsSection(
             gradient = listOf(Color(0xFF00D9FF), Color(0xFF00B4D8)),
             score = practiceScores?.fluency ?: 0,
             maxScore = practiceScores?.maxFluency ?: 100,
+            isRequired = true,
             onClick = { onNavigateToFluencyPractice(topicId) }
         ),
         PracticeItem(
@@ -398,6 +400,7 @@ fun PracticeCardsSection(
             gradient = listOf(Color(0xFFFFBE0B), Color(0xFFFB8500)),
             score = practiceScores?.vocabulary ?: 0,
             maxScore = practiceScores?.maxVocabulary ?: 100,
+            isRequired = true,
             onClick = { onNavigateToVocabularyPractice(topicId) }
         ),
         PracticeItem(
@@ -407,6 +410,7 @@ fun PracticeCardsSection(
             gradient = listOf(Color(0xFF06FFA5), Color(0xFF00C896)),
             score = practiceScores?.grammar ?: 0,
             maxScore = practiceScores?.maxGrammar ?: 100,
+            isRequired = true,
             onClick = { onNavigateToGrammarPractice(topicId) }
         ),
         PracticeItem(
@@ -416,6 +420,7 @@ fun PracticeCardsSection(
             gradient = listOf(Color(0xFF8338EC), Color(0xFF6C63FF)),
             score = practiceScores?.listening ?: 0,
             maxScore = practiceScores?.maxListening ?: 100,
+            isRequired = false,
             onClick = { onNavigateToListeningPractice(topicId) }
         ),
         PracticeItem(
@@ -425,6 +430,7 @@ fun PracticeCardsSection(
             gradient = listOf(Color(0xFFFF006E), Color(0xFF8338EC)),
             score = conversationScoreForUi,
             maxScore = conversationMax,
+            isRequired = false,
             onClick = { onNavigateToConversation(topicId) }
         )
     )
@@ -491,7 +497,7 @@ fun ProgressSummarySection(topicId: String) {
             Spacer(modifier = Modifier.height(16.dp))
             
             if (practiceScores != null) {
-                // Show current scores
+                // Show current scores (4 required practices)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -511,19 +517,26 @@ fun ProgressSummarySection(topicId: String) {
                         score = practiceScores.vocabulary,
                         color = Color(0xFFFFBE0B)
                     )
+                    ScoreIndicator(
+                        title = "Grammar",
+                        score = practiceScores.grammar ?: 0,
+                        color = Color(0xFF8338EC)
+                    )
                 }
                 
                 Spacer(modifier = Modifier.height(20.dp))
                 
-                // Dynamic combined progress using available scores and maxima
+                // Dynamic combined progress using available scores and maxima (includes grammar)
                 val pronMax = practiceScores.maxPronunciation
                 val fluMax = practiceScores.maxFluency
                 val vocabMax = practiceScores.maxVocabulary
+                val grammarMax = practiceScores.maxGrammar ?: 100
                 val pronEff = pronScoreForUi.coerceAtMost(pronMax)
                 val fluEff = practiceScores.fluency.coerceAtMost(fluMax)
                 val vocabEff = practiceScores.vocabulary.coerceAtMost(vocabMax)
-                val totalEff = pronEff + fluEff + vocabEff
-                val totalMax = (pronMax + fluMax + vocabMax).coerceAtLeast(1)
+                val grammarEff = (practiceScores.grammar ?: 0).coerceAtMost(grammarMax)
+                val totalEff = pronEff + fluEff + vocabEff + grammarEff
+                val totalMax = (pronMax + fluMax + vocabMax + grammarMax).coerceAtLeast(1)
                 val localCombinedPercent = (totalEff.toFloat() / totalMax.toFloat()) * 100f
 
                 if (totalEff > 0) {
@@ -769,12 +782,29 @@ fun ModernPracticeCard(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = item.title,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = item.title,
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                    // Required/Bonus icon indicator
+                                    Icon(
+                                        imageVector = if (item.isRequired) Icons.Default.Star else Icons.Default.EmojiEvents,
+                                        contentDescription = if (item.isRequired) "Required to unlock next topic" else "Bonus practice",
+                                        tint = if (item.isRequired) {
+                                            Color(0xFFFFBE0B)
+                                        } else {
+                                            Color(0xFF8338EC)
+                                        },
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = item.description,
                                     fontSize = 14.sp,
@@ -851,6 +881,7 @@ data class PracticeItem(
     val gradient: List<Color>,
     val score: Int,
     val maxScore: Int,
+    val isRequired: Boolean = false,
     val onClick: () -> Unit
 )
 

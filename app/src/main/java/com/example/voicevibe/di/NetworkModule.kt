@@ -196,4 +196,9 @@ object NetworkModule {
     fun provideChatWebSocketClient(gson: Gson): com.example.voicevibe.data.websocket.ChatWebSocketClient =
         com.example.voicevibe.data.websocket.ChatWebSocketClient(gson)
 
+    @Provides
+    @Singleton
+    fun provideAnalyticsApi(retrofit: Retrofit): AnalyticsApiService =
+        retrofit.create(AnalyticsApiService::class.java)
+
 }

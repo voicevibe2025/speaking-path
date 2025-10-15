@@ -40,7 +40,8 @@ class HomeViewModel @Inject constructor(
     private val socialRepository: SocialRepository,
     private val messagingRepository: com.example.voicevibe.data.repository.MessagingRepository,
     private val speakingJourneyRepository: SpeakingJourneyRepository,
-    private val coachRepository: com.example.voicevibe.data.repository.CoachRepository
+    private val coachRepository: com.example.voicevibe.data.repository.CoachRepository,
+    private val analyticsRepository: com.example.voicevibe.data.repository.AnalyticsRepository
 ) : ViewModel() {
 
     private val prefs by lazy { application.getSharedPreferences("voicevibe_prefs", Context.MODE_PRIVATE) }
@@ -587,6 +588,70 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+    
+    // ========== Chat Mode Analytics Tracking ==========
+    
+    /**
+     * Start tracking a chat mode session (Text or Voice)
+     */
+    fun startChatModeSession(mode: com.example.voicevibe.data.repository.ChatMode) {
+        viewModelScope.launch {
+            try {
+                val result = analyticsRepository.startChatSession(mode)
+                result.onSuccess { usage ->
+                    _uiState.update { it.copy(activeChatSession = usage) }
+                    android.util.Log.d("HomeViewModel", "Started ${mode.value} chat session: ${usage.usageId}")
+                }
+                result.onFailure { error ->
+                    android.util.Log.e("HomeViewModel", "Failed to start chat session", error)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("HomeViewModel", "Error starting chat session", e)
+            }
+        }
+    }
+    
+    /**
+     * End the current active chat mode session
+     */
+    fun endChatModeSession() {
+        viewModelScope.launch {
+            val session = _uiState.value.activeChatSession
+            if (session != null && session.isActive) {
+                try {
+                    val result = analyticsRepository.endChatSession(session.usageId)
+                    result.onSuccess { usage ->
+                        _uiState.update { it.copy(activeChatSession = null) }
+                        android.util.Log.d("HomeViewModel", "Ended chat session: ${usage.usageId}")
+                    }
+                    result.onFailure { error ->
+                        android.util.Log.e("HomeViewModel", "Failed to end chat session", error)
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("HomeViewModel", "Error ending chat session", e)
+                }
+            }
+        }
+    }
+    
+    /**
+     * Increment message count in the active chat session
+     */
+    fun incrementChatMessage() {
+        viewModelScope.launch {
+            val session = _uiState.value.activeChatSession
+            if (session != null && session.isActive) {
+                try {
+                    val result = analyticsRepository.incrementMessageCount(session.usageId, 1)
+                    result.onSuccess { usage ->
+                        _uiState.update { it.copy(activeChatSession = usage) }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("HomeViewModel", "Error incrementing message count", e)
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -619,7 +684,9 @@ data class HomeUiState(
     val listeningScore: Float = 0f,
     // AI Coach analysis
     val coachAnalysis: com.example.voicevibe.data.remote.api.CoachAnalysisDto? = null,
-    val isLoadingCoach: Boolean = false
+    val isLoadingCoach: Boolean = false,
+    // Chat mode analytics tracking
+    val activeChatSession: com.example.voicevibe.data.repository.ChatModeUsage? = null
 )
 
 /**

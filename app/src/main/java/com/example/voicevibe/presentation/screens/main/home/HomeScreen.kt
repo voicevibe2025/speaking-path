@@ -419,10 +419,14 @@ fun HomeScreen(
                     onChatClick = {
                         showFabMenu = false
                         showChatOverlay = true
+                        // Track Text Chat mode usage
+                        viewModel.startChatModeSession(com.example.voicevibe.data.repository.ChatMode.TEXT)
                     },
                     onVoiceClick = {
                         showFabMenu = false
                         showVoiceChatOverlay = true
+                        // Track Voice Chat mode usage
+                        viewModel.startChatModeSession(com.example.voicevibe.data.repository.ChatMode.VOICE)
                     }
                 )
             }
@@ -440,6 +444,8 @@ fun HomeScreen(
                 onDismiss = {
                     livePracticeViewModel.disconnect()
                     showChatOverlay = false
+                    // End analytics tracking for Text Chat
+                    viewModel.endChatModeSession()
                 }
             )
         }
@@ -456,6 +462,8 @@ fun HomeScreen(
                 onDismiss = {
                     livePracticeViewModel.disconnect()
                     showVoiceChatOverlay = false
+                    // End analytics tracking for Voice Chat
+                    viewModel.endChatModeSession()
                 }
             )
         }
@@ -1996,7 +2004,7 @@ private fun ViviFAB(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Mic,
-                                contentDescription = "Voice Chat",
+                                contentDescription = "Talk to Vivi",
                                 tint = Color.White
                             )
                         }
@@ -2006,7 +2014,7 @@ private fun ViviFAB(
                             shadowElevation = 4.dp
                         ) {
                             Text(
-                                text = "Voice Chat",
+                                text = "Talk to Vivi",
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Medium
@@ -2019,7 +2027,7 @@ private fun ViviFAB(
                             shadowElevation = 4.dp
                         ) {
                             Text(
-                                text = "Voice Chat",
+                                text = "Talk to Vivi",
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Medium
@@ -2032,7 +2040,7 @@ private fun ViviFAB(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Mic,
-                                contentDescription = "Voice Chat",
+                                contentDescription = "Talk to Vivi",
                                 tint = Color.White
                             )
                         }
@@ -2052,7 +2060,7 @@ private fun ViviFAB(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Chat,
-                                contentDescription = "Text Chat",
+                                contentDescription = "Text Vivi",
                                 tint = Color.White
                             )
                         }
@@ -2062,7 +2070,7 @@ private fun ViviFAB(
                             shadowElevation = 4.dp
                         ) {
                             Text(
-                                text = "Text Chat",
+                                text = "Text Vivi",
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Medium
@@ -2075,7 +2083,7 @@ private fun ViviFAB(
                             shadowElevation = 4.dp
                         ) {
                             Text(
-                                text = "Text Chat",
+                                text = "Text Vivi",
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Medium
@@ -2088,7 +2096,7 @@ private fun ViviFAB(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Chat,
-                                contentDescription = "Text Chat",
+                                contentDescription = "Text Vivi",
                                 tint = Color.White
                             )
                         }

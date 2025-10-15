@@ -34,7 +34,9 @@ data class NextBestActionDto(
 data class DifficultyCalibrationDto(
     val pronunciation: String? = null, // easier | baseline | harder
     val fluency: String? = null,       // slower | baseline | faster
-    val vocabulary: String? = null     // fewer_terms | baseline | more_terms
+    val vocabulary: String? = null,    // fewer_terms | baseline | more_terms
+    val listening: String? = null,     // easier | baseline | harder
+    val grammar: String? = null        // easier | baseline | harder
 )
 
 data class CoachScheduleItemDto(

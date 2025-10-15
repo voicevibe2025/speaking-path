@@ -39,7 +39,8 @@ class HomeViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val socialRepository: SocialRepository,
     private val messagingRepository: com.example.voicevibe.data.repository.MessagingRepository,
-    private val speakingJourneyRepository: SpeakingJourneyRepository
+    private val speakingJourneyRepository: SpeakingJourneyRepository,
+    private val coachRepository: com.example.voicevibe.data.repository.CoachRepository
 ) : ViewModel() {
 
     private val prefs by lazy { application.getSharedPreferences("voicevibe_prefs", Context.MODE_PRIVATE) }
@@ -60,6 +61,7 @@ class HomeViewModel @Inject constructor(
         loadUnreadMessagesCount()
         loadSpeakingTopics()
         loadAchievementsBadge()
+        loadCoachAnalysis()
         // Pre-warm Vivi greeting in background so Free Practice opens instantly
         try {
             prewarmManager.prewarm()
@@ -486,6 +488,7 @@ class HomeViewModel @Inject constructor(
         loadUnreadMessagesCount()
         loadSpeakingTopics()
         loadAchievementsBadge()
+        loadCoachAnalysis()
     }
 
     private fun loadSpeakingTopics() {
@@ -502,6 +505,74 @@ class HomeViewModel @Inject constructor(
                     )
                 }
                 _uiState.update { it.copy(viviTopics = topics) }
+            }
+        }
+    }
+
+    private fun loadCoachAnalysis() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingCoach = true) }
+            coachRepository.getAnalysis().onSuccess { analysis ->
+                _uiState.update { it.copy(
+                    coachAnalysis = analysis,
+                    isLoadingCoach = false
+                ) }
+                // Auto-trigger Gemini analysis in background for personalized recommendations
+                // This will update the cache for next time
+                viewModelScope.launch {
+                    coachRepository.refreshAnalysis().onSuccess { freshAnalysis ->
+                        _uiState.update { it.copy(coachAnalysis = freshAnalysis) }
+                    }
+                }
+            }.onFailure {
+                _uiState.update { it.copy(isLoadingCoach = false) }
+            }
+        }
+    }
+
+    fun refreshCoachAnalysis() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingCoach = true) }
+            coachRepository.refreshAnalysis().onSuccess { analysis ->
+                _uiState.update { it.copy(
+                    coachAnalysis = analysis,
+                    isLoadingCoach = false
+                ) }
+            }.onFailure {
+                _uiState.update { it.copy(isLoadingCoach = false) }
+            }
+        }
+    }
+
+    fun handleCoachDeeplink(deeplink: String) {
+        viewModelScope.launch {
+            android.util.Log.d("HomeViewModel", "handleCoachDeeplink called with: $deeplink")
+            try {
+                val uri = android.net.Uri.parse(deeplink)
+                val segs = uri.pathSegments
+                val tIdx = segs.indexOfFirst { it.equals("topic", ignoreCase = true) }
+                val topicId = if (tIdx != -1 && tIdx + 1 < segs.size) segs[tIdx + 1] else null
+                val mode = if (tIdx != -1 && tIdx + 2 < segs.size) segs[tIdx + 2] else "master"
+                
+                if (topicId == null) {
+                    android.util.Log.e("HomeViewModel", "No topicId found in deeplink")
+                    return@launch
+                }
+                
+                android.util.Log.d("HomeViewModel", "Parsed: topicId=$topicId, mode=$mode")
+                
+                val event = when (mode.lowercase(java.util.Locale.ROOT)) {
+                    "conversation" -> HomeEvent.NavigateToConversationPractice(topicId)
+                    "vocab", "vocabulary" -> HomeEvent.NavigateToVocabularyLesson(topicId)
+                    "listening" -> HomeEvent.NavigateToListeningPractice(topicId)
+                    "grammar" -> HomeEvent.NavigateToGrammarPractice(topicId)
+                    else -> HomeEvent.NavigateToTopicMaster(topicId)
+                }
+                
+                android.util.Log.d("HomeViewModel", "Emitting event: $event")
+                _events.emit(event)
+            } catch (e: Exception) {
+                android.util.Log.e("HomeViewModel", "Failed to parse deeplink: ${e.message}", e)
             }
         }
     }
@@ -535,6 +606,9 @@ data class HomeUiState(
     val vocabularyScore: Float = 0f,
     val grammarScore: Float = 0f,
     val listeningScore: Float = 0f,
+    // AI Coach analysis
+    val coachAnalysis: com.example.voicevibe.data.remote.api.CoachAnalysisDto? = null,
+    val isLoadingCoach: Boolean = false
 )
 
 /**
@@ -556,4 +630,10 @@ sealed class HomeEvent {
     object NavigateToLearningPaths : HomeEvent()
     object NavigateToAchievements : HomeEvent()
     data class NavigateToLearningPath(val pathId: String) : HomeEvent()
+    data class NavigateToRoute(val route: String) : HomeEvent()
+    data class NavigateToTopicMaster(val topicId: String) : HomeEvent()
+    data class NavigateToConversationPractice(val topicId: String) : HomeEvent()
+    data class NavigateToVocabularyLesson(val topicId: String) : HomeEvent()
+    data class NavigateToListeningPractice(val topicId: String) : HomeEvent()
+    data class NavigateToGrammarPractice(val topicId: String) : HomeEvent()
 }

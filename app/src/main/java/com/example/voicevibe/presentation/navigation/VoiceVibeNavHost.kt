@@ -29,6 +29,8 @@ import com.example.voicevibe.presentation.screens.practice.live.LivePracticeScre
 import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeScreen
 import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeChatScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLessonScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.ListeningPracticeScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.GrammarPracticeScreen
 import com.example.voicevibe.presentation.screens.gamification.AchievementScreen
 import com.example.voicevibe.presentation.screens.profile.MyReportsScreen
 import com.example.voicevibe.presentation.screens.group.GroupSelectionScreen
@@ -171,7 +173,23 @@ fun VoiceVibeNavHost(
                     navController.navigate(Screen.LearnTopicWithVivi.createRoute(topicId))
                 },
                 onNavigateToMyGroup = { navController.navigate(Screen.MyGroup.route) },
-                onNavigateToSpeakingJourney = { navController.navigate(Screen.SpeakingJourney.route) }
+                onNavigateToSpeakingJourney = { navController.navigate(Screen.SpeakingJourney.route) },
+                onNavigateToRoute = { route -> navController.navigate(route) },
+                onNavigateToTopicMaster = { topicId ->
+                    navController.navigate(Screen.TopicMaster.createRoute(topicId))
+                },
+                onNavigateToConversationPractice = { topicId ->
+                    navController.navigate(Screen.ConversationPractice.createRoute(topicId))
+                },
+                onNavigateToVocabularyLesson = { topicId ->
+                    navController.navigate(Screen.VocabularyLesson.createRoute(topicId))
+                },
+                onNavigateToListeningPractice = { topicId ->
+                    navController.navigate(Screen.ListeningPractice.createRoute(topicId))
+                },
+                onNavigateToGrammarPractice = { topicId ->
+                    navController.navigate(Screen.GrammarPractice.createRoute(topicId))
+                }
             )
         }
 
@@ -197,32 +215,23 @@ fun VoiceVibeNavHost(
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
                 },
-                onNavigateToSpeakingJourney = { navController.navigate(Screen.SpeakingJourney.route) }
-            )
-        }
-
-        composable(route = Screen.LearningPaths.route) {
-            val settingsVM: SettingsViewModel = hiltViewModel()
-            val speakingOnly = settingsVM.speakingOnlyEnabled.value
-            HomeScreen(
-                onNavigateToPractice = {
-                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
-                    else navController.navigate(Screen.Practice.route)
+                onNavigateToSpeakingJourney = { navController.navigate(Screen.SpeakingJourney.route) },
+                onNavigateToRoute = { route -> navController.navigate(route) },
+                onNavigateToTopicMaster = { topicId ->
+                    navController.navigate(Screen.TopicMaster.createRoute(topicId))
                 },
-                onNavigateToPracticeAI = { navController.navigate(Screen.PracticeWithAI.route) },
-                onNavigateToLivePractice = { navController.navigate(Screen.LivePractice.route) },
-                onNavigateToLearningPaths = {
-                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
-                    else navController.navigate(Screen.LearningPaths.route)
+                onNavigateToConversationPractice = { topicId ->
+                    navController.navigate(Screen.ConversationPractice.createRoute(topicId))
                 },
-                onNavigateToAchievements = { navController.navigate(Screen.Achievements.route) },
-                onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
-                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
-                onNavigateToLearningPath = { _ ->
-                    if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
-                    else navController.navigate(Screen.LearningPaths.route)
+                onNavigateToVocabularyLesson = { topicId ->
+                    navController.navigate(Screen.VocabularyLesson.createRoute(topicId))
                 },
-                onNavigateToSpeakingJourney = { navController.navigate(Screen.SpeakingJourney.route) }
+                onNavigateToListeningPractice = { topicId ->
+                    navController.navigate(Screen.ListeningPractice.createRoute(topicId))
+                },
+                onNavigateToGrammarPractice = { topicId ->
+                    navController.navigate(Screen.GrammarPractice.createRoute(topicId))
+                }
             )
         }
 
@@ -251,11 +260,26 @@ fun VoiceVibeNavHost(
                     if (speakingOnly) navController.navigate(Screen.SpeakingJourney.route)
                     else navController.navigate(Screen.LearningPaths.route)
                 },
-                onNavigateToSpeakingJourney = { navController.navigate(Screen.SpeakingJourney.route) }
+                onNavigateToSpeakingJourney = { navController.navigate(Screen.SpeakingJourney.route) },
+                onNavigateToRoute = { route -> navController.navigate(route) },
+                onNavigateToTopicMaster = { topicId ->
+                    navController.navigate(Screen.TopicMaster.createRoute(topicId))
+                },
+                onNavigateToConversationPractice = { topicId ->
+                    navController.navigate(Screen.ConversationPractice.createRoute(topicId))
+                },
+                onNavigateToVocabularyLesson = { topicId ->
+                    navController.navigate(Screen.VocabularyLesson.createRoute(topicId))
+                },
+                onNavigateToListeningPractice = { topicId ->
+                    navController.navigate(Screen.ListeningPractice.createRoute(topicId))
+                },
+                onNavigateToGrammarPractice = { topicId ->
+                    navController.navigate(Screen.GrammarPractice.createRoute(topicId))
+                }
             )
         }
 
-        // Speaking-only Journey (beta)
         composable(route = Screen.SpeakingJourney.route) {
             SpeakingJourneyScreen(
                 onNavigateBack = { navController.popBackStack() },
@@ -436,6 +460,30 @@ fun VoiceVibeNavHost(
                         popUpTo(Screen.Home.route) { inclusive = true }
                     }
                 }
+            )
+        }
+
+        // Listening Practice Screen
+        composable(
+            route = Screen.ListeningPractice.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) {
+            val topicId = it.arguments?.getString("topicId") ?: return@composable
+            ListeningPracticeScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Grammar Practice Screen
+        composable(
+            route = Screen.GrammarPractice.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) {
+            val topicId = it.arguments?.getString("topicId") ?: return@composable
+            GrammarPracticeScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

@@ -110,6 +110,12 @@ fun HomeScreen(
     onNavigateToMyGroup: () -> Unit = {},
     onNavigateToSpeakingJourney: () -> Unit = {},
     onNavigateToLingoLeague: () -> Unit = {},
+    onNavigateToRoute: (String) -> Unit = {},
+    onNavigateToTopicMaster: (String) -> Unit = {},
+    onNavigateToConversationPractice: (String) -> Unit = {},
+    onNavigateToVocabularyLesson: (String) -> Unit = {},
+    onNavigateToListeningPractice: (String) -> Unit = {},
+    onNavigateToGrammarPractice: (String) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     livePracticeViewModel: com.example.voicevibe.presentation.screens.practice.live.LivePracticeViewModel = hiltViewModel()
 ) {
@@ -144,11 +150,36 @@ fun HomeScreen(
     // Observe events
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
+            android.util.Log.d("HomeScreen", "Received event: $event")
             when (event) {
                 is HomeEvent.NavigateToPractice -> onNavigateToPractice()
                 is HomeEvent.NavigateToLearningPaths -> onNavigateToLearningPaths()
                 is HomeEvent.NavigateToAchievements -> onNavigateToAchievements()
                 is HomeEvent.NavigateToLearningPath -> onNavigateToLearningPath(event.pathId)
+                is HomeEvent.NavigateToRoute -> {
+                    android.util.Log.d("HomeScreen", "Navigating to route: ${event.route}")
+                    onNavigateToRoute(event.route)
+                }
+                is HomeEvent.NavigateToTopicMaster -> {
+                    android.util.Log.d("HomeScreen", "Navigating to TopicMaster: ${event.topicId}")
+                    onNavigateToTopicMaster(event.topicId)
+                }
+                is HomeEvent.NavigateToConversationPractice -> {
+                    android.util.Log.d("HomeScreen", "Navigating to ConversationPractice: ${event.topicId}")
+                    onNavigateToConversationPractice(event.topicId)
+                }
+                is HomeEvent.NavigateToVocabularyLesson -> {
+                    android.util.Log.d("HomeScreen", "Navigating to VocabularyLesson: ${event.topicId}")
+                    onNavigateToVocabularyLesson(event.topicId)
+                }
+                is HomeEvent.NavigateToListeningPractice -> {
+                    android.util.Log.d("HomeScreen", "Navigating to ListeningPractice: ${event.topicId}")
+                    onNavigateToListeningPractice(event.topicId)
+                }
+                is HomeEvent.NavigateToGrammarPractice -> {
+                    android.util.Log.d("HomeScreen", "Navigating to GrammarPractice: ${event.topicId}")
+                    onNavigateToGrammarPractice(event.topicId)
+                }
             }
         }
     }
@@ -244,6 +275,29 @@ fun HomeScreen(
                                 vocabularyScore = uiState.vocabularyScore,
                                 grammarScore = uiState.grammarScore,
                                 listeningScore = uiState.listeningScore
+                            )
+                        }
+                    }
+                    
+                    item {
+                        Spacer(modifier = Modifier.height(20.dp))
+                        GlassmorphismDivider()
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
+
+                    // AI Coach Section
+                    item {
+                        AnimatedVisibility(
+                            visible = isVisible,
+                            enter = fadeIn(animationSpec = tween(400, 200)) + slideInVertically()
+                        ) {
+                            AiCoachSection(
+                                analysis = uiState.coachAnalysis,
+                                isLoading = uiState.isLoadingCoach,
+                                onRefresh = { viewModel.refreshCoachAnalysis() },
+                                onActionClick = { deeplink ->
+                                    viewModel.handleCoachDeeplink(deeplink)
+                                }
                             )
                         }
                     }

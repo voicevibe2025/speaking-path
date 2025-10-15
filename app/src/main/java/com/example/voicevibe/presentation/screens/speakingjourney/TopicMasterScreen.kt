@@ -373,16 +373,6 @@ fun PracticeCardsSection(
     }
 
     val practiceItems = listOf(
-        // Conversation Practice at the top
-        PracticeItem(
-            title = "Conversation",
-            description = "Engage in dialogues",
-            icon = Icons.Default.School,
-            gradient = listOf(Color(0xFFFF006E), Color(0xFF8338EC)),
-            score = conversationScoreForUi,
-            maxScore = conversationMax,
-            onClick = { onNavigateToConversation(topicId) }
-        ),
         PracticeItem(
             title = "Pronunciation",
             description = "Perfect your accent",
@@ -411,6 +401,15 @@ fun PracticeCardsSection(
             onClick = { onNavigateToVocabularyPractice(topicId) }
         ),
         PracticeItem(
+            title = "Grammar",
+            description = "Master the rules",
+            icon = Icons.Default.Spellcheck,
+            gradient = listOf(Color(0xFF06FFA5), Color(0xFF00C896)),
+            score = practiceScores?.grammar ?: 0,
+            maxScore = practiceScores?.maxGrammar ?: 100,
+            onClick = { onNavigateToGrammarPractice(topicId) }
+        ),
+        PracticeItem(
             title = "Listening",
             description = "Improve comprehension",
             icon = Icons.AutoMirrored.Filled.VolumeUp,
@@ -420,13 +419,13 @@ fun PracticeCardsSection(
             onClick = { onNavigateToListeningPractice(topicId) }
         ),
         PracticeItem(
-            title = "Grammar",
-            description = "Master the rules",
-            icon = Icons.Default.Spellcheck,
-            gradient = listOf(Color(0xFF06FFA5), Color(0xFF00C896)),
-            score = practiceScores?.grammar ?: 0,
-            maxScore = practiceScores?.maxGrammar ?: 100,
-            onClick = { onNavigateToGrammarPractice(topicId) }
+            title = "Conversation",
+            description = "Engage in dialogues",
+            icon = Icons.Default.School,
+            gradient = listOf(Color(0xFFFF006E), Color(0xFF8338EC)),
+            score = conversationScoreForUi,
+            maxScore = conversationMax,
+            onClick = { onNavigateToConversation(topicId) }
         )
     )
     

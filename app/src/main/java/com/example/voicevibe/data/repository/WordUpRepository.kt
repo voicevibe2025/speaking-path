@@ -65,4 +65,14 @@ class WordUpRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun getWordPronunciation(word: String): Result<ByteArray> {
+        return try {
+            val response = api.getWordPronunciation(word)
+            Result.success(response.bytes())
+        } catch (e: Exception) {
+            Log.e(tag, "Error getting word pronunciation", e)
+            Result.failure(e)
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.voicevibe.presentation.viewmodel
 
+import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.util.Base64
 import android.util.Log
@@ -40,6 +41,9 @@ class WordUpViewModel @Inject constructor(
     // Recording state
     private var mediaRecorder: MediaRecorder? = null
     private var recordingFile: File? = null
+    
+    // TTS playback
+    private var mediaPlayer: MediaPlayer? = null
 
     init {
         loadStats()
@@ -85,8 +89,10 @@ class WordUpViewModel @Inject constructor(
             
             mediaRecorder = MediaRecorder().apply {
                 setAudioSource(MediaRecorder.AudioSource.MIC)
-                setOutputFormat(MediaRecorder.OutputFormat.DEFAULT)
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
                 setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setAudioEncodingBitRate(128_000)
+                setAudioSamplingRate(44_100)
                 setOutputFile(file.absolutePath)
                 prepare()
                 start()
@@ -230,9 +236,52 @@ class WordUpViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(error = null)
     }
 
+    fun playWordPronunciation(word: String) {
+        viewModelScope.launch {
+            try {
+                // Stop any existing playback
+                mediaPlayer?.release()
+                mediaPlayer = null
+                
+                // Fetch pronunciation audio from backend
+                repository.getWordPronunciation(word).fold(
+                    onSuccess = { audioBytes ->
+                        // Save to temp file
+                        val tempFile = File.createTempFile("word_tts_", ".mp3")
+                        tempFile.writeBytes(audioBytes)
+                        
+                        // Play audio
+                        mediaPlayer = MediaPlayer().apply {
+                            setDataSource(tempFile.absolutePath)
+                            setOnCompletionListener {
+                                release()
+                                mediaPlayer = null
+                                tempFile.delete()
+                            }
+                            setOnErrorListener { _, _, _ ->
+                                release()
+                                mediaPlayer = null
+                                tempFile.delete()
+                                true
+                            }
+                            prepare()
+                            start()
+                        }
+                    },
+                    onFailure = { error ->
+                        Log.e(tag, "Failed to play pronunciation", error)
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e(tag, "Error playing pronunciation", e)
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         mediaRecorder?.release()
+        mediaPlayer?.release()
         recordingFile?.delete()
     }
 }
@@ -247,5 +296,6 @@ data class WordUpUiState(
     val isLoading: Boolean = false,
     val isEvaluating: Boolean = false,
     val evaluationResult: EvaluationResult? = null,
-    val error: String? = null
+    val error: String? = null,
+    val isPlayingTts: Boolean = false
 )

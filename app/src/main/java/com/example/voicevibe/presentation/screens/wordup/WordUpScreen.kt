@@ -114,6 +114,11 @@ fun WordUpScreen(
                         hasAudioPermission = audioPermission.status.isGranted,
                         onRequestPermission = { audioPermission.launchPermissionRequest() },
                         onShowDefinition = { viewModel.showDefinition() },
+                        onSpeakWord = {
+                            uiState.currentWord?.let { w ->
+                                viewModel.playWordPronunciation(w.word)
+                            }
+                        },
                         onExampleChange = { viewModel.updateExampleSentence(it) },
                         onStartRecording = {
                             val file = File(context.cacheDir, "wordup_recording.m4a")
@@ -143,6 +148,7 @@ private fun WordPracticeContent(
     hasAudioPermission: Boolean,
     onRequestPermission: () -> Unit,
     onShowDefinition: () -> Unit,
+    onSpeakWord: () -> Unit,
     onExampleChange: (String) -> Unit,
     onStartRecording: () -> Unit,
     onStopRecording: () -> Unit,
@@ -170,7 +176,8 @@ private fun WordPracticeContent(
             partOfSpeech = word.partOfSpeech,
             showDefinition = uiState.showDefinition,
             definition = word.definition,
-            onShowDefinition = onShowDefinition
+            onShowDefinition = onShowDefinition,
+            onSpeakWord = onSpeakWord
         )
 
         // Progress indicator
@@ -220,7 +227,8 @@ private fun WordCard(
     partOfSpeech: String,
     showDefinition: Boolean,
     definition: String,
-    onShowDefinition: () -> Unit
+    onShowDefinition: () -> Unit,
+    onSpeakWord: () -> Unit
 ) {
     val scale by animateFloatAsState(
         targetValue = if (showDefinition) 1f else 0.95f,
@@ -256,13 +264,22 @@ private fun WordCard(
                 color = BrandCyan
             )
 
-            // Part of speech
             if (partOfSpeech.isNotEmpty()) {
-                Text(
-                    text = "($partOfSpeech)",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onSpeakWord, modifier = Modifier.size(28.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.VolumeUp,
+                            contentDescription = "Speak",
+                            tint = BrandCyan,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Text(
+                        text = "($partOfSpeech)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
             }
 
             // Tap to reveal hint

@@ -1,6 +1,7 @@
 package com.example.voicevibe.data.api
 
 import com.example.voicevibe.data.model.*
+import okhttp3.ResponseBody
 import retrofit2.http.*
 
 /**
@@ -21,4 +22,10 @@ interface WordUpApiService {
 
     @GET("wordup/stats/")
     suspend fun getStats(): WordUpStatsDto
+
+    @GET("wordup/tts/")
+    @Streaming
+    suspend fun getWordPronunciation(
+        @Query("text") text: String
+    ): ResponseBody
 }

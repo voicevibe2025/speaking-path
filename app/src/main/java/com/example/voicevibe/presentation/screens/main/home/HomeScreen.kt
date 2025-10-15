@@ -116,6 +116,7 @@ fun HomeScreen(
     onNavigateToVocabularyLesson: (String) -> Unit = {},
     onNavigateToListeningPractice: (String) -> Unit = {},
     onNavigateToGrammarPractice: (String) -> Unit = {},
+    onNavigateToWordUp: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     livePracticeViewModel: com.example.voicevibe.presentation.screens.practice.live.LivePracticeViewModel = hiltViewModel()
 ) {
@@ -308,15 +309,17 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(20.dp))
                     }
 
-                    // Practice Current Topic Section
+                    // Practice & Learning Section (Complete Topic + WordUp)
                     item {
                         AnimatedVisibility(
-                            visible = isVisible && uiState.viviTopics.any { it.unlocked && !it.completed },
+                            visible = isVisible,
                             enter = fadeIn(animationSpec = tween(400, 300)) + slideInVertically()
                         ) {
-                            PracticeCurrentTopicSection(
+                            PracticeLearningSection(
                                 currentTopic = uiState.viviTopics.firstOrNull { it.unlocked && !it.completed },
-                                onPracticeClick = { viewModel.navigateToCurrentTopic() }
+                                showTopicCard = uiState.viviTopics.any { it.unlocked && !it.completed },
+                                onPracticeClick = { viewModel.navigateToCurrentTopic() },
+                                onWordUpClick = onNavigateToWordUp
                             )
                         }
                     }
@@ -336,6 +339,8 @@ fun HomeScreen(
                             hasNewAchievements = uiState.hasNewAchievements
                         )
                     }
+
+                    // WordUp moved to Practice & Learning Section above
                 }
             }
         }
@@ -490,33 +495,81 @@ private fun SocialSection(
 }
 
 @Composable
-private fun PracticeCurrentTopicSection(
+private fun PracticeLearningSection(
     currentTopic: ViviTopic?,
-    onPracticeClick: () -> Unit
+    showTopicCard: Boolean,
+    onPracticeClick: () -> Unit,
+    onWordUpClick: () -> Unit
 ) {
-    Card(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onPracticeClick),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(
-                            BrandCyan.copy(alpha = 0.15f),
-                            BrandIndigo.copy(alpha = 0.15f),
-                            BrandFuchsia.copy(alpha = 0.15f)
+        // Complete Your Topic Card (if available)
+        if (showTopicCard) {
+            GlassmorphicCard(
+                onClick = onPracticeClick
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Icon
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(CircleShape)
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(BrandCyan, BrandIndigo)
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.PlayArrow,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
                         )
+                    }
+                    
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
+                    // Content
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Complete Your Topic",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = currentTopic?.title ?: "No topic to complete",
+                            fontSize = 14.sp,
+                            color = Color.White.copy(alpha = 0.8f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    
+                    // Arrow
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        tint = BrandCyan,
+                        modifier = Modifier.size(24.dp)
                     )
-                )
-                .padding(20.dp)
+                }
+            }
+        }
+        
+        // WordUp Card
+        GlassmorphicCard(
+            onClick = onWordUpClick
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -529,16 +582,16 @@ private fun PracticeCurrentTopicSection(
                         .clip(CircleShape)
                         .background(
                             Brush.linearGradient(
-                                colors = listOf(BrandCyan, BrandIndigo)
+                                colors = listOf(BrandFuchsia, BrandIndigo)
                             )
                         ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.PlayArrow,
+                        imageVector = Icons.Default.MenuBook,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(28.dp)
                     )
                 }
                 
@@ -547,16 +600,16 @@ private fun PracticeCurrentTopicSection(
                 // Content
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Complete Your Topic",
+                        text = "WordUp!",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = Color.White
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = currentTopic?.title ?: "No topic to complete",
+                        text = "Master vocabulary with AI",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        color = Color.White.copy(alpha = 0.8f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -566,10 +619,43 @@ private fun PracticeCurrentTopicSection(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
-                    tint = BrandIndigo,
+                    tint = BrandFuchsia,
                     modifier = Modifier.size(24.dp)
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun GlassmorphicCard(
+    onClick: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.1f)
+        ),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.15f),
+                            Color.White.copy(alpha = 0.05f)
+                        )
+                    )
+                )
+                .padding(20.dp)
+        ) {
+            content()
         }
     }
 }
@@ -3056,4 +3142,6 @@ private fun RadarChartView(
         }
     }
 }
+
+// Old WordUpFeatureCard removed - now using glassmorphic cards in PracticeLearningSection
 

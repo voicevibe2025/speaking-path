@@ -272,6 +272,9 @@ fun NavGraph(
                 },
                 onNavigateToGrammarPractice = { topicId ->
                     navController.navigate(Screen.GrammarPractice.createRoute(topicId))
+                },
+                onNavigateToWordUp = {
+                    navController.navigate(Screen.WordUp.route)
                 }
             )
         }
@@ -363,6 +366,10 @@ fun NavGraph(
                 },
                 onNavigateToVocabularyLesson = { tid ->
                     navController.navigate(Screen.VocabularyLesson.createRoute(tid))
+                },
+                onNavigateToSpeakingLesson = { tid ->
+                    // Navigate to the selected topic's SpeakingLesson. We allow stacking for simplicity.
+                    navController.navigate(Screen.SpeakingLesson.createRoute(tid))
                 }
             )
         }
@@ -966,6 +973,20 @@ fun NavGraph(
                 onNavigateToGroupChat = {
                     navController.navigate(Screen.MyGroup.route)
                 }
+            )
+        }
+
+        // WordUp Vocabulary Feature
+        composable(route = Screen.WordUp.route) {
+            com.example.voicevibe.presentation.screens.wordup.WordUpScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToMasteredWords = { navController.navigate(Screen.MasteredWords.route) }
+            )
+        }
+
+        composable(route = Screen.MasteredWords.route) {
+            com.example.voicevibe.presentation.screens.wordup.MasteredWordsScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

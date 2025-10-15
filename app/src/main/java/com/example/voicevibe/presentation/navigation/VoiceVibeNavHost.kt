@@ -327,6 +327,9 @@ fun VoiceVibeNavHost(
                 },
                 onNavigateToVocabularyLesson = { tid ->
                     navController.navigate(Screen.VocabularyLesson.createRoute(tid))
+                },
+                onNavigateToSpeakingLesson = { tid ->
+                    navController.navigate(Screen.SpeakingLesson.createRoute(tid))
                 }
             )
         }
@@ -483,6 +486,20 @@ fun VoiceVibeNavHost(
             val topicId = it.arguments?.getString("topicId") ?: return@composable
             GrammarPracticeScreen(
                 topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // WordUp Vocabulary Feature
+        composable(route = Screen.WordUp.route) {
+            com.example.voicevibe.presentation.screens.wordup.WordUpScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToMasteredWords = { navController.navigate(Screen.MasteredWords.route) }
+            )
+        }
+
+        composable(route = Screen.MasteredWords.route) {
+            com.example.voicevibe.presentation.screens.wordup.MasteredWordsScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

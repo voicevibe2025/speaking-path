@@ -201,4 +201,9 @@ object NetworkModule {
     fun provideAnalyticsApi(retrofit: Retrofit): AnalyticsApiService =
         retrofit.create(AnalyticsApiService::class.java)
 
+    @Provides
+    @Singleton
+    fun provideWordUpApi(retrofit: Retrofit): com.example.voicevibe.data.api.WordUpApiService =
+        retrofit.create(com.example.voicevibe.data.api.WordUpApiService::class.java)
+
 }

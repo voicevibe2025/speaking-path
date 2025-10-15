@@ -163,6 +163,10 @@ sealed class Screen(val route: String) {
     object GroupProfile : Screen("group_profile/{groupId}") {
         fun createRoute(groupId: Int) = "group_profile/$groupId"
     }
+
+    // WordUp Vocabulary Feature
+    object WordUp : Screen("wordup")
+    object MasteredWords : Screen("mastered_words")
 }
 
 /**

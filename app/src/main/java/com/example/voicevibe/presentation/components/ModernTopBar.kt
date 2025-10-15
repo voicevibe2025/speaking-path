@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -30,7 +31,8 @@ fun ModernTopBar(
             tint = Color.White,
             modifier = Modifier.size(20.dp)
         )
-    }
+    },
+    actions: @Composable RowScope.() -> Unit = {}
 ) {
     TopAppBar(
         modifier = Modifier
@@ -63,6 +65,7 @@ fun ModernTopBar(
                 navigationIcon()
             }
         },
+        actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Transparent
         )

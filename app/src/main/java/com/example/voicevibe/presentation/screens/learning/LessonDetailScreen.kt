@@ -778,7 +778,9 @@ fun LessonBottomBar(
     Surface(
         shadowElevation = 8.dp
     ) {
-        Column {
+        Column(
+            modifier = Modifier.navigationBarsPadding()
+        ) {
             // Progress indicator
             LinearProgressIndicator(
                 progress = (currentSection + 1).toFloat() / totalSections,

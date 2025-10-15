@@ -43,6 +43,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
@@ -271,6 +273,11 @@ fun HomeScreen(
             val density = LocalDensity.current
             val margin = 16.dp
             val fabSize = 56.dp
+            
+            // Get navigation bar height to prevent FAB from being obscured
+            val navBarBottomPx = with(density) {
+                WindowInsets.systemBars.getBottom(density).toFloat()
+            }
 
             val maxWidthPx = with(density) { maxWidth.toPx() }
             val maxHeightPx = with(density) { maxHeight.toPx() }
@@ -284,7 +291,7 @@ fun HomeScreen(
             LaunchedEffect(maxWidthPx, maxHeightPx) {
                 val minOffsetRight = marginPx
                 val maxOffsetRight = maxWidthPx - fabSizePx - marginPx
-                val minOffsetBottom = marginPx
+                val minOffsetBottom = marginPx + navBarBottomPx
                 val maxOffsetBottom = maxHeightPx - fabSizePx - marginPx
                 if (!posInitialized) {
                     offsetRight = minOffsetRight
@@ -316,14 +323,19 @@ fun HomeScreen(
                             IntOffset(-offsetRight.roundToInt(), -offsetBottom.roundToInt())
                         }
                     }
-                    .pointerInput(maxWidthPx, maxHeightPx) {
+                    .pointerInput(maxWidthPx, maxHeightPx, navBarBottomPx) {
                         detectDragGestures { _, dragAmount ->
+                            val minOffsetRight = marginPx
+                            val maxOffsetRight = maxWidthPx - fabSizePx - marginPx
+                            val minOffsetBottom = marginPx + navBarBottomPx
+                            val maxOffsetBottom = maxHeightPx - fabSizePx - marginPx
+                            
                             val newLeft = (maxWidthPx - offsetRight - fabSizePx) + dragAmount.x
                             val newTop = (maxHeightPx - offsetBottom - fabSizePx) + dragAmount.y
                             val clampedLeft = newLeft.coerceIn(marginPx, maxWidthPx - fabSizePx - marginPx)
                             val clampedTop = newTop.coerceIn(marginPx, maxHeightPx - fabSizePx - marginPx)
-                            offsetRight = maxWidthPx - clampedLeft - fabSizePx
-                            offsetBottom = maxHeightPx - clampedTop - fabSizePx
+                            offsetRight = (maxWidthPx - clampedLeft - fabSizePx).coerceIn(minOffsetRight, maxOffsetRight)
+                            offsetBottom = (maxHeightPx - clampedTop - fabSizePx).coerceIn(minOffsetBottom, maxOffsetBottom)
                         }
                     }
             ) {
@@ -2467,6 +2479,7 @@ fun FloatingBottomNavigation(
     Surface(
         modifier = modifier
             .wrapContentWidth()
+            .navigationBarsPadding()
             .padding(horizontal = 32.dp, vertical = 12.dp),
         shape = RoundedCornerShape(50.dp),
         color = Color(0xFF0A0A0A).copy(alpha = 0.95f),

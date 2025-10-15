@@ -799,6 +799,7 @@ fun FloatingBottomNavigationForGroup(
     Surface(
         modifier = modifier
             .wrapContentWidth()
+            .navigationBarsPadding()
             .padding(horizontal = 32.dp, vertical = 12.dp),
         shape = RoundedCornerShape(50.dp),
         color = Color(0xFF0A0A0A).copy(alpha = 0.95f),

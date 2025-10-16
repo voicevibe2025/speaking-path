@@ -625,7 +625,6 @@ class SpeakingJourneyViewModel @Inject constructor(
                             if (shouldComplete && curTopic2 != null) {
                                 // Show completion overlay only once (on the run that completed the topic)
                                 _uiState.value = _uiState.value.copy(showPronunciationCongrats = true)
-                                try { repo.completeTopic(curTopic2.id) } catch (_: Throwable) {}
                                 val previousTopics = _uiState.value.topics
                                 reloadTopics(onComplete = {
                                     val newTopics = _uiState.value.topics

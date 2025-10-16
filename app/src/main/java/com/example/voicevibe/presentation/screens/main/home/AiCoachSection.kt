@@ -91,7 +91,7 @@ fun AiCoachSection(
                 TextButton(onClick = { expanded = !expanded }) {
                     Text(
                         text = if (expanded) "Hide Details" else "See Details",
-                        color = BrandFuchsia
+                        color = MaterialTheme.colorScheme.secondary
                     )
                 }
             }

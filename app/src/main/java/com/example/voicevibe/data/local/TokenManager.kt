@@ -168,7 +168,15 @@ class TokenManager @Inject constructor(
      */
     suspend fun clearAll() {
         dataStore.edit { preferences ->
-            preferences.clear()
+            // Remove only session-scoped keys so per-user persisted history remains intact
+            runCatching { preferences.remove(accessTokenKey) }
+            runCatching { preferences.remove(refreshTokenKey) }
+            runCatching { preferences.remove(userIdKey) }
+            runCatching { preferences.remove(userEmailKey) }
+            runCatching { preferences.remove(userNameKey) }
+            runCatching { preferences.remove(isLoggedInKey) }
+            // Do NOT remove achievement_history_* or last_* per-user keys
+            // Keep onboarding, feature flags, and other preferences as-is to avoid wiping local UX state
         }
     }
 
@@ -286,6 +294,31 @@ class TokenManager @Inject constructor(
         }
     }
 
+    // --- User-scoped Achievement History ---
+    private fun achievementHistoryKeyFor(userId: String): Preferences.Key<String> =
+        stringPreferencesKey("achievement_history_${'$'}{userId.trim()}")
+
+    fun achievementHistoryFlow(userId: String): Flow<List<AchievementFeedItem>> = dataStore.data.map { preferences ->
+        val key = achievementHistoryKeyFor(userId)
+        val json = preferences[key] ?: return@map emptyList()
+        try {
+            val type = object : TypeToken<List<AchievementHistoryDto>>() {}.type
+            val dtos: List<AchievementHistoryDto> = gson.fromJson(json, type)
+            dtos.map { it.toDomain() }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun saveAchievementHistory(userId: String, items: List<AchievementFeedItem>) {
+        val key = achievementHistoryKeyFor(userId)
+        dataStore.edit { preferences ->
+            val dtos = items.map { AchievementHistoryDto.fromDomain(it) }
+            val json = gson.toJson(dtos)
+            preferences[key] = json
+        }
+    }
+
     /**
      * Last known proficiency level (for change detection)
      */
@@ -299,6 +332,20 @@ class TokenManager @Inject constructor(
         }
     }
 
+    // User-scoped last proficiency
+    private fun lastProficiencyKeyFor(userId: String): Preferences.Key<String> =
+        stringPreferencesKey("last_proficiency_${'$'}{userId.trim()}")
+
+    fun lastProficiencyFlow(userId: String): Flow<String?> = dataStore.data.map { preferences ->
+        preferences[lastProficiencyKeyFor(userId)]
+    }
+
+    suspend fun setLastProficiency(userId: String, proficiency: String) {
+        dataStore.edit { preferences ->
+            preferences[lastProficiencyKeyFor(userId)] = proficiency
+        }
+    }
+
     /**
      * Last known user level (for change detection)
      */
@@ -309,6 +356,20 @@ class TokenManager @Inject constructor(
     suspend fun setLastLevel(level: Int) {
         dataStore.edit { preferences ->
             preferences[lastLevelKey] = level
+        }
+    }
+
+    // User-scoped last level
+    private fun lastLevelKeyFor(userId: String): Preferences.Key<Int> =
+        intPreferencesKey("last_level_${'$'}{userId.trim()}")
+
+    fun lastLevelFlow(userId: String): Flow<Int?> = dataStore.data.map { preferences ->
+        preferences[lastLevelKeyFor(userId)]
+    }
+
+    suspend fun setLastLevel(userId: String, level: Int) {
+        dataStore.edit { preferences ->
+            preferences[lastLevelKeyFor(userId)] = level
         }
     }
 

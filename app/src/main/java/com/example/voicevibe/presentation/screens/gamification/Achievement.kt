@@ -39,14 +39,22 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.example.voicevibe.data.local.TokenManager
+import com.example.voicevibe.data.repository.SpeakingJourneyRepository
+import com.example.voicevibe.data.repository.GamificationRepository
+import com.example.voicevibe.domain.model.ActivityType
+import com.example.voicevibe.domain.model.UserActivity
+import com.example.voicevibe.domain.model.Resource
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
 @HiltViewModel
 class AchievementsSimpleViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val speakingJourneyRepository: SpeakingJourneyRepository,
+    private val gamificationRepository: GamificationRepository
 ) : ViewModel() {
 
     var uiState by mutableStateOf(AchievementsSimpleUiState())
@@ -54,6 +62,7 @@ class AchievementsSimpleViewModel @Inject constructor(
 
     private var lastKnownProficiency: String? = null
     private var lastKnownLevel: Int? = null
+    private var currentUserId: String? = null
 
     init {
         loadAndRefresh()
@@ -62,9 +71,22 @@ class AchievementsSimpleViewModel @Inject constructor(
     private fun loadAndRefresh() {
         viewModelScope.launch {
             // First, load existing history and last-known values (MUST complete first)
-            val history = tokenManager.achievementHistoryFlow().first()
-            lastKnownProficiency = tokenManager.lastProficiencyFlow().first()
-            lastKnownLevel = tokenManager.lastLevelFlow().first()
+            currentUserId = tokenManager.getUserIdFlow().first()?.trim()?.takeIf { it.isNotEmpty() }
+            val history = if (currentUserId != null) {
+                tokenManager.achievementHistoryFlow(currentUserId!!).first()
+            } else {
+                tokenManager.achievementHistoryFlow().first()
+            }
+            lastKnownProficiency = if (currentUserId != null) {
+                tokenManager.lastProficiencyFlow(currentUserId!!).first()
+            } else {
+                tokenManager.lastProficiencyFlow().first()
+            }
+            lastKnownLevel = if (currentUserId != null) {
+                tokenManager.lastLevelFlow(currentUserId!!).first()
+            } else {
+                tokenManager.lastLevelFlow().first()
+            }
             uiState = uiState.copy(items = history.sortedByDescending { it.timestamp })
             
             // Then check for new achievements
@@ -76,53 +98,202 @@ class AchievementsSimpleViewModel @Inject constructor(
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, error = null)
             try {
+                // 1) Try server-side persistent feed first
+                runCatching {
+                    val res = gamificationRepository.getAchievementEvents(limit = 100)
+                    if (res is Resource.Success) {
+                        val dtos = res.data ?: emptyList()
+                        val mapped = dtos.mapNotNull { dto ->
+                            val t = parseTimestamp(dto.timestamp)
+                            when (dto.event_type.uppercase()) {
+                                "LEVEL_UP" -> AchievementFeedItem(
+                                    type = AchievementItemType.LEVEL,
+                                    title = dto.title,
+                                    timestamp = t,
+                                    timeAgo = formatRelativeTime(t)
+                                )
+                                "PROFICIENCY_TIER" -> AchievementFeedItem(
+                                    type = AchievementItemType.PROFICIENCY,
+                                    title = dto.title,
+                                    timestamp = t,
+                                    timeAgo = formatRelativeTime(t)
+                                )
+                                else -> null // Ignore other event types for now (e.g., TOPIC_COMPLETED)
+                            }
+                        }.sortedByDescending { it.timestamp }
+
+                        if (mapped.isNotEmpty()) {
+                            val uid = currentUserId
+                            if (uid != null) tokenManager.saveAchievementHistory(uid, mapped) else tokenManager.saveAchievementHistory(mapped)
+                            val itemsWithUpdatedTime = mapped.map { it.copy(timeAgo = formatRelativeTime(it.timestamp)) }
+                            uiState = uiState.copy(isLoading = false, items = itemsWithUpdatedTime)
+                            return@launch
+                        }
+                    }
+                }
+
+                // 2) Fallback: infer from profile + activities (legacy local logic)
                 val profile = profileRepository.getProfile()
                 val newAchievements = mutableListOf<AchievementFeedItem>()
                 val now = LocalDateTime.now()
+                // Determine if this is an initial load (after login or cleared storage)
+                val isInitialProficiency = (lastKnownProficiency == null)
+                val isInitialLevel = (lastKnownLevel == null)
+                // Opportunistically fetch activities once if we need to seed from history
+                var activities: List<UserActivity> = emptyList()
+                if ((isInitialLevel && (profile.currentLevel ?: 0) > 0) || (!profile.currentProficiency.isNullOrBlank() && isInitialProficiency)) {
+                    val res = speakingJourneyRepository.getActivities(limit = 100)
+                    activities = res.getOrNull() ?: emptyList()
+                }
 
                 // Check for new proficiency achievement
                 val prof = profile.currentProficiency?.trim()
                 if (!prof.isNullOrBlank() && prof != lastKnownProficiency) {
+                    val isInitial = isInitialProficiency
                     val profTitle = "Achieved ${prof.replaceFirstChar { it.uppercase() }} proficiency"
-                    // Only add if this exact achievement doesn't already exist
-                    val existingAchievement = uiState.items.find { it.title == profTitle }
-                    if (existingAchievement == null) {
-                        val achievement = AchievementFeedItem(
-                            type = AchievementItemType.PROFICIENCY,
-                            title = profTitle,
-                            timestamp = now,
-                            timeAgo = "Just now"
-                        )
-                        newAchievements.add(achievement)
+                    // Create a feed item using historical timestamp if initial and available; otherwise only on subsequent changes
+                    if (isInitial) {
+                        // Try to backfill from activities (ACHIEVEMENT_UNLOCKED/BADGE_EARNED containing 'proficiency' and the target prof)
+                        val profEvent = activities
+                            .filter { it.type == ActivityType.ACHIEVEMENT_UNLOCKED || it.type == ActivityType.BADGE_EARNED }
+                            .filter { it.title.contains("proficiency", ignoreCase = true) && it.title.contains(prof, ignoreCase = true) }
+                            .maxByOrNull { it.timestamp }
+                        if (profEvent != null) {
+                            if (uiState.items.none { it.title == profTitle }) {
+                                val t = profEvent.timestamp
+                                newAchievements.add(
+                                    AchievementFeedItem(
+                                        type = AchievementItemType.PROFICIENCY,
+                                        title = profTitle,
+                                        timestamp = t,
+                                        timeAgo = formatRelativeTime(t)
+                                    )
+                                )
+                            }
+                        } else {
+                            // Fallback: attempt backfill from profile.recentAchievements (earned_at)
+                            val fromRecent = (profile.recentAchievements ?: emptyList())
+                                .filter { it.badge.category.equals("proficiency", ignoreCase = true) || it.badge.name.contains("proficiency", ignoreCase = true) }
+                                .filter { (it.badge.tierDisplay?.equals(prof, ignoreCase = true) == true) || it.badge.name.contains(prof, ignoreCase = true) }
+                                .mapNotNull { ach ->
+                                    val t = try {
+                                        LocalDateTime.parse(ach.earnedAt, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                                    } catch (_: Exception) {
+                                        runCatching { OffsetDateTime.parse(ach.earnedAt).toLocalDateTime() }.getOrNull()
+                                    }
+                                    t?.let { it to ach }
+                                }
+                                .maxByOrNull { it.first }
+                            fromRecent?.let { pair ->
+                                if (uiState.items.none { it.title == profTitle }) {
+                                    val t = pair.first
+                                    newAchievements.add(
+                                        AchievementFeedItem(
+                                            type = AchievementItemType.PROFICIENCY,
+                                            title = profTitle,
+                                            timestamp = t,
+                                            timeAgo = formatRelativeTime(t)
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        // Only add if this exact achievement doesn't already exist
+                        val existingAchievement = uiState.items.find { it.title == profTitle }
+                        if (existingAchievement == null) {
+                            val achievement = AchievementFeedItem(
+                                type = AchievementItemType.PROFICIENCY,
+                                title = profTitle,
+                                timestamp = now,
+                                timeAgo = "Just now"
+                            )
+                            newAchievements.add(achievement)
+                        }
                     }
                     lastKnownProficiency = prof
-                    tokenManager.setLastProficiency(prof)
+                    val uid = currentUserId
+                    if (uid != null) tokenManager.setLastProficiency(uid, prof) else tokenManager.setLastProficiency(prof)
                 }
 
                 // Check for new level achievement
                 val level = profile.currentLevel
                 if (level != null && level > 0 && level != lastKnownLevel) {
+                    val initialLevel = isInitialLevel
                     val levelTitle = "Reached level $level"
-                    // Only add if this exact achievement doesn't already exist
-                    val existingAchievement = uiState.items.find { it.title == levelTitle }
-                    if (existingAchievement == null) {
-                        val achievement = AchievementFeedItem(
-                            type = AchievementItemType.LEVEL,
-                            title = levelTitle,
-                            timestamp = now,
-                            timeAgo = "Just now"
-                        )
-                        newAchievements.add(achievement)
+                    // Create a feed item using historical timestamp if initial and available; otherwise only on subsequent changes
+                    if (initialLevel) {
+                        // Prefer the activity explicitly matching this level; fallback to latest LEVEL_UP
+                        val specific = activities
+                            .filter { it.type == ActivityType.LEVEL_UP && it.title.contains("level $level", ignoreCase = true) }
+                            .maxByOrNull { it.timestamp }
+                        val chosen = specific ?: activities
+                            .filter { it.type == ActivityType.LEVEL_UP }
+                            .maxByOrNull { it.timestamp }
+                        if (chosen != null) {
+                            if (uiState.items.none { it.title == levelTitle }) {
+                                val t = chosen.timestamp
+                                newAchievements.add(
+                                    AchievementFeedItem(
+                                        type = AchievementItemType.LEVEL,
+                                        title = levelTitle,
+                                        timestamp = t,
+                                        timeAgo = formatRelativeTime(t)
+                                    )
+                                )
+                            }
+                        } else {
+                            // Fallback: attempt backfill from profile.recentAchievements (earned_at)
+                            val fromRecent = (profile.recentAchievements ?: emptyList())
+                                .filter { it.badge.category.equals("level", ignoreCase = true) || it.badge.name.contains("level", ignoreCase = true) }
+                                .filter { (it.badge.tier == level) || it.badge.name.contains("level $level", ignoreCase = true) }
+                                .mapNotNull { ach ->
+                                    val t = try {
+                                        LocalDateTime.parse(ach.earnedAt, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                                    } catch (_: Exception) {
+                                        runCatching { OffsetDateTime.parse(ach.earnedAt).toLocalDateTime() }.getOrNull()
+                                    }
+                                    t?.let { it to ach }
+                                }
+                                .maxByOrNull { it.first }
+                            fromRecent?.let { pair ->
+                                if (uiState.items.none { it.title == levelTitle }) {
+                                    val t = pair.first
+                                    newAchievements.add(
+                                        AchievementFeedItem(
+                                            type = AchievementItemType.LEVEL,
+                                            title = levelTitle,
+                                            timestamp = t,
+                                            timeAgo = formatRelativeTime(t)
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        // Only add if this exact achievement doesn't already exist
+                        val existingAchievement = uiState.items.find { it.title == levelTitle }
+                        if (existingAchievement == null) {
+                            val achievement = AchievementFeedItem(
+                                type = AchievementItemType.LEVEL,
+                                title = levelTitle,
+                                timestamp = now,
+                                timeAgo = "Just now"
+                            )
+                            newAchievements.add(achievement)
+                        }
                     }
                     lastKnownLevel = level
-                    tokenManager.setLastLevel(level)
+                    val uid = currentUserId
+                    if (uid != null) tokenManager.setLastLevel(uid, level) else tokenManager.setLastLevel(level)
                 }
 
                 // Add new achievements to existing list and save
                 if (newAchievements.isNotEmpty()) {
                     val updatedList = (newAchievements + uiState.items)
                         .sortedByDescending { it.timestamp }
-                    tokenManager.saveAchievementHistory(updatedList)
+                    val uid = currentUserId
+                    if (uid != null) tokenManager.saveAchievementHistory(uid, updatedList) else tokenManager.saveAchievementHistory(updatedList)
                     uiState = uiState.copy(items = updatedList)
                 }
 
@@ -151,6 +322,19 @@ class AchievementsSimpleViewModel @Inject constructor(
             days < 30 -> "${days / 7} ${if (days / 7 == 1L) "week" else "weeks"} ago"
             days < 365 -> "${days / 30} ${if (days / 30 == 1L) "month" else "months"} ago"
             else -> "${days / 365} ${if (days / 365 == 1L) "year" else "years"} ago"
+        }
+    }
+
+    private fun parseTimestamp(raw: String): LocalDateTime {
+        return try {
+            // Try Offset first (e.g., 2025-10-16T06:44:23.45Z), then fall back to local
+            OffsetDateTime.parse(raw).toLocalDateTime()
+        } catch (_: Exception) {
+            try {
+                LocalDateTime.parse(raw, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            } catch (_: Exception) {
+                LocalDateTime.now()
+            }
         }
     }
 }

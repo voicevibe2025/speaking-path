@@ -49,6 +49,11 @@ interface GamificationApiService {
     @GET("gamification/achievements/stats")
     suspend fun getAchievementStats(): Response<AchievementStats>
 
+    @GET("gamification/achievement-events")
+    suspend fun getAchievementEvents(
+        @Query("limit") limit: Int = 50
+    ): Response<List<AchievementEventDto>>
+
     @POST("gamification/achievements/{id}/claim")
     suspend fun claimAchievementReward(
         @Path("id") achievementId: String
@@ -157,4 +162,14 @@ data class UpdateStreakResponse(
     val longest_streak: Int? = null,
     val bonus_points: Int? = null,
     val message: String? = null
+)
+
+data class AchievementEventDto(
+    val id: Long?,
+    val event_type: String,
+    val title: String,
+    val description: String?,
+    val timestamp: String,
+    val xp_earned: Int?,
+    val meta: Map<String, Any>?
 )

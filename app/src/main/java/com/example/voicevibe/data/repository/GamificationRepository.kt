@@ -6,6 +6,7 @@ import com.example.voicevibe.data.remote.api.AddExperienceResponse
 import com.example.voicevibe.data.remote.api.UpdateStreakResponse
 
 import com.example.voicevibe.data.remote.api.UserApiService
+import com.example.voicevibe.data.remote.api.AchievementEventDto
 import com.example.voicevibe.domain.model.GamificationStats
 import com.example.voicevibe.domain.model.Badge
 import com.example.voicevibe.domain.model.Achievement
@@ -45,6 +46,24 @@ class GamificationRepository @Inject constructor(
             }
         } catch (e: Exception) {
             emit(Resource.Error(e.message ?: "Unknown error occurred"))
+        }
+    }
+
+    /**
+     * Get persistent achievement events feed for the current user
+     */
+    suspend fun getAchievementEvents(limit: Int = 50): Resource<List<AchievementEventDto>> {
+        return try {
+            val response = apiService.getAchievementEvents(limit)
+            if (response.isSuccessful) {
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error("Failed to load achievement events: empty body")
+            } else {
+                Resource.Error("Failed to load achievement events")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
         }
     }
 

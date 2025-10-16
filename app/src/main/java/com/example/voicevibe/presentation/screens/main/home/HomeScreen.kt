@@ -124,6 +124,7 @@ fun HomeScreen(
     var isRefreshing by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val pullToRefreshState = rememberPullToRefreshState()
+    val snackbarHostState = remember { SnackbarHostState() }
     
     // FAB and overlay states
     var showFabMenu by remember { mutableStateOf(false) }
@@ -211,6 +212,7 @@ fun HomeScreen(
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = Color.Transparent,
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
                 EducationalTopBar(
                     avatarUrl = uiState.avatarUrl,

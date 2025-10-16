@@ -56,5 +56,9 @@ data class CoachAnalysisDto(
     val difficultyCalibration: DifficultyCalibrationDto? = null,
     val schedule: List<CoachScheduleItemDto>? = null,
     val coachMessage: String,
-    val cacheForHours: Int = 12
+    val cacheForHours: Int = 12,
+    // Cache metadata from backend
+    val _cache_stale: Boolean? = null,
+    val _is_ai_generated: Boolean? = null,
+    val _generated_at: String? = null
 )

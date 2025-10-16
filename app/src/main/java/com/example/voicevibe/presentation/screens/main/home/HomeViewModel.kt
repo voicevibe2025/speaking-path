@@ -515,18 +515,28 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingCoach = true) }
             coachRepository.getAnalysis().onSuccess { analysis ->
+                android.util.Log.d("HomeViewModel", "Coach analysis loaded: stale=${analysis._cache_stale}, AI=${analysis._is_ai_generated}")
+                
                 _uiState.update { it.copy(
                     coachAnalysis = analysis,
                     isLoadingCoach = false
                 ) }
-                // Auto-trigger Gemini analysis in background for personalized recommendations
-                // This will update the cache for next time
-                viewModelScope.launch {
-                    coachRepository.refreshAnalysis().onSuccess { freshAnalysis ->
-                        _uiState.update { it.copy(coachAnalysis = freshAnalysis) }
+                
+                // Auto-refresh if cache is stale or not AI-generated
+                val shouldRefresh = analysis._cache_stale == true || analysis._is_ai_generated == false
+                if (shouldRefresh) {
+                    android.util.Log.d("HomeViewModel", "Cache is stale or heuristic, triggering background refresh")
+                    viewModelScope.launch {
+                        coachRepository.refreshAnalysis().onSuccess { freshAnalysis ->
+                            android.util.Log.d("HomeViewModel", "Background refresh completed: AI=${freshAnalysis._is_ai_generated}")
+                            _uiState.update { it.copy(coachAnalysis = freshAnalysis) }
+                        }.onFailure { error ->
+                            android.util.Log.e("HomeViewModel", "Background refresh failed: ${error.message}", error)
+                        }
                     }
                 }
-            }.onFailure {
+            }.onFailure { error ->
+                android.util.Log.e("HomeViewModel", "Failed to load coach analysis: ${error.message}", error)
                 _uiState.update { it.copy(isLoadingCoach = false) }
             }
         }
@@ -534,14 +544,25 @@ class HomeViewModel @Inject constructor(
 
     fun refreshCoachAnalysis() {
         viewModelScope.launch {
+            android.util.Log.d("HomeViewModel", "Manual refresh triggered by user")
             _uiState.update { it.copy(isLoadingCoach = true) }
+            
             coachRepository.refreshAnalysis().onSuccess { analysis ->
+                android.util.Log.d("HomeViewModel", "Manual refresh completed: AI=${analysis._is_ai_generated}")
                 _uiState.update { it.copy(
                     coachAnalysis = analysis,
                     isLoadingCoach = false
                 ) }
-            }.onFailure {
-                _uiState.update { it.copy(isLoadingCoach = false) }
+            }.onFailure { error ->
+                android.util.Log.e("HomeViewModel", "Manual refresh failed: ${error.message}", error)
+                _uiState.update { it.copy(
+                    isLoadingCoach = false,
+                    error = "Failed to refresh AI Coach. Please try again."
+                ) }
+                // Show error to user
+                viewModelScope.launch {
+                    _events.emit(HomeEvent.ShowError("Failed to refresh AI Coach analysis. Please check your connection and try again."))
+                }
             }
         }
     }
@@ -715,4 +736,5 @@ sealed class HomeEvent {
     data class NavigateToVocabularyLesson(val topicId: String) : HomeEvent()
     data class NavigateToListeningPractice(val topicId: String) : HomeEvent()
     data class NavigateToGrammarPractice(val topicId: String) : HomeEvent()
+    data class ShowError(val message: String) : HomeEvent()
 }

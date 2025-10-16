@@ -181,6 +181,12 @@ fun HomeScreen(
                     android.util.Log.d("HomeScreen", "Navigating to GrammarPractice: ${event.topicId}")
                     onNavigateToGrammarPractice(event.topicId)
                 }
+                is HomeEvent.ShowError -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        duration = androidx.compose.material3.SnackbarDuration.Long
+                    )
+                }
             }
         }
     }

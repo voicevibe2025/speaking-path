@@ -374,12 +374,12 @@ fun SpeakingJourneyScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
+                    .padding(top = innerPadding.calculateTopPadding())
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp),
+                        .padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Loading/Error states
@@ -406,6 +406,7 @@ fun SpeakingJourneyScreen(
                         VerticalTopicList(
                             topics = ui.topics,
                             selectedTopicIdx = ui.selectedTopicIdx,
+                            bottomPadding = innerPadding.calculateBottomPadding(),
                             onTopicClick = { topic ->
                                 if (topic.unlocked) {
                                     onNavigateToSpeakingLesson(topic.id)
@@ -735,6 +736,7 @@ private fun MinimalTopBar(
 private fun VerticalTopicList(
     topics: List<Topic>,
     selectedTopicIdx: Int,
+    bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     onTopicClick: (Topic) -> Unit
 ) {
     val listState = rememberLazyListState()
@@ -749,7 +751,7 @@ private fun VerticalTopicList(
     androidx.compose.foundation.lazy.LazyColumn(
         state = listState,
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(vertical = 8.dp),
+        contentPadding = PaddingValues(top = 16.dp, bottom = bottomPadding + 16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
         itemsIndexed(topics) { index, topic ->

@@ -249,13 +249,18 @@ fun HomeScreen(
                 onRefresh = ::onRefresh,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
+                    .padding(top = innerPadding.calculateTopPadding())
             ) {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(0.dp),
-                    contentPadding = PaddingValues(vertical = 20.dp, horizontal = 16.dp)
+                    contentPadding = PaddingValues(
+                        top = 20.dp,
+                        bottom = innerPadding.calculateBottomPadding() + 20.dp,
+                        start = 16.dp,
+                        end = 16.dp
+                    )
                 ) {
                     // Learning Progress
                     item {
@@ -2742,7 +2747,7 @@ fun FloatingBottomNavigation(
             .navigationBarsPadding()
             .padding(horizontal = 32.dp, vertical = 12.dp),
         shape = RoundedCornerShape(50.dp),
-        color = Color(0xFF0A0A0A).copy(alpha = 0.95f),
+        color = Color(0xFF0A0A0A).copy(alpha = 0.75f),
         tonalElevation = 4.dp,
         shadowElevation = 6.dp
     ) {

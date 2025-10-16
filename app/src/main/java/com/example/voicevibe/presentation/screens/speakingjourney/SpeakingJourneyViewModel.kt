@@ -562,6 +562,11 @@ class SpeakingJourneyViewModel @Inject constructor(
                         markSpeakingActivity()
                         // Exit review mode so hero follows current progress
                         _uiState.value = _uiState.value.copy(inspectedPhraseIndex = null)
+                        
+                        // Capture completion status BEFORE updating local state (for congrats overlay logic later)
+                        val wasAlreadyCompletedBeforeSubmission = _uiState.value.topics.getOrNull(_uiState.value.selectedTopicIdx)
+                            ?.phraseProgress?.isAllPhrasesCompleted == true
+                        
                         // Optimistically advance current phrase so the UI updates immediately
                         dto.nextPhraseIndex?.let { nextIdx ->
                             val sNow = _uiState.value
@@ -622,7 +627,11 @@ class SpeakingJourneyViewModel @Inject constructor(
                             val totalPhrases2 = curTopic2?.phraseProgress?.totalPhrases ?: curTopic2?.material?.size ?: 0
                             val practicedDistinct = _uiState.value.currentTopicTranscripts.map { it.index }.distinct().size
                             val shouldComplete = dto.topicCompleted || (totalPhrases2 > 0 && practicedDistinct >= totalPhrases2)
-                            if (shouldComplete && curTopic2 != null) {
+                            
+                            // Only show congrats if transitioning from incomplete to complete (first-time completion)
+                            // Don't show when repracticing an already-completed topic
+                            // Use the captured 'wasAlreadyCompletedBeforeSubmission' from before state updates
+                            if (shouldComplete && !wasAlreadyCompletedBeforeSubmission && curTopic2 != null) {
                                 // Show completion overlay only once (on the run that completed the topic)
                                 _uiState.value = _uiState.value.copy(showPronunciationCongrats = true)
                                 val previousTopics = _uiState.value.topics

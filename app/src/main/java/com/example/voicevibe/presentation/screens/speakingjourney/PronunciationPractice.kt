@@ -28,7 +28,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.PlayArrow
@@ -63,9 +62,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -102,7 +105,6 @@ fun PronunciationPracticeScreen(
 
     // Local UI state
     var showResultsSheet by remember { mutableStateOf(false) }
-    var analysisFor by remember { mutableStateOf<PhraseTranscriptEntry?>(null) }
 
     // Gradient similar to FluencyPractice
     val background = Brush.verticalGradient(
@@ -274,7 +276,7 @@ fun PronunciationPracticeScreen(
 
                     Spacer(Modifier.height(8.dp))
 
-                    // Inline latest recording result (no overlay)
+                    // Inline latest recording result with immediate comparison feedback
                     run {
                         val latestEntry = remember(ui.currentTopicTranscripts) {
                             ui.currentTopicTranscripts.maxByOrNull { it.timestamp }
@@ -284,6 +286,8 @@ fun PronunciationPracticeScreen(
                             val pass = pct >= 80
                             // Calculate proportional score: 100% = 10, 90-99% = 9, etc.
                             val scoreEarned = minOf(10, maxOf(0, pct / 10))
+                            val expectedPhrase = topic?.material?.getOrNull(entry.index) ?: ""
+                            
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -313,6 +317,29 @@ fun PronunciationPracticeScreen(
                                             fontSize = 12.sp
                                         )
                                     }
+                                    
+                                    // Show color-coded transcription immediately (no labels, just the text)
+                                    if (expectedPhrase.isNotBlank() && entry.text.isNotBlank()) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(
+                                                    Color(0xFF1a1a2e).copy(alpha = 0.6f),
+                                                    RoundedCornerShape(8.dp)
+                                                )
+                                                .padding(16.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            // Only the color-coded transcription - THIS IS THE FOCUS
+                                            Text(
+                                                text = buildActualText(expectedPhrase, entry.text),
+                                                fontSize = 24.sp,
+                                                lineHeight = 32.sp,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    }
+                                    
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -345,35 +372,19 @@ fun PronunciationPracticeScreen(
                                             )
                                         }
                                     }
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = if (pass) "Great job! Keep it up." else "Aim for 80% to earn +10 score.",
-                                            color = Color(0xFFB0BEC5),
-                                            fontSize = 12.sp
-                                        )
-                                        TextButton(onClick = { analysisFor = entry }) {
-                                            Text("View analysis")
-                                        }
-                                    }
+                                    // Encouragement message only
+                                    Text(
+                                        text = if (pass) "Great job! Keep it up." else "Aim for 80% to earn +10 score.",
+                                        color = Color(0xFFB0BEC5),
+                                        fontSize = 12.sp,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
                                 }
                             }
                         }
                     }
 
-                    // Helper text about rewards
-                    Text(
-                        text = "Complete a phrase (≥80% accuracy) to earn +10 score and +20 XP. Complete all modes to earn +50 XP Topic Mastery.",
-                        color = Color(0xFFB0BEC5),
-                        fontSize = 13.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(Modifier.height(24.dp))
                 }
             }
 
@@ -412,8 +423,7 @@ fun PronunciationPracticeScreen(
                                 items(itemsList) { rec ->
                                     RecordingListItem(
                                         entry = rec,
-                                        onPlay = { viewModel.playUserRecording(rec.audioPath) },
-                                        onShowAnalysis = { analysisFor = rec }
+                                        onPlay = { viewModel.playUserRecording(rec.audioPath) }
                                     )
                                 }
                             }
@@ -423,10 +433,7 @@ fun PronunciationPracticeScreen(
                 }
             }
 
-            // Analysis dialog for selected recording
-            analysisFor?.let { entry ->
-                AnalysisDialog(entry = entry, onDismiss = { analysisFor = null })
-            }
+            // Analysis dialog removed - transcription shown inline
 
             // Topic completion congratulations overlay
             if (ui.showPronunciationCongrats) {
@@ -529,8 +536,7 @@ private fun PhrasePracticeCard(
 @Composable
 private fun RecordingListItem(
     entry: PhraseTranscriptEntry,
-    onPlay: () -> Unit,
-    onShowAnalysis: () -> Unit
+    onPlay: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -553,34 +559,57 @@ private fun RecordingListItem(
                     Text(text = entry.text, color = Color(0xFFE0E0E0), fontSize = 14.sp, maxLines = 2)
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onPlay) {
-                    Icon(Icons.Filled.PlayArrow, contentDescription = "Play", tint = Color(0xFF64B5F6))
-                }
-                IconButton(onClick = onShowAnalysis) {
-                    Icon(Icons.Filled.Info, contentDescription = "Analysis", tint = Color(0xFFFFD54F))
-                }
+            IconButton(onClick = onPlay) {
+                Icon(Icons.Filled.PlayArrow, contentDescription = "Play", tint = Color(0xFF64B5F6))
             }
         }
     }
 }
 
-@Composable
-private fun AnalysisDialog(entry: PhraseTranscriptEntry, onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
-        title = { Text("Pronunciation Analysis", fontWeight = FontWeight.Bold) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Phrase ${entry.index + 1}")
-                if (entry.text.isNotBlank()) Text("Transcript:\n${entry.text}")
-                val pct = entry.accuracy.toInt().coerceIn(0, 100)
-                Text("Accuracy: ${pct}%")
-                entry.feedback?.takeIf { it.isNotBlank() }?.let { fb -> Text("Feedback:\n$fb") }
+/**
+ * Helper function to normalize a word by removing punctuation for comparison.
+ * Only strips punctuation, preserves the core word.
+ */
+private fun normalizeWord(word: String): String {
+    return word.replace(Regex("[^\\w]"), "").trim()
+}
+
+/**
+ * Helper function to build annotated string for actual transcription,
+ * highlighting extra words or differences.
+ * Punctuation is ignored during comparison.
+ */
+private fun buildActualText(expected: String, actual: String): AnnotatedString {
+    val expectedWords = expected.trim().split(Regex("\\s+"))
+    val actualWords = actual.trim().split(Regex("\\s+"))
+    
+    return buildAnnotatedString {
+        actualWords.forEachIndexed { index, actualWord ->
+            val expectedWord = expectedWords.getOrNull(index)
+            // Compare normalized versions (without punctuation)
+            val matches = expectedWord?.let { 
+                normalizeWord(it).equals(normalizeWord(actualWord), ignoreCase = true) 
+            } == true
+            val isExtra = index >= expectedWords.size
+            
+            withStyle(
+                SpanStyle(
+                    color = when {
+                        isExtra -> Color(0xFFFFB74D) // orange for extra words
+                        matches -> Color(0xFF4CAF50) // green for correct
+                        else -> Color(0xFFFF6B6B) // red for wrong
+                    },
+                    fontWeight = if (matches) FontWeight.Normal else FontWeight.Bold
+                )
+            ) {
+                append(actualWord)
+            }
+            
+            if (index < actualWords.lastIndex) {
+                append(" ")
             }
         }
-    )
+    }
 }
 
 @Composable

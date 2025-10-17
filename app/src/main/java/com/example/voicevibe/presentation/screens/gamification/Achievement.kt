@@ -48,6 +48,7 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import android.util.Log
 
 @HiltViewModel
 class AchievementsSimpleViewModel @Inject constructor(
@@ -72,22 +73,22 @@ class AchievementsSimpleViewModel @Inject constructor(
         viewModelScope.launch {
             // First, load existing history and last-known values (MUST complete first)
             currentUserId = tokenManager.getUserIdFlow().first()?.trim()?.takeIf { it.isNotEmpty() }
-            val history = if (currentUserId != null) {
-                tokenManager.achievementHistoryFlow(currentUserId!!).first()
+            Log.d("AchievementsVM", "[loadAndRefresh] currentUserId=$currentUserId")
+            
+            // Only load if we have a valid user ID to prevent cross-user data contamination
+            if (currentUserId != null) {
+                val history = tokenManager.achievementHistoryFlow(currentUserId!!).first()
+                lastKnownProficiency = tokenManager.lastProficiencyFlow(currentUserId!!).first()
+                lastKnownLevel = tokenManager.lastLevelFlow(currentUserId!!).first()
+                Log.d("AchievementsVM", "[loadAndRefresh] Loaded ${history.size} cached achievements for user $currentUserId")
+                uiState = uiState.copy(items = history.sortedByDescending { it.timestamp })
             } else {
-                tokenManager.achievementHistoryFlow().first()
+                // No user ID = fresh state, don't load any cached data
+                Log.d("AchievementsVM", "[loadAndRefresh] No userId, returning empty state")
+                uiState = uiState.copy(items = emptyList())
+                lastKnownProficiency = null
+                lastKnownLevel = null
             }
-            lastKnownProficiency = if (currentUserId != null) {
-                tokenManager.lastProficiencyFlow(currentUserId!!).first()
-            } else {
-                tokenManager.lastProficiencyFlow().first()
-            }
-            lastKnownLevel = if (currentUserId != null) {
-                tokenManager.lastLevelFlow(currentUserId!!).first()
-            } else {
-                tokenManager.lastLevelFlow().first()
-            }
-            uiState = uiState.copy(items = history.sortedByDescending { it.timestamp })
             
             // Then check for new achievements
             load()
@@ -101,6 +102,7 @@ class AchievementsSimpleViewModel @Inject constructor(
                 // 1) Try server-side persistent feed first
                 runCatching {
                     val res = gamificationRepository.getAchievementEvents(limit = 100)
+                    Log.d("AchievementsVM", "[load] Backend response: ${if (res is Resource.Success) "${res.data?.size ?: 0} events" else "error: ${(res as? Resource.Error)?.message}"}")
                     if (res is Resource.Success) {
                         val dtos = res.data ?: emptyList()
                         val mapped = dtos.mapNotNull { dto ->
@@ -122,12 +124,14 @@ class AchievementsSimpleViewModel @Inject constructor(
                             }
                         }.sortedByDescending { it.timestamp }
 
-                        if (mapped.isNotEmpty()) {
-                            val uid = currentUserId
-                            if (uid != null) tokenManager.saveAchievementHistory(uid, mapped) else tokenManager.saveAchievementHistory(mapped)
+                        if (mapped.isNotEmpty() && currentUserId != null) {
+                            Log.d("AchievementsVM", "[load] Saving ${mapped.size} achievements from backend for user $currentUserId")
+                            tokenManager.saveAchievementHistory(currentUserId!!, mapped)
                             val itemsWithUpdatedTime = mapped.map { it.copy(timeAgo = formatRelativeTime(it.timestamp)) }
                             uiState = uiState.copy(isLoading = false, items = itemsWithUpdatedTime)
                             return@launch
+                        } else {
+                            Log.d("AchievementsVM", "[load] Backend returned ${mapped.size} achievements but currentUserId=$currentUserId, not saving")
                         }
                     }
                 }
@@ -212,8 +216,9 @@ class AchievementsSimpleViewModel @Inject constructor(
                         }
                     }
                     lastKnownProficiency = prof
-                    val uid = currentUserId
-                    if (uid != null) tokenManager.setLastProficiency(uid, prof) else tokenManager.setLastProficiency(prof)
+                    if (currentUserId != null) {
+                        tokenManager.setLastProficiency(currentUserId!!, prof)
+                    }
                 }
 
                 // Check for new level achievement
@@ -284,16 +289,16 @@ class AchievementsSimpleViewModel @Inject constructor(
                         }
                     }
                     lastKnownLevel = level
-                    val uid = currentUserId
-                    if (uid != null) tokenManager.setLastLevel(uid, level) else tokenManager.setLastLevel(level)
+                    if (currentUserId != null) {
+                        tokenManager.setLastLevel(currentUserId!!, level)
+                    }
                 }
 
-                // Add new achievements to existing list and save
-                if (newAchievements.isNotEmpty()) {
+                // Add new achievements to existing list and save (only if we have a user ID)
+                if (newAchievements.isNotEmpty() && currentUserId != null) {
                     val updatedList = (newAchievements + uiState.items)
                         .sortedByDescending { it.timestamp }
-                    val uid = currentUserId
-                    if (uid != null) tokenManager.saveAchievementHistory(uid, updatedList) else tokenManager.saveAchievementHistory(updatedList)
+                    tokenManager.saveAchievementHistory(currentUserId!!, updatedList)
                     uiState = uiState.copy(items = updatedList)
                 }
 

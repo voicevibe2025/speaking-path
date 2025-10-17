@@ -167,16 +167,27 @@ class TokenManager @Inject constructor(
      * Clear all data (logout)
      */
     suspend fun clearAll() {
+        // First, get the current userId before clearing it
+        val currentUserId = getUserIdFlow().first()
+        
         dataStore.edit { preferences ->
-            // Remove only session-scoped keys so per-user persisted history remains intact
+            // Clear the current user's achievement cache to prevent data leakage
+            if (currentUserId != null && currentUserId.isNotBlank()) {
+                val achKey = achievementHistoryKeyFor(currentUserId.trim())
+                val profKey = lastProficiencyKeyFor(currentUserId.trim())
+                val levelKey = lastLevelKeyFor(currentUserId.trim())
+                runCatching { preferences.remove(achKey) }
+                runCatching { preferences.remove(profKey) }
+                runCatching { preferences.remove(levelKey) }
+            }
+            
+            // Remove session-scoped keys
             runCatching { preferences.remove(accessTokenKey) }
             runCatching { preferences.remove(refreshTokenKey) }
             runCatching { preferences.remove(userIdKey) }
             runCatching { preferences.remove(userEmailKey) }
             runCatching { preferences.remove(userNameKey) }
             runCatching { preferences.remove(isLoggedInKey) }
-            // Do NOT remove achievement_history_* or last_* per-user keys
-            // Keep onboarding, feature flags, and other preferences as-is to avoid wiping local UX state
         }
     }
 

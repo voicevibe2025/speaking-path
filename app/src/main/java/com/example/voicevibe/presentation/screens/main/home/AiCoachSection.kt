@@ -28,8 +28,11 @@ import com.example.voicevibe.data.remote.api.CoachScheduleItemDto
 import com.example.voicevibe.data.remote.api.CoachSkillDto
 import com.example.voicevibe.ui.theme.*
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.math.ceil
 
 @Composable
 fun AiCoachSection(
@@ -40,6 +43,35 @@ fun AiCoachSection(
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var hoursUntilRefresh by remember { mutableStateOf<Int?>(null) }
+
+    // Calculate hours until next refresh
+    LaunchedEffect(analysis?._next_refresh_at) {
+        analysis?._next_refresh_at?.let { nextRefreshAt ->
+            try {
+                android.util.Log.d("AiCoachSection", "Next refresh at: $nextRefreshAt")
+                
+                // Parse ISO timestamp (handles formats like: 2025-10-18T01:59:00.123456 or 2025-10-18T01:59:00Z)
+                val cleanedTimestamp = nextRefreshAt
+                    .substringBefore("+")  // Remove timezone offset if present
+                    .replace("Z", "")       // Remove Z indicator
+                    .substringBefore(".")   // Remove milliseconds
+                
+                val nextRefresh = LocalDateTime.parse(cleanedTimestamp)
+                val now = LocalDateTime.now()
+                val minutesUntil = ChronoUnit.MINUTES.between(now, nextRefresh)
+                hoursUntilRefresh = ceil(minutesUntil / 60.0).toInt().coerceAtLeast(0)
+                
+                android.util.Log.d("AiCoachSection", "Hours until refresh: $hoursUntilRefresh")
+            } catch (e: Exception) {
+                android.util.Log.e("AiCoachSection", "Failed to parse next_refresh_at: $nextRefreshAt", e)
+                hoursUntilRefresh = null
+            }
+        } ?: run {
+            android.util.Log.w("AiCoachSection", "No _next_refresh_at in analysis data")
+            hoursUntilRefresh = null
+        }
+    }
 
     Card(
         modifier = modifier
@@ -64,29 +96,25 @@ fun AiCoachSection(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Learning Insights",
+                        text = "Insights",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
-                    Text(
-                        text = "GRU-Powered Analysis",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = BrandCyan.copy(alpha = 0.8f)
-                    )
-                }
-                IconButton(
-                    onClick = onRefresh,
-                    enabled = !isLoading
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Refresh",
-                        tint = if (isLoading) Color.Gray else BrandCyan,
-                        modifier = Modifier.then(
-                            if (isLoading) Modifier.alpha(0.5f) else Modifier
+                    // Show countdown timer or subtitle
+                    if (hoursUntilRefresh != null) {
+                        Text(
+                            text = "Refreshes in ${hoursUntilRefresh}h",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = BrandCyan.copy(alpha = 0.8f)
                         )
-                    )
+                    } else {
+                        Text(
+                            text = "GRU-Powered Analysis",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = BrandCyan.copy(alpha = 0.8f)
+                        )
+                    }
                 }
                 TextButton(onClick = { expanded = !expanded }) {
                     Text(

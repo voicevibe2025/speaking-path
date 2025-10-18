@@ -60,5 +60,6 @@ data class CoachAnalysisDto(
     // Cache metadata from backend
     val _cache_stale: Boolean? = null,
     val _is_ai_generated: Boolean? = null,
-    val _generated_at: String? = null
+    val _generated_at: String? = null,
+    val _next_refresh_at: String? = null
 )

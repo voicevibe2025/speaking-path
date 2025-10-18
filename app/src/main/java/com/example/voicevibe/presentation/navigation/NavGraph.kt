@@ -322,6 +322,21 @@ fun NavGraph(
                 onNavigateToTopicMaster = { topicId ->
                     navController.navigate(Screen.TopicMaster.createRoute(topicId))
                 },
+                onNavigateToPronunciationPractice = { topicId ->
+                    navController.navigate(Screen.PronunciationPractice.createRoute(topicId))
+                },
+                onNavigateToFluencyPractice = { topicId ->
+                    navController.navigate(Screen.FluencyPractice.createRoute(topicId))
+                },
+                onNavigateToVocabularyPractice = { topicId ->
+                    navController.navigate(Screen.VocabularyPractice.createRoute(topicId))
+                },
+                onNavigateToListeningPractice = { topicId ->
+                    navController.navigate(Screen.ListeningPractice.createRoute(topicId))
+                },
+                onNavigateToGrammarPractice = { topicId ->
+                    navController.navigate(Screen.GrammarPractice.createRoute(topicId))
+                },
                 onNavigateToConversationPractice = { topicId ->
                     navController.navigate(Screen.ConversationPractice.createRoute(topicId))
                 },

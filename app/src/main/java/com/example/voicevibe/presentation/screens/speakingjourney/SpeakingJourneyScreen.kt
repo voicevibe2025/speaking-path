@@ -59,6 +59,8 @@ import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Translate
+import androidx.compose.material.icons.filled.Spellcheck
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.School
@@ -109,6 +111,7 @@ import kotlin.random.Random
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -281,6 +284,11 @@ fun SpeakingJourneyScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToConversation: (String) -> Unit,
     onNavigateToTopicMaster: (String) -> Unit,
+    onNavigateToPronunciationPractice: (String) -> Unit = {},
+    onNavigateToFluencyPractice: (String) -> Unit = {},
+    onNavigateToVocabularyPractice: (String) -> Unit = {},
+    onNavigateToListeningPractice: (String) -> Unit = {},
+    onNavigateToGrammarPractice: (String) -> Unit = {},
     onNavigateToConversationPractice: (String) -> Unit = {},
     onNavigateToVocabularyLesson: (String) -> Unit = {},
     onNavigateToLearnWithVivi: (String) -> Unit = {},
@@ -411,7 +419,13 @@ fun SpeakingJourneyScreen(
                                 if (topic.unlocked) {
                                     onNavigateToSpeakingLesson(topic.id)
                                 }
-                            }
+                            },
+                            onPronunciationClick = { tid -> onNavigateToPronunciationPractice(tid) },
+                            onFluencyClick = { tid -> onNavigateToFluencyPractice(tid) },
+                            onVocabularyPracticeClick = { tid -> onNavigateToVocabularyPractice(tid) },
+                            onGrammarPracticeClick = { tid -> onNavigateToGrammarPractice(tid) },
+                            onListeningPracticeClick = { tid -> onNavigateToListeningPractice(tid) },
+                            onConversationPracticeClick = { tid -> onNavigateToConversationPractice(tid) }
                         )
                     }
                 }
@@ -737,7 +751,13 @@ private fun VerticalTopicList(
     topics: List<Topic>,
     selectedTopicIdx: Int,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
-    onTopicClick: (Topic) -> Unit
+    onTopicClick: (Topic) -> Unit,
+    onPronunciationClick: (String) -> Unit,
+    onFluencyClick: (String) -> Unit,
+    onVocabularyPracticeClick: (String) -> Unit,
+    onGrammarPracticeClick: (String) -> Unit,
+    onListeningPracticeClick: (String) -> Unit,
+    onConversationPracticeClick: (String) -> Unit
 ) {
     val listState = rememberLazyListState()
     
@@ -759,7 +779,13 @@ private fun VerticalTopicList(
                 topic = topic,
                 isSelected = index == selectedTopicIdx,
                 onClick = { onTopicClick(topic) },
-                index = index
+                index = index,
+                onPronunciationClick = onPronunciationClick,
+                onFluencyClick = onFluencyClick,
+                onVocabularyPracticeClick = onVocabularyPracticeClick,
+                onGrammarPracticeClick = onGrammarPracticeClick,
+                onListeningPracticeClick = onListeningPracticeClick,
+                onConversationPracticeClick = onConversationPracticeClick
             )
         }
     }
@@ -770,7 +796,13 @@ private fun VerticalTopicCard(
     topic: Topic,
     isSelected: Boolean,
     onClick: () -> Unit,
-    index: Int
+    index: Int,
+    onPronunciationClick: (String) -> Unit,
+    onFluencyClick: (String) -> Unit,
+    onVocabularyPracticeClick: (String) -> Unit,
+    onGrammarPracticeClick: (String) -> Unit,
+    onListeningPracticeClick: (String) -> Unit,
+    onConversationPracticeClick: (String) -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     
@@ -995,8 +1027,148 @@ private fun VerticalTopicCard(
                             icon = Icons.AutoMirrored.Filled.VolumeUp
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Practice quick-actions row with progress-to-75 rings
+                    val scores = topic.practiceScores
+                    val pronScore = (scores?.pronunciation ?: 0).coerceIn(0, 100)
+                    val fluScore = (scores?.fluency ?: 0).coerceIn(0, 100)
+                    val vocabScore = (scores?.vocabulary ?: 0).coerceIn(0, 100)
+                    val gramScore = (scores?.grammar ?: 0).coerceIn(0, 100)
+                    val listenScore = (scores?.listening ?: 0).coerceIn(0, 100)
+                    val convScore = (topic.conversationScore ?: 0).coerceIn(0, 100)
+
+                    fun toFraction(score: Int): Float = if (score >= 75) 1f else (score / 75f).coerceIn(0f, 1f)
+
+                    androidx.compose.foundation.lazy.LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        item {
+                            PracticeIconProgressButton(
+                                icon = Icons.Default.Mic,
+                                color = Color(0xFFFF006E),
+                                progress = toFraction(pronScore),
+                                enabled = topic.unlocked,
+                                showCheck = pronScore >= 75,
+                                onClick = { if (topic.unlocked) onPronunciationClick(topic.id) }
+                            )
+                        }
+                        item {
+                            PracticeIconProgressButton(
+                                icon = Icons.Default.RecordVoiceOver,
+                                color = Color(0xFF00D9FF),
+                                progress = toFraction(fluScore),
+                                enabled = topic.unlocked,
+                                showCheck = fluScore >= 75,
+                                onClick = { if (topic.unlocked) onFluencyClick(topic.id) }
+                            )
+                        }
+                        item {
+                            PracticeIconProgressButton(
+                                icon = Icons.Default.Translate,
+                                color = Color(0xFFFFBE0B),
+                                progress = toFraction(vocabScore),
+                                enabled = topic.unlocked,
+                                showCheck = vocabScore >= 75,
+                                onClick = { if (topic.unlocked) onVocabularyPracticeClick(topic.id) }
+                            )
+                        }
+                        item {
+                            PracticeIconProgressButton(
+                                icon = Icons.Default.Spellcheck,
+                                color = Color(0xFF06FFA5),
+                                progress = toFraction(gramScore),
+                                enabled = topic.unlocked,
+                                showCheck = gramScore >= 75,
+                                onClick = { if (topic.unlocked) onGrammarPracticeClick(topic.id) }
+                            )
+                        }
+                        item {
+                            PracticeIconProgressButton(
+                                icon = Icons.AutoMirrored.Filled.VolumeUp,
+                                color = Color(0xFF8338EC),
+                                progress = toFraction(listenScore),
+                                enabled = topic.unlocked,
+                                showCheck = listenScore >= 75,
+                                onClick = { if (topic.unlocked) onListeningPracticeClick(topic.id) }
+                            )
+                        }
+                        item {
+                            PracticeIconProgressButton(
+                                icon = Icons.Default.School,
+                                color = Color(0xFF6C63FF),
+                                progress = toFraction(convScore),
+                                enabled = topic.unlocked,
+                                showCheck = convScore >= 75,
+                                onClick = { if (topic.unlocked) onConversationPracticeClick(topic.id) }
+                            )
+                        }
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun PracticeIconProgressButton(
+    icon: ImageVector,
+    color: Color,
+    progress: Float,
+    enabled: Boolean,
+    showCheck: Boolean,
+    onClick: () -> Unit
+) {
+    val alphaVal = if (enabled) 1f else 0.5f
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .alpha(alphaVal)
+    ) {
+        // Track background
+        CircularProgressIndicator(
+            progress = 1f,
+            color = Color.White.copy(alpha = 0.15f),
+            strokeWidth = 4.dp,
+            modifier = Modifier.matchParentSize()
+        )
+        // Foreground progress
+        CircularProgressIndicator(
+            progress = progress.coerceIn(0f, 1f),
+            color = if (showCheck) Color(0xFF4CAF50) else color,
+            strokeWidth = 4.dp,
+            modifier = Modifier.matchParentSize()
+        )
+        // Center icon hit target
+        Surface(
+            onClick = { if (enabled) onClick() },
+            shape = CircleShape,
+            color = Color.White.copy(alpha = 0.06f),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(42.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+        }
+        if (showCheck) {
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = null,
+                tint = Color(0xFF4CAF50),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(16.dp)
+            )
         }
     }
 }

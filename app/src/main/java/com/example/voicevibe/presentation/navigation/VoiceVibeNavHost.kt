@@ -31,6 +31,9 @@ import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeChatS
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLessonScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.ListeningPracticeScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.GrammarPracticeScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.PronunciationPracticeScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.FluencyPracticeScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyPracticeScreen
 import com.example.voicevibe.presentation.screens.gamification.AchievementScreen
 import com.example.voicevibe.presentation.screens.profile.MyReportsScreen
 import com.example.voicevibe.presentation.screens.group.GroupSelectionScreen
@@ -289,6 +292,21 @@ fun VoiceVibeNavHost(
                 onNavigateToTopicMaster = { topicId ->
                     navController.navigate(Screen.TopicMaster.createRoute(topicId))
                 },
+                onNavigateToPronunciationPractice = { topicId ->
+                    navController.navigate(Screen.PronunciationPractice.createRoute(topicId))
+                },
+                onNavigateToFluencyPractice = { topicId ->
+                    navController.navigate(Screen.FluencyPractice.createRoute(topicId))
+                },
+                onNavigateToVocabularyPractice = { topicId ->
+                    navController.navigate(Screen.VocabularyPractice.createRoute(topicId))
+                },
+                onNavigateToListeningPractice = { topicId ->
+                    navController.navigate(Screen.ListeningPractice.createRoute(topicId))
+                },
+                onNavigateToGrammarPractice = { topicId ->
+                    navController.navigate(Screen.GrammarPractice.createRoute(topicId))
+                },
                 onNavigateToConversationPractice = { topicId ->
                     navController.navigate(Screen.ConversationPractice.createRoute(topicId))
                 },
@@ -343,6 +361,39 @@ fun VoiceVibeNavHost(
                 topicId = topicId,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToLearnWithVivi = { navController.navigate(Screen.LearnTopicWithVivi.createRoute(topicId)) }
+            )
+        }
+
+        composable(
+            route = Screen.PronunciationPractice.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            PronunciationPracticeScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.FluencyPractice.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            FluencyPracticeScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.VocabularyPractice.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            VocabularyPracticeScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

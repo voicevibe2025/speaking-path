@@ -235,7 +235,7 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Default.Info,
                     title = "About",
-                    subtitle = "VozVibe v1.0",
+                    subtitle = "VozVibe v2.0.1",
                     onClick = onNavigateToAbout
                 )
                 SettingsItem(

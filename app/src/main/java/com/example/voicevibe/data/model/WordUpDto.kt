@@ -12,7 +12,8 @@ data class VocabularyWordDto(
     @SerializedName("definition") val definition: String,
     @SerializedName("difficulty") val difficulty: String,
     @SerializedName("example_sentence") val exampleSentence: String,
-    @SerializedName("part_of_speech") val partOfSpeech: String
+    @SerializedName("part_of_speech") val partOfSpeech: String,
+    @SerializedName("ipa_pronunciation") val ipaPronunciation: String = ""
 )
 
 data class WordProgressDto(
@@ -54,4 +55,16 @@ data class WordUpStatsDto(
     @SerializedName("mastered_count") val masteredCount: Int,
     @SerializedName("in_progress_count") val inProgressCount: Int,
     @SerializedName("completion_percentage") val completionPercentage: Double
+)
+
+data class EvaluatePronunciationRequest(
+    @SerializedName("word_id") val wordId: Int,
+    @SerializedName("audio_base64") val audioBase64: String
+)
+
+data class PronunciationResultDto(
+    @SerializedName("is_correct") val isCorrect: Boolean,
+    @SerializedName("transcribed_text") val transcribedText: String,
+    @SerializedName("feedback") val feedback: String,
+    @SerializedName("confidence") val confidence: Float
 )

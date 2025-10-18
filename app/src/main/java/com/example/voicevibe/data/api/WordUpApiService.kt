@@ -17,6 +17,11 @@ interface WordUpApiService {
         @Body request: EvaluateExampleRequest
     ): EvaluationResultDto
 
+    @POST("wordup/evaluate-pronunciation/")
+    suspend fun evaluatePronunciation(
+        @Body request: EvaluatePronunciationRequest
+    ): PronunciationResultDto
+
     @GET("wordup/mastered-words/")
     suspend fun getMasteredWords(): MasteredWordsResponse
 

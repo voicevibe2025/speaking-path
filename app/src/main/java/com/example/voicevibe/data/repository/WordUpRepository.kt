@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.voicevibe.data.api.WordUpApiService
 import com.example.voicevibe.data.mapper.toDomain
 import com.example.voicevibe.data.model.EvaluateExampleRequest
+import com.example.voicevibe.data.model.EvaluatePronunciationRequest
 import com.example.voicevibe.domain.model.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -42,6 +43,23 @@ class WordUpRepository @Inject constructor(
             Result.success(response.toDomain())
         } catch (e: Exception) {
             Log.e(tag, "Error evaluating example", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun evaluatePronunciation(
+        wordId: Int,
+        audioBase64: String
+    ): Result<PronunciationResult> {
+        return try {
+            val request = EvaluatePronunciationRequest(
+                wordId = wordId,
+                audioBase64 = audioBase64
+            )
+            val response = api.evaluatePronunciation(request)
+            Result.success(response.toDomain())
+        } catch (e: Exception) {
+            Log.e(tag, "Error evaluating pronunciation", e)
             Result.failure(e)
         }
     }

@@ -46,7 +46,8 @@ fun VocabularyWordDto.toDomain(): VocabularyWord {
         definition = definition,
         difficulty = WordDifficulty.from(difficulty),
         exampleSentence = exampleSentence,
-        partOfSpeech = partOfSpeech
+        partOfSpeech = partOfSpeech,
+        ipaPronunciation = ipaPronunciation
     )
 }
 
@@ -85,5 +86,14 @@ fun WordUpStatsDto.toDomain(): WordUpStats {
         masteredCount = masteredCount,
         inProgressCount = inProgressCount,
         completionPercentage = completionPercentage
+    )
+}
+
+fun PronunciationResultDto.toDomain(): PronunciationResult {
+    return PronunciationResult(
+        isCorrect = isCorrect,
+        transcribedText = transcribedText,
+        feedback = feedback,
+        confidence = confidence
     )
 }

@@ -12,7 +12,8 @@ data class VocabularyWord(
     val definition: String,
     val difficulty: WordDifficulty,
     val exampleSentence: String,
-    val partOfSpeech: String
+    val partOfSpeech: String,
+    val ipaPronunciation: String = ""
 )
 
 enum class WordDifficulty {
@@ -60,4 +61,11 @@ data class WordUpStats(
     val masteredCount: Int,
     val inProgressCount: Int,
     val completionPercentage: Double
+)
+
+data class PronunciationResult(
+    val isCorrect: Boolean,
+    val transcribedText: String,
+    val feedback: String,
+    val confidence: Float
 )

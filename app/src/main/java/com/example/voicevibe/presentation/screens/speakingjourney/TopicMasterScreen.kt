@@ -108,41 +108,50 @@ fun TopicMasterScreen(
     LaunchedEffect(ui.selectedTopicIdx, ui.topics) {
         viewModel.loadTranscriptsForCurrentTopic(context)
     }
-    // Confetti follows server unlock criteria (three completions + ≥75% per-practice)
+    // Confetti follows backend completion flag (source-of-truth): topic.completed
     LaunchedEffect(
-        practiceScores?.meetsRequirement,
-        topic?.phraseProgress?.isAllPhrasesCompleted,
-        topic?.fluencyProgress?.completed,
-        practiceScores?.vocabulary,
+        topic?.completed,
         hasBeenCelebratedLoaded
     ) {
         if (!hasBeenCelebratedLoaded) return@LaunchedEffect
-        val meets = practiceScores?.meetsRequirement == true
-        val allCompleted = (topic?.phraseProgress?.isAllPhrasesCompleted == true) &&
-                           (topic?.fluencyProgress?.completed == true) &&
-                           ((practiceScores?.vocabulary ?: 0) > 0)
-        val unlockedNow = meets && allCompleted
+        val completedNow = topic?.completed == true
+        val unlockedNow = completedNow
 
         // Debug logging
         Log.d("TopicMaster", "Debug unlock check for topic ${topic?.title}:")
-        Log.d("TopicMaster", "  meetsRequirement: ${practiceScores?.meetsRequirement}")
-        Log.d("TopicMaster", "  phraseProgress.isAllPhrasesCompleted: ${topic?.phraseProgress?.isAllPhrasesCompleted}")
-        Log.d("TopicMaster", "  fluencyProgress.completed: ${topic?.fluencyProgress?.completed}")
-        Log.d("TopicMaster", "  vocabulary score: ${practiceScores?.vocabulary}")
+        Log.d("TopicMaster", "  completed: ${topic?.completed}")
         Log.d("TopicMaster", "  unlockedNow: $unlockedNow, prevUnlocked: $prevUnlocked, hasBeenCelebrated: $hasBeenCelebrated (loaded=$hasBeenCelebratedLoaded)")
 
         // First evaluation after load: seed celebrated state silently for already-unlocked topics
         if (prevUnlocked == null) {
             prevUnlocked = unlockedNow
             if (unlockedNow && !hasBeenCelebrated) {
+                // Trigger celebration immediately when we first detect unlock for this topic
+                showCelebration = true
+                showCelebrationDialog = true
+                try {
+                    val celebratePlayer = MediaPlayer.create(context, R.raw.celebrate)
+                    celebratePlayer?.setOnCompletionListener { player ->
+                        try { player.release() } catch (_: Throwable) {}
+                    }
+                    celebratePlayer?.start()
+                } catch (_: Throwable) {}
+                try {
+                    val applausePlayer = MediaPlayer.create(context, R.raw.applause)
+                    applausePlayer?.setOnCompletionListener { player ->
+                        try { player.release() } catch (_: Throwable) {}
+                    }
+                    applausePlayer?.start()
+                } catch (_: Throwable) {}
+
                 tokenManager.markTopicAsCelebrated(topicId)
                 hasBeenCelebrated = true
             }
             return@LaunchedEffect
         }
 
-        // Only trigger celebration on transition from locked -> unlocked
-        if (prevUnlocked == false && unlockedNow && !hasBeenCelebrated) {
+        // Only trigger celebration on transition from locked -> unlocked (even if previously marked celebrated)
+        if (prevUnlocked == false && unlockedNow) {
             showCelebration = true
             showCelebrationDialog = true
             // Play both sound effects simultaneously
@@ -161,9 +170,11 @@ fun TopicMasterScreen(
                 applausePlayer?.start()
             } catch (_: Throwable) {}
 
-            // Mark this topic as celebrated permanently
-            tokenManager.markTopicAsCelebrated(topicId)
-            hasBeenCelebrated = true
+            // Mark this topic as celebrated permanently (if not already)
+            if (!hasBeenCelebrated) {
+                tokenManager.markTopicAsCelebrated(topicId)
+                hasBeenCelebrated = true
+            }
         }
 
         prevUnlocked = unlockedNow
@@ -201,7 +212,8 @@ fun TopicMasterScreen(
         val meets = practiceScores?.meetsRequirement == true
         val allCompleted = (topic?.phraseProgress?.isAllPhrasesCompleted == true) &&
                            (topic?.fluencyProgress?.completed == true) &&
-                           ((practiceScores?.vocabulary ?: 0) > 0)
+                           ((practiceScores?.vocabulary ?: 0) > 0) &&
+                           ((practiceScores?.grammar ?: 0) > 0)
         meets && allCompleted
     }
     
@@ -581,7 +593,8 @@ fun ProgressSummarySection(topicId: String) {
                     val showCongrats = (practiceScores.meetsRequirement) &&
                         (topic?.phraseProgress?.isAllPhrasesCompleted == true) &&
                         (topic?.fluencyProgress?.completed == true) &&
-                        (practiceScores.vocabulary > 0)
+                        (practiceScores.vocabulary > 0) &&
+                        ((practiceScores.grammar ?: 0) > 0)
 
                     if (!showCongrats) {
                         Spacer(modifier = Modifier.height(6.dp))
@@ -594,6 +607,7 @@ fun ProgressSummarySection(topicId: String) {
                         if (phrasesTotal > 0 && phrasesDone < phrasesTotal) parts += "Pronunciation: ${phrasesDone}/${phrasesTotal} phrases"
                         if (promptsTotal > 0 && promptsDone < promptsTotal) parts += "Fluency: ${promptsDone}/${promptsTotal} prompts"
                         if ((practiceScores.vocabulary <= 0)) parts += "Vocabulary: complete one quiz"
+                        if ((practiceScores.grammar ?: 0) <= 0) parts += "Grammar: complete one quiz"
                         if (parts.isNotEmpty()) {
                             Text(
                                 text = "Remaining: " + parts.joinToString(", "),

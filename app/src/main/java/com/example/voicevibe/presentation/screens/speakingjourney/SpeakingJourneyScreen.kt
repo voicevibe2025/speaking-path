@@ -1024,6 +1024,37 @@ private fun VerticalTopicCard(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
+                    // Practice Missions label (changes when completed)
+                    val isCompleted = topic.completed || (topic.practiceScores?.meetsRequirement == true)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = if (isCompleted) Icons.Default.CheckCircle else Icons.Default.EmojiEvents,
+                            contentDescription = null,
+                            tint = if (isCompleted) Color(0xFF4CAF50) else BrandCyan,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (isCompleted) "Missions Completed!" else "Practice Missions",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isCompleted) Color(0xFF4CAF50) else Color.White
+                        )
+                        if (!isCompleted) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "• Complete to unlock next topic",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     // Practice quick-actions row with progress-to-75 rings
                     val scores = topic.practiceScores
                     val pronScore = (scores?.pronunciation ?: 0).coerceIn(0, 100)

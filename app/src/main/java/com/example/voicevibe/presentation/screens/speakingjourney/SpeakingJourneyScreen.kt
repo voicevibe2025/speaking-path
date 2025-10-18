@@ -18,6 +18,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -117,6 +118,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
@@ -812,7 +814,7 @@ private fun VerticalTopicCard(
         label = "VerticalTopicCardScale"
     )
 
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .scale(scale)
@@ -821,38 +823,30 @@ private fun VerticalTopicCard(
                     dampingRatio = Spring.DampingRatioMediumBouncy,
                     stiffness = Spring.StiffnessMedium
                 )
-            ),
-        shape = RoundedCornerShape(16.dp),
-        border = if (isSelected) {
-            BorderStroke(1.5.dp, Brush.horizontalGradient(listOf(BrandCyan, BrandIndigo)))
-        } else BorderStroke(1.dp, Color.White.copy(alpha = 0.15f)),
-        colors = CardDefaults.cardColors(
-            // Transparent card - background is handled by inner Column
-            containerColor = Color.Transparent
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 4.dp else 0.dp
-        )
+            )
+            .clip(RoundedCornerShape(16.dp))
+            .border(
+                width = if (isSelected) 1.5.dp else 1.dp,
+                brush = if (isSelected)
+                    Brush.horizontalGradient(listOf(BrandCyan, BrandIndigo))
+                else
+                    SolidColor(Color.White.copy(alpha = 0.15f)),
+                shape = RoundedCornerShape(16.dp)
+            )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(
-                    // Same gradient background for all cards
-                    Brush.horizontalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.03f),
-                            Color(0xFF64B5F6).copy(alpha = 0.05f)
-                        )
-                    )
-                )
         ) {
             // Main card content (always visible)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { if (topic.unlocked) onClick() }
+                    .clickable(
+                        enabled = topic.unlocked,
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { onClick() }
                     .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {

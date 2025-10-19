@@ -427,7 +427,9 @@ fun SpeakingJourneyScreen(
                             onVocabularyPracticeClick = { tid -> onNavigateToVocabularyPractice(tid) },
                             onGrammarPracticeClick = { tid -> onNavigateToGrammarPractice(tid) },
                             onListeningPracticeClick = { tid -> onNavigateToListeningPractice(tid) },
-                            onConversationPracticeClick = { tid -> onNavigateToConversationPractice(tid) }
+                            onConversationPracticeClick = { tid -> onNavigateToConversationPractice(tid) },
+                            onPhrasesClick = { tid -> onNavigateToLearnWithVivi(tid) },
+                            onDialogueClick = { tid -> onNavigateToConversation(tid) }
                         )
                     }
                 }
@@ -759,7 +761,9 @@ private fun VerticalTopicList(
     onVocabularyPracticeClick: (String) -> Unit,
     onGrammarPracticeClick: (String) -> Unit,
     onListeningPracticeClick: (String) -> Unit,
-    onConversationPracticeClick: (String) -> Unit
+    onConversationPracticeClick: (String) -> Unit,
+    onPhrasesClick: (String) -> Unit,
+    onDialogueClick: (String) -> Unit
 ) {
     val listState = rememberLazyListState()
     
@@ -787,7 +791,9 @@ private fun VerticalTopicList(
                 onVocabularyPracticeClick = onVocabularyPracticeClick,
                 onGrammarPracticeClick = onGrammarPracticeClick,
                 onListeningPracticeClick = onListeningPracticeClick,
-                onConversationPracticeClick = onConversationPracticeClick
+                onConversationPracticeClick = onConversationPracticeClick,
+                onPhrasesClick = onPhrasesClick,
+                onDialogueClick = onDialogueClick
             )
         }
     }
@@ -804,7 +810,9 @@ private fun VerticalTopicCard(
     onVocabularyPracticeClick: (String) -> Unit,
     onGrammarPracticeClick: (String) -> Unit,
     onListeningPracticeClick: (String) -> Unit,
-    onConversationPracticeClick: (String) -> Unit
+    onConversationPracticeClick: (String) -> Unit,
+    onPhrasesClick: (String) -> Unit,
+    onDialogueClick: (String) -> Unit
 ) {
     // Auto-expand newly unlocked topics (unlocked but not completed)
     val shouldAutoExpand = topic.unlocked && !topic.completed
@@ -1003,25 +1011,32 @@ private fun VerticalTopicCard(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // Vocabulary count
+                        // Vocabulary count (not clickable yet - will implement later)
                         TopicStatItem(
                             label = "Vocabulary",
                             value = "${topic.vocabulary.size}",
-                            icon = Icons.Default.School
+                            icon = Icons.Default.School,
+                            onClick = null // TODO: Wire to TopicVocabularyScreen
                         )
                         
-                        // Phrases count
+                        // Phrases count - Opens LearnTopicWithViviScreen
                         TopicStatItem(
                             label = "Phrases",
                             value = "${topic.material.size}",
-                            icon = Icons.Default.RecordVoiceOver
+                            icon = Icons.Default.RecordVoiceOver,
+                            onClick = if (topic.unlocked) {
+                                { onPhrasesClick(topic.id) }
+                            } else null
                         )
                         
-                        // Conversation turns
+                        // Conversation turns - Opens ConversationLesson
                         TopicStatItem(
                             label = "Dialogue",
                             value = "${topic.conversation.size}",
-                            icon = Icons.AutoMirrored.Filled.VolumeUp
+                            icon = Icons.AutoMirrored.Filled.VolumeUp,
+                            onClick = if (topic.unlocked) {
+                                { onDialogueClick(topic.id) }
+                            } else null
                         )
                     }
 
@@ -1240,7 +1255,8 @@ private fun PracticeIconProgressButton(
 private fun TopicStatItem(
     label: String,
     value: String,
-    icon: ImageVector
+    icon: ImageVector,
+    onClick: (() -> Unit)? = null
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -1248,6 +1264,11 @@ private fun TopicStatItem(
             .background(
                 color = Color.White.copy(alpha = 0.05f),
                 shape = RoundedCornerShape(8.dp)
+            )
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(onClick = onClick)
+                } else Modifier
             )
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {

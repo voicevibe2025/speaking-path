@@ -1067,6 +1067,11 @@ private fun VerticalTopicCard(
                     val listenScore = (scores?.listening ?: 0).coerceIn(0, 100)
                     val convScore = (topic.conversationScore ?: 0).coerceIn(0, 100)
 
+                    // Check if practices are actually completed (all phrases/prompts done)
+                    val isPronCompleted = topic.phraseProgress?.isAllPhrasesCompleted == true
+                    val isFluCompleted = topic.fluencyProgress?.completed == true
+                    val isConvCompleted = topic.conversationCompleted == true
+
                     fun toFraction(score: Int): Float = if (score >= 75) 1f else (score / 75f).coerceIn(0f, 1f)
 
                     androidx.compose.foundation.lazy.LazyRow(
@@ -1080,7 +1085,7 @@ private fun VerticalTopicCard(
                                 color = Color(0xFFFF006E),
                                 progress = toFraction(pronScore),
                                 enabled = topic.unlocked,
-                                showCheck = pronScore >= 75,
+                                showCheck = isPronCompleted && pronScore >= 75,
                                 onClick = { if (topic.unlocked) onPronunciationClick(topic.id) }
                             )
                         }
@@ -1090,7 +1095,7 @@ private fun VerticalTopicCard(
                                 color = Color(0xFF00D9FF),
                                 progress = toFraction(fluScore),
                                 enabled = topic.unlocked,
-                                showCheck = fluScore >= 75,
+                                showCheck = isFluCompleted && fluScore >= 75,
                                 onClick = { if (topic.unlocked) onFluencyClick(topic.id) }
                             )
                         }
@@ -1130,7 +1135,7 @@ private fun VerticalTopicCard(
                                 color = Color(0xFF6C63FF),
                                 progress = toFraction(convScore),
                                 enabled = topic.unlocked,
-                                showCheck = convScore >= 75,
+                                showCheck = isConvCompleted && convScore >= 75,
                                 onClick = { if (topic.unlocked) onConversationPracticeClick(topic.id) }
                             )
                         }

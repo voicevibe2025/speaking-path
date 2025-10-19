@@ -1082,7 +1082,7 @@ private fun VerticalTopicCard(
                         item {
                             PracticeIconProgressButton(
                                 icon = Icons.Default.Mic,
-                                color = Color(0xFFFF006E),
+                                color = Color(0xFF06FFA5),
                                 progress = toFraction(pronScore),
                                 enabled = topic.unlocked,
                                 showCheck = isPronCompleted && pronScore >= 75,
@@ -1092,7 +1092,7 @@ private fun VerticalTopicCard(
                         item {
                             PracticeIconProgressButton(
                                 icon = Icons.Default.RecordVoiceOver,
-                                color = Color(0xFF00D9FF),
+                                color = Color(0xFF06FFA5),
                                 progress = toFraction(fluScore),
                                 enabled = topic.unlocked,
                                 showCheck = isFluCompleted && fluScore >= 75,
@@ -1102,7 +1102,7 @@ private fun VerticalTopicCard(
                         item {
                             PracticeIconProgressButton(
                                 icon = Icons.Default.Translate,
-                                color = Color(0xFFFFBE0B),
+                                color = Color(0xFF06FFA5),
                                 progress = toFraction(vocabScore),
                                 enabled = topic.unlocked,
                                 showCheck = vocabScore >= 75,
@@ -1122,7 +1122,7 @@ private fun VerticalTopicCard(
                         item {
                             PracticeIconProgressButton(
                                 icon = Icons.AutoMirrored.Filled.VolumeUp,
-                                color = Color(0xFF8338EC),
+                                color = Color(0xFF06FFA5),
                                 progress = toFraction(listenScore),
                                 enabled = topic.unlocked,
                                 showCheck = listenScore >= 75,
@@ -1132,7 +1132,7 @@ private fun VerticalTopicCard(
                         item {
                             PracticeIconProgressButton(
                                 icon = Icons.Default.School,
-                                color = Color(0xFF6C63FF),
+                                color = Color(0xFF06FFA5),
                                 progress = toFraction(convScore),
                                 enabled = topic.unlocked,
                                 showCheck = isConvCompleted && convScore >= 75,
@@ -1171,7 +1171,7 @@ private fun PracticeIconProgressButton(
         // Foreground progress
         CircularProgressIndicator(
             progress = progress.coerceIn(0f, 1f),
-            color = if (showCheck) Color(0xFF4CAF50) else color,
+            color = if (showCheck) color else Color(0xFFFF6B35), // Orange for in-progress, mint/cyan when complete
             strokeWidth = 4.dp,
             modifier = Modifier.matchParentSize()
         )

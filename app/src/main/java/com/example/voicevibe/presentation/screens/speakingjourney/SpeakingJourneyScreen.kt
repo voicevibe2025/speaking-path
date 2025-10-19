@@ -901,17 +901,18 @@ private fun VerticalTopicCard(
                     
                     if (topic.unlocked) {
                         Spacer(modifier = Modifier.height(6.dp))
-                        // Compact progress indicator
+                        // Compact progress indicator (4 required practices: Pronunciation, Fluency, Vocabulary, Grammar)
                         val scores = topic.practiceScores
                         val completedPractices = listOf(
                             (topic.phraseProgress?.isAllPhrasesCompleted == true) || 
                             ((scores?.pronunciation ?: 0) > 0),
                             (topic.fluencyProgress?.completed == true) || 
                             ((scores?.fluency ?: 0) > 0),
-                            (scores?.vocabulary ?: 0) > 0
+                            (scores?.vocabulary ?: 0) > 0,
+                            (scores?.grammar ?: 0) > 0
                         ).count { it }
                         
-                        val progress = completedPractices / 3f
+                        val progress = completedPractices / 4f
                         
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

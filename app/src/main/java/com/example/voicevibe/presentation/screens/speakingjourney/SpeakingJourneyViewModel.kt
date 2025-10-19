@@ -1132,6 +1132,58 @@ class SpeakingJourneyViewModel @Inject constructor(
     }
  
 
+    // --- Vocabulary Screen Support ---
+    fun generateVocabularyContent(
+        word: String,
+        topicTitle: String,
+        onResult: (definition: String, example: String, phonetic: String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                // Use a simple prompt to generate vocabulary content
+                // For now, we'll use placeholder data since we need Gemini integration
+                // TODO: Add actual Gemini call here
+                kotlinx.coroutines.delay(500) // Simulate network delay
+                
+                // Placeholder content - in real implementation, call Gemini API
+                val definition = "A word commonly used in $topicTitle contexts"
+                val example = "I used \"$word\" when $topicTitle."
+                val phonetic = "/$word/" // Placeholder phonetic
+                
+                onResult(definition, example, phonetic)
+            } catch (e: Exception) {
+                Log.e("SpeakingJourneyViewModel", "Failed to generate vocabulary content", e)
+                onResult("Definition unavailable", "", "")
+            }
+        }
+    }
+    
+    fun playTTS(text: String, context: Context) {
+        viewModelScope.launch {
+            try {
+                val result = repo.generateTts(text, preferredTtsVoiceName)
+                result.onSuccess { response ->
+                    // Play the audio from the response
+                    response.audioUrl?.let { url ->
+                        try {
+                            val mp = MediaPlayer()
+                            mp.setDataSource(url)
+                            mp.prepare()
+                            mp.start()
+                            mp.setOnCompletionListener { it.release() }
+                        } catch (e: Exception) {
+                            Log.e("SpeakingJourneyViewModel", "Failed to play TTS audio", e)
+                        }
+                    }
+                }.onFailure { error ->
+                    Log.e("SpeakingJourneyViewModel", "TTS generation failed", error)
+                }
+            } catch (e: Exception) {
+                Log.e("SpeakingJourneyViewModel", "TTS request failed", e)
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         try { mediaRecorder?.release() } catch (_: Throwable) {}

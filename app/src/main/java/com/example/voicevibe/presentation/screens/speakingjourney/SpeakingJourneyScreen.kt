@@ -295,6 +295,7 @@ fun SpeakingJourneyScreen(
     onNavigateToVocabularyLesson: (String) -> Unit = {},
     onNavigateToLearnWithVivi: (String) -> Unit = {},
     onNavigateToSpeakingLesson: (String) -> Unit = {},
+    onNavigateToTopicVocabulary: (String) -> Unit = {},
     onNavigateToHome: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -429,7 +430,8 @@ fun SpeakingJourneyScreen(
                             onListeningPracticeClick = { tid -> onNavigateToListeningPractice(tid) },
                             onConversationPracticeClick = { tid -> onNavigateToConversationPractice(tid) },
                             onPhrasesClick = { tid -> onNavigateToLearnWithVivi(tid) },
-                            onDialogueClick = { tid -> onNavigateToConversation(tid) }
+                            onDialogueClick = { tid -> onNavigateToConversation(tid) },
+                            onVocabularyClick = { tid -> onNavigateToTopicVocabulary(tid) }
                         )
                     }
                 }
@@ -763,7 +765,8 @@ private fun VerticalTopicList(
     onListeningPracticeClick: (String) -> Unit,
     onConversationPracticeClick: (String) -> Unit,
     onPhrasesClick: (String) -> Unit,
-    onDialogueClick: (String) -> Unit
+    onDialogueClick: (String) -> Unit,
+    onVocabularyClick: (String) -> Unit
 ) {
     val listState = rememberLazyListState()
     
@@ -793,7 +796,8 @@ private fun VerticalTopicList(
                 onListeningPracticeClick = onListeningPracticeClick,
                 onConversationPracticeClick = onConversationPracticeClick,
                 onPhrasesClick = onPhrasesClick,
-                onDialogueClick = onDialogueClick
+                onDialogueClick = onDialogueClick,
+                onVocabularyClick = onVocabularyClick
             )
         }
     }
@@ -812,7 +816,8 @@ private fun VerticalTopicCard(
     onListeningPracticeClick: (String) -> Unit,
     onConversationPracticeClick: (String) -> Unit,
     onPhrasesClick: (String) -> Unit,
-    onDialogueClick: (String) -> Unit
+    onDialogueClick: (String) -> Unit,
+    onVocabularyClick: (String) -> Unit
 ) {
     // Auto-expand newly unlocked topics (unlocked but not completed)
     val shouldAutoExpand = topic.unlocked && !topic.completed
@@ -1011,12 +1016,14 @@ private fun VerticalTopicCard(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // Vocabulary count (not clickable yet - will implement later)
+                        // Vocabulary count - Opens TopicVocabularyScreen
                         TopicStatItem(
                             label = "Vocabulary",
                             value = "${topic.vocabulary.size}",
                             icon = Icons.Default.School,
-                            onClick = null // TODO: Wire to TopicVocabularyScreen
+                            onClick = if (topic.unlocked) {
+                                { onVocabularyClick(topic.id) }
+                            } else null
                         )
                         
                         // Phrases count - Opens LearnTopicWithViviScreen

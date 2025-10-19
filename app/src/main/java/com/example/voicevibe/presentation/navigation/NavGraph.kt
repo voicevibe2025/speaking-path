@@ -63,6 +63,7 @@ import com.example.voicevibe.presentation.screens.practice.ai.TopicPracticeChatS
 import com.example.voicevibe.presentation.navigation.Screen
 import com.example.voicevibe.presentation.screens.speakingjourney.SpeakingJourneyViewModel
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyLessonScreen
+import com.example.voicevibe.presentation.screens.speakingjourney.TopicVocabularyScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.LearnTopicWithViviScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.FluencyPracticeScreen
 import com.example.voicevibe.presentation.screens.speakingjourney.VocabularyPracticeScreen
@@ -349,6 +350,9 @@ fun NavGraph(
                 onNavigateToSpeakingLesson = { topicId ->
                     navController.navigate(Screen.SpeakingLesson.createRoute(topicId))
                 },
+                onNavigateToTopicVocabulary = { topicId ->
+                    navController.navigate(Screen.TopicVocabulary.createRoute(topicId))
+                },
                 onNavigateToHome = { navController.navigate(Screen.Home.route) }
             )
         }
@@ -516,6 +520,17 @@ fun NavGraph(
         ) { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             VocabularyLessonScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.TopicVocabulary.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            TopicVocabularyScreen(
                 topicId = topicId,
                 onNavigateBack = { navController.popBackStack() }
             )

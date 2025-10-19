@@ -1,5 +1,6 @@
 package com.example.voicevibe.presentation.screens.speakingjourney
 
+import android.speech.tts.TextToSpeech
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,6 +37,7 @@ import com.example.voicevibe.ui.theme.BrandCyan
 import com.example.voicevibe.ui.theme.BrandFuchsia
 import com.example.voicevibe.ui.theme.BrandIndigo
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 data class VocabularyCard(
     val word: String,
@@ -55,6 +58,38 @@ fun TopicVocabularyScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState
     val currentTopic = uiState.topics.find { it.id == topicId }
+
+    val tts = remember(context) {
+        var ref: TextToSpeech? = null
+        val instance = TextToSpeech(context.applicationContext) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                try {
+                    ref?.language = Locale.US
+                } catch (_: Throwable) { /* ignore */ }
+            }
+        }
+        ref = instance
+        instance
+    }
+
+    DisposableEffect(tts) {
+        onDispose {
+            try {
+                tts.stop()
+                tts.shutdown()
+            } catch (_: Throwable) { /* ignore */ }
+        }
+    }
+
+    val speakWord: (String) -> Unit = remember(tts) {
+        { text ->
+            if (text.isNotBlank()) {
+                try {
+                    tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "topic-vocab-${'$'}{System.currentTimeMillis()}")
+                } catch (_: Throwable) { /* ignore */ }
+            }
+        }
+    }
     
     // Initialize vocabulary cards
     var vocabularyCards by remember { mutableStateOf<List<VocabularyCard>>(emptyList()) }
@@ -137,9 +172,7 @@ fun TopicVocabularyScreen(
                         val card = vocabularyCards[page]
                         FlashcardView(
                             card = card,
-                            onPlayAudio = {
-                                viewModel.playTTS(card.word, context)
-                            },
+                            onPlayAudio = { speakWord(card.word) },
                             onMarkLearned = {
                                 vocabularyCards = vocabularyCards.toMutableList().also {
                                     it[page] = it[page].copy(isLearned = !it[page].isLearned)
@@ -167,10 +200,6 @@ fun TopicVocabularyScreen(
                                     pagerState.animateScrollToPage(pagerState.currentPage + 1)
                                 }
                             }
-                        },
-                        onPlayAudio = {
-                            val currentCard = vocabularyCards[pagerState.currentPage]
-                            viewModel.playTTS(currentCard.word, context)
                         }
                     )
                     
@@ -569,14 +598,13 @@ private fun NavigationControls(
     currentPage: Int,
     totalPages: Int,
     onPrevious: () -> Unit,
-    onNext: () -> Unit,
-    onPlayAudio: () -> Unit
+    onNext: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Previous button
@@ -588,35 +616,29 @@ private fun NavigationControls(
                 contentColor = Color.White,
                 disabledContentColor = Color.White.copy(alpha = 0.3f)
             ),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Previous",
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text("Previous")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Previous",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Previous",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
-        
-        Spacer(modifier = Modifier.width(12.dp))
-        
-        // Play audio button (center)
-        FloatingActionButton(
-            onClick = onPlayAudio,
-            containerColor = BrandCyan,
-            contentColor = Color.White,
-            modifier = Modifier.size(56.dp)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                contentDescription = "Play audio",
-                modifier = Modifier.size(28.dp)
-            )
-        }
-        
-        Spacer(modifier = Modifier.width(12.dp))
-        
+
         // Next button
         Button(
             onClick = onNext,
@@ -628,15 +650,27 @@ private fun NavigationControls(
                 disabledContainerColor = Color.White.copy(alpha = 0.1f),
                 disabledContentColor = Color.White.copy(alpha = 0.3f)
             ),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            Text("Next")
-            Spacer(modifier = Modifier.width(4.dp))
-            Icon(
-                imageVector = Icons.Default.ArrowForward,
-                contentDescription = "Next",
-                modifier = Modifier.size(20.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Next",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = "Next",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
     }
 }

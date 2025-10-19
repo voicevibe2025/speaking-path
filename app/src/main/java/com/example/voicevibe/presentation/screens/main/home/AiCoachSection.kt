@@ -27,6 +27,10 @@ import com.example.voicevibe.data.remote.api.CoachAnalysisDto
 import com.example.voicevibe.data.remote.api.CoachScheduleItemDto
 import com.example.voicevibe.data.remote.api.CoachSkillDto
 import com.example.voicevibe.ui.theme.*
+import kotlinx.coroutines.delay
+import java.time.Duration
+import java.time.Instant
+import java.time.OffsetDateTime
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -45,27 +49,41 @@ fun AiCoachSection(
     var expanded by remember { mutableStateOf(false) }
     var hoursUntilRefresh by remember { mutableStateOf<Int?>(null) }
 
-    // Calculate hours until next refresh
+    // Ticking countdown and auto refresh once when it reaches 0
     LaunchedEffect(analysis?._next_refresh_at) {
+        var refreshTriggered = false
         analysis?._next_refresh_at?.let { nextRefreshAt ->
-            try {
-                android.util.Log.d("AiCoachSection", "Next refresh at: $nextRefreshAt")
-                
-                // Parse ISO timestamp (handles formats like: 2025-10-18T01:59:00.123456 or 2025-10-18T01:59:00Z)
-                val cleanedTimestamp = nextRefreshAt
-                    .substringBefore("+")  // Remove timezone offset if present
-                    .replace("Z", "")       // Remove Z indicator
-                    .substringBefore(".")   // Remove milliseconds
-                
-                val nextRefresh = LocalDateTime.parse(cleanedTimestamp)
-                val now = LocalDateTime.now()
-                val minutesUntil = ChronoUnit.MINUTES.between(now, nextRefresh)
-                hoursUntilRefresh = ceil(minutesUntil / 60.0).toInt().coerceAtLeast(0)
-                
-                android.util.Log.d("AiCoachSection", "Hours until refresh: $hoursUntilRefresh")
-            } catch (e: Exception) {
-                android.util.Log.e("AiCoachSection", "Failed to parse next_refresh_at: $nextRefreshAt", e)
-                hoursUntilRefresh = null
+            while (true) {
+                try {
+                    // Robustly parse ISO8601 timestamp with zone or Z
+                    val nextInstant = try {
+                        Instant.parse(nextRefreshAt)
+                    } catch (_: Throwable) {
+                        try { OffsetDateTime.parse(nextRefreshAt).toInstant() } catch (_: Throwable) {
+                            // Fallback to previous cleaning approach
+                            val cleaned = nextRefreshAt
+                                .substringBefore("+")
+                                .replace("Z", "")
+                                .substringBefore(".")
+                            LocalDateTime.parse(cleaned).atZone(java.time.ZoneId.systemDefault()).toInstant()
+                        }
+                    }
+                    val minutesUntil = Duration.between(Instant.now(), nextInstant).toMinutes()
+                    val hoursLeft = ceil(minutesUntil / 60.0).toInt().coerceAtLeast(0)
+                    hoursUntilRefresh = hoursLeft
+
+                    if (hoursLeft <= 0 && !refreshTriggered) {
+                        refreshTriggered = true
+                        android.util.Log.d("AiCoachSection", "Countdown reached 0h. Triggering refreshCoachAnalysis()")
+                        onRefresh()
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("AiCoachSection", "Failed to parse next_refresh_at: $nextRefreshAt", e)
+                    hoursUntilRefresh = null
+                }
+
+                // Wait a minute between updates; cancel when key changes or composable leaves
+                delay(60_000L)
             }
         } ?: run {
             android.util.Log.w("AiCoachSection", "No _next_refresh_at in analysis data")
@@ -155,14 +173,12 @@ fun AiCoachSection(
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
                     
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.height(360.dp)
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        items(analysis.skills) { skill ->
-                            SkillCard(skill = skill)
+                        analysis.skills.forEach { skill ->
+                            SkillRow(skill = skill)
                         }
                     }
 
@@ -458,6 +474,74 @@ fun SkillCard(skill: CoachSkillDto) {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SkillRow(skill: CoachSkillDto) {
+    val barColor = when {
+        skill.mastery >= 75 -> Color.Green
+        skill.mastery >= 50 -> BrandCyan
+        else -> BrandFuchsia
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = skill.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    text = "Mastery: ${skill.mastery}%",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+                skill.confidence?.let { conf ->
+                    Text(
+                        text = "Confidence: ${(conf * 100).toInt()}%",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 11.sp,
+                        color = Color.White.copy(alpha = 0.55f)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.widthIn(min = 140.dp).weight(1f)
+            ) {
+                LinearProgressIndicator(
+                    progress = skill.mastery / 100f,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(6.dp),
+                    color = barColor,
+                    trackColor = Color.White.copy(alpha = 0.12f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "${skill.mastery}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+        Divider(color = Color.White.copy(alpha = 0.08f))
     }
 }
 

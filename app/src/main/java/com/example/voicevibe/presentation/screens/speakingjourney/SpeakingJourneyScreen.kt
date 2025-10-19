@@ -806,7 +806,9 @@ private fun VerticalTopicCard(
     onListeningPracticeClick: (String) -> Unit,
     onConversationPracticeClick: (String) -> Unit
 ) {
-    var isExpanded by remember { mutableStateOf(false) }
+    // Auto-expand newly unlocked topics (unlocked but not completed)
+    val shouldAutoExpand = topic.unlocked && !topic.completed
+    var isExpanded by remember { mutableStateOf(shouldAutoExpand) }
     
     val scale by animateFloatAsState(
         targetValue = if (isSelected) 1.02f else 1f,

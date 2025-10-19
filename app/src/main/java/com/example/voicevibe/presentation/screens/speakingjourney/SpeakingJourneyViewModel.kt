@@ -9,11 +9,13 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.voicevibe.BuildConfig
 import com.example.voicevibe.data.repository.GamificationProfile
 import com.example.voicevibe.data.repository.GamificationRepository
 import com.example.voicevibe.data.repository.ProfileRepository
 import com.example.voicevibe.data.repository.SpeakingJourneyRepository
 import com.example.voicevibe.data.local.TokenManager
+import com.google.ai.client.generativeai.GenerativeModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -1139,21 +1141,61 @@ class SpeakingJourneyViewModel @Inject constructor(
         onResult: (definition: String, example: String, phonetic: String) -> Unit
     ) {
         viewModelScope.launch {
+            // Check persistent cache first
+            val cacheKey = "${word.lowercase()}_$topicTitle"
+            tokenManager.getVocabularyContent(cacheKey)?.let { (definition, example, phonetic) ->
+                Log.d("SpeakingJourneyViewModel", "Using PERSISTENT cached vocabulary for: $word")
+                onResult(definition, example, phonetic)
+                return@launch
+            }
+            
             try {
-                // Use a simple prompt to generate vocabulary content
-                // For now, we'll use placeholder data since we need Gemini integration
-                // TODO: Add actual Gemini call here
-                kotlinx.coroutines.delay(500) // Simulate network delay
+                // Use Gemini to generate vocabulary content
+                val ai = GenerativeModel(
+                    modelName = "gemini-2.5-flash",
+                    apiKey = BuildConfig.GEMINI_API_KEY
+                )
                 
-                // Placeholder content - in real implementation, call Gemini API
-                val definition = "A word commonly used in $topicTitle contexts"
-                val example = "I used \"$word\" when $topicTitle."
-                val phonetic = "/$word/" // Placeholder phonetic
+                val prompt = """
+                    For the word "$word" in the context of "$topicTitle", provide:
+                    1. A simple, conversational definition (one short sentence, max 15 words, not dictionary-like)
+                    2. A natural example sentence using the word
+                    3. IPA phonetic notation only (use proper IPA symbols)
+                    
+                    Format your response as:
+                    DEFINITION: [definition here]
+                    EXAMPLE: [example sentence here]
+                    PHONETIC: [IPA notation here]
+                """.trimIndent()
+                
+                val response = ai.generateContent(prompt)
+                val text = response.text?.trim() ?: ""
+                
+                // Parse the response
+                val definition = text.substringAfter("DEFINITION:", "")
+                    .substringBefore("EXAMPLE:", "Definition unavailable")
+                    .trim()
+                    
+                val example = text.substringAfter("EXAMPLE:", "")
+                    .substringBefore("PHONETIC:", "")
+                    .trim()
+                    
+                val phonetic = text.substringAfter("PHONETIC:", "/$word/")
+                    .trim()
+                    .ifBlank { "/$word/" }
+                
+                // Save to persistent cache (DataStore)
+                tokenManager.saveVocabularyContent(cacheKey, definition, example, phonetic)
+                Log.d("SpeakingJourneyViewModel", "Saved to PERSISTENT cache for: $word")
                 
                 onResult(definition, example, phonetic)
             } catch (e: Exception) {
                 Log.e("SpeakingJourneyViewModel", "Failed to generate vocabulary content", e)
-                onResult("Definition unavailable", "", "")
+                // Fallback to simple default values
+                val definition = "A word commonly used in $topicTitle contexts"
+                val example = "I used \"$word\" in a sentence about $topicTitle."
+                val phonetic = "/$word/"
+                onResult(definition, example, phonetic)
             }
         }
     }

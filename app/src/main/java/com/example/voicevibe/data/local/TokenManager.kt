@@ -55,6 +55,7 @@ class TokenManager @Inject constructor(
     private val lastProficiencyKey = stringPreferencesKey("last_proficiency")
     private val lastLevelKey = intPreferencesKey("last_level")
     private val celebratedTopicsKey = stringPreferencesKey(Constants.CELEBRATED_TOPICS_KEY)
+    private val vocabularyCacheKey = stringPreferencesKey("vocabulary_content_cache")
     
     private val gson = Gson()
 
@@ -416,7 +417,60 @@ class TokenManager @Inject constructor(
     suspend fun hasTopicBeenCelebrated(topicId: String): Boolean {
         return getCelebratedTopics().contains(topicId)
     }
+
+    /**
+     * Save vocabulary content cache
+     * @param cacheKey The key (e.g., "word_topicTitle")
+     * @param definition The definition
+     * @param example The example sentence
+     * @param phonetic The IPA phonetic
+     */
+    suspend fun saveVocabularyContent(cacheKey: String, definition: String, example: String, phonetic: String) {
+        dataStore.edit { preferences ->
+            val currentCache = try {
+                val json = preferences[vocabularyCacheKey] ?: "{}"
+                val type = object : TypeToken<MutableMap<String, VocabCacheEntry>>() {}.type
+                gson.fromJson<MutableMap<String, VocabCacheEntry>>(json, type) ?: mutableMapOf()
+            } catch (e: Exception) {
+                mutableMapOf()
+            }
+            
+            currentCache[cacheKey] = VocabCacheEntry(definition, example, phonetic)
+            preferences[vocabularyCacheKey] = gson.toJson(currentCache)
+        }
+    }
+
+    /**
+     * Get cached vocabulary content
+     * @param cacheKey The key (e.g., "word_topicTitle")
+     * @return Triple of (definition, example, phonetic) or null if not cached
+     */
+    suspend fun getVocabularyContent(cacheKey: String): Triple<String, String, String>? {
+        return try {
+            val json = dataStore.data.map { preferences ->
+                preferences[vocabularyCacheKey] ?: "{}"
+            }.first()
+            
+            val type = object : TypeToken<Map<String, VocabCacheEntry>>() {}.type
+            val cache = gson.fromJson<Map<String, VocabCacheEntry>>(json, type) ?: emptyMap()
+            
+            cache[cacheKey]?.let { entry ->
+                Triple(entry.definition, entry.example, entry.phonetic)
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
 }
+
+/**
+ * Data class for storing vocabulary cache entries
+ */
+private data class VocabCacheEntry(
+    val definition: String,
+    val example: String,
+    val phonetic: String
+)
 
 /**
  * DTO for serializing AchievementFeedItem to JSON

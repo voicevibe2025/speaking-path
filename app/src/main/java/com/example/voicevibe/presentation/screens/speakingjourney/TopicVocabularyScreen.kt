@@ -358,7 +358,7 @@ private fun FlashcardView(
             ) {
                 if (rotation <= 90f) {
                     // Front side - Word
-                    FlashcardFront(card = card)
+                    FlashcardFront(card = card, onPlayAudio = onPlayAudio)
                 } else {
                     // Back side - Definition & Example (flipped horizontally for readability)
                     Box(
@@ -366,7 +366,7 @@ private fun FlashcardView(
                             .fillMaxSize()
                             .graphicsLayer { rotationY = 180f }
                     ) {
-                        FlashcardBack(card = card, onPlayAudio = onPlayAudio)
+                        FlashcardBack(card = card)
                     }
                 }
                 
@@ -422,7 +422,7 @@ private fun FlashcardView(
 }
 
 @Composable
-private fun FlashcardFront(card: VocabularyCard) {
+private fun FlashcardFront(card: VocabularyCard, onPlayAudio: () -> Unit) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -469,6 +469,22 @@ private fun FlashcardFront(card: VocabularyCard) {
                         textAlign = TextAlign.Center
                     )
                 }
+                
+                // Speaker icon below phonetic/word
+                Spacer(modifier = Modifier.height(16.dp))
+                IconButton(
+                    onClick = onPlayAudio,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(BrandCyan.copy(alpha = 0.2f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                        contentDescription = "Play pronunciation",
+                        tint = BrandCyan,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
             
             Spacer(modifier = Modifier.height(32.dp))
@@ -484,7 +500,7 @@ private fun FlashcardFront(card: VocabularyCard) {
 }
 
 @Composable
-private fun FlashcardBack(card: VocabularyCard, onPlayAudio: () -> Unit) {
+private fun FlashcardBack(card: VocabularyCard) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -498,34 +514,6 @@ private fun FlashcardBack(card: VocabularyCard, onPlayAudio: () -> Unit) {
                 modifier = Modifier.size(40.dp)
             )
         } else {
-            // Word title
-            Text(
-                text = card.word,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                textAlign = TextAlign.Center
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // Audio button
-            IconButton(
-                onClick = onPlayAudio,
-                modifier = Modifier
-                    .size(48.dp)
-                    .background(BrandCyan.copy(alpha = 0.2f), CircleShape)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                    contentDescription = "Play pronunciation",
-                    tint = BrandCyan,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
             // Definition
             Card(
                 modifier = Modifier.fillMaxWidth(),

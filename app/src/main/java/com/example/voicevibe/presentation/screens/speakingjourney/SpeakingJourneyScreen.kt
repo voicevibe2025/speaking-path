@@ -1171,7 +1171,7 @@ private fun PracticeIconProgressButton(
         // Foreground progress
         CircularProgressIndicator(
             progress = progress.coerceIn(0f, 1f),
-            color = if (showCheck) color else Color(0xFFFF6B35), // Orange for in-progress, mint/cyan when complete
+            color = if (showCheck) color else Color(0xFFFFB347), // Warm amber for in-progress, mint/cyan when complete
             strokeWidth = 4.dp,
             modifier = Modifier.matchParentSize()
         )

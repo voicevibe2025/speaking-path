@@ -843,10 +843,10 @@ private fun VerticalTopicCard(
             .clip(RoundedCornerShape(16.dp))
             .border(
                 width = if (isSelected) 1.5.dp else 1.dp,
-                brush = if (isSelected)
-                    Brush.horizontalGradient(listOf(BrandCyan, BrandIndigo))
+                color = if (isSelected)
+                    BrandCyan
                 else
-                    SolidColor(Color.White.copy(alpha = 0.15f)),
+                    Color.White.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(16.dp)
             )
     ) {
@@ -1029,6 +1029,12 @@ private fun VerticalTopicCard(
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Choose a lesson to start",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White.copy(alpha = 0.6f)
                         )
                     }
                     

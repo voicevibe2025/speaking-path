@@ -102,8 +102,11 @@ fun TopicVocabularyScreen(
                     isLoading = true
                 )
             }
-            // Generate content for each word
+            // Generate content for each word and load learned state
             words.forEachIndexed { index, word ->
+                val cacheKey = "${word.lowercase()}_${currentTopic.title}"
+                val isLearned = viewModel.isVocabularyLearned(cacheKey)
+                
                 viewModel.generateVocabularyContent(
                     word = word,
                     topicTitle = currentTopic.title,
@@ -113,7 +116,8 @@ fun TopicVocabularyScreen(
                                 definition = definition,
                                 example = example,
                                 phonetic = phonetic,
-                                isLoading = false
+                                isLoading = false,
+                                isLearned = isLearned
                             )
                         }
                     }
@@ -173,10 +177,18 @@ fun TopicVocabularyScreen(
                         FlashcardView(
                             card = card,
                             onPlayAudio = { speakWord(card.word) },
+                            onPlayExample = { speakWord(card.example) },
                             onMarkLearned = {
+                                val newLearnedState = !card.isLearned
+                                val cacheKey = "${card.word.lowercase()}_${currentTopic?.title}"
+                                
+                                // Update UI immediately
                                 vocabularyCards = vocabularyCards.toMutableList().also {
-                                    it[page] = it[page].copy(isLearned = !it[page].isLearned)
+                                    it[page] = it[page].copy(isLearned = newLearnedState)
                                 }
+                                
+                                // Persist to DataStore
+                                viewModel.setVocabularyLearned(cacheKey, newLearnedState)
                             }
                         )
                     }
@@ -311,6 +323,7 @@ private fun VocabularyHeader(
 private fun FlashcardView(
     card: VocabularyCard,
     onPlayAudio: () -> Unit,
+    onPlayExample: () -> Unit,
     onMarkLearned: () -> Unit
 ) {
     var isFlipped by remember { mutableStateOf(false) }
@@ -366,7 +379,10 @@ private fun FlashcardView(
                             .fillMaxSize()
                             .graphicsLayer { rotationY = 180f }
                     ) {
-                        FlashcardBack(card = card)
+                        FlashcardBack(
+                            card = card,
+                            onPlayExample = onPlayExample
+                        )
                     }
                 }
                 
@@ -500,7 +516,7 @@ private fun FlashcardFront(card: VocabularyCard, onPlayAudio: () -> Unit) {
 }
 
 @Composable
-private fun FlashcardBack(card: VocabularyCard) {
+private fun FlashcardBack(card: VocabularyCard, onPlayExample: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -551,20 +567,39 @@ private fun FlashcardBack(card: VocabularyCard) {
                     )
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.FormatQuote,
-                                contentDescription = null,
-                                tint = BrandFuchsia,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Example",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = BrandFuchsia,
-                                fontWeight = FontWeight.Bold
-                            )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.FormatQuote,
+                                    contentDescription = null,
+                                    tint = BrandFuchsia,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Example",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = BrandFuchsia,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            
+                            // Speaker icon for example sentence
+                            IconButton(
+                                onClick = onPlayExample,
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                    contentDescription = "Play example sentence",
+                                    tint = BrandFuchsia,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(

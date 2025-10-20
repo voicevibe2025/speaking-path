@@ -56,6 +56,7 @@ class TokenManager @Inject constructor(
     private val lastLevelKey = intPreferencesKey("last_level")
     private val celebratedTopicsKey = stringPreferencesKey(Constants.CELEBRATED_TOPICS_KEY)
     private val vocabularyCacheKey = stringPreferencesKey("vocabulary_content_cache")
+    private val learnedVocabularyKey = stringPreferencesKey("learned_vocabulary_words")
     
     private val gson = Gson()
 
@@ -459,6 +460,81 @@ class TokenManager @Inject constructor(
             }
         } catch (e: Exception) {
             null
+        }
+    }
+
+    /**
+     * Mark a vocabulary word as learned
+     * @param cacheKey The key (e.g., "word_topicTitle")
+     */
+    suspend fun markVocabularyAsLearned(cacheKey: String) {
+        dataStore.edit { preferences ->
+            val learnedWords = try {
+                val json = preferences[learnedVocabularyKey] ?: "[]"
+                val type = object : TypeToken<MutableSet<String>>() {}.type
+                gson.fromJson<MutableSet<String>>(json, type) ?: mutableSetOf()
+            } catch (e: Exception) {
+                mutableSetOf()
+            }
+            
+            learnedWords.add(cacheKey)
+            preferences[learnedVocabularyKey] = gson.toJson(learnedWords)
+        }
+    }
+
+    /**
+     * Unmark a vocabulary word as learned
+     * @param cacheKey The key (e.g., "word_topicTitle")
+     */
+    suspend fun unmarkVocabularyAsLearned(cacheKey: String) {
+        dataStore.edit { preferences ->
+            val learnedWords = try {
+                val json = preferences[learnedVocabularyKey] ?: "[]"
+                val type = object : TypeToken<MutableSet<String>>() {}.type
+                gson.fromJson<MutableSet<String>>(json, type) ?: mutableSetOf()
+            } catch (e: Exception) {
+                mutableSetOf()
+            }
+            
+            learnedWords.remove(cacheKey)
+            preferences[learnedVocabularyKey] = gson.toJson(learnedWords)
+        }
+    }
+
+    /**
+     * Check if a vocabulary word is marked as learned
+     * @param cacheKey The key (e.g., "word_topicTitle")
+     * @return True if the word is learned
+     */
+    suspend fun isVocabularyLearned(cacheKey: String): Boolean {
+        return try {
+            val json = dataStore.data.map { preferences ->
+                preferences[learnedVocabularyKey] ?: "[]"
+            }.first()
+            
+            val type = object : TypeToken<Set<String>>() {}.type
+            val learnedWords = gson.fromJson<Set<String>>(json, type) ?: emptySet()
+            
+            cacheKey in learnedWords
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Get all learned vocabulary words
+     * @return Set of cache keys for learned words
+     */
+    suspend fun getLearnedVocabulary(): Set<String> {
+        return try {
+            val json = dataStore.data.map { preferences ->
+                preferences[learnedVocabularyKey] ?: "[]"
+            }.first()
+            
+            val type = object : TypeToken<Set<String>>() {}.type
+            gson.fromJson<Set<String>>(json, type) ?: emptySet()
+        } catch (e: Exception) {
+            emptySet()
         }
     }
 }

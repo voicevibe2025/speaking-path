@@ -59,6 +59,7 @@ import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Spellcheck
@@ -1011,6 +1012,28 @@ private fun VerticalTopicCard(
                     
                     Spacer(modifier = Modifier.height(12.dp))
                     
+                    // Lessons section label
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MenuBook,
+                            contentDescription = null,
+                            tint = BrandCyan,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Lessons",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
                     // Topic stats
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1265,11 +1288,18 @@ private fun TopicStatItem(
     icon: ImageVector,
     onClick: (() -> Unit)? = null
 ) {
+    val borderColor = if (onClick != null) BrandCyan.copy(alpha = 0.3f) else Color.Transparent
+    
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .background(
                 color = Color.White.copy(alpha = 0.05f),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .border(
+                width = 1.dp,
+                color = borderColor,
                 shape = RoundedCornerShape(8.dp)
             )
             .then(

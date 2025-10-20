@@ -1135,6 +1135,29 @@ class SpeakingJourneyViewModel @Inject constructor(
  
 
     // --- Vocabulary Screen Support ---
+    
+    /**
+     * Check if a vocabulary word is marked as learned
+     */
+    suspend fun isVocabularyLearned(cacheKey: String): Boolean {
+        return tokenManager.isVocabularyLearned(cacheKey)
+    }
+    
+    /**
+     * Mark or unmark a vocabulary word as learned
+     */
+    fun setVocabularyLearned(cacheKey: String, isLearned: Boolean) {
+        viewModelScope.launch {
+            if (isLearned) {
+                tokenManager.markVocabularyAsLearned(cacheKey)
+                Log.d("SpeakingJourneyViewModel", "Marked as learned: $cacheKey")
+            } else {
+                tokenManager.unmarkVocabularyAsLearned(cacheKey)
+                Log.d("SpeakingJourneyViewModel", "Unmarked as learned: $cacheKey")
+            }
+        }
+    }
+    
     fun generateVocabularyContent(
         word: String,
         topicTitle: String,

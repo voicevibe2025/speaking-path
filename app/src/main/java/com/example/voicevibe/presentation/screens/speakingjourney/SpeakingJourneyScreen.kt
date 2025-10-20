@@ -1137,6 +1137,7 @@ private fun VerticalTopicCard(
                                 progress = toFraction(pronScore),
                                 enabled = topic.unlocked,
                                 showCheck = isPronCompleted && pronScore >= 75,
+                                label = "Pronunciation",
                                 onClick = { if (topic.unlocked) onPronunciationClick(topic.id) }
                             )
                         }
@@ -1147,6 +1148,7 @@ private fun VerticalTopicCard(
                                 progress = toFraction(fluScore),
                                 enabled = topic.unlocked,
                                 showCheck = isFluCompleted && fluScore >= 75,
+                                label = "Fluency",
                                 onClick = { if (topic.unlocked) onFluencyClick(topic.id) }
                             )
                         }
@@ -1157,6 +1159,7 @@ private fun VerticalTopicCard(
                                 progress = toFraction(vocabScore),
                                 enabled = topic.unlocked,
                                 showCheck = vocabScore >= 75,
+                                label = "Vocabulary",
                                 onClick = { if (topic.unlocked) onVocabularyPracticeClick(topic.id) }
                             )
                         }
@@ -1167,6 +1170,7 @@ private fun VerticalTopicCard(
                                 progress = toFraction(gramScore),
                                 enabled = topic.unlocked,
                                 showCheck = gramScore >= 75,
+                                label = "Grammar",
                                 onClick = { if (topic.unlocked) onGrammarPracticeClick(topic.id) }
                             )
                         }
@@ -1207,6 +1211,7 @@ private fun VerticalTopicCard(
                                 progress = toFraction(listenScore),
                                 enabled = topic.unlocked,
                                 showCheck = listenScore >= 75,
+                                label = "Listening",
                                 onClick = { if (topic.unlocked) onListeningPracticeClick(topic.id) }
                             )
                         }
@@ -1217,6 +1222,7 @@ private fun VerticalTopicCard(
                                 progress = toFraction(convScore),
                                 enabled = topic.unlocked,
                                 showCheck = isConvCompleted && convScore >= 75,
+                                label = "Conversation",
                                 onClick = { if (topic.unlocked) onConversationPracticeClick(topic.id) }
                             )
                         }
@@ -1234,56 +1240,73 @@ private fun PracticeIconProgressButton(
     progress: Float,
     enabled: Boolean,
     showCheck: Boolean,
+    label: String,
     onClick: () -> Unit
 ) {
     val alphaVal = if (enabled) 1f else 0.5f
-    Box(
-        modifier = Modifier
-            .size(56.dp)
-            .alpha(alphaVal)
+    val labelColor = if (enabled) Color.White.copy(alpha = 0.85f) else Color.White.copy(alpha = 0.5f)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.widthIn(min = 72.dp)
     ) {
-        // Track background
-        CircularProgressIndicator(
-            progress = 1f,
-            color = Color.White.copy(alpha = 0.15f),
-            strokeWidth = 4.dp,
-            modifier = Modifier.matchParentSize()
-        )
-        // Foreground progress
-        CircularProgressIndicator(
-            progress = progress.coerceIn(0f, 1f),
-            color = if (showCheck) color else Color(0xFFFFB347), // Warm amber for in-progress, mint/cyan when complete
-            strokeWidth = 4.dp,
-            modifier = Modifier.matchParentSize()
-        )
-        // Center icon hit target
-        Surface(
-            onClick = { if (enabled) onClick() },
-            shape = CircleShape,
-            color = Color.White.copy(alpha = 0.06f),
+        Box(
             modifier = Modifier
-                .align(Alignment.Center)
-                .size(42.dp)
+                .size(56.dp)
+                .alpha(alphaVal)
         ) {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+            // Track background
+            CircularProgressIndicator(
+                progress = 1f,
+                color = Color.White.copy(alpha = 0.15f),
+                strokeWidth = 4.dp,
+                modifier = Modifier.matchParentSize()
+            )
+            // Foreground progress
+            CircularProgressIndicator(
+                progress = progress.coerceIn(0f, 1f),
+                color = if (showCheck) color else Color(0xFFFFB347), // Warm amber for in-progress, mint/cyan when complete
+                strokeWidth = 4.dp,
+                modifier = Modifier.matchParentSize()
+            )
+            // Center icon hit target
+            Surface(
+                onClick = { if (enabled) onClick() },
+                shape = CircleShape,
+                color = Color.White.copy(alpha = 0.06f),
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(42.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+            }
+            if (showCheck) {
                 Icon(
-                    imageVector = icon,
+                    imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(22.dp)
+                    tint = Color(0xFF4CAF50),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(16.dp)
                 )
             }
         }
-        if (showCheck) {
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = null,
-                tint = Color(0xFF4CAF50),
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(16.dp)
-            )
-        }
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = labelColor,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 

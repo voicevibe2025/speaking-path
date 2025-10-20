@@ -33,7 +33,7 @@ fun TopicLeaderboardScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Topic Leaderboard", fontWeight = FontWeight.Bold) },
+                title = { Text(uiState.topicTitle, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")

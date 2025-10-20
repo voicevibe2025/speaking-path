@@ -137,6 +137,7 @@ sealed class Screen(val route: String) {
     // Gamification
     object Leaderboard : Screen("leaderboard")
     object LingoLeague : Screen("lingo_league")
+    object TopicSelection : Screen("topic_selection")
     object TopicLeaderboard : Screen("topic_leaderboard/{topicId}") {
         fun createRoute(topicId: String) = "topic_leaderboard/$topicId"
     }

@@ -30,6 +30,7 @@ import com.example.voicevibe.presentation.screens.gamification.AchievementScreen
 import com.example.voicevibe.presentation.screens.gamification.LeaderboardScreen
 import com.example.voicevibe.presentation.screens.gamification.LingoLeagueScreen
 import com.example.voicevibe.presentation.screens.gamification.TopicLeaderboardScreen
+import com.example.voicevibe.presentation.screens.gamification.TopicSelectionScreen
 import com.example.voicevibe.presentation.screens.profile.ProfileScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsScreen
  import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
@@ -280,6 +281,9 @@ fun NavGraph(
                 },
                 onNavigateToTopicLeaderboard = { topicId ->
                     navController.navigate(Screen.TopicLeaderboard.createRoute(topicId))
+                },
+                onNavigateToTopicSelection = {
+                    navController.navigate(Screen.TopicSelection.route)
                 }
             )
         }
@@ -713,6 +717,15 @@ fun NavGraph(
                 },
                 onNavigateBack = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.TopicSelection.route) {
+            TopicSelectionScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onTopicSelected = { topicId ->
+                    navController.navigate(Screen.TopicLeaderboard.createRoute(topicId))
                 }
             )
         }

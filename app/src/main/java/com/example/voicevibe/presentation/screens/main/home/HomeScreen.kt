@@ -118,6 +118,7 @@ fun HomeScreen(
     onNavigateToGrammarPractice: (String) -> Unit = {},
     onNavigateToWordUp: () -> Unit = {},
     onNavigateToTopicLeaderboard: (String) -> Unit = {},
+    onNavigateToTopicSelection: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     livePracticeViewModel: com.example.voicevibe.presentation.screens.practice.live.LivePracticeViewModel = hiltViewModel()
 ) {
@@ -204,8 +205,7 @@ fun HomeScreen(
 
     var selectedTab by remember { mutableStateOf(0) }
 
-    // Dialog state for per-topic leaderboard
-    var showTopicLeaderboardDialog by remember { mutableStateOf(false) }
+    // No dialog needed - navigate to full screen instead
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -353,7 +353,7 @@ fun HomeScreen(
                             onViewLingoLeague = onNavigateToLingoLeague,
                             onViewLeaderboard = onNavigateToLeaderboard,
                             onViewAchievements = viewModel::onViewAchievements,
-                            onViewTopicLeaderboard = { showTopicLeaderboardDialog = true },
+                            onViewTopicLeaderboard = onNavigateToTopicSelection,
                             hasNewAchievements = uiState.hasNewAchievements
                         )
                     }
@@ -363,17 +363,6 @@ fun HomeScreen(
             }
         }
         
-        if (showTopicLeaderboardDialog) {
-            TopicSelectionDialog(
-                topics = uiState.viviTopics,
-                onDismiss = { showTopicLeaderboardDialog = false },
-                onTopicSelected = { topicId ->
-                    showTopicLeaderboardDialog = false
-                    onNavigateToTopicLeaderboard(topicId)
-                }
-            )
-        }
-
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -1536,6 +1525,11 @@ private fun StudyToolsSection(
     BoxWithConstraints {
         val isCompact = maxWidth < 360.dp
         val cardSpacing = if (isCompact) 8.dp else 12.dp
+        // Compute card width so first 3 items + spacing + a tiny part of the 4th are visible
+        val visibleCount = 3
+        val previewPeek = if (isCompact) 16.dp else 20.dp
+        // We want: 3*cardWidth + 3*cardSpacing + previewPeek == maxWidth
+        val cardWidth = (maxWidth - (cardSpacing * visibleCount) - previewPeek) / visibleCount
         
         Column {
             Text(
@@ -1549,46 +1543,57 @@ private fun StudyToolsSection(
                     .padding(bottom = 16.dp)
             )
 
-            Row(
+            // Horizontal list with subtle peek of next card
+
+            LazyRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(cardSpacing)
+                horizontalArrangement = Arrangement.spacedBy(cardSpacing),
+                contentPadding = PaddingValues(horizontal = 0.dp)
             ) {
-                StudyToolCard(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.EmojiEvents,
-                    title = "Lingo League",
-                    color = Color(0xFFFFD700),
-                    onClick = onViewLingoLeague,
-                    isCompact = isCompact
-                )
+                item {
+                    StudyToolCard(
+                        modifier = Modifier.width(cardWidth),
+                        icon = Icons.Default.EmojiEvents,
+                        title = "Lingo League",
+                        color = Color(0xFFFFD700),
+                        onClick = onViewLingoLeague,
+                        isCompact = isCompact
+                    )
+                }
 
-                StudyToolCard(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Leaderboard,
-                    title = "Leaderboard",
-                    color = Color(0xFFFB923C),
-                    onClick = onViewLeaderboard,
-                    isCompact = isCompact
-                )
+                item {
+                    StudyToolCard(
+                        modifier = Modifier.width(cardWidth),
+                        icon = Icons.Default.Leaderboard,
+                        title = "Leaderboard",
+                        color = Color(0xFFFB923C),
+                        onClick = onViewLeaderboard,
+                        isCompact = isCompact
+                    )
+                }
 
-                StudyToolCard(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Star,
-                    title = "Achievements",
-                    color = Color(0xFFEC4899),
-                    onClick = onViewAchievements,
-                    isCompact = isCompact,
-                    showBadge = hasNewAchievements
-                )
+                item {
+                    StudyToolCard(
+                        modifier = Modifier.width(cardWidth),
+                        icon = Icons.AutoMirrored.Filled.MenuBook,
+                        title = "Topic Leader",
+                        color = Color(0xFF22C55E),
+                        onClick = onViewTopicLeaderboard,
+                        isCompact = isCompact
+                    )
+                }
 
-                StudyToolCard(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.AutoMirrored.Filled.MenuBook,
-                    title = "Topic Leaders",
-                    color = Color(0xFF22C55E),
-                    onClick = onViewTopicLeaderboard,
-                    isCompact = isCompact
-                )
+                item {
+                    StudyToolCard(
+                        modifier = Modifier.width(cardWidth),
+                        icon = Icons.Default.Star,
+                        title = "Achievements",
+                        color = Color(0xFFEC4899),
+                        onClick = onViewAchievements,
+                        isCompact = isCompact,
+                        showBadge = hasNewAchievements
+                    )
+                }
             }
         }
     }
@@ -1604,7 +1609,7 @@ private fun StudyToolCard(
     isCompact: Boolean = false,
     showBadge: Boolean = false
 ) {
-    Box(modifier = modifier.aspectRatio(1f)) {
+    Box(modifier = modifier.height(130.dp)) {
         Card(
             modifier = Modifier
                 .fillMaxSize()

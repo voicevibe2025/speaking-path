@@ -26,7 +26,8 @@ class TopicLeaderboardViewModel @Inject constructor(
         val data: LeaderboardData? = null,
         val error: String? = null,
         val topics: List<SpeakingTopicDto> = emptyList(),
-        val selectedTopicId: String? = null
+        val selectedTopicId: String? = null,
+        val topicTitle: String = "Topic Leaderboard"
     )
 
     private val _uiState = MutableStateFlow(UiState())
@@ -35,12 +36,18 @@ class TopicLeaderboardViewModel @Inject constructor(
     fun load(topicId: String, limit: Int = 50) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
+            
+            // Fetch topic title
+            val topicTitle = runCatching { 
+                speakingRepo.getTopics().getOrNull()?.topics?.find { it.id == topicId }?.title 
+            }.getOrNull() ?: "Topic Leaderboard"
+            
             when (val res = repository.getTopicLeaderboard(topicId, limit)) {
                 is Resource.Success -> {
-                    _uiState.update { it.copy(isLoading = false, data = res.data, error = null, selectedTopicId = topicId) }
+                    _uiState.update { it.copy(isLoading = false, data = res.data, error = null, selectedTopicId = topicId, topicTitle = topicTitle) }
                 }
                 is Resource.Error -> {
-                    _uiState.update { it.copy(isLoading = false, error = res.message ?: "Failed to load topic leaderboard") }
+                    _uiState.update { it.copy(isLoading = false, error = res.message ?: "Failed to load topic leaderboard", topicTitle = topicTitle) }
                 }
                 else -> {}
             }

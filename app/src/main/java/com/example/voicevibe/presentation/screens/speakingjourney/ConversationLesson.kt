@@ -37,7 +37,6 @@ import kotlinx.coroutines.launch
 fun ConversationLessonScreen(
     topicId: String,
     onNavigateBack: () -> Unit,
-    onNavigateToLearnWithVivi: (() -> Unit)? = null,
     embedded: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -319,39 +318,7 @@ fun ConversationLessonScreen(
                             compact = compact
                         )
 
-                        // Learn with Vivi button
-                        if (onNavigateToLearnWithVivi != null) {
-                            Button(
-                                onClick = {
-                                    resetPlaybackFlags()
-                                    viewModel.stopPlayback()
-                                    onNavigateToLearnWithVivi()
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = if (compact) 16.dp else 24.dp)
-                                    .padding(bottom = if (compact) 8.dp else 16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF667EEA)
-                                ),
-                                shape = RoundedCornerShape(16.dp),
-                                contentPadding = PaddingValues(vertical = if (compact) 12.dp else 16.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.School,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "Learn with Vivi",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = if (compact) 14.sp else 16.sp
-                                )
-                            }
-                        }
+                        Spacer(modifier = Modifier.height(if (compact) 4.dp else 8.dp))
                     }
                 }
             }

@@ -498,8 +498,7 @@ fun NavGraph(
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             ConversationLessonScreen(
                 topicId = topicId,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToLearnWithVivi = { navController.navigate(Screen.LearnTopicWithVivi.createRoute(topicId)) }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

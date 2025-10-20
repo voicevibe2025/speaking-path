@@ -49,6 +49,21 @@ class GamificationRepository @Inject constructor(
         }
     }
 
+    suspend fun getTopicLeaderboard(topicId: String, limit: Int = 50): Resource<LeaderboardData> {
+        return try {
+            val response = apiService.getTopicLeaderboard(topicId, limit)
+            if (response.isSuccessful) {
+                response.body()?.let { body ->
+                    Resource.Success(body)
+                } ?: Resource.Error("Failed to load leaderboard: empty body")
+            } else {
+                Resource.Error("Failed to load leaderboard")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unknown error occurred")
+        }
+    }
+
     /**
      * Get persistent achievement events feed for the current user
      */

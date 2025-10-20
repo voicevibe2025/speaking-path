@@ -29,6 +29,7 @@ import com.example.voicevibe.presentation.screens.learning.LessonDetailScreen
 import com.example.voicevibe.presentation.screens.gamification.AchievementScreen
 import com.example.voicevibe.presentation.screens.gamification.LeaderboardScreen
 import com.example.voicevibe.presentation.screens.gamification.LingoLeagueScreen
+import com.example.voicevibe.presentation.screens.gamification.TopicLeaderboardScreen
 import com.example.voicevibe.presentation.screens.profile.ProfileScreen
 import com.example.voicevibe.presentation.screens.profile.SettingsScreen
  import com.example.voicevibe.presentation.screens.profile.SettingsViewModel
@@ -276,6 +277,9 @@ fun NavGraph(
                 },
                 onNavigateToWordUp = {
                     navController.navigate(Screen.WordUp.route)
+                },
+                onNavigateToTopicLeaderboard = { topicId ->
+                    navController.navigate(Screen.TopicLeaderboard.createRoute(topicId))
                 }
             )
         }
@@ -709,6 +713,20 @@ fun NavGraph(
                 },
                 onNavigateBack = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = Screen.TopicLeaderboard.route,
+            arguments = listOf(navArgument("topicId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            TopicLeaderboardScreen(
+                topicId = topicId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToProfile = { userId ->
+                    navController.navigate(Screen.UserProfile.createRoute(userId))
                 }
             )
         }

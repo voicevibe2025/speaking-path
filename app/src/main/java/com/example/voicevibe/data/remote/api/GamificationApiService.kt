@@ -46,6 +46,13 @@ interface GamificationApiService {
         @Query("limit") limit: Int = 50
     ): Response<LeaderboardData>
 
+    // Per-topic leaderboard (combined mastery across required practices)
+    @GET("speaking/topics/{topicId}/leaderboard")
+    suspend fun getTopicLeaderboard(
+        @Path("topicId") topicId: String,
+        @Query("limit") limit: Int = 50
+    ): Response<LeaderboardData>
+
     @GET("gamification/achievements/stats")
     suspend fun getAchievementStats(): Response<AchievementStats>
 

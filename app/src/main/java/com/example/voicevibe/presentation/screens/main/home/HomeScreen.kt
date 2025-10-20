@@ -117,6 +117,7 @@ fun HomeScreen(
     onNavigateToListeningPractice: (String) -> Unit = {},
     onNavigateToGrammarPractice: (String) -> Unit = {},
     onNavigateToWordUp: () -> Unit = {},
+    onNavigateToTopicLeaderboard: (String) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     livePracticeViewModel: com.example.voicevibe.presentation.screens.practice.live.LivePracticeViewModel = hiltViewModel()
 ) {
@@ -202,6 +203,9 @@ fun HomeScreen(
     }
 
     var selectedTab by remember { mutableStateOf(0) }
+
+    // Dialog state for per-topic leaderboard
+    var showTopicLeaderboardDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -349,6 +353,7 @@ fun HomeScreen(
                             onViewLingoLeague = onNavigateToLingoLeague,
                             onViewLeaderboard = onNavigateToLeaderboard,
                             onViewAchievements = viewModel::onViewAchievements,
+                            onViewTopicLeaderboard = { showTopicLeaderboardDialog = true },
                             hasNewAchievements = uiState.hasNewAchievements
                         )
                     }
@@ -358,6 +363,17 @@ fun HomeScreen(
             }
         }
         
+        if (showTopicLeaderboardDialog) {
+            TopicSelectionDialog(
+                topics = uiState.viviTopics,
+                onDismiss = { showTopicLeaderboardDialog = false },
+                onTopicSelected = { topicId ->
+                    showTopicLeaderboardDialog = false
+                    onNavigateToTopicLeaderboard(topicId)
+                }
+            )
+        }
+
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -1514,6 +1530,7 @@ private fun StudyToolsSection(
     onViewLingoLeague: () -> Unit,
     onViewLeaderboard: () -> Unit,
     onViewAchievements: () -> Unit,
+    onViewTopicLeaderboard: () -> Unit,
     hasNewAchievements: Boolean = false
 ) {
     BoxWithConstraints {
@@ -1562,6 +1579,15 @@ private fun StudyToolsSection(
                     onClick = onViewAchievements,
                     isCompact = isCompact,
                     showBadge = hasNewAchievements
+                )
+
+                StudyToolCard(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.AutoMirrored.Filled.MenuBook,
+                    title = "Topic Leaders",
+                    color = Color(0xFF22C55E),
+                    onClick = onViewTopicLeaderboard,
+                    isCompact = isCompact
                 )
             }
         }

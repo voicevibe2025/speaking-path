@@ -117,6 +117,7 @@ fun HomeScreen(
     onNavigateToListeningPractice: (String) -> Unit = {},
     onNavigateToGrammarPractice: (String) -> Unit = {},
     onNavigateToWordUp: () -> Unit = {},
+    onNavigateToStoryTime: () -> Unit = {},
     onNavigateToTopicLeaderboard: (String) -> Unit = {},
     onNavigateToTopicSelection: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
@@ -336,7 +337,8 @@ fun HomeScreen(
                                 currentTopic = uiState.viviTopics.firstOrNull { it.unlocked && !it.completed },
                                 showTopicCard = uiState.viviTopics.any { it.unlocked && !it.completed },
                                 onPracticeClick = { viewModel.navigateToCurrentTopic() },
-                                onWordUpClick = onNavigateToWordUp
+                                onWordUpClick = onNavigateToWordUp,
+                                onStoryTimeClick = onNavigateToStoryTime
                             )
                         }
                     }
@@ -517,7 +519,8 @@ private fun PracticeLearningSection(
     currentTopic: ViviTopic?,
     showTopicCard: Boolean,
     onPracticeClick: () -> Unit,
-    onWordUpClick: () -> Unit
+    onWordUpClick: () -> Unit,
+    onStoryTimeClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -638,6 +641,64 @@ private fun PracticeLearningSection(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
                     tint = BrandFuchsia,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+
+        // Story time Card
+        GlassmorphicCard(
+            onClick = onStoryTimeClick
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Icon
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(BrandIndigo, BrandCyan)
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                // Content
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Story time",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Read and listen to a story",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.8f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                // Arrow
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    tint = BrandCyan,
                     modifier = Modifier.size(24.dp)
                 )
             }

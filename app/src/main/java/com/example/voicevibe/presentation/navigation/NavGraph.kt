@@ -279,6 +279,9 @@ fun NavGraph(
                 onNavigateToWordUp = {
                     navController.navigate(Screen.WordUp.route)
                 },
+                onNavigateToStoryTime = {
+                    navController.navigate(Screen.StoryTime.route)
+                },
                 onNavigateToTopicLeaderboard = { topicId ->
                     navController.navigate(Screen.TopicLeaderboard.createRoute(topicId))
                 },
@@ -1041,6 +1044,13 @@ fun NavGraph(
             com.example.voicevibe.presentation.screens.wordup.WordUpScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToMasteredWords = { navController.navigate(Screen.MasteredWords.route) }
+            )
+        }
+
+        // Story Time Feature
+        composable(route = Screen.StoryTime.route) {
+            com.example.voicevibe.presentation.screens.storytime.StoryTimeScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

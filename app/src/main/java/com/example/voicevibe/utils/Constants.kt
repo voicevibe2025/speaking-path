@@ -14,6 +14,7 @@ object Constants {
     //const val WS_BASE_URL = "ws://10.178.129.136:8000/ws/" // For physical device
     const val WS_BASE_URL = "wss://speaking-path-server-production.up.railway.app/ws/" // Production
     const val SUPABASE_PUBLIC_AUDIO_BASE_URL = "https://ghsrluoqcwfbiierjpqk.supabase.co/storage/v1/object/public/conversation-audio"
+    const val SUPABASE_PUBLIC_STORY_AUDIO_BASE_URL = "https://ghsrluoqcwfbiierjpqk.supabase.co/storage/v1/object/public/indo-folklore-audio"
 
     // DataStore Keys
     const val PREFERENCES_NAME = "voicevibe_preferences"
@@ -64,3 +65,4 @@ object Constants {
     const val INVALID_CREDENTIALS = "Invalid email or password."
     const val SESSION_EXPIRED = "Your session has expired. Please login again."
 }
+

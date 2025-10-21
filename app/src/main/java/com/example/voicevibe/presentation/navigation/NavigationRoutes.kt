@@ -173,6 +173,7 @@ sealed class Screen(val route: String) {
 
     // WordUp Vocabulary Feature
     object WordUp : Screen("wordup")
+    object StoryTime : Screen("story_time")
     object MasteredWords : Screen("mastered_words")
 }
 

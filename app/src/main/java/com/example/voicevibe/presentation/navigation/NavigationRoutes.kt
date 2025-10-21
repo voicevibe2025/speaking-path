@@ -171,9 +171,12 @@ sealed class Screen(val route: String) {
         fun createRoute(groupId: Int) = "group_profile/$groupId"
     }
 
-    // WordUp Vocabulary Feature
+    // WordUp Vocabulary Feature & Story Time
     object WordUp : Screen("wordup")
-    object StoryTime : Screen("story_time")
+    object StoryList : Screen("story_list")
+    object StoryTime : Screen("story_time/{storySlug}") {
+        fun createRoute(storySlug: String) = "story_time/$storySlug"
+    }
     object MasteredWords : Screen("mastered_words")
 }
 

@@ -23,21 +23,77 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.voicevibe.ui.theme.*
 import com.example.voicevibe.utils.Constants
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoryTimeScreen(
+    storySlug: String,
     onNavigateBack: () -> Unit
 ) {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     var isPreparing by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var textError by remember { mutableStateOf<String?>(null) }
+    var storyText by remember { mutableStateOf<String?>(null) }
 
-    val audioUrl = remember {
-        Constants.SUPABASE_PUBLIC_STORY_AUDIO_BASE_URL + "/malin_kundang.ogg"
+    val story = remember(storySlug) { StoryCatalog.bySlug(storySlug) }
+    val audioUrl = remember(story) {
+        story?.let { Constants.SUPABASE_PUBLIC_STORY_AUDIO_BASE_URL + "/" + it.audioFile }
+    }
+
+    LaunchedEffect(storySlug) {
+        textError = null
+        storyText = null
+        try {
+            val text = withContext(Dispatchers.IO) {
+                val path = "stories/${storySlug}.txt"
+                context.assets.open(path).bufferedReader().use { it.readText() }
+            }
+            storyText = text
+        } catch (t: Throwable) {
+            textError = "Story text not found for '${storySlug}'. Please add assets/stories/${storySlug}.txt"
+        }
+    }
+
+    if (story == null) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Story time") },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = BrandNavyDark,
+                        titleContentColor = Color.White
+                    )
+                )
+            }
+        ) { padding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(BrandNavyDark, BrandNavy)
+                        )
+                    )
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Story not found", color = Color.White)
+            }
+        }
+        return
     }
 
     DisposableEffect(Unit) {
@@ -64,7 +120,7 @@ fun StoryTimeScreen(
                         .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                         .build()
                 )
-                setDataSource(audioUrl)
+                audioUrl?.let { setDataSource(it) }
                 setOnPreparedListener {
                     it.start()
                     isPreparing = false
@@ -96,7 +152,7 @@ fun StoryTimeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Story time") },
+                title = { Text(story.title) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -126,18 +182,14 @@ fun StoryTimeScreen(
                     .verticalScroll(scrollState),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Title
-                Text(
-                    text = "Malin Kundang",
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = BrandCyan
-                )
+                // Moral and summary
+                Text(story.moral, style = MaterialTheme.typography.titleMedium, color = BrandCyan)
+                Text(story.summary, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f))
 
                 // Listen CTA
                 Button(
                     onClick = { startPlayback() },
-                    enabled = !isPreparing && !isPlaying,
+                    enabled = !isPreparing && !isPlaying && audioUrl != null,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = BrandCyan,
@@ -171,6 +223,13 @@ fun StoryTimeScreen(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+                if (textError != null) {
+                    Text(
+                        text = textError!!,
+                        color = BrandFuchsia,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
 
                 // Story content
                 Card(
@@ -179,7 +238,7 @@ fun StoryTimeScreen(
                     colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f))
                 ) {
                     Text(
-                        text = MALIN_KUNDANG_STORY,
+                        text = storyText ?: "",
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
                         color = Color.White.copy(alpha = 0.9f),
@@ -192,11 +251,3 @@ fun StoryTimeScreen(
         }
     }
 }
-
-private const val MALIN_KUNDANG_STORY = """
-Di sebuah kampung nelayan di Sumatra Barat, hiduplah seorang anak bernama Malin Kundang bersama ibunya. Mereka hidup sederhana. Ketika dewasa, Malin merantau untuk mencari keberuntungan di perantauan.
-
-Bertahun-tahun kemudian, Malin kembali sebagai saudagar kaya dengan kapal megah. Ibunya yang rindu berlari menyambut, namun Malin malu mengakui ibunya di depan istri dan awak kapalnya. Ia menghardik dan mengusir ibunya.
-
-Dengan hati hancur, sang ibu menengadahkan tangan dan berdoa. Tiba-tiba badai dahsyat datang, petir menyambar, dan kapal Malin hancur. Malin pun dikutuk menjadi batu di tepi pantai, sebagai pelajaran tentang durhaka pada orang tua.
-"""

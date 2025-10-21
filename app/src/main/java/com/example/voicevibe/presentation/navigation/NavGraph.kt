@@ -280,7 +280,7 @@ fun NavGraph(
                     navController.navigate(Screen.WordUp.route)
                 },
                 onNavigateToStoryTime = {
-                    navController.navigate(Screen.StoryTime.route)
+                    navController.navigate(Screen.StoryList.route)
                 },
                 onNavigateToTopicLeaderboard = { topicId ->
                     navController.navigate(Screen.TopicLeaderboard.createRoute(topicId))
@@ -1047,9 +1047,24 @@ fun NavGraph(
             )
         }
 
+        // Story List
+        composable(route = Screen.StoryList.route) {
+            com.example.voicevibe.presentation.screens.storytime.StoryListScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onStorySelected = { slug ->
+                    navController.navigate(Screen.StoryTime.createRoute(slug))
+                }
+            )
+        }
+
         // Story Time Feature
-        composable(route = Screen.StoryTime.route) {
+        composable(
+            route = Screen.StoryTime.route,
+            arguments = listOf(navArgument("storySlug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val storySlug = backStackEntry.arguments?.getString("storySlug") ?: return@composable
             com.example.voicevibe.presentation.screens.storytime.StoryTimeScreen(
+                storySlug = storySlug,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

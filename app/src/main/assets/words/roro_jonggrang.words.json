@@ -1,0 +1,4493 @@
+{
+  "segments": [
+    {
+      "start": 0.226,
+      "end": 13.045,
+      "text": " Roro Jongrang The Legend of Prambanan Temple Long ago, there was a powerful kingdom in central Java named Prambanan.",
+      "words": [
+        {
+          "word": "Roro",
+          "start": 0.226,
+          "end": 1.027,
+          "score": 0.886
+        },
+        {
+          "word": "Jongrang",
+          "start": 1.187,
+          "end": 2.029,
+          "score": 0.855
+        },
+        {
+          "word": "The",
+          "start": 2.89,
+          "end": 2.99,
+          "score": 0.988
+        },
+        {
+          "word": "Legend",
+          "start": 3.07,
+          "end": 3.591,
+          "score": 0.744
+        },
+        {
+          "word": "of",
+          "start": 3.731,
+          "end": 3.791,
+          "score": 0.998
+        },
+        {
+          "word": "Prambanan",
+          "start": 3.931,
+          "end": 4.833,
+          "score": 0.916
+        },
+        {
+          "word": "Temple",
+          "start": 4.953,
+          "end": 5.434,
+          "score": 0.858
+        },
+        {
+          "word": "Long",
+          "start": 5.474,
+          "end": 7.296,
+          "score": 0.645
+        },
+        {
+          "word": "ago,",
+          "start": 7.397,
+          "end": 7.757,
+          "score": 0.988
+        },
+        {
+          "word": "there",
+          "start": 7.797,
+          "end": 8.318,
+          "score": 0.906
+        },
+        {
+          "word": "was",
+          "start": 8.338,
+          "end": 8.458,
+          "score": 0.736
+        },
+        {
+          "word": "a",
+          "start": 8.518,
+          "end": 8.538,
+          "score": 0.812
+        },
+        {
+          "word": "powerful",
+          "start": 8.638,
+          "end": 9.159,
+          "score": 0.829
+        },
+        {
+          "word": "kingdom",
+          "start": 9.299,
+          "end": 9.78,
+          "score": 0.781
+        },
+        {
+          "word": "in",
+          "start": 9.8,
+          "end": 10.021,
+          "score": 0.647
+        },
+        {
+          "word": "central",
+          "start": 10.161,
+          "end": 10.601,
+          "score": 0.892
+        },
+        {
+          "word": "Java",
+          "start": 10.702,
+          "end": 11.182,
+          "score": 0.973
+        },
+        {
+          "word": "named",
+          "start": 11.543,
+          "end": 11.923,
+          "score": 0.738
+        },
+        {
+          "word": "Prambanan.",
+          "start": 12.084,
+          "end": 13.045,
+          "score": 0.941
+        }
+      ]
+    },
+    {
+      "start": 13.886,
+      "end": 19.555,
+      "text": "It was ruled by King Boko, a giant who was feared by everyone.",
+      "words": [
+        {
+          "word": "It",
+          "start": 13.886,
+          "end": 13.946,
+          "score": 0.6
+        },
+        {
+          "word": "was",
+          "start": 14.026,
+          "end": 14.147,
+          "score": 0.786
+        },
+        {
+          "word": "ruled",
+          "start": 14.247,
+          "end": 14.647,
+          "score": 0.705
+        },
+        {
+          "word": "by",
+          "start": 14.768,
+          "end": 14.928,
+          "score": 0.784
+        },
+        {
+          "word": "King",
+          "start": 15.128,
+          "end": 15.449,
+          "score": 0.776
+        },
+        {
+          "word": "Boko,",
+          "start": 15.629,
+          "end": 16.23,
+          "score": 0.959
+        },
+        {
+          "word": "a",
+          "start": 16.77,
+          "end": 16.791,
+          "score": 0.987
+        },
+        {
+          "word": "giant",
+          "start": 16.931,
+          "end": 17.492,
+          "score": 0.879
+        },
+        {
+          "word": "who",
+          "start": 17.612,
+          "end": 17.732,
+          "score": 0.732
+        },
+        {
+          "word": "was",
+          "start": 17.792,
+          "end": 17.932,
+          "score": 0.772
+        },
+        {
+          "word": "feared",
+          "start": 18.072,
+          "end": 18.493,
+          "score": 0.69
+        },
+        {
+          "word": "by",
+          "start": 18.613,
+          "end": 18.793,
+          "score": 0.802
+        },
+        {
+          "word": "everyone.",
+          "start": 18.994,
+          "end": 19.555,
+          "score": 0.866
+        }
+      ]
+    },
+    {
+      "start": 20.796,
+      "end": 24.562,
+      "text": "Nearby, there was another kingdom called Penging.",
+      "words": [
+        {
+          "word": "Nearby,",
+          "start": 20.796,
+          "end": 21.417,
+          "score": 0.848
+        },
+        {
+          "word": "there",
+          "start": 21.457,
+          "end": 21.978,
+          "score": 0.633
+        },
+        {
+          "word": "was",
+          "start": 22.018,
+          "end": 22.138,
+          "score": 0.722
+        },
+        {
+          "word": "another",
+          "start": 22.239,
+          "end": 22.599,
+          "score": 0.852
+        },
+        {
+          "word": "kingdom",
+          "start": 22.699,
+          "end": 23.14,
+          "score": 0.766
+        },
+        {
+          "word": "called",
+          "start": 23.32,
+          "end": 23.661,
+          "score": 0.713
+        },
+        {
+          "word": "Penging.",
+          "start": 23.841,
+          "end": 24.562,
+          "score": 0.888
+        }
+      ]
+    },
+    {
+      "start": 24.834,
+      "end": 30.203,
+      "text": " ruled by a wise and brave prince named Bandung Bondawoso.",
+      "words": [
+        {
+          "word": "ruled",
+          "start": 24.834,
+          "end": 25.295,
+          "score": 0.62
+        },
+        {
+          "word": "by",
+          "start": 25.315,
+          "end": 25.555,
+          "score": 0.892
+        },
+        {
+          "word": "a",
+          "start": 25.575,
+          "end": 25.595,
+          "score": 1.0
+        },
+        {
+          "word": "wise",
+          "start": 25.756,
+          "end": 26.276,
+          "score": 0.724
+        },
+        {
+          "word": "and",
+          "start": 26.377,
+          "end": 26.477,
+          "score": 0.609
+        },
+        {
+          "word": "brave",
+          "start": 26.597,
+          "end": 26.998,
+          "score": 0.881
+        },
+        {
+          "word": "prince",
+          "start": 27.138,
+          "end": 27.539,
+          "score": 0.937
+        },
+        {
+          "word": "named",
+          "start": 27.879,
+          "end": 28.24,
+          "score": 0.642
+        },
+        {
+          "word": "Bandung",
+          "start": 28.4,
+          "end": 29.081,
+          "score": 0.781
+        },
+        {
+          "word": "Bondawoso.",
+          "start": 29.181,
+          "end": 30.203,
+          "score": 0.887
+        }
+      ]
+    },
+    {
+      "start": 30.243,
+      "end": 34.33,
+      "text": "One day, the two kingdoms went to war.",
+      "words": [
+        {
+          "word": "One",
+          "start": 30.243,
+          "end": 31.565,
+          "score": 0.664
+        },
+        {
+          "word": "day,",
+          "start": 31.646,
+          "end": 31.866,
+          "score": 0.872
+        },
+        {
+          "word": "the",
+          "start": 31.906,
+          "end": 32.367,
+          "score": 0.578
+        },
+        {
+          "word": "two",
+          "start": 32.447,
+          "end": 32.667,
+          "score": 0.663
+        },
+        {
+          "word": "kingdoms",
+          "start": 32.807,
+          "end": 33.348,
+          "score": 0.822
+        },
+        {
+          "word": "went",
+          "start": 33.489,
+          "end": 33.689,
+          "score": 0.782
+        },
+        {
+          "word": "to",
+          "start": 33.769,
+          "end": 33.869,
+          "score": 0.968
+        },
+        {
+          "word": "war.",
+          "start": 33.949,
+          "end": 34.33,
+          "score": 0.915
+        }
+      ]
+    },
+    {
+      "start": 35.171,
+      "end": 43.225,
+      "text": "Bandung Bondawoso and his soldiers fought fiercely, and after a long battle, King Boko was defeated.",
+      "words": [
+        {
+          "word": "Bandung",
+          "start": 35.171,
+          "end": 35.732,
+          "score": 0.805
+        },
+        {
+          "word": "Bondawoso",
+          "start": 35.793,
+          "end": 36.634,
+          "score": 0.867
+        },
+        {
+          "word": "and",
+          "start": 36.734,
+          "end": 36.814,
+          "score": 0.831
+        },
+        {
+          "word": "his",
+          "start": 36.874,
+          "end": 36.995,
+          "score": 0.725
+        },
+        {
+          "word": "soldiers",
+          "start": 37.075,
+          "end": 37.596,
+          "score": 0.723
+        },
+        {
+          "word": "fought",
+          "start": 37.736,
+          "end": 38.016,
+          "score": 0.862
+        },
+        {
+          "word": "fiercely,",
+          "start": 38.177,
+          "end": 38.758,
+          "score": 0.737
+        },
+        {
+          "word": "and",
+          "start": 38.798,
+          "end": 39.419,
+          "score": 0.647
+        },
+        {
+          "word": "after",
+          "start": 39.539,
+          "end": 39.799,
+          "score": 0.763
+        },
+        {
+          "word": "a",
+          "start": 39.819,
+          "end": 39.839,
+          "score": 1.0
+        },
+        {
+          "word": "long",
+          "start": 40.0,
+          "end": 40.32,
+          "score": 0.627
+        },
+        {
+          "word": "battle,",
+          "start": 40.44,
+          "end": 40.821,
+          "score": 0.884
+        },
+        {
+          "word": "King",
+          "start": 41.262,
+          "end": 41.542,
+          "score": 0.562
+        },
+        {
+          "word": "Boko",
+          "start": 41.662,
+          "end": 42.183,
+          "score": 0.969
+        },
+        {
+          "word": "was",
+          "start": 42.324,
+          "end": 42.504,
+          "score": 0.734
+        },
+        {
+          "word": "defeated.",
+          "start": 42.604,
+          "end": 43.225,
+          "score": 0.787
+        }
+      ]
+    },
+    {
+      "start": 43.245,
+      "end": 50.898,
+      "text": "The giant king was killed, and his kingdom fell under Bandung Bondawoso's rule.",
+      "words": [
+        {
+          "word": "The",
+          "start": 43.245,
+          "end": 44.247,
+          "score": 0.624
+        },
+        {
+          "word": "giant",
+          "start": 44.347,
+          "end": 44.828,
+          "score": 0.794
+        },
+        {
+          "word": "king",
+          "start": 44.968,
+          "end": 45.248,
+          "score": 0.666
+        },
+        {
+          "word": "was",
+          "start": 45.349,
+          "end": 45.489,
+          "score": 0.505
+        },
+        {
+          "word": "killed,",
+          "start": 45.669,
+          "end": 46.11,
+          "score": 0.853
+        },
+        {
+          "word": "and",
+          "start": 46.591,
+          "end": 46.691,
+          "score": 0.688
+        },
+        {
+          "word": "his",
+          "start": 46.771,
+          "end": 46.891,
+          "score": 0.814
+        },
+        {
+          "word": "kingdom",
+          "start": 47.011,
+          "end": 47.472,
+          "score": 0.786
+        },
+        {
+          "word": "fell",
+          "start": 47.512,
+          "end": 48.033,
+          "score": 0.894
+        },
+        {
+          "word": "under",
+          "start": 48.193,
+          "end": 48.454,
+          "score": 0.849
+        },
+        {
+          "word": "Bandung",
+          "start": 48.534,
+          "end": 49.135,
+          "score": 0.866
+        },
+        {
+          "word": "Bondawoso's",
+          "start": 49.215,
+          "end": 50.237,
+          "score": 0.883
+        },
+        {
+          "word": "rule.",
+          "start": 50.337,
+          "end": 50.898,
+          "score": 0.78
+        }
+      ]
+    },
+    {
+      "start": 51.842,
+      "end": 58.772,
+      "text": " When Bandung entered the royal palace, he met Roro Jonggrang, King Boko's daughter.",
+      "words": [
+        {
+          "word": "When",
+          "start": 51.842,
+          "end": 52.082,
+          "score": 0.69
+        },
+        {
+          "word": "Bandung",
+          "start": 52.203,
+          "end": 52.783,
+          "score": 0.856
+        },
+        {
+          "word": "entered",
+          "start": 52.984,
+          "end": 53.304,
+          "score": 0.61
+        },
+        {
+          "word": "the",
+          "start": 53.344,
+          "end": 53.464,
+          "score": 0.775
+        },
+        {
+          "word": "royal",
+          "start": 53.545,
+          "end": 53.865,
+          "score": 0.736
+        },
+        {
+          "word": "palace,",
+          "start": 53.965,
+          "end": 54.426,
+          "score": 0.939
+        },
+        {
+          "word": "he",
+          "start": 54.726,
+          "end": 54.846,
+          "score": 0.836
+        },
+        {
+          "word": "met",
+          "start": 54.927,
+          "end": 55.147,
+          "score": 0.87
+        },
+        {
+          "word": "Roro",
+          "start": 55.167,
+          "end": 55.888,
+          "score": 0.646
+        },
+        {
+          "word": "Jonggrang,",
+          "start": 56.008,
+          "end": 56.829,
+          "score": 0.911
+        },
+        {
+          "word": "King",
+          "start": 57.27,
+          "end": 57.57,
+          "score": 0.608
+        },
+        {
+          "word": "Boko's",
+          "start": 57.611,
+          "end": 58.271,
+          "score": 0.735
+        },
+        {
+          "word": "daughter.",
+          "start": 58.352,
+          "end": 58.772,
+          "score": 0.866
+        }
+      ]
+    },
+    {
+      "start": 59.573,
+      "end": 69.668,
+      "text": "She was so beautiful that he immediately fell in love and said, Princess, you are the most beautiful woman I've ever seen.",
+      "words": [
+        {
+          "word": "She",
+          "start": 59.573,
+          "end": 59.714,
+          "score": 0.483
+        },
+        {
+          "word": "was",
+          "start": 59.794,
+          "end": 59.934,
+          "score": 0.948
+        },
+        {
+          "word": "so",
+          "start": 60.054,
+          "end": 60.274,
+          "score": 0.837
+        },
+        {
+          "word": "beautiful",
+          "start": 60.435,
+          "end": 61.036,
+          "score": 0.72
+        },
+        {
+          "word": "that",
+          "start": 61.076,
+          "end": 61.496,
+          "score": 0.858
+        },
+        {
+          "word": "he",
+          "start": 61.556,
+          "end": 61.656,
+          "score": 0.984
+        },
+        {
+          "word": "immediately",
+          "start": 61.797,
+          "end": 62.638,
+          "score": 0.724
+        },
+        {
+          "word": "fell",
+          "start": 62.778,
+          "end": 62.998,
+          "score": 0.818
+        },
+        {
+          "word": "in",
+          "start": 63.079,
+          "end": 63.159,
+          "score": 0.881
+        },
+        {
+          "word": "love",
+          "start": 63.259,
+          "end": 63.599,
+          "score": 0.636
+        },
+        {
+          "word": "and",
+          "start": 63.639,
+          "end": 64.0,
+          "score": 0.71
+        },
+        {
+          "word": "said,",
+          "start": 64.12,
+          "end": 64.461,
+          "score": 0.942
+        },
+        {
+          "word": "Princess,",
+          "start": 64.501,
+          "end": 65.923,
+          "score": 0.908
+        },
+        {
+          "word": "you",
+          "start": 66.363,
+          "end": 66.604,
+          "score": 0.917
+        },
+        {
+          "word": "are",
+          "start": 66.644,
+          "end": 66.864,
+          "score": 0.911
+        },
+        {
+          "word": "the",
+          "start": 66.924,
+          "end": 67.004,
+          "score": 0.956
+        },
+        {
+          "word": "most",
+          "start": 67.064,
+          "end": 67.285,
+          "score": 0.752
+        },
+        {
+          "word": "beautiful",
+          "start": 67.425,
+          "end": 68.026,
+          "score": 0.717
+        },
+        {
+          "word": "woman",
+          "start": 68.126,
+          "end": 68.426,
+          "score": 0.945
+        },
+        {
+          "word": "I've",
+          "start": 68.587,
+          "end": 68.727,
+          "score": 0.856
+        },
+        {
+          "word": "ever",
+          "start": 68.987,
+          "end": 69.188,
+          "score": 0.675
+        },
+        {
+          "word": "seen.",
+          "start": 69.328,
+          "end": 69.668,
+          "score": 0.825
+        }
+      ]
+    },
+    {
+      "start": 69.728,
+      "end": 71.892,
+      "text": "Please be my wife.",
+      "words": [
+        {
+          "word": "Please",
+          "start": 69.728,
+          "end": 70.73,
+          "score": 0.638
+        },
+        {
+          "word": "be",
+          "start": 71.01,
+          "end": 71.171,
+          "score": 0.869
+        },
+        {
+          "word": "my",
+          "start": 71.251,
+          "end": 71.431,
+          "score": 0.902
+        },
+        {
+          "word": "wife.",
+          "start": 71.531,
+          "end": 71.892,
+          "score": 0.666
+        }
+      ]
+    },
+    {
+      "start": 72.993,
+      "end": 78.962,
+      "text": "But Roro Jonggrang hated him for destroying her kingdom and killing her father.",
+      "words": [
+        {
+          "word": "But",
+          "start": 72.993,
+          "end": 73.133,
+          "score": 0.833
+        },
+        {
+          "word": "Roro",
+          "start": 73.274,
+          "end": 73.694,
+          "score": 0.889
+        },
+        {
+          "word": "Jonggrang",
+          "start": 73.794,
+          "end": 74.455,
+          "score": 0.834
+        },
+        {
+          "word": "hated",
+          "start": 74.596,
+          "end": 75.016,
+          "score": 0.708
+        },
+        {
+          "word": "him",
+          "start": 75.036,
+          "end": 75.297,
+          "score": 0.771
+        },
+        {
+          "word": "for",
+          "start": 75.457,
+          "end": 75.597,
+          "score": 0.762
+        },
+        {
+          "word": "destroying",
+          "start": 75.677,
+          "end": 76.378,
+          "score": 0.797
+        },
+        {
+          "word": "her",
+          "start": 76.458,
+          "end": 76.579,
+          "score": 0.721
+        },
+        {
+          "word": "kingdom",
+          "start": 76.659,
+          "end": 77.119,
+          "score": 0.655
+        },
+        {
+          "word": "and",
+          "start": 77.139,
+          "end": 77.58,
+          "score": 0.628
+        },
+        {
+          "word": "killing",
+          "start": 77.74,
+          "end": 78.101,
+          "score": 0.854
+        },
+        {
+          "word": "her",
+          "start": 78.181,
+          "end": 78.301,
+          "score": 0.715
+        },
+        {
+          "word": "father.",
+          "start": 78.401,
+          "end": 78.962,
+          "score": 0.799
+        }
+      ]
+    },
+    {
+      "start": 79.426,
+      "end": 84.835,
+      "text": " Still, she was afraid to refuse directly, so she tried to trick him.",
+      "words": [
+        {
+          "word": "Still,",
+          "start": 79.426,
+          "end": 79.927,
+          "score": 0.935
+        },
+        {
+          "word": "she",
+          "start": 80.327,
+          "end": 80.448,
+          "score": 0.849
+        },
+        {
+          "word": "was",
+          "start": 80.508,
+          "end": 80.628,
+          "score": 0.809
+        },
+        {
+          "word": "afraid",
+          "start": 80.728,
+          "end": 81.169,
+          "score": 0.752
+        },
+        {
+          "word": "to",
+          "start": 81.249,
+          "end": 81.369,
+          "score": 0.887
+        },
+        {
+          "word": "refuse",
+          "start": 81.429,
+          "end": 81.99,
+          "score": 0.802
+        },
+        {
+          "word": "directly,",
+          "start": 82.09,
+          "end": 82.671,
+          "score": 0.881
+        },
+        {
+          "word": "so",
+          "start": 83.152,
+          "end": 83.292,
+          "score": 0.924
+        },
+        {
+          "word": "she",
+          "start": 83.352,
+          "end": 83.493,
+          "score": 0.672
+        },
+        {
+          "word": "tried",
+          "start": 83.593,
+          "end": 83.973,
+          "score": 0.667
+        },
+        {
+          "word": "to",
+          "start": 84.073,
+          "end": 84.174,
+          "score": 0.895
+        },
+        {
+          "word": "trick",
+          "start": 84.294,
+          "end": 84.554,
+          "score": 0.728
+        },
+        {
+          "word": "him.",
+          "start": 84.634,
+          "end": 84.835,
+          "score": 0.957
+        }
+      ]
+    },
+    {
+      "start": 84.855,
+      "end": 96.654,
+      "text": "I will marry you, she said sweetly, but only if you can build one thousand temples in a single night before the rooster crows.",
+      "words": [
+        {
+          "word": "I",
+          "start": 84.855,
+          "end": 84.875,
+          "score": 1.0
+        },
+        {
+          "word": "will",
+          "start": 86.257,
+          "end": 86.457,
+          "score": 0.906
+        },
+        {
+          "word": "marry",
+          "start": 86.537,
+          "end": 86.918,
+          "score": 0.901
+        },
+        {
+          "word": "you,",
+          "start": 86.958,
+          "end": 87.178,
+          "score": 0.808
+        },
+        {
+          "word": "she",
+          "start": 87.559,
+          "end": 87.679,
+          "score": 0.656
+        },
+        {
+          "word": "said",
+          "start": 87.779,
+          "end": 88.0,
+          "score": 0.865
+        },
+        {
+          "word": "sweetly,",
+          "start": 88.04,
+          "end": 88.641,
+          "score": 0.79
+        },
+        {
+          "word": "but",
+          "start": 89.162,
+          "end": 89.302,
+          "score": 0.945
+        },
+        {
+          "word": "only",
+          "start": 89.582,
+          "end": 89.883,
+          "score": 0.855
+        },
+        {
+          "word": "if",
+          "start": 89.903,
+          "end": 90.123,
+          "score": 0.798
+        },
+        {
+          "word": "you",
+          "start": 90.183,
+          "end": 90.343,
+          "score": 0.814
+        },
+        {
+          "word": "can",
+          "start": 90.404,
+          "end": 90.564,
+          "score": 0.964
+        },
+        {
+          "word": "build",
+          "start": 90.664,
+          "end": 91.005,
+          "score": 0.634
+        },
+        {
+          "word": "one",
+          "start": 91.045,
+          "end": 91.626,
+          "score": 0.534
+        },
+        {
+          "word": "thousand",
+          "start": 91.666,
+          "end": 92.407,
+          "score": 0.738
+        },
+        {
+          "word": "temples",
+          "start": 92.527,
+          "end": 93.008,
+          "score": 0.833
+        },
+        {
+          "word": "in",
+          "start": 93.368,
+          "end": 93.448,
+          "score": 0.964
+        },
+        {
+          "word": "a",
+          "start": 93.509,
+          "end": 93.529,
+          "score": 1.0
+        },
+        {
+          "word": "single",
+          "start": 93.689,
+          "end": 94.13,
+          "score": 0.63
+        },
+        {
+          "word": "night",
+          "start": 94.27,
+          "end": 94.55,
+          "score": 0.697
+        },
+        {
+          "word": "before",
+          "start": 94.871,
+          "end": 95.371,
+          "score": 0.892
+        },
+        {
+          "word": "the",
+          "start": 95.452,
+          "end": 95.552,
+          "score": 0.774
+        },
+        {
+          "word": "rooster",
+          "start": 95.612,
+          "end": 96.073,
+          "score": 0.884
+        },
+        {
+          "word": "crows.",
+          "start": 96.153,
+          "end": 96.654,
+          "score": 0.978
+        }
+      ]
+    },
+    {
+      "start": 97.755,
+      "end": 100.92,
+      "text": "Bandung Bandawoso smiled confidently.",
+      "words": [
+        {
+          "word": "Bandung",
+          "start": 97.755,
+          "end": 98.356,
+          "score": 0.875
+        },
+        {
+          "word": "Bandawoso",
+          "start": 98.416,
+          "end": 99.278,
+          "score": 0.885
+        },
+        {
+          "word": "smiled",
+          "start": 99.418,
+          "end": 99.979,
+          "score": 0.717
+        },
+        {
+          "word": "confidently.",
+          "start": 100.119,
+          "end": 100.92,
+          "score": 0.937
+        }
+      ]
+    },
+    {
+      "start": 100.96,
+      "end": 104.466,
+      "text": "If that is your wish, I will do it.",
+      "words": [
+        {
+          "word": "If",
+          "start": 100.96,
+          "end": 101.922,
+          "score": 0.95
+        },
+        {
+          "word": "that",
+          "start": 102.042,
+          "end": 102.242,
+          "score": 0.926
+        },
+        {
+          "word": "is",
+          "start": 102.343,
+          "end": 102.423,
+          "score": 0.975
+        },
+        {
+          "word": "your",
+          "start": 102.483,
+          "end": 102.683,
+          "score": 0.704
+        },
+        {
+          "word": "wish,",
+          "start": 102.763,
+          "end": 103.044,
+          "score": 0.912
+        },
+        {
+          "word": "I",
+          "start": 103.565,
+          "end": 103.625,
+          "score": 0.845
+        },
+        {
+          "word": "will",
+          "start": 103.685,
+          "end": 103.905,
+          "score": 0.822
+        },
+        {
+          "word": "do",
+          "start": 103.985,
+          "end": 104.146,
+          "score": 0.999
+        },
+        {
+          "word": "it.",
+          "start": 104.246,
+          "end": 104.466,
+          "score": 0.897
+        }
+      ]
+    },
+    {
+      "start": 105.186,
+      "end": 110.635,
+      "text": " That night he meditated and called upon spirits and demons to help him.",
+      "words": [
+        {
+          "word": "That",
+          "start": 105.186,
+          "end": 105.446,
+          "score": 0.818
+        },
+        {
+          "word": "night",
+          "start": 105.587,
+          "end": 105.847,
+          "score": 0.49
+        },
+        {
+          "word": "he",
+          "start": 106.148,
+          "end": 106.268,
+          "score": 0.823
+        },
+        {
+          "word": "meditated",
+          "start": 106.408,
+          "end": 107.149,
+          "score": 0.892
+        },
+        {
+          "word": "and",
+          "start": 107.189,
+          "end": 107.41,
+          "score": 0.68
+        },
+        {
+          "word": "called",
+          "start": 107.57,
+          "end": 107.931,
+          "score": 0.828
+        },
+        {
+          "word": "upon",
+          "start": 108.011,
+          "end": 108.271,
+          "score": 0.905
+        },
+        {
+          "word": "spirits",
+          "start": 108.432,
+          "end": 108.993,
+          "score": 0.81
+        },
+        {
+          "word": "and",
+          "start": 109.113,
+          "end": 109.213,
+          "score": 0.666
+        },
+        {
+          "word": "demons",
+          "start": 109.233,
+          "end": 109.854,
+          "score": 0.772
+        },
+        {
+          "word": "to",
+          "start": 109.954,
+          "end": 110.074,
+          "score": 0.598
+        },
+        {
+          "word": "help",
+          "start": 110.154,
+          "end": 110.395,
+          "score": 0.845
+        },
+        {
+          "word": "him.",
+          "start": 110.455,
+          "end": 110.635,
+          "score": 0.936
+        }
+      ]
+    },
+    {
+      "start": 111.397,
+      "end": 119.711,
+      "text": "The dark creatures worked quickly, digging, carving stones and placing statues at an incredible speed.",
+      "words": [
+        {
+          "word": "The",
+          "start": 111.397,
+          "end": 111.497,
+          "score": 0.993
+        },
+        {
+          "word": "dark",
+          "start": 111.577,
+          "end": 111.918,
+          "score": 0.89
+        },
+        {
+          "word": "creatures",
+          "start": 112.078,
+          "end": 112.559,
+          "score": 0.816
+        },
+        {
+          "word": "worked",
+          "start": 112.699,
+          "end": 113.019,
+          "score": 0.842
+        },
+        {
+          "word": "quickly,",
+          "start": 113.18,
+          "end": 113.6,
+          "score": 0.922
+        },
+        {
+          "word": "digging,",
+          "start": 114.161,
+          "end": 114.602,
+          "score": 0.879
+        },
+        {
+          "word": "carving",
+          "start": 114.983,
+          "end": 115.464,
+          "score": 0.843
+        },
+        {
+          "word": "stones",
+          "start": 115.584,
+          "end": 116.145,
+          "score": 0.83
+        },
+        {
+          "word": "and",
+          "start": 116.485,
+          "end": 116.565,
+          "score": 0.985
+        },
+        {
+          "word": "placing",
+          "start": 116.706,
+          "end": 117.166,
+          "score": 0.896
+        },
+        {
+          "word": "statues",
+          "start": 117.267,
+          "end": 117.908,
+          "score": 0.743
+        },
+        {
+          "word": "at",
+          "start": 118.108,
+          "end": 118.188,
+          "score": 0.804
+        },
+        {
+          "word": "an",
+          "start": 118.268,
+          "end": 118.308,
+          "score": 0.999
+        },
+        {
+          "word": "incredible",
+          "start": 118.389,
+          "end": 119.13,
+          "score": 0.78
+        },
+        {
+          "word": "speed.",
+          "start": 119.23,
+          "end": 119.711,
+          "score": 0.897
+        }
+      ]
+    },
+    {
+      "start": 120.532,
+      "end": 124.599,
+      "text": "By midnight hundreds of temples were already completed.",
+      "words": [
+        {
+          "word": "By",
+          "start": 120.532,
+          "end": 120.693,
+          "score": 0.704
+        },
+        {
+          "word": "midnight",
+          "start": 120.813,
+          "end": 121.294,
+          "score": 0.746
+        },
+        {
+          "word": "hundreds",
+          "start": 121.634,
+          "end": 122.175,
+          "score": 0.791
+        },
+        {
+          "word": "of",
+          "start": 122.255,
+          "end": 122.295,
+          "score": 0.949
+        },
+        {
+          "word": "temples",
+          "start": 122.335,
+          "end": 122.896,
+          "score": 0.828
+        },
+        {
+          "word": "were",
+          "start": 122.996,
+          "end": 123.157,
+          "score": 0.736
+        },
+        {
+          "word": "already",
+          "start": 123.337,
+          "end": 123.858,
+          "score": 0.73
+        },
+        {
+          "word": "completed.",
+          "start": 123.958,
+          "end": 124.599,
+          "score": 0.969
+        }
+      ]
+    },
+    {
+      "start": 125.581,
+      "end": 127.985,
+      "text": "Roro Jonggrang watched in fear.",
+      "words": [
+        {
+          "word": "Roro",
+          "start": 125.581,
+          "end": 126.042,
+          "score": 0.893
+        },
+        {
+          "word": "Jonggrang",
+          "start": 126.122,
+          "end": 126.783,
+          "score": 0.867
+        },
+        {
+          "word": "watched",
+          "start": 126.903,
+          "end": 127.304,
+          "score": 0.822
+        },
+        {
+          "word": "in",
+          "start": 127.404,
+          "end": 127.484,
+          "score": 0.807
+        },
+        {
+          "word": "fear.",
+          "start": 127.644,
+          "end": 127.985,
+          "score": 0.93
+        }
+      ]
+    },
+    {
+      "start": 128.566,
+      "end": 130.93,
+      "text": "She didn't expect him to succeed.",
+      "words": [
+        {
+          "word": "She",
+          "start": 128.566,
+          "end": 128.706,
+          "score": 0.691
+        },
+        {
+          "word": "didn't",
+          "start": 128.806,
+          "end": 129.107,
+          "score": 0.664
+        },
+        {
+          "word": "expect",
+          "start": 129.207,
+          "end": 129.648,
+          "score": 0.82
+        },
+        {
+          "word": "him",
+          "start": 129.688,
+          "end": 129.828,
+          "score": 0.899
+        },
+        {
+          "word": "to",
+          "start": 129.908,
+          "end": 130.028,
+          "score": 0.63
+        },
+        {
+          "word": "succeed.",
+          "start": 130.109,
+          "end": 130.93,
+          "score": 0.823
+        }
+      ]
+    },
+    {
+      "start": 131.458,
+      "end": 138.026,
+      "text": " When there were already 999 temples, she panicked and called her maidens.",
+      "words": [
+        {
+          "word": "When",
+          "start": 131.458,
+          "end": 131.698,
+          "score": 0.618
+        },
+        {
+          "word": "there",
+          "start": 131.738,
+          "end": 131.899,
+          "score": 0.855
+        },
+        {
+          "word": "were",
+          "start": 131.939,
+          "end": 132.079,
+          "score": 0.89
+        },
+        {
+          "word": "already",
+          "start": 132.279,
+          "end": 132.76,
+          "score": 0.829
+        },
+        {
+          "word": "999",
+          "start": 132.78,
+          "end": 133.24,
+          "score": 0.833
+        },
+        {
+          "word": "temples,",
+          "start": 133.781,
+          "end": 135.183,
+          "score": 0.827
+        },
+        {
+          "word": "she",
+          "start": 135.583,
+          "end": 135.723,
+          "score": 0.906
+        },
+        {
+          "word": "panicked",
+          "start": 135.843,
+          "end": 136.304,
+          "score": 0.786
+        },
+        {
+          "word": "and",
+          "start": 136.604,
+          "end": 136.705,
+          "score": 0.719
+        },
+        {
+          "word": "called",
+          "start": 136.845,
+          "end": 137.205,
+          "score": 0.865
+        },
+        {
+          "word": "her",
+          "start": 137.265,
+          "end": 137.405,
+          "score": 0.627
+        },
+        {
+          "word": "maidens.",
+          "start": 137.485,
+          "end": 138.026,
+          "score": 0.959
+        }
+      ]
+    },
+    {
+      "start": 138.807,
+      "end": 144.334,
+      "text": "Quick, beat the rice mortars, scatter flowers, and light a fire in the east!",
+      "words": [
+        {
+          "word": "Quick,",
+          "start": 138.807,
+          "end": 139.108,
+          "score": 0.879
+        },
+        {
+          "word": "beat",
+          "start": 139.488,
+          "end": 139.748,
+          "score": 0.802
+        },
+        {
+          "word": "the",
+          "start": 139.808,
+          "end": 139.909,
+          "score": 0.794
+        },
+        {
+          "word": "rice",
+          "start": 139.989,
+          "end": 140.289,
+          "score": 0.854
+        },
+        {
+          "word": "mortars,",
+          "start": 140.369,
+          "end": 140.75,
+          "score": 0.982
+        },
+        {
+          "word": "scatter",
+          "start": 141.07,
+          "end": 141.531,
+          "score": 0.888
+        },
+        {
+          "word": "flowers,",
+          "start": 141.611,
+          "end": 142.131,
+          "score": 0.876
+        },
+        {
+          "word": "and",
+          "start": 142.412,
+          "end": 142.512,
+          "score": 0.663
+        },
+        {
+          "word": "light",
+          "start": 142.552,
+          "end": 142.932,
+          "score": 0.664
+        },
+        {
+          "word": "a",
+          "start": 142.992,
+          "end": 143.032,
+          "score": 0.89
+        },
+        {
+          "word": "fire",
+          "start": 143.153,
+          "end": 143.553,
+          "score": 0.755
+        },
+        {
+          "word": "in",
+          "start": 143.633,
+          "end": 143.693,
+          "score": 0.994
+        },
+        {
+          "word": "the",
+          "start": 143.753,
+          "end": 143.853,
+          "score": 0.674
+        },
+        {
+          "word": "east!",
+          "start": 144.034,
+          "end": 144.334,
+          "score": 0.768
+        }
+      ]
+    },
+    {
+      "start": 145.355,
+      "end": 150.662,
+      "text": "The roosters, fooled by the light, crowed loudly, thinking dawn had come.",
+      "words": [
+        {
+          "word": "The",
+          "start": 145.355,
+          "end": 145.475,
+          "score": 0.832
+        },
+        {
+          "word": "roosters,",
+          "start": 145.536,
+          "end": 146.116,
+          "score": 0.877
+        },
+        {
+          "word": "fooled",
+          "start": 146.276,
+          "end": 146.657,
+          "score": 0.802
+        },
+        {
+          "word": "by",
+          "start": 146.737,
+          "end": 146.877,
+          "score": 1.0
+        },
+        {
+          "word": "the",
+          "start": 146.917,
+          "end": 147.017,
+          "score": 0.66
+        },
+        {
+          "word": "light,",
+          "start": 147.077,
+          "end": 147.378,
+          "score": 0.941
+        },
+        {
+          "word": "crowed",
+          "start": 147.698,
+          "end": 148.099,
+          "score": 0.883
+        },
+        {
+          "word": "loudly,",
+          "start": 148.239,
+          "end": 148.76,
+          "score": 0.963
+        },
+        {
+          "word": "thinking",
+          "start": 148.8,
+          "end": 149.54,
+          "score": 0.834
+        },
+        {
+          "word": "dawn",
+          "start": 149.581,
+          "end": 150.061,
+          "score": 0.858
+        },
+        {
+          "word": "had",
+          "start": 150.121,
+          "end": 150.261,
+          "score": 0.805
+        },
+        {
+          "word": "come.",
+          "start": 150.382,
+          "end": 150.662,
+          "score": 0.869
+        }
+      ]
+    },
+    {
+      "start": 151.543,
+      "end": 160.434,
+      "text": "Hearing the sound, the demons fled, the night was over, and Bandung Banduoso couldn't finish the last temple.",
+      "words": [
+        {
+          "word": "Hearing",
+          "start": 151.543,
+          "end": 151.903,
+          "score": 0.796
+        },
+        {
+          "word": "the",
+          "start": 151.943,
+          "end": 152.084,
+          "score": 0.688
+        },
+        {
+          "word": "sound,",
+          "start": 152.144,
+          "end": 152.564,
+          "score": 0.926
+        },
+        {
+          "word": "the",
+          "start": 152.885,
+          "end": 152.985,
+          "score": 0.796
+        },
+        {
+          "word": "demons",
+          "start": 153.105,
+          "end": 153.545,
+          "score": 0.784
+        },
+        {
+          "word": "fled,",
+          "start": 153.706,
+          "end": 154.066,
+          "score": 0.912
+        },
+        {
+          "word": "the",
+          "start": 154.126,
+          "end": 154.627,
+          "score": 0.897
+        },
+        {
+          "word": "night",
+          "start": 154.747,
+          "end": 155.027,
+          "score": 0.659
+        },
+        {
+          "word": "was",
+          "start": 155.107,
+          "end": 155.248,
+          "score": 0.944
+        },
+        {
+          "word": "over,",
+          "start": 155.488,
+          "end": 155.748,
+          "score": 0.814
+        },
+        {
+          "word": "and",
+          "start": 156.209,
+          "end": 156.309,
+          "score": 0.656
+        },
+        {
+          "word": "Bandung",
+          "start": 156.449,
+          "end": 157.05,
+          "score": 0.863
+        },
+        {
+          "word": "Banduoso",
+          "start": 157.13,
+          "end": 158.011,
+          "score": 0.88
+        },
+        {
+          "word": "couldn't",
+          "start": 158.191,
+          "end": 158.532,
+          "score": 0.715
+        },
+        {
+          "word": "finish",
+          "start": 158.672,
+          "end": 159.032,
+          "score": 0.763
+        },
+        {
+          "word": "the",
+          "start": 159.132,
+          "end": 159.253,
+          "score": 0.751
+        },
+        {
+          "word": "last",
+          "start": 159.333,
+          "end": 159.693,
+          "score": 0.943
+        },
+        {
+          "word": "temple.",
+          "start": 159.813,
+          "end": 160.434,
+          "score": 0.788
+        }
+      ]
+    },
+    {
+      "start": 161.25,
+      "end": 165.999,
+      "text": " When he discovered her trick, Bandung Bandawoso was furious.",
+      "words": [
+        {
+          "word": "When",
+          "start": 161.25,
+          "end": 161.47,
+          "score": 0.716
+        },
+        {
+          "word": "he",
+          "start": 161.531,
+          "end": 161.631,
+          "score": 0.996
+        },
+        {
+          "word": "discovered",
+          "start": 161.711,
+          "end": 162.312,
+          "score": 0.783
+        },
+        {
+          "word": "her",
+          "start": 162.372,
+          "end": 162.492,
+          "score": 0.65
+        },
+        {
+          "word": "trick,",
+          "start": 162.612,
+          "end": 162.933,
+          "score": 0.889
+        },
+        {
+          "word": "Bandung",
+          "start": 163.354,
+          "end": 163.955,
+          "score": 0.741
+        },
+        {
+          "word": "Bandawoso",
+          "start": 164.015,
+          "end": 164.897,
+          "score": 0.881
+        },
+        {
+          "word": "was",
+          "start": 164.997,
+          "end": 165.137,
+          "score": 0.808
+        },
+        {
+          "word": "furious.",
+          "start": 165.337,
+          "end": 165.999,
+          "score": 0.94
+        }
+      ]
+    },
+    {
+      "start": 166.72,
+      "end": 170.948,
+      "text": "Roro Jonggrong, you have deceived me, he shouted.",
+      "words": [
+        {
+          "word": "Roro",
+          "start": 166.72,
+          "end": 167.181,
+          "score": 0.862
+        },
+        {
+          "word": "Jonggrong,",
+          "start": 167.321,
+          "end": 168.002,
+          "score": 0.884
+        },
+        {
+          "word": "you",
+          "start": 168.323,
+          "end": 168.523,
+          "score": 0.939
+        },
+        {
+          "word": "have",
+          "start": 168.603,
+          "end": 168.764,
+          "score": 0.884
+        },
+        {
+          "word": "deceived",
+          "start": 168.864,
+          "end": 169.545,
+          "score": 0.849
+        },
+        {
+          "word": "me,",
+          "start": 169.625,
+          "end": 169.806,
+          "score": 0.88
+        },
+        {
+          "word": "he",
+          "start": 169.846,
+          "end": 170.346,
+          "score": 0.867
+        },
+        {
+          "word": "shouted.",
+          "start": 170.467,
+          "end": 170.948,
+          "score": 0.827
+        }
+      ]
+    },
+    {
+      "start": 170.988,
+      "end": 176.878,
+      "text": "Then you shall be the final temple, the one thousandth.",
+      "words": [
+        {
+          "word": "Then",
+          "start": 170.988,
+          "end": 172.09,
+          "score": 0.863
+        },
+        {
+          "word": "you",
+          "start": 172.13,
+          "end": 172.831,
+          "score": 0.542
+        },
+        {
+          "word": "shall",
+          "start": 173.232,
+          "end": 173.472,
+          "score": 0.87
+        },
+        {
+          "word": "be",
+          "start": 173.572,
+          "end": 173.773,
+          "score": 0.87
+        },
+        {
+          "word": "the",
+          "start": 173.813,
+          "end": 174.033,
+          "score": 0.779
+        },
+        {
+          "word": "final",
+          "start": 174.193,
+          "end": 174.614,
+          "score": 0.899
+        },
+        {
+          "word": "temple,",
+          "start": 174.754,
+          "end": 175.215,
+          "score": 0.923
+        },
+        {
+          "word": "the",
+          "start": 175.616,
+          "end": 175.716,
+          "score": 0.992
+        },
+        {
+          "word": "one",
+          "start": 175.937,
+          "end": 176.077,
+          "score": 0.774
+        },
+        {
+          "word": "thousandth.",
+          "start": 176.237,
+          "end": 176.878,
+          "score": 0.766
+        }
+      ]
+    },
+    {
+      "start": 177.8,
+      "end": 185.554,
+      "text": "He pointed his hand toward her, and with his powerful magic Roro Jonggrong turned into stone.",
+      "words": [
+        {
+          "word": "He",
+          "start": 177.8,
+          "end": 177.92,
+          "score": 0.818
+        },
+        {
+          "word": "pointed",
+          "start": 178.04,
+          "end": 178.441,
+          "score": 0.692
+        },
+        {
+          "word": "his",
+          "start": 178.501,
+          "end": 178.642,
+          "score": 0.577
+        },
+        {
+          "word": "hand",
+          "start": 178.702,
+          "end": 179.022,
+          "score": 0.81
+        },
+        {
+          "word": "toward",
+          "start": 179.142,
+          "end": 179.463,
+          "score": 0.887
+        },
+        {
+          "word": "her,",
+          "start": 179.523,
+          "end": 179.663,
+          "score": 0.986
+        },
+        {
+          "word": "and",
+          "start": 180.084,
+          "end": 180.184,
+          "score": 0.658
+        },
+        {
+          "word": "with",
+          "start": 180.244,
+          "end": 180.405,
+          "score": 0.798
+        },
+        {
+          "word": "his",
+          "start": 180.465,
+          "end": 180.605,
+          "score": 0.746
+        },
+        {
+          "word": "powerful",
+          "start": 180.745,
+          "end": 181.306,
+          "score": 0.8
+        },
+        {
+          "word": "magic",
+          "start": 181.447,
+          "end": 181.867,
+          "score": 0.999
+        },
+        {
+          "word": "Roro",
+          "start": 182.268,
+          "end": 182.709,
+          "score": 0.917
+        },
+        {
+          "word": "Jonggrong",
+          "start": 182.849,
+          "end": 183.55,
+          "score": 0.838
+        },
+        {
+          "word": "turned",
+          "start": 183.711,
+          "end": 184.091,
+          "score": 0.871
+        },
+        {
+          "word": "into",
+          "start": 184.131,
+          "end": 184.672,
+          "score": 0.877
+        },
+        {
+          "word": "stone.",
+          "start": 184.773,
+          "end": 185.554,
+          "score": 0.802
+        }
+      ]
+    },
+    {
+      "start": 186.274,
+      "end": 198.866,
+      "text": " That statue still stands in Prambanan temple, known as the image of Dewi Durga, the beautiful goddess who was once Princess Roro Jonggrang.",
+      "words": [
+        {
+          "word": "That",
+          "start": 186.274,
+          "end": 186.595,
+          "score": 0.888
+        },
+        {
+          "word": "statue",
+          "start": 186.695,
+          "end": 187.277,
+          "score": 0.8
+        },
+        {
+          "word": "still",
+          "start": 187.397,
+          "end": 187.758,
+          "score": 0.841
+        },
+        {
+          "word": "stands",
+          "start": 187.838,
+          "end": 188.399,
+          "score": 0.864
+        },
+        {
+          "word": "in",
+          "start": 188.419,
+          "end": 188.58,
+          "score": 0.66
+        },
+        {
+          "word": "Prambanan",
+          "start": 188.68,
+          "end": 189.442,
+          "score": 0.918
+        },
+        {
+          "word": "temple,",
+          "start": 189.542,
+          "end": 189.983,
+          "score": 0.88
+        },
+        {
+          "word": "known",
+          "start": 190.505,
+          "end": 190.846,
+          "score": 0.598
+        },
+        {
+          "word": "as",
+          "start": 190.866,
+          "end": 191.166,
+          "score": 0.649
+        },
+        {
+          "word": "the",
+          "start": 191.207,
+          "end": 191.367,
+          "score": 0.611
+        },
+        {
+          "word": "image",
+          "start": 191.527,
+          "end": 191.848,
+          "score": 0.757
+        },
+        {
+          "word": "of",
+          "start": 191.968,
+          "end": 192.009,
+          "score": 0.996
+        },
+        {
+          "word": "Dewi",
+          "start": 192.049,
+          "end": 192.59,
+          "score": 0.665
+        },
+        {
+          "word": "Durga,",
+          "start": 192.67,
+          "end": 193.272,
+          "score": 0.942
+        },
+        {
+          "word": "the",
+          "start": 193.693,
+          "end": 193.793,
+          "score": 0.947
+        },
+        {
+          "word": "beautiful",
+          "start": 193.873,
+          "end": 194.415,
+          "score": 0.711
+        },
+        {
+          "word": "goddess",
+          "start": 194.515,
+          "end": 194.996,
+          "score": 0.905
+        },
+        {
+          "word": "who",
+          "start": 195.277,
+          "end": 195.417,
+          "score": 0.787
+        },
+        {
+          "word": "was",
+          "start": 195.477,
+          "end": 195.658,
+          "score": 0.893
+        },
+        {
+          "word": "once",
+          "start": 195.678,
+          "end": 196.119,
+          "score": 0.918
+        },
+        {
+          "word": "Princess",
+          "start": 196.159,
+          "end": 196.981,
+          "score": 0.803
+        },
+        {
+          "word": "Roro",
+          "start": 197.282,
+          "end": 197.763,
+          "score": 0.959
+        },
+        {
+          "word": "Jonggrang.",
+          "start": 197.904,
+          "end": 198.866,
+          "score": 0.851
+        }
+      ]
+    }
+  ],
+  "word_segments": [
+    {
+      "word": "Roro",
+      "start": 0.226,
+      "end": 1.027,
+      "score": 0.886
+    },
+    {
+      "word": "Jongrang",
+      "start": 1.187,
+      "end": 2.029,
+      "score": 0.855
+    },
+    {
+      "word": "The",
+      "start": 2.89,
+      "end": 2.99,
+      "score": 0.988
+    },
+    {
+      "word": "Legend",
+      "start": 3.07,
+      "end": 3.591,
+      "score": 0.744
+    },
+    {
+      "word": "of",
+      "start": 3.731,
+      "end": 3.791,
+      "score": 0.998
+    },
+    {
+      "word": "Prambanan",
+      "start": 3.931,
+      "end": 4.833,
+      "score": 0.916
+    },
+    {
+      "word": "Temple",
+      "start": 4.953,
+      "end": 5.434,
+      "score": 0.858
+    },
+    {
+      "word": "Long",
+      "start": 5.474,
+      "end": 7.296,
+      "score": 0.645
+    },
+    {
+      "word": "ago,",
+      "start": 7.397,
+      "end": 7.757,
+      "score": 0.988
+    },
+    {
+      "word": "there",
+      "start": 7.797,
+      "end": 8.318,
+      "score": 0.906
+    },
+    {
+      "word": "was",
+      "start": 8.338,
+      "end": 8.458,
+      "score": 0.736
+    },
+    {
+      "word": "a",
+      "start": 8.518,
+      "end": 8.538,
+      "score": 0.812
+    },
+    {
+      "word": "powerful",
+      "start": 8.638,
+      "end": 9.159,
+      "score": 0.829
+    },
+    {
+      "word": "kingdom",
+      "start": 9.299,
+      "end": 9.78,
+      "score": 0.781
+    },
+    {
+      "word": "in",
+      "start": 9.8,
+      "end": 10.021,
+      "score": 0.647
+    },
+    {
+      "word": "central",
+      "start": 10.161,
+      "end": 10.601,
+      "score": 0.892
+    },
+    {
+      "word": "Java",
+      "start": 10.702,
+      "end": 11.182,
+      "score": 0.973
+    },
+    {
+      "word": "named",
+      "start": 11.543,
+      "end": 11.923,
+      "score": 0.738
+    },
+    {
+      "word": "Prambanan.",
+      "start": 12.084,
+      "end": 13.045,
+      "score": 0.941
+    },
+    {
+      "word": "It",
+      "start": 13.886,
+      "end": 13.946,
+      "score": 0.6
+    },
+    {
+      "word": "was",
+      "start": 14.026,
+      "end": 14.147,
+      "score": 0.786
+    },
+    {
+      "word": "ruled",
+      "start": 14.247,
+      "end": 14.647,
+      "score": 0.705
+    },
+    {
+      "word": "by",
+      "start": 14.768,
+      "end": 14.928,
+      "score": 0.784
+    },
+    {
+      "word": "King",
+      "start": 15.128,
+      "end": 15.449,
+      "score": 0.776
+    },
+    {
+      "word": "Boko,",
+      "start": 15.629,
+      "end": 16.23,
+      "score": 0.959
+    },
+    {
+      "word": "a",
+      "start": 16.77,
+      "end": 16.791,
+      "score": 0.987
+    },
+    {
+      "word": "giant",
+      "start": 16.931,
+      "end": 17.492,
+      "score": 0.879
+    },
+    {
+      "word": "who",
+      "start": 17.612,
+      "end": 17.732,
+      "score": 0.732
+    },
+    {
+      "word": "was",
+      "start": 17.792,
+      "end": 17.932,
+      "score": 0.772
+    },
+    {
+      "word": "feared",
+      "start": 18.072,
+      "end": 18.493,
+      "score": 0.69
+    },
+    {
+      "word": "by",
+      "start": 18.613,
+      "end": 18.793,
+      "score": 0.802
+    },
+    {
+      "word": "everyone.",
+      "start": 18.994,
+      "end": 19.555,
+      "score": 0.866
+    },
+    {
+      "word": "Nearby,",
+      "start": 20.796,
+      "end": 21.417,
+      "score": 0.848
+    },
+    {
+      "word": "there",
+      "start": 21.457,
+      "end": 21.978,
+      "score": 0.633
+    },
+    {
+      "word": "was",
+      "start": 22.018,
+      "end": 22.138,
+      "score": 0.722
+    },
+    {
+      "word": "another",
+      "start": 22.239,
+      "end": 22.599,
+      "score": 0.852
+    },
+    {
+      "word": "kingdom",
+      "start": 22.699,
+      "end": 23.14,
+      "score": 0.766
+    },
+    {
+      "word": "called",
+      "start": 23.32,
+      "end": 23.661,
+      "score": 0.713
+    },
+    {
+      "word": "Penging.",
+      "start": 23.841,
+      "end": 24.562,
+      "score": 0.888
+    },
+    {
+      "word": "ruled",
+      "start": 24.834,
+      "end": 25.295,
+      "score": 0.62
+    },
+    {
+      "word": "by",
+      "start": 25.315,
+      "end": 25.555,
+      "score": 0.892
+    },
+    {
+      "word": "a",
+      "start": 25.575,
+      "end": 25.595,
+      "score": 1.0
+    },
+    {
+      "word": "wise",
+      "start": 25.756,
+      "end": 26.276,
+      "score": 0.724
+    },
+    {
+      "word": "and",
+      "start": 26.377,
+      "end": 26.477,
+      "score": 0.609
+    },
+    {
+      "word": "brave",
+      "start": 26.597,
+      "end": 26.998,
+      "score": 0.881
+    },
+    {
+      "word": "prince",
+      "start": 27.138,
+      "end": 27.539,
+      "score": 0.937
+    },
+    {
+      "word": "named",
+      "start": 27.879,
+      "end": 28.24,
+      "score": 0.642
+    },
+    {
+      "word": "Bandung",
+      "start": 28.4,
+      "end": 29.081,
+      "score": 0.781
+    },
+    {
+      "word": "Bondawoso.",
+      "start": 29.181,
+      "end": 30.203,
+      "score": 0.887
+    },
+    {
+      "word": "One",
+      "start": 30.243,
+      "end": 31.565,
+      "score": 0.664
+    },
+    {
+      "word": "day,",
+      "start": 31.646,
+      "end": 31.866,
+      "score": 0.872
+    },
+    {
+      "word": "the",
+      "start": 31.906,
+      "end": 32.367,
+      "score": 0.578
+    },
+    {
+      "word": "two",
+      "start": 32.447,
+      "end": 32.667,
+      "score": 0.663
+    },
+    {
+      "word": "kingdoms",
+      "start": 32.807,
+      "end": 33.348,
+      "score": 0.822
+    },
+    {
+      "word": "went",
+      "start": 33.489,
+      "end": 33.689,
+      "score": 0.782
+    },
+    {
+      "word": "to",
+      "start": 33.769,
+      "end": 33.869,
+      "score": 0.968
+    },
+    {
+      "word": "war.",
+      "start": 33.949,
+      "end": 34.33,
+      "score": 0.915
+    },
+    {
+      "word": "Bandung",
+      "start": 35.171,
+      "end": 35.732,
+      "score": 0.805
+    },
+    {
+      "word": "Bondawoso",
+      "start": 35.793,
+      "end": 36.634,
+      "score": 0.867
+    },
+    {
+      "word": "and",
+      "start": 36.734,
+      "end": 36.814,
+      "score": 0.831
+    },
+    {
+      "word": "his",
+      "start": 36.874,
+      "end": 36.995,
+      "score": 0.725
+    },
+    {
+      "word": "soldiers",
+      "start": 37.075,
+      "end": 37.596,
+      "score": 0.723
+    },
+    {
+      "word": "fought",
+      "start": 37.736,
+      "end": 38.016,
+      "score": 0.862
+    },
+    {
+      "word": "fiercely,",
+      "start": 38.177,
+      "end": 38.758,
+      "score": 0.737
+    },
+    {
+      "word": "and",
+      "start": 38.798,
+      "end": 39.419,
+      "score": 0.647
+    },
+    {
+      "word": "after",
+      "start": 39.539,
+      "end": 39.799,
+      "score": 0.763
+    },
+    {
+      "word": "a",
+      "start": 39.819,
+      "end": 39.839,
+      "score": 1.0
+    },
+    {
+      "word": "long",
+      "start": 40.0,
+      "end": 40.32,
+      "score": 0.627
+    },
+    {
+      "word": "battle,",
+      "start": 40.44,
+      "end": 40.821,
+      "score": 0.884
+    },
+    {
+      "word": "King",
+      "start": 41.262,
+      "end": 41.542,
+      "score": 0.562
+    },
+    {
+      "word": "Boko",
+      "start": 41.662,
+      "end": 42.183,
+      "score": 0.969
+    },
+    {
+      "word": "was",
+      "start": 42.324,
+      "end": 42.504,
+      "score": 0.734
+    },
+    {
+      "word": "defeated.",
+      "start": 42.604,
+      "end": 43.225,
+      "score": 0.787
+    },
+    {
+      "word": "The",
+      "start": 43.245,
+      "end": 44.247,
+      "score": 0.624
+    },
+    {
+      "word": "giant",
+      "start": 44.347,
+      "end": 44.828,
+      "score": 0.794
+    },
+    {
+      "word": "king",
+      "start": 44.968,
+      "end": 45.248,
+      "score": 0.666
+    },
+    {
+      "word": "was",
+      "start": 45.349,
+      "end": 45.489,
+      "score": 0.505
+    },
+    {
+      "word": "killed,",
+      "start": 45.669,
+      "end": 46.11,
+      "score": 0.853
+    },
+    {
+      "word": "and",
+      "start": 46.591,
+      "end": 46.691,
+      "score": 0.688
+    },
+    {
+      "word": "his",
+      "start": 46.771,
+      "end": 46.891,
+      "score": 0.814
+    },
+    {
+      "word": "kingdom",
+      "start": 47.011,
+      "end": 47.472,
+      "score": 0.786
+    },
+    {
+      "word": "fell",
+      "start": 47.512,
+      "end": 48.033,
+      "score": 0.894
+    },
+    {
+      "word": "under",
+      "start": 48.193,
+      "end": 48.454,
+      "score": 0.849
+    },
+    {
+      "word": "Bandung",
+      "start": 48.534,
+      "end": 49.135,
+      "score": 0.866
+    },
+    {
+      "word": "Bondawoso's",
+      "start": 49.215,
+      "end": 50.237,
+      "score": 0.883
+    },
+    {
+      "word": "rule.",
+      "start": 50.337,
+      "end": 50.898,
+      "score": 0.78
+    },
+    {
+      "word": "When",
+      "start": 51.842,
+      "end": 52.082,
+      "score": 0.69
+    },
+    {
+      "word": "Bandung",
+      "start": 52.203,
+      "end": 52.783,
+      "score": 0.856
+    },
+    {
+      "word": "entered",
+      "start": 52.984,
+      "end": 53.304,
+      "score": 0.61
+    },
+    {
+      "word": "the",
+      "start": 53.344,
+      "end": 53.464,
+      "score": 0.775
+    },
+    {
+      "word": "royal",
+      "start": 53.545,
+      "end": 53.865,
+      "score": 0.736
+    },
+    {
+      "word": "palace,",
+      "start": 53.965,
+      "end": 54.426,
+      "score": 0.939
+    },
+    {
+      "word": "he",
+      "start": 54.726,
+      "end": 54.846,
+      "score": 0.836
+    },
+    {
+      "word": "met",
+      "start": 54.927,
+      "end": 55.147,
+      "score": 0.87
+    },
+    {
+      "word": "Roro",
+      "start": 55.167,
+      "end": 55.888,
+      "score": 0.646
+    },
+    {
+      "word": "Jonggrang,",
+      "start": 56.008,
+      "end": 56.829,
+      "score": 0.911
+    },
+    {
+      "word": "King",
+      "start": 57.27,
+      "end": 57.57,
+      "score": 0.608
+    },
+    {
+      "word": "Boko's",
+      "start": 57.611,
+      "end": 58.271,
+      "score": 0.735
+    },
+    {
+      "word": "daughter.",
+      "start": 58.352,
+      "end": 58.772,
+      "score": 0.866
+    },
+    {
+      "word": "She",
+      "start": 59.573,
+      "end": 59.714,
+      "score": 0.483
+    },
+    {
+      "word": "was",
+      "start": 59.794,
+      "end": 59.934,
+      "score": 0.948
+    },
+    {
+      "word": "so",
+      "start": 60.054,
+      "end": 60.274,
+      "score": 0.837
+    },
+    {
+      "word": "beautiful",
+      "start": 60.435,
+      "end": 61.036,
+      "score": 0.72
+    },
+    {
+      "word": "that",
+      "start": 61.076,
+      "end": 61.496,
+      "score": 0.858
+    },
+    {
+      "word": "he",
+      "start": 61.556,
+      "end": 61.656,
+      "score": 0.984
+    },
+    {
+      "word": "immediately",
+      "start": 61.797,
+      "end": 62.638,
+      "score": 0.724
+    },
+    {
+      "word": "fell",
+      "start": 62.778,
+      "end": 62.998,
+      "score": 0.818
+    },
+    {
+      "word": "in",
+      "start": 63.079,
+      "end": 63.159,
+      "score": 0.881
+    },
+    {
+      "word": "love",
+      "start": 63.259,
+      "end": 63.599,
+      "score": 0.636
+    },
+    {
+      "word": "and",
+      "start": 63.639,
+      "end": 64.0,
+      "score": 0.71
+    },
+    {
+      "word": "said,",
+      "start": 64.12,
+      "end": 64.461,
+      "score": 0.942
+    },
+    {
+      "word": "Princess,",
+      "start": 64.501,
+      "end": 65.923,
+      "score": 0.908
+    },
+    {
+      "word": "you",
+      "start": 66.363,
+      "end": 66.604,
+      "score": 0.917
+    },
+    {
+      "word": "are",
+      "start": 66.644,
+      "end": 66.864,
+      "score": 0.911
+    },
+    {
+      "word": "the",
+      "start": 66.924,
+      "end": 67.004,
+      "score": 0.956
+    },
+    {
+      "word": "most",
+      "start": 67.064,
+      "end": 67.285,
+      "score": 0.752
+    },
+    {
+      "word": "beautiful",
+      "start": 67.425,
+      "end": 68.026,
+      "score": 0.717
+    },
+    {
+      "word": "woman",
+      "start": 68.126,
+      "end": 68.426,
+      "score": 0.945
+    },
+    {
+      "word": "I've",
+      "start": 68.587,
+      "end": 68.727,
+      "score": 0.856
+    },
+    {
+      "word": "ever",
+      "start": 68.987,
+      "end": 69.188,
+      "score": 0.675
+    },
+    {
+      "word": "seen.",
+      "start": 69.328,
+      "end": 69.668,
+      "score": 0.825
+    },
+    {
+      "word": "Please",
+      "start": 69.728,
+      "end": 70.73,
+      "score": 0.638
+    },
+    {
+      "word": "be",
+      "start": 71.01,
+      "end": 71.171,
+      "score": 0.869
+    },
+    {
+      "word": "my",
+      "start": 71.251,
+      "end": 71.431,
+      "score": 0.902
+    },
+    {
+      "word": "wife.",
+      "start": 71.531,
+      "end": 71.892,
+      "score": 0.666
+    },
+    {
+      "word": "But",
+      "start": 72.993,
+      "end": 73.133,
+      "score": 0.833
+    },
+    {
+      "word": "Roro",
+      "start": 73.274,
+      "end": 73.694,
+      "score": 0.889
+    },
+    {
+      "word": "Jonggrang",
+      "start": 73.794,
+      "end": 74.455,
+      "score": 0.834
+    },
+    {
+      "word": "hated",
+      "start": 74.596,
+      "end": 75.016,
+      "score": 0.708
+    },
+    {
+      "word": "him",
+      "start": 75.036,
+      "end": 75.297,
+      "score": 0.771
+    },
+    {
+      "word": "for",
+      "start": 75.457,
+      "end": 75.597,
+      "score": 0.762
+    },
+    {
+      "word": "destroying",
+      "start": 75.677,
+      "end": 76.378,
+      "score": 0.797
+    },
+    {
+      "word": "her",
+      "start": 76.458,
+      "end": 76.579,
+      "score": 0.721
+    },
+    {
+      "word": "kingdom",
+      "start": 76.659,
+      "end": 77.119,
+      "score": 0.655
+    },
+    {
+      "word": "and",
+      "start": 77.139,
+      "end": 77.58,
+      "score": 0.628
+    },
+    {
+      "word": "killing",
+      "start": 77.74,
+      "end": 78.101,
+      "score": 0.854
+    },
+    {
+      "word": "her",
+      "start": 78.181,
+      "end": 78.301,
+      "score": 0.715
+    },
+    {
+      "word": "father.",
+      "start": 78.401,
+      "end": 78.962,
+      "score": 0.799
+    },
+    {
+      "word": "Still,",
+      "start": 79.426,
+      "end": 79.927,
+      "score": 0.935
+    },
+    {
+      "word": "she",
+      "start": 80.327,
+      "end": 80.448,
+      "score": 0.849
+    },
+    {
+      "word": "was",
+      "start": 80.508,
+      "end": 80.628,
+      "score": 0.809
+    },
+    {
+      "word": "afraid",
+      "start": 80.728,
+      "end": 81.169,
+      "score": 0.752
+    },
+    {
+      "word": "to",
+      "start": 81.249,
+      "end": 81.369,
+      "score": 0.887
+    },
+    {
+      "word": "refuse",
+      "start": 81.429,
+      "end": 81.99,
+      "score": 0.802
+    },
+    {
+      "word": "directly,",
+      "start": 82.09,
+      "end": 82.671,
+      "score": 0.881
+    },
+    {
+      "word": "so",
+      "start": 83.152,
+      "end": 83.292,
+      "score": 0.924
+    },
+    {
+      "word": "she",
+      "start": 83.352,
+      "end": 83.493,
+      "score": 0.672
+    },
+    {
+      "word": "tried",
+      "start": 83.593,
+      "end": 83.973,
+      "score": 0.667
+    },
+    {
+      "word": "to",
+      "start": 84.073,
+      "end": 84.174,
+      "score": 0.895
+    },
+    {
+      "word": "trick",
+      "start": 84.294,
+      "end": 84.554,
+      "score": 0.728
+    },
+    {
+      "word": "him.",
+      "start": 84.634,
+      "end": 84.835,
+      "score": 0.957
+    },
+    {
+      "word": "I",
+      "start": 84.855,
+      "end": 84.875,
+      "score": 1.0
+    },
+    {
+      "word": "will",
+      "start": 86.257,
+      "end": 86.457,
+      "score": 0.906
+    },
+    {
+      "word": "marry",
+      "start": 86.537,
+      "end": 86.918,
+      "score": 0.901
+    },
+    {
+      "word": "you,",
+      "start": 86.958,
+      "end": 87.178,
+      "score": 0.808
+    },
+    {
+      "word": "she",
+      "start": 87.559,
+      "end": 87.679,
+      "score": 0.656
+    },
+    {
+      "word": "said",
+      "start": 87.779,
+      "end": 88.0,
+      "score": 0.865
+    },
+    {
+      "word": "sweetly,",
+      "start": 88.04,
+      "end": 88.641,
+      "score": 0.79
+    },
+    {
+      "word": "but",
+      "start": 89.162,
+      "end": 89.302,
+      "score": 0.945
+    },
+    {
+      "word": "only",
+      "start": 89.582,
+      "end": 89.883,
+      "score": 0.855
+    },
+    {
+      "word": "if",
+      "start": 89.903,
+      "end": 90.123,
+      "score": 0.798
+    },
+    {
+      "word": "you",
+      "start": 90.183,
+      "end": 90.343,
+      "score": 0.814
+    },
+    {
+      "word": "can",
+      "start": 90.404,
+      "end": 90.564,
+      "score": 0.964
+    },
+    {
+      "word": "build",
+      "start": 90.664,
+      "end": 91.005,
+      "score": 0.634
+    },
+    {
+      "word": "one",
+      "start": 91.045,
+      "end": 91.626,
+      "score": 0.534
+    },
+    {
+      "word": "thousand",
+      "start": 91.666,
+      "end": 92.407,
+      "score": 0.738
+    },
+    {
+      "word": "temples",
+      "start": 92.527,
+      "end": 93.008,
+      "score": 0.833
+    },
+    {
+      "word": "in",
+      "start": 93.368,
+      "end": 93.448,
+      "score": 0.964
+    },
+    {
+      "word": "a",
+      "start": 93.509,
+      "end": 93.529,
+      "score": 1.0
+    },
+    {
+      "word": "single",
+      "start": 93.689,
+      "end": 94.13,
+      "score": 0.63
+    },
+    {
+      "word": "night",
+      "start": 94.27,
+      "end": 94.55,
+      "score": 0.697
+    },
+    {
+      "word": "before",
+      "start": 94.871,
+      "end": 95.371,
+      "score": 0.892
+    },
+    {
+      "word": "the",
+      "start": 95.452,
+      "end": 95.552,
+      "score": 0.774
+    },
+    {
+      "word": "rooster",
+      "start": 95.612,
+      "end": 96.073,
+      "score": 0.884
+    },
+    {
+      "word": "crows.",
+      "start": 96.153,
+      "end": 96.654,
+      "score": 0.978
+    },
+    {
+      "word": "Bandung",
+      "start": 97.755,
+      "end": 98.356,
+      "score": 0.875
+    },
+    {
+      "word": "Bandawoso",
+      "start": 98.416,
+      "end": 99.278,
+      "score": 0.885
+    },
+    {
+      "word": "smiled",
+      "start": 99.418,
+      "end": 99.979,
+      "score": 0.717
+    },
+    {
+      "word": "confidently.",
+      "start": 100.119,
+      "end": 100.92,
+      "score": 0.937
+    },
+    {
+      "word": "If",
+      "start": 100.96,
+      "end": 101.922,
+      "score": 0.95
+    },
+    {
+      "word": "that",
+      "start": 102.042,
+      "end": 102.242,
+      "score": 0.926
+    },
+    {
+      "word": "is",
+      "start": 102.343,
+      "end": 102.423,
+      "score": 0.975
+    },
+    {
+      "word": "your",
+      "start": 102.483,
+      "end": 102.683,
+      "score": 0.704
+    },
+    {
+      "word": "wish,",
+      "start": 102.763,
+      "end": 103.044,
+      "score": 0.912
+    },
+    {
+      "word": "I",
+      "start": 103.565,
+      "end": 103.625,
+      "score": 0.845
+    },
+    {
+      "word": "will",
+      "start": 103.685,
+      "end": 103.905,
+      "score": 0.822
+    },
+    {
+      "word": "do",
+      "start": 103.985,
+      "end": 104.146,
+      "score": 0.999
+    },
+    {
+      "word": "it.",
+      "start": 104.246,
+      "end": 104.466,
+      "score": 0.897
+    },
+    {
+      "word": "That",
+      "start": 105.186,
+      "end": 105.446,
+      "score": 0.818
+    },
+    {
+      "word": "night",
+      "start": 105.587,
+      "end": 105.847,
+      "score": 0.49
+    },
+    {
+      "word": "he",
+      "start": 106.148,
+      "end": 106.268,
+      "score": 0.823
+    },
+    {
+      "word": "meditated",
+      "start": 106.408,
+      "end": 107.149,
+      "score": 0.892
+    },
+    {
+      "word": "and",
+      "start": 107.189,
+      "end": 107.41,
+      "score": 0.68
+    },
+    {
+      "word": "called",
+      "start": 107.57,
+      "end": 107.931,
+      "score": 0.828
+    },
+    {
+      "word": "upon",
+      "start": 108.011,
+      "end": 108.271,
+      "score": 0.905
+    },
+    {
+      "word": "spirits",
+      "start": 108.432,
+      "end": 108.993,
+      "score": 0.81
+    },
+    {
+      "word": "and",
+      "start": 109.113,
+      "end": 109.213,
+      "score": 0.666
+    },
+    {
+      "word": "demons",
+      "start": 109.233,
+      "end": 109.854,
+      "score": 0.772
+    },
+    {
+      "word": "to",
+      "start": 109.954,
+      "end": 110.074,
+      "score": 0.598
+    },
+    {
+      "word": "help",
+      "start": 110.154,
+      "end": 110.395,
+      "score": 0.845
+    },
+    {
+      "word": "him.",
+      "start": 110.455,
+      "end": 110.635,
+      "score": 0.936
+    },
+    {
+      "word": "The",
+      "start": 111.397,
+      "end": 111.497,
+      "score": 0.993
+    },
+    {
+      "word": "dark",
+      "start": 111.577,
+      "end": 111.918,
+      "score": 0.89
+    },
+    {
+      "word": "creatures",
+      "start": 112.078,
+      "end": 112.559,
+      "score": 0.816
+    },
+    {
+      "word": "worked",
+      "start": 112.699,
+      "end": 113.019,
+      "score": 0.842
+    },
+    {
+      "word": "quickly,",
+      "start": 113.18,
+      "end": 113.6,
+      "score": 0.922
+    },
+    {
+      "word": "digging,",
+      "start": 114.161,
+      "end": 114.602,
+      "score": 0.879
+    },
+    {
+      "word": "carving",
+      "start": 114.983,
+      "end": 115.464,
+      "score": 0.843
+    },
+    {
+      "word": "stones",
+      "start": 115.584,
+      "end": 116.145,
+      "score": 0.83
+    },
+    {
+      "word": "and",
+      "start": 116.485,
+      "end": 116.565,
+      "score": 0.985
+    },
+    {
+      "word": "placing",
+      "start": 116.706,
+      "end": 117.166,
+      "score": 0.896
+    },
+    {
+      "word": "statues",
+      "start": 117.267,
+      "end": 117.908,
+      "score": 0.743
+    },
+    {
+      "word": "at",
+      "start": 118.108,
+      "end": 118.188,
+      "score": 0.804
+    },
+    {
+      "word": "an",
+      "start": 118.268,
+      "end": 118.308,
+      "score": 0.999
+    },
+    {
+      "word": "incredible",
+      "start": 118.389,
+      "end": 119.13,
+      "score": 0.78
+    },
+    {
+      "word": "speed.",
+      "start": 119.23,
+      "end": 119.711,
+      "score": 0.897
+    },
+    {
+      "word": "By",
+      "start": 120.532,
+      "end": 120.693,
+      "score": 0.704
+    },
+    {
+      "word": "midnight",
+      "start": 120.813,
+      "end": 121.294,
+      "score": 0.746
+    },
+    {
+      "word": "hundreds",
+      "start": 121.634,
+      "end": 122.175,
+      "score": 0.791
+    },
+    {
+      "word": "of",
+      "start": 122.255,
+      "end": 122.295,
+      "score": 0.949
+    },
+    {
+      "word": "temples",
+      "start": 122.335,
+      "end": 122.896,
+      "score": 0.828
+    },
+    {
+      "word": "were",
+      "start": 122.996,
+      "end": 123.157,
+      "score": 0.736
+    },
+    {
+      "word": "already",
+      "start": 123.337,
+      "end": 123.858,
+      "score": 0.73
+    },
+    {
+      "word": "completed.",
+      "start": 123.958,
+      "end": 124.599,
+      "score": 0.969
+    },
+    {
+      "word": "Roro",
+      "start": 125.581,
+      "end": 126.042,
+      "score": 0.893
+    },
+    {
+      "word": "Jonggrang",
+      "start": 126.122,
+      "end": 126.783,
+      "score": 0.867
+    },
+    {
+      "word": "watched",
+      "start": 126.903,
+      "end": 127.304,
+      "score": 0.822
+    },
+    {
+      "word": "in",
+      "start": 127.404,
+      "end": 127.484,
+      "score": 0.807
+    },
+    {
+      "word": "fear.",
+      "start": 127.644,
+      "end": 127.985,
+      "score": 0.93
+    },
+    {
+      "word": "She",
+      "start": 128.566,
+      "end": 128.706,
+      "score": 0.691
+    },
+    {
+      "word": "didn't",
+      "start": 128.806,
+      "end": 129.107,
+      "score": 0.664
+    },
+    {
+      "word": "expect",
+      "start": 129.207,
+      "end": 129.648,
+      "score": 0.82
+    },
+    {
+      "word": "him",
+      "start": 129.688,
+      "end": 129.828,
+      "score": 0.899
+    },
+    {
+      "word": "to",
+      "start": 129.908,
+      "end": 130.028,
+      "score": 0.63
+    },
+    {
+      "word": "succeed.",
+      "start": 130.109,
+      "end": 130.93,
+      "score": 0.823
+    },
+    {
+      "word": "When",
+      "start": 131.458,
+      "end": 131.698,
+      "score": 0.618
+    },
+    {
+      "word": "there",
+      "start": 131.738,
+      "end": 131.899,
+      "score": 0.855
+    },
+    {
+      "word": "were",
+      "start": 131.939,
+      "end": 132.079,
+      "score": 0.89
+    },
+    {
+      "word": "already",
+      "start": 132.279,
+      "end": 132.76,
+      "score": 0.829
+    },
+    {
+      "word": "999",
+      "start": 132.78,
+      "end": 133.24,
+      "score": 0.833
+    },
+    {
+      "word": "temples,",
+      "start": 133.781,
+      "end": 135.183,
+      "score": 0.827
+    },
+    {
+      "word": "she",
+      "start": 135.583,
+      "end": 135.723,
+      "score": 0.906
+    },
+    {
+      "word": "panicked",
+      "start": 135.843,
+      "end": 136.304,
+      "score": 0.786
+    },
+    {
+      "word": "and",
+      "start": 136.604,
+      "end": 136.705,
+      "score": 0.719
+    },
+    {
+      "word": "called",
+      "start": 136.845,
+      "end": 137.205,
+      "score": 0.865
+    },
+    {
+      "word": "her",
+      "start": 137.265,
+      "end": 137.405,
+      "score": 0.627
+    },
+    {
+      "word": "maidens.",
+      "start": 137.485,
+      "end": 138.026,
+      "score": 0.959
+    },
+    {
+      "word": "Quick,",
+      "start": 138.807,
+      "end": 139.108,
+      "score": 0.879
+    },
+    {
+      "word": "beat",
+      "start": 139.488,
+      "end": 139.748,
+      "score": 0.802
+    },
+    {
+      "word": "the",
+      "start": 139.808,
+      "end": 139.909,
+      "score": 0.794
+    },
+    {
+      "word": "rice",
+      "start": 139.989,
+      "end": 140.289,
+      "score": 0.854
+    },
+    {
+      "word": "mortars,",
+      "start": 140.369,
+      "end": 140.75,
+      "score": 0.982
+    },
+    {
+      "word": "scatter",
+      "start": 141.07,
+      "end": 141.531,
+      "score": 0.888
+    },
+    {
+      "word": "flowers,",
+      "start": 141.611,
+      "end": 142.131,
+      "score": 0.876
+    },
+    {
+      "word": "and",
+      "start": 142.412,
+      "end": 142.512,
+      "score": 0.663
+    },
+    {
+      "word": "light",
+      "start": 142.552,
+      "end": 142.932,
+      "score": 0.664
+    },
+    {
+      "word": "a",
+      "start": 142.992,
+      "end": 143.032,
+      "score": 0.89
+    },
+    {
+      "word": "fire",
+      "start": 143.153,
+      "end": 143.553,
+      "score": 0.755
+    },
+    {
+      "word": "in",
+      "start": 143.633,
+      "end": 143.693,
+      "score": 0.994
+    },
+    {
+      "word": "the",
+      "start": 143.753,
+      "end": 143.853,
+      "score": 0.674
+    },
+    {
+      "word": "east!",
+      "start": 144.034,
+      "end": 144.334,
+      "score": 0.768
+    },
+    {
+      "word": "The",
+      "start": 145.355,
+      "end": 145.475,
+      "score": 0.832
+    },
+    {
+      "word": "roosters,",
+      "start": 145.536,
+      "end": 146.116,
+      "score": 0.877
+    },
+    {
+      "word": "fooled",
+      "start": 146.276,
+      "end": 146.657,
+      "score": 0.802
+    },
+    {
+      "word": "by",
+      "start": 146.737,
+      "end": 146.877,
+      "score": 1.0
+    },
+    {
+      "word": "the",
+      "start": 146.917,
+      "end": 147.017,
+      "score": 0.66
+    },
+    {
+      "word": "light,",
+      "start": 147.077,
+      "end": 147.378,
+      "score": 0.941
+    },
+    {
+      "word": "crowed",
+      "start": 147.698,
+      "end": 148.099,
+      "score": 0.883
+    },
+    {
+      "word": "loudly,",
+      "start": 148.239,
+      "end": 148.76,
+      "score": 0.963
+    },
+    {
+      "word": "thinking",
+      "start": 148.8,
+      "end": 149.54,
+      "score": 0.834
+    },
+    {
+      "word": "dawn",
+      "start": 149.581,
+      "end": 150.061,
+      "score": 0.858
+    },
+    {
+      "word": "had",
+      "start": 150.121,
+      "end": 150.261,
+      "score": 0.805
+    },
+    {
+      "word": "come.",
+      "start": 150.382,
+      "end": 150.662,
+      "score": 0.869
+    },
+    {
+      "word": "Hearing",
+      "start": 151.543,
+      "end": 151.903,
+      "score": 0.796
+    },
+    {
+      "word": "the",
+      "start": 151.943,
+      "end": 152.084,
+      "score": 0.688
+    },
+    {
+      "word": "sound,",
+      "start": 152.144,
+      "end": 152.564,
+      "score": 0.926
+    },
+    {
+      "word": "the",
+      "start": 152.885,
+      "end": 152.985,
+      "score": 0.796
+    },
+    {
+      "word": "demons",
+      "start": 153.105,
+      "end": 153.545,
+      "score": 0.784
+    },
+    {
+      "word": "fled,",
+      "start": 153.706,
+      "end": 154.066,
+      "score": 0.912
+    },
+    {
+      "word": "the",
+      "start": 154.126,
+      "end": 154.627,
+      "score": 0.897
+    },
+    {
+      "word": "night",
+      "start": 154.747,
+      "end": 155.027,
+      "score": 0.659
+    },
+    {
+      "word": "was",
+      "start": 155.107,
+      "end": 155.248,
+      "score": 0.944
+    },
+    {
+      "word": "over,",
+      "start": 155.488,
+      "end": 155.748,
+      "score": 0.814
+    },
+    {
+      "word": "and",
+      "start": 156.209,
+      "end": 156.309,
+      "score": 0.656
+    },
+    {
+      "word": "Bandung",
+      "start": 156.449,
+      "end": 157.05,
+      "score": 0.863
+    },
+    {
+      "word": "Banduoso",
+      "start": 157.13,
+      "end": 158.011,
+      "score": 0.88
+    },
+    {
+      "word": "couldn't",
+      "start": 158.191,
+      "end": 158.532,
+      "score": 0.715
+    },
+    {
+      "word": "finish",
+      "start": 158.672,
+      "end": 159.032,
+      "score": 0.763
+    },
+    {
+      "word": "the",
+      "start": 159.132,
+      "end": 159.253,
+      "score": 0.751
+    },
+    {
+      "word": "last",
+      "start": 159.333,
+      "end": 159.693,
+      "score": 0.943
+    },
+    {
+      "word": "temple.",
+      "start": 159.813,
+      "end": 160.434,
+      "score": 0.788
+    },
+    {
+      "word": "When",
+      "start": 161.25,
+      "end": 161.47,
+      "score": 0.716
+    },
+    {
+      "word": "he",
+      "start": 161.531,
+      "end": 161.631,
+      "score": 0.996
+    },
+    {
+      "word": "discovered",
+      "start": 161.711,
+      "end": 162.312,
+      "score": 0.783
+    },
+    {
+      "word": "her",
+      "start": 162.372,
+      "end": 162.492,
+      "score": 0.65
+    },
+    {
+      "word": "trick,",
+      "start": 162.612,
+      "end": 162.933,
+      "score": 0.889
+    },
+    {
+      "word": "Bandung",
+      "start": 163.354,
+      "end": 163.955,
+      "score": 0.741
+    },
+    {
+      "word": "Bandawoso",
+      "start": 164.015,
+      "end": 164.897,
+      "score": 0.881
+    },
+    {
+      "word": "was",
+      "start": 164.997,
+      "end": 165.137,
+      "score": 0.808
+    },
+    {
+      "word": "furious.",
+      "start": 165.337,
+      "end": 165.999,
+      "score": 0.94
+    },
+    {
+      "word": "Roro",
+      "start": 166.72,
+      "end": 167.181,
+      "score": 0.862
+    },
+    {
+      "word": "Jonggrong,",
+      "start": 167.321,
+      "end": 168.002,
+      "score": 0.884
+    },
+    {
+      "word": "you",
+      "start": 168.323,
+      "end": 168.523,
+      "score": 0.939
+    },
+    {
+      "word": "have",
+      "start": 168.603,
+      "end": 168.764,
+      "score": 0.884
+    },
+    {
+      "word": "deceived",
+      "start": 168.864,
+      "end": 169.545,
+      "score": 0.849
+    },
+    {
+      "word": "me,",
+      "start": 169.625,
+      "end": 169.806,
+      "score": 0.88
+    },
+    {
+      "word": "he",
+      "start": 169.846,
+      "end": 170.346,
+      "score": 0.867
+    },
+    {
+      "word": "shouted.",
+      "start": 170.467,
+      "end": 170.948,
+      "score": 0.827
+    },
+    {
+      "word": "Then",
+      "start": 170.988,
+      "end": 172.09,
+      "score": 0.863
+    },
+    {
+      "word": "you",
+      "start": 172.13,
+      "end": 172.831,
+      "score": 0.542
+    },
+    {
+      "word": "shall",
+      "start": 173.232,
+      "end": 173.472,
+      "score": 0.87
+    },
+    {
+      "word": "be",
+      "start": 173.572,
+      "end": 173.773,
+      "score": 0.87
+    },
+    {
+      "word": "the",
+      "start": 173.813,
+      "end": 174.033,
+      "score": 0.779
+    },
+    {
+      "word": "final",
+      "start": 174.193,
+      "end": 174.614,
+      "score": 0.899
+    },
+    {
+      "word": "temple,",
+      "start": 174.754,
+      "end": 175.215,
+      "score": 0.923
+    },
+    {
+      "word": "the",
+      "start": 175.616,
+      "end": 175.716,
+      "score": 0.992
+    },
+    {
+      "word": "one",
+      "start": 175.937,
+      "end": 176.077,
+      "score": 0.774
+    },
+    {
+      "word": "thousandth.",
+      "start": 176.237,
+      "end": 176.878,
+      "score": 0.766
+    },
+    {
+      "word": "He",
+      "start": 177.8,
+      "end": 177.92,
+      "score": 0.818
+    },
+    {
+      "word": "pointed",
+      "start": 178.04,
+      "end": 178.441,
+      "score": 0.692
+    },
+    {
+      "word": "his",
+      "start": 178.501,
+      "end": 178.642,
+      "score": 0.577
+    },
+    {
+      "word": "hand",
+      "start": 178.702,
+      "end": 179.022,
+      "score": 0.81
+    },
+    {
+      "word": "toward",
+      "start": 179.142,
+      "end": 179.463,
+      "score": 0.887
+    },
+    {
+      "word": "her,",
+      "start": 179.523,
+      "end": 179.663,
+      "score": 0.986
+    },
+    {
+      "word": "and",
+      "start": 180.084,
+      "end": 180.184,
+      "score": 0.658
+    },
+    {
+      "word": "with",
+      "start": 180.244,
+      "end": 180.405,
+      "score": 0.798
+    },
+    {
+      "word": "his",
+      "start": 180.465,
+      "end": 180.605,
+      "score": 0.746
+    },
+    {
+      "word": "powerful",
+      "start": 180.745,
+      "end": 181.306,
+      "score": 0.8
+    },
+    {
+      "word": "magic",
+      "start": 181.447,
+      "end": 181.867,
+      "score": 0.999
+    },
+    {
+      "word": "Roro",
+      "start": 182.268,
+      "end": 182.709,
+      "score": 0.917
+    },
+    {
+      "word": "Jonggrong",
+      "start": 182.849,
+      "end": 183.55,
+      "score": 0.838
+    },
+    {
+      "word": "turned",
+      "start": 183.711,
+      "end": 184.091,
+      "score": 0.871
+    },
+    {
+      "word": "into",
+      "start": 184.131,
+      "end": 184.672,
+      "score": 0.877
+    },
+    {
+      "word": "stone.",
+      "start": 184.773,
+      "end": 185.554,
+      "score": 0.802
+    },
+    {
+      "word": "That",
+      "start": 186.274,
+      "end": 186.595,
+      "score": 0.888
+    },
+    {
+      "word": "statue",
+      "start": 186.695,
+      "end": 187.277,
+      "score": 0.8
+    },
+    {
+      "word": "still",
+      "start": 187.397,
+      "end": 187.758,
+      "score": 0.841
+    },
+    {
+      "word": "stands",
+      "start": 187.838,
+      "end": 188.399,
+      "score": 0.864
+    },
+    {
+      "word": "in",
+      "start": 188.419,
+      "end": 188.58,
+      "score": 0.66
+    },
+    {
+      "word": "Prambanan",
+      "start": 188.68,
+      "end": 189.442,
+      "score": 0.918
+    },
+    {
+      "word": "temple,",
+      "start": 189.542,
+      "end": 189.983,
+      "score": 0.88
+    },
+    {
+      "word": "known",
+      "start": 190.505,
+      "end": 190.846,
+      "score": 0.598
+    },
+    {
+      "word": "as",
+      "start": 190.866,
+      "end": 191.166,
+      "score": 0.649
+    },
+    {
+      "word": "the",
+      "start": 191.207,
+      "end": 191.367,
+      "score": 0.611
+    },
+    {
+      "word": "image",
+      "start": 191.527,
+      "end": 191.848,
+      "score": 0.757
+    },
+    {
+      "word": "of",
+      "start": 191.968,
+      "end": 192.009,
+      "score": 0.996
+    },
+    {
+      "word": "Dewi",
+      "start": 192.049,
+      "end": 192.59,
+      "score": 0.665
+    },
+    {
+      "word": "Durga,",
+      "start": 192.67,
+      "end": 193.272,
+      "score": 0.942
+    },
+    {
+      "word": "the",
+      "start": 193.693,
+      "end": 193.793,
+      "score": 0.947
+    },
+    {
+      "word": "beautiful",
+      "start": 193.873,
+      "end": 194.415,
+      "score": 0.711
+    },
+    {
+      "word": "goddess",
+      "start": 194.515,
+      "end": 194.996,
+      "score": 0.905
+    },
+    {
+      "word": "who",
+      "start": 195.277,
+      "end": 195.417,
+      "score": 0.787
+    },
+    {
+      "word": "was",
+      "start": 195.477,
+      "end": 195.658,
+      "score": 0.893
+    },
+    {
+      "word": "once",
+      "start": 195.678,
+      "end": 196.119,
+      "score": 0.918
+    },
+    {
+      "word": "Princess",
+      "start": 196.159,
+      "end": 196.981,
+      "score": 0.803
+    },
+    {
+      "word": "Roro",
+      "start": 197.282,
+      "end": 197.763,
+      "score": 0.959
+    },
+    {
+      "word": "Jonggrang.",
+      "start": 197.904,
+      "end": 198.866,
+      "score": 0.851
+    }
+  ]
+}

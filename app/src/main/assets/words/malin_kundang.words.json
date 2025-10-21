@@ -1,0 +1,5513 @@
+{
+  "segments": [
+    {
+      "start": 0.226,
+      "end": 4.032,
+      "text": " Malin Kundan, the ungrateful son.",
+      "words": [
+        {
+          "word": "Malin",
+          "start": 0.226,
+          "end": 0.887,
+          "score": 0.822
+        },
+        {
+          "word": "Kundan,",
+          "start": 1.007,
+          "end": 1.728,
+          "score": 0.921
+        },
+        {
+          "word": "the",
+          "start": 1.789,
+          "end": 2.49,
+          "score": 0.957
+        },
+        {
+          "word": "ungrateful",
+          "start": 2.73,
+          "end": 3.551,
+          "score": 0.95
+        },
+        {
+          "word": "son.",
+          "start": 3.712,
+          "end": 4.032,
+          "score": 0.879
+        }
+      ]
+    },
+    {
+      "start": 5.595,
+      "end": 14.99,
+      "text": "Long ago in a small fishing village on the coast of West Sumatra lived a poor widow and her only son Malin Kundan.",
+      "words": [
+        {
+          "word": "Long",
+          "start": 5.595,
+          "end": 5.855,
+          "score": 0.605
+        },
+        {
+          "word": "ago",
+          "start": 5.935,
+          "end": 6.216,
+          "score": 0.844
+        },
+        {
+          "word": "in",
+          "start": 6.236,
+          "end": 6.276,
+          "score": 0.5
+        },
+        {
+          "word": "a",
+          "start": 6.797,
+          "end": 6.817,
+          "score": 0.897
+        },
+        {
+          "word": "small",
+          "start": 6.937,
+          "end": 7.318,
+          "score": 0.938
+        },
+        {
+          "word": "fishing",
+          "start": 7.438,
+          "end": 7.819,
+          "score": 0.84
+        },
+        {
+          "word": "village",
+          "start": 7.879,
+          "end": 8.279,
+          "score": 0.805
+        },
+        {
+          "word": "on",
+          "start": 8.379,
+          "end": 8.44,
+          "score": 1.0
+        },
+        {
+          "word": "the",
+          "start": 8.48,
+          "end": 8.56,
+          "score": 0.998
+        },
+        {
+          "word": "coast",
+          "start": 8.64,
+          "end": 8.98,
+          "score": 0.711
+        },
+        {
+          "word": "of",
+          "start": 9.061,
+          "end": 9.101,
+          "score": 1.0
+        },
+        {
+          "word": "West",
+          "start": 9.121,
+          "end": 9.501,
+          "score": 0.582
+        },
+        {
+          "word": "Sumatra",
+          "start": 9.601,
+          "end": 10.222,
+          "score": 0.901
+        },
+        {
+          "word": "lived",
+          "start": 10.643,
+          "end": 10.964,
+          "score": 0.775
+        },
+        {
+          "word": "a",
+          "start": 11.004,
+          "end": 11.064,
+          "score": 0.323
+        },
+        {
+          "word": "poor",
+          "start": 11.184,
+          "end": 11.525,
+          "score": 0.844
+        },
+        {
+          "word": "widow",
+          "start": 11.645,
+          "end": 11.985,
+          "score": 0.785
+        },
+        {
+          "word": "and",
+          "start": 12.286,
+          "end": 12.366,
+          "score": 0.9
+        },
+        {
+          "word": "her",
+          "start": 12.426,
+          "end": 12.546,
+          "score": 0.839
+        },
+        {
+          "word": "only",
+          "start": 12.707,
+          "end": 12.967,
+          "score": 0.886
+        },
+        {
+          "word": "son",
+          "start": 13.087,
+          "end": 13.408,
+          "score": 0.84
+        },
+        {
+          "word": "Malin",
+          "start": 13.428,
+          "end": 14.289,
+          "score": 0.708
+        },
+        {
+          "word": "Kundan.",
+          "start": 14.369,
+          "end": 14.99,
+          "score": 0.936
+        }
+      ]
+    },
+    {
+      "start": 15.992,
+      "end": 24.526,
+      "text": "Her husband had gone to sea years before and never returned so Malin grew up with only his mother's love and care.",
+      "words": [
+        {
+          "word": "Her",
+          "start": 15.992,
+          "end": 16.092,
+          "score": 0.785
+        },
+        {
+          "word": "husband",
+          "start": 16.152,
+          "end": 16.633,
+          "score": 0.777
+        },
+        {
+          "word": "had",
+          "start": 16.693,
+          "end": 16.813,
+          "score": 0.637
+        },
+        {
+          "word": "gone",
+          "start": 16.893,
+          "end": 17.154,
+          "score": 0.75
+        },
+        {
+          "word": "to",
+          "start": 17.234,
+          "end": 17.334,
+          "score": 0.758
+        },
+        {
+          "word": "sea",
+          "start": 17.454,
+          "end": 17.715,
+          "score": 0.986
+        },
+        {
+          "word": "years",
+          "start": 17.755,
+          "end": 18.256,
+          "score": 0.48
+        },
+        {
+          "word": "before",
+          "start": 18.356,
+          "end": 18.817,
+          "score": 0.781
+        },
+        {
+          "word": "and",
+          "start": 19.057,
+          "end": 19.157,
+          "score": 0.667
+        },
+        {
+          "word": "never",
+          "start": 19.277,
+          "end": 19.518,
+          "score": 0.773
+        },
+        {
+          "word": "returned",
+          "start": 19.618,
+          "end": 20.199,
+          "score": 0.914
+        },
+        {
+          "word": "so",
+          "start": 20.74,
+          "end": 20.88,
+          "score": 0.864
+        },
+        {
+          "word": "Malin",
+          "start": 20.96,
+          "end": 21.361,
+          "score": 0.735
+        },
+        {
+          "word": "grew",
+          "start": 21.461,
+          "end": 21.701,
+          "score": 0.852
+        },
+        {
+          "word": "up",
+          "start": 21.842,
+          "end": 21.922,
+          "score": 0.894
+        },
+        {
+          "word": "with",
+          "start": 22.042,
+          "end": 22.182,
+          "score": 0.702
+        },
+        {
+          "word": "only",
+          "start": 22.423,
+          "end": 22.703,
+          "score": 0.863
+        },
+        {
+          "word": "his",
+          "start": 22.723,
+          "end": 22.923,
+          "score": 0.669
+        },
+        {
+          "word": "mother's",
+          "start": 23.064,
+          "end": 23.444,
+          "score": 0.804
+        },
+        {
+          "word": "love",
+          "start": 23.585,
+          "end": 23.905,
+          "score": 0.982
+        },
+        {
+          "word": "and",
+          "start": 23.985,
+          "end": 24.045,
+          "score": 0.668
+        },
+        {
+          "word": "care.",
+          "start": 24.165,
+          "end": 24.526,
+          "score": 0.834
+        }
+      ]
+    },
+    {
+      "start": 25.828,
+      "end": 26.93,
+      "text": "As he grew older",
+      "words": [
+        {
+          "word": "As",
+          "start": 25.828,
+          "end": 25.928,
+          "score": 0.972
+        },
+        {
+          "word": "he",
+          "start": 26.009,
+          "end": 26.109,
+          "score": 0.992
+        },
+        {
+          "word": "grew",
+          "start": 26.169,
+          "end": 26.389,
+          "score": 0.668
+        },
+        {
+          "word": "older",
+          "start": 26.529,
+          "end": 26.93,
+          "score": 0.673
+        }
+      ]
+    },
+    {
+      "start": 27.074,
+      "end": 30.098,
+      "text": " Malin became a diligent and clever young man.",
+      "words": [
+        {
+          "word": "Malin",
+          "start": 27.074,
+          "end": 27.535,
+          "score": 0.817
+        },
+        {
+          "word": "became",
+          "start": 27.595,
+          "end": 27.975,
+          "score": 0.811
+        },
+        {
+          "word": "a",
+          "start": 28.015,
+          "end": 28.035,
+          "score": 1.0
+        },
+        {
+          "word": "diligent",
+          "start": 28.235,
+          "end": 28.776,
+          "score": 0.876
+        },
+        {
+          "word": "and",
+          "start": 28.896,
+          "end": 28.976,
+          "score": 0.975
+        },
+        {
+          "word": "clever",
+          "start": 29.097,
+          "end": 29.477,
+          "score": 0.796
+        },
+        {
+          "word": "young",
+          "start": 29.557,
+          "end": 29.757,
+          "score": 0.833
+        },
+        {
+          "word": "man.",
+          "start": 29.817,
+          "end": 30.098,
+          "score": 0.909
+        }
+      ]
+    },
+    {
+      "start": 30.158,
+      "end": 34.383,
+      "text": "Every morning, he helped his mother sell fish at the market.",
+      "words": [
+        {
+          "word": "Every",
+          "start": 30.158,
+          "end": 31.199,
+          "score": 0.659
+        },
+        {
+          "word": "morning,",
+          "start": 31.259,
+          "end": 31.62,
+          "score": 0.873
+        },
+        {
+          "word": "he",
+          "start": 31.88,
+          "end": 31.96,
+          "score": 0.727
+        },
+        {
+          "word": "helped",
+          "start": 32.04,
+          "end": 32.301,
+          "score": 0.88
+        },
+        {
+          "word": "his",
+          "start": 32.341,
+          "end": 32.461,
+          "score": 0.71
+        },
+        {
+          "word": "mother",
+          "start": 32.561,
+          "end": 32.841,
+          "score": 0.856
+        },
+        {
+          "word": "sell",
+          "start": 32.881,
+          "end": 33.262,
+          "score": 0.91
+        },
+        {
+          "word": "fish",
+          "start": 33.382,
+          "end": 33.662,
+          "score": 0.78
+        },
+        {
+          "word": "at",
+          "start": 33.762,
+          "end": 33.802,
+          "score": 0.996
+        },
+        {
+          "word": "the",
+          "start": 33.842,
+          "end": 33.923,
+          "score": 0.824
+        },
+        {
+          "word": "market.",
+          "start": 33.983,
+          "end": 34.383,
+          "score": 0.919
+        }
+      ]
+    },
+    {
+      "start": 35.144,
+      "end": 39.85,
+      "text": "Yet deep inside, Malin dreamed of becoming a rich man.",
+      "words": [
+        {
+          "word": "Yet",
+          "start": 35.144,
+          "end": 35.384,
+          "score": 0.978
+        },
+        {
+          "word": "deep",
+          "start": 35.424,
+          "end": 35.905,
+          "score": 0.878
+        },
+        {
+          "word": "inside,",
+          "start": 36.025,
+          "end": 36.666,
+          "score": 0.921
+        },
+        {
+          "word": "Malin",
+          "start": 37.046,
+          "end": 37.487,
+          "score": 0.79
+        },
+        {
+          "word": "dreamed",
+          "start": 37.607,
+          "end": 38.128,
+          "score": 0.723
+        },
+        {
+          "word": "of",
+          "start": 38.148,
+          "end": 38.248,
+          "score": 0.756
+        },
+        {
+          "word": "becoming",
+          "start": 38.328,
+          "end": 38.789,
+          "score": 0.796
+        },
+        {
+          "word": "a",
+          "start": 38.809,
+          "end": 38.829,
+          "score": 1.0
+        },
+        {
+          "word": "rich",
+          "start": 39.169,
+          "end": 39.429,
+          "score": 0.733
+        },
+        {
+          "word": "man.",
+          "start": 39.53,
+          "end": 39.85,
+          "score": 0.808
+        }
+      ]
+    },
+    {
+      "start": 39.91,
+      "end": 45.297,
+      "text": "He wanted to lift his mother out of poverty and give her a better life.",
+      "words": [
+        {
+          "word": "He",
+          "start": 39.91,
+          "end": 40.631,
+          "score": 0.696
+        },
+        {
+          "word": "wanted",
+          "start": 40.711,
+          "end": 41.071,
+          "score": 0.848
+        },
+        {
+          "word": "to",
+          "start": 41.132,
+          "end": 41.252,
+          "score": 0.704
+        },
+        {
+          "word": "lift",
+          "start": 41.372,
+          "end": 41.652,
+          "score": 0.957
+        },
+        {
+          "word": "his",
+          "start": 41.712,
+          "end": 41.832,
+          "score": 0.695
+        },
+        {
+          "word": "mother",
+          "start": 41.913,
+          "end": 42.193,
+          "score": 0.766
+        },
+        {
+          "word": "out",
+          "start": 42.413,
+          "end": 42.533,
+          "score": 0.594
+        },
+        {
+          "word": "of",
+          "start": 42.593,
+          "end": 42.633,
+          "score": 0.908
+        },
+        {
+          "word": "poverty",
+          "start": 42.674,
+          "end": 43.254,
+          "score": 0.876
+        },
+        {
+          "word": "and",
+          "start": 43.294,
+          "end": 43.735,
+          "score": 0.914
+        },
+        {
+          "word": "give",
+          "start": 43.835,
+          "end": 44.035,
+          "score": 0.991
+        },
+        {
+          "word": "her",
+          "start": 44.095,
+          "end": 44.255,
+          "score": 0.859
+        },
+        {
+          "word": "a",
+          "start": 44.276,
+          "end": 44.296,
+          "score": 1.0
+        },
+        {
+          "word": "better",
+          "start": 44.636,
+          "end": 44.916,
+          "score": 0.843
+        },
+        {
+          "word": "life.",
+          "start": 44.996,
+          "end": 45.297,
+          "score": 0.899
+        }
+      ]
+    },
+    {
+      "start": 46.538,
+      "end": 50.283,
+      "text": "One day, a large merchant ship anchored near their village.",
+      "words": [
+        {
+          "word": "One",
+          "start": 46.538,
+          "end": 46.658,
+          "score": 0.582
+        },
+        {
+          "word": "day,",
+          "start": 46.719,
+          "end": 46.939,
+          "score": 0.962
+        },
+        {
+          "word": "a",
+          "start": 46.959,
+          "end": 46.979,
+          "score": 1.0
+        },
+        {
+          "word": "large",
+          "start": 47.5,
+          "end": 47.9,
+          "score": 0.698
+        },
+        {
+          "word": "merchant",
+          "start": 48.04,
+          "end": 48.501,
+          "score": 0.868
+        },
+        {
+          "word": "ship",
+          "start": 48.541,
+          "end": 48.781,
+          "score": 0.785
+        },
+        {
+          "word": "anchored",
+          "start": 49.041,
+          "end": 49.402,
+          "score": 0.735
+        },
+        {
+          "word": "near",
+          "start": 49.462,
+          "end": 49.642,
+          "score": 0.698
+        },
+        {
+          "word": "their",
+          "start": 49.702,
+          "end": 49.842,
+          "score": 0.889
+        },
+        {
+          "word": "village.",
+          "start": 49.903,
+          "end": 50.283,
+          "score": 0.756
+        }
+      ]
+    },
+    {
+      "start": 50.984,
+      "end": 55.89,
+      "text": "The ship belonged to a wealthy trader who was looking for new crew members.",
+      "words": [
+        {
+          "word": "The",
+          "start": 50.984,
+          "end": 51.084,
+          "score": 0.622
+        },
+        {
+          "word": "ship",
+          "start": 51.164,
+          "end": 51.444,
+          "score": 0.742
+        },
+        {
+          "word": "belonged",
+          "start": 51.585,
+          "end": 52.085,
+          "score": 0.776
+        },
+        {
+          "word": "to",
+          "start": 52.105,
+          "end": 52.286,
+          "score": 0.567
+        },
+        {
+          "word": "a",
+          "start": 52.306,
+          "end": 52.326,
+          "score": 1.0
+        },
+        {
+          "word": "wealthy",
+          "start": 52.526,
+          "end": 52.906,
+          "score": 0.73
+        },
+        {
+          "word": "trader",
+          "start": 53.026,
+          "end": 53.427,
+          "score": 0.915
+        },
+        {
+          "word": "who",
+          "start": 53.707,
+          "end": 53.807,
+          "score": 0.835
+        },
+        {
+          "word": "was",
+          "start": 53.847,
+          "end": 53.968,
+          "score": 0.715
+        },
+        {
+          "word": "looking",
+          "start": 54.048,
+          "end": 54.388,
+          "score": 0.825
+        },
+        {
+          "word": "for",
+          "start": 54.408,
+          "end": 54.588,
+          "score": 0.875
+        },
+        {
+          "word": "new",
+          "start": 54.628,
+          "end": 54.889,
+          "score": 0.875
+        },
+        {
+          "word": "crew",
+          "start": 55.029,
+          "end": 55.249,
+          "score": 0.895
+        },
+        {
+          "word": "members.",
+          "start": 55.289,
+          "end": 55.89,
+          "score": 0.944
+        }
+      ]
+    },
+    {
+      "start": 56.45,
+      "end": 62.079,
+      "text": " Seeing this as his chance, Malin begged his mother to let him go and work on the ship.",
+      "words": [
+        {
+          "word": "Seeing",
+          "start": 56.45,
+          "end": 56.911,
+          "score": 0.731
+        },
+        {
+          "word": "this",
+          "start": 56.971,
+          "end": 57.171,
+          "score": 0.904
+        },
+        {
+          "word": "as",
+          "start": 57.311,
+          "end": 57.371,
+          "score": 1.0
+        },
+        {
+          "word": "his",
+          "start": 57.452,
+          "end": 57.592,
+          "score": 0.82
+        },
+        {
+          "word": "chance,",
+          "start": 57.692,
+          "end": 58.133,
+          "score": 0.89
+        },
+        {
+          "word": "Malin",
+          "start": 58.473,
+          "end": 58.874,
+          "score": 0.845
+        },
+        {
+          "word": "begged",
+          "start": 59.014,
+          "end": 59.335,
+          "score": 0.838
+        },
+        {
+          "word": "his",
+          "start": 59.375,
+          "end": 59.515,
+          "score": 0.75
+        },
+        {
+          "word": "mother",
+          "start": 59.595,
+          "end": 59.855,
+          "score": 0.811
+        },
+        {
+          "word": "to",
+          "start": 59.875,
+          "end": 60.076,
+          "score": 0.566
+        },
+        {
+          "word": "let",
+          "start": 60.156,
+          "end": 60.356,
+          "score": 0.888
+        },
+        {
+          "word": "him",
+          "start": 60.396,
+          "end": 60.516,
+          "score": 0.894
+        },
+        {
+          "word": "go",
+          "start": 60.637,
+          "end": 60.877,
+          "score": 0.931
+        },
+        {
+          "word": "and",
+          "start": 60.917,
+          "end": 61.117,
+          "score": 0.512
+        },
+        {
+          "word": "work",
+          "start": 61.137,
+          "end": 61.458,
+          "score": 0.84
+        },
+        {
+          "word": "on",
+          "start": 61.538,
+          "end": 61.598,
+          "score": 1.0
+        },
+        {
+          "word": "the",
+          "start": 61.638,
+          "end": 61.718,
+          "score": 0.998
+        },
+        {
+          "word": "ship.",
+          "start": 61.778,
+          "end": 62.079,
+          "score": 0.891
+        }
+      ]
+    },
+    {
+      "start": 62.94,
+      "end": 64.603,
+      "text": "Mother, please let me go.",
+      "words": [
+        {
+          "word": "Mother,",
+          "start": 62.94,
+          "end": 63.281,
+          "score": 0.793
+        },
+        {
+          "word": "please",
+          "start": 63.621,
+          "end": 63.962,
+          "score": 0.702
+        },
+        {
+          "word": "let",
+          "start": 64.042,
+          "end": 64.182,
+          "score": 0.825
+        },
+        {
+          "word": "me",
+          "start": 64.222,
+          "end": 64.323,
+          "score": 0.823
+        },
+        {
+          "word": "go.",
+          "start": 64.403,
+          "end": 64.603,
+          "score": 0.99
+        }
+      ]
+    },
+    {
+      "start": 64.663,
+      "end": 68.85,
+      "text": "If I become successful, I'll come back and make you happy.",
+      "words": [
+        {
+          "word": "If",
+          "start": 64.663,
+          "end": 65.204,
+          "score": 0.921
+        },
+        {
+          "word": "I",
+          "start": 65.344,
+          "end": 65.404,
+          "score": 0.997
+        },
+        {
+          "word": "become",
+          "start": 65.464,
+          "end": 65.825,
+          "score": 0.922
+        },
+        {
+          "word": "successful,",
+          "start": 65.905,
+          "end": 66.546,
+          "score": 0.922
+        },
+        {
+          "word": "I'll",
+          "start": 66.967,
+          "end": 67.147,
+          "score": 0.962
+        },
+        {
+          "word": "come",
+          "start": 67.187,
+          "end": 67.387,
+          "score": 0.867
+        },
+        {
+          "word": "back",
+          "start": 67.427,
+          "end": 67.708,
+          "score": 0.668
+        },
+        {
+          "word": "and",
+          "start": 67.808,
+          "end": 67.888,
+          "score": 0.962
+        },
+        {
+          "word": "make",
+          "start": 67.988,
+          "end": 68.209,
+          "score": 0.588
+        },
+        {
+          "word": "you",
+          "start": 68.249,
+          "end": 68.389,
+          "score": 0.896
+        },
+        {
+          "word": "happy.",
+          "start": 68.429,
+          "end": 68.85,
+          "score": 0.911
+        }
+      ]
+    },
+    {
+      "start": 68.89,
+      "end": 79.727,
+      "text": "With a heavy heart, his mother agreed and said softly, Go then, my son, but never forget your mother or where you come from.",
+      "words": [
+        {
+          "word": "With",
+          "start": 68.89,
+          "end": 70.152,
+          "score": 0.615
+        },
+        {
+          "word": "a",
+          "start": 70.252,
+          "end": 70.272,
+          "score": 1.0
+        },
+        {
+          "word": "heavy",
+          "start": 70.352,
+          "end": 70.633,
+          "score": 0.881
+        },
+        {
+          "word": "heart,",
+          "start": 70.713,
+          "end": 70.993,
+          "score": 0.776
+        },
+        {
+          "word": "his",
+          "start": 71.334,
+          "end": 71.474,
+          "score": 0.87
+        },
+        {
+          "word": "mother",
+          "start": 71.554,
+          "end": 71.834,
+          "score": 0.759
+        },
+        {
+          "word": "agreed",
+          "start": 71.855,
+          "end": 72.496,
+          "score": 0.713
+        },
+        {
+          "word": "and",
+          "start": 72.536,
+          "end": 72.916,
+          "score": 0.772
+        },
+        {
+          "word": "said",
+          "start": 73.036,
+          "end": 73.277,
+          "score": 0.948
+        },
+        {
+          "word": "softly,",
+          "start": 73.297,
+          "end": 73.918,
+          "score": 0.925
+        },
+        {
+          "word": "Go",
+          "start": 74.679,
+          "end": 74.859,
+          "score": 0.822
+        },
+        {
+          "word": "then,",
+          "start": 74.979,
+          "end": 75.16,
+          "score": 0.989
+        },
+        {
+          "word": "my",
+          "start": 75.24,
+          "end": 75.38,
+          "score": 0.992
+        },
+        {
+          "word": "son,",
+          "start": 75.48,
+          "end": 75.721,
+          "score": 0.997
+        },
+        {
+          "word": "but",
+          "start": 75.781,
+          "end": 76.322,
+          "score": 0.919
+        },
+        {
+          "word": "never",
+          "start": 76.342,
+          "end": 76.782,
+          "score": 0.653
+        },
+        {
+          "word": "forget",
+          "start": 76.903,
+          "end": 77.283,
+          "score": 0.875
+        },
+        {
+          "word": "your",
+          "start": 77.343,
+          "end": 77.524,
+          "score": 0.773
+        },
+        {
+          "word": "mother",
+          "start": 77.604,
+          "end": 77.884,
+          "score": 0.791
+        },
+        {
+          "word": "or",
+          "start": 77.924,
+          "end": 78.525,
+          "score": 0.766
+        },
+        {
+          "word": "where",
+          "start": 78.545,
+          "end": 78.946,
+          "score": 0.853
+        },
+        {
+          "word": "you",
+          "start": 79.006,
+          "end": 79.126,
+          "score": 0.986
+        },
+        {
+          "word": "come",
+          "start": 79.226,
+          "end": 79.427,
+          "score": 0.88
+        },
+        {
+          "word": "from.",
+          "start": 79.527,
+          "end": 79.727,
+          "score": 0.906
+        }
+      ]
+    },
+    {
+      "start": 79.787,
+      "end": 82.051,
+      "text": "Years passed.",
+      "words": [
+        {
+          "word": "Years",
+          "start": 79.787,
+          "end": 81.43,
+          "score": 0.606
+        },
+        {
+          "word": "passed.",
+          "start": 81.57,
+          "end": 82.051,
+          "score": 0.972
+        }
+      ]
+    },
+    {
+      "start": 82.491,
+      "end": 84.114,
+      "text": "Malin never returned.",
+      "words": [
+        {
+          "word": "Malin",
+          "start": 82.491,
+          "end": 82.912,
+          "score": 0.847
+        },
+        {
+          "word": "never",
+          "start": 83.072,
+          "end": 83.333,
+          "score": 0.754
+        },
+        {
+          "word": "returned.",
+          "start": 83.433,
+          "end": 84.114,
+          "score": 0.893
+        }
+      ]
+    },
+    {
+      "start": 84.674,
+      "end": 89.722,
+      "text": " His mother waited every day by the beach, hoping to see her son again.",
+      "words": [
+        {
+          "word": "His",
+          "start": 84.674,
+          "end": 84.874,
+          "score": 0.547
+        },
+        {
+          "word": "mother",
+          "start": 84.974,
+          "end": 85.255,
+          "score": 0.837
+        },
+        {
+          "word": "waited",
+          "start": 85.395,
+          "end": 85.776,
+          "score": 0.842
+        },
+        {
+          "word": "every",
+          "start": 85.816,
+          "end": 86.377,
+          "score": 0.658
+        },
+        {
+          "word": "day",
+          "start": 86.477,
+          "end": 86.717,
+          "score": 0.93
+        },
+        {
+          "word": "by",
+          "start": 86.838,
+          "end": 86.978,
+          "score": 0.992
+        },
+        {
+          "word": "the",
+          "start": 86.998,
+          "end": 87.118,
+          "score": 0.789
+        },
+        {
+          "word": "beach,",
+          "start": 87.158,
+          "end": 87.479,
+          "score": 0.691
+        },
+        {
+          "word": "hoping",
+          "start": 87.879,
+          "end": 88.26,
+          "score": 0.793
+        },
+        {
+          "word": "to",
+          "start": 88.36,
+          "end": 88.46,
+          "score": 0.893
+        },
+        {
+          "word": "see",
+          "start": 88.58,
+          "end": 88.821,
+          "score": 0.948
+        },
+        {
+          "word": "her",
+          "start": 88.901,
+          "end": 89.021,
+          "score": 0.799
+        },
+        {
+          "word": "son",
+          "start": 89.101,
+          "end": 89.342,
+          "score": 0.847
+        },
+        {
+          "word": "again.",
+          "start": 89.402,
+          "end": 89.722,
+          "score": 0.856
+        }
+      ]
+    },
+    {
+      "start": 89.782,
+      "end": 95.191,
+      "text": "Until one bright morning, a grand ship arrived at the shore.",
+      "words": [
+        {
+          "word": "Until",
+          "start": 89.782,
+          "end": 91.085,
+          "score": 0.769
+        },
+        {
+          "word": "one",
+          "start": 91.105,
+          "end": 91.565,
+          "score": 0.67
+        },
+        {
+          "word": "bright",
+          "start": 91.726,
+          "end": 92.066,
+          "score": 0.691
+        },
+        {
+          "word": "morning,",
+          "start": 92.186,
+          "end": 92.547,
+          "score": 0.889
+        },
+        {
+          "word": "a",
+          "start": 92.948,
+          "end": 92.988,
+          "score": 0.994
+        },
+        {
+          "word": "grand",
+          "start": 93.108,
+          "end": 93.509,
+          "score": 0.915
+        },
+        {
+          "word": "ship",
+          "start": 93.669,
+          "end": 93.929,
+          "score": 0.942
+        },
+        {
+          "word": "arrived",
+          "start": 94.049,
+          "end": 94.53,
+          "score": 0.871
+        },
+        {
+          "word": "at",
+          "start": 94.59,
+          "end": 94.65,
+          "score": 0.771
+        },
+        {
+          "word": "the",
+          "start": 94.67,
+          "end": 94.771,
+          "score": 0.832
+        },
+        {
+          "word": "shore.",
+          "start": 94.831,
+          "end": 95.191,
+          "score": 0.711
+        }
+      ]
+    },
+    {
+      "start": 96.033,
+      "end": 103.004,
+      "text": "From it stepped a handsome man, dressed in fine clothes, holding the hand of a beautiful woman.",
+      "words": [
+        {
+          "word": "From",
+          "start": 96.033,
+          "end": 96.233,
+          "score": 0.756
+        },
+        {
+          "word": "it",
+          "start": 96.333,
+          "end": 96.393,
+          "score": 0.989
+        },
+        {
+          "word": "stepped",
+          "start": 96.674,
+          "end": 96.994,
+          "score": 0.919
+        },
+        {
+          "word": "a",
+          "start": 97.195,
+          "end": 97.215,
+          "score": 0.716
+        },
+        {
+          "word": "handsome",
+          "start": 97.295,
+          "end": 97.796,
+          "score": 0.894
+        },
+        {
+          "word": "man,",
+          "start": 97.876,
+          "end": 98.216,
+          "score": 0.863
+        },
+        {
+          "word": "dressed",
+          "start": 98.256,
+          "end": 98.998,
+          "score": 0.93
+        },
+        {
+          "word": "in",
+          "start": 99.078,
+          "end": 99.138,
+          "score": 0.763
+        },
+        {
+          "word": "fine",
+          "start": 99.318,
+          "end": 99.699,
+          "score": 0.79
+        },
+        {
+          "word": "clothes,",
+          "start": 99.859,
+          "end": 100.4,
+          "score": 0.798
+        },
+        {
+          "word": "holding",
+          "start": 100.761,
+          "end": 101.121,
+          "score": 0.75
+        },
+        {
+          "word": "the",
+          "start": 101.181,
+          "end": 101.261,
+          "score": 0.978
+        },
+        {
+          "word": "hand",
+          "start": 101.321,
+          "end": 101.662,
+          "score": 0.693
+        },
+        {
+          "word": "of",
+          "start": 101.702,
+          "end": 101.902,
+          "score": 0.794
+        },
+        {
+          "word": "a",
+          "start": 102.003,
+          "end": 102.023,
+          "score": 1.0
+        },
+        {
+          "word": "beautiful",
+          "start": 102.083,
+          "end": 102.604,
+          "score": 0.741
+        },
+        {
+          "word": "woman.",
+          "start": 102.684,
+          "end": 103.004,
+          "score": 0.958
+        }
+      ]
+    },
+    {
+      "start": 103.906,
+      "end": 109.695,
+      "text": "The villagers whispered, that's Malin Kundan, the poor boy who went to sea.",
+      "words": [
+        {
+          "word": "The",
+          "start": 103.906,
+          "end": 104.006,
+          "score": 0.992
+        },
+        {
+          "word": "villagers",
+          "start": 104.066,
+          "end": 104.567,
+          "score": 0.781
+        },
+        {
+          "word": "whispered,",
+          "start": 104.687,
+          "end": 105.168,
+          "score": 0.732
+        },
+        {
+          "word": "that's",
+          "start": 105.649,
+          "end": 105.989,
+          "score": 0.844
+        },
+        {
+          "word": "Malin",
+          "start": 106.089,
+          "end": 106.51,
+          "score": 0.803
+        },
+        {
+          "word": "Kundan,",
+          "start": 106.53,
+          "end": 107.211,
+          "score": 0.979
+        },
+        {
+          "word": "the",
+          "start": 107.672,
+          "end": 107.772,
+          "score": 0.995
+        },
+        {
+          "word": "poor",
+          "start": 107.852,
+          "end": 108.153,
+          "score": 0.891
+        },
+        {
+          "word": "boy",
+          "start": 108.273,
+          "end": 108.613,
+          "score": 0.771
+        },
+        {
+          "word": "who",
+          "start": 108.634,
+          "end": 108.814,
+          "score": 0.769
+        },
+        {
+          "word": "went",
+          "start": 108.894,
+          "end": 109.094,
+          "score": 0.788
+        },
+        {
+          "word": "to",
+          "start": 109.154,
+          "end": 109.255,
+          "score": 0.872
+        },
+        {
+          "word": "sea.",
+          "start": 109.355,
+          "end": 109.695,
+          "score": 0.933
+        }
+      ]
+    },
+    {
+      "start": 109.735,
+      "end": 111.378,
+      "text": "He's rich now.",
+      "words": [
+        {
+          "word": "He's",
+          "start": 109.735,
+          "end": 110.356,
+          "score": 0.811
+        },
+        {
+          "word": "rich",
+          "start": 110.537,
+          "end": 110.817,
+          "score": 0.834
+        },
+        {
+          "word": "now.",
+          "start": 110.937,
+          "end": 111.378,
+          "score": 0.836
+        }
+      ]
+    },
+    {
+      "start": 112.418,
+      "end": 120.145,
+      "text": " Overjoyed, Malin's mother rushed toward him and cried, Malin, my son, you've finally come home.",
+      "words": [
+        {
+          "word": "Overjoyed,",
+          "start": 112.418,
+          "end": 113.339,
+          "score": 0.845
+        },
+        {
+          "word": "Malin's",
+          "start": 113.719,
+          "end": 114.16,
+          "score": 0.722
+        },
+        {
+          "word": "mother",
+          "start": 114.24,
+          "end": 114.54,
+          "score": 0.719
+        },
+        {
+          "word": "rushed",
+          "start": 114.72,
+          "end": 115.0,
+          "score": 0.793
+        },
+        {
+          "word": "toward",
+          "start": 115.081,
+          "end": 115.401,
+          "score": 0.893
+        },
+        {
+          "word": "him",
+          "start": 115.441,
+          "end": 115.581,
+          "score": 0.885
+        },
+        {
+          "word": "and",
+          "start": 115.761,
+          "end": 115.841,
+          "score": 0.902
+        },
+        {
+          "word": "cried,",
+          "start": 115.961,
+          "end": 116.362,
+          "score": 0.694
+        },
+        {
+          "word": "Malin,",
+          "start": 116.902,
+          "end": 117.343,
+          "score": 0.799
+        },
+        {
+          "word": "my",
+          "start": 117.683,
+          "end": 117.823,
+          "score": 0.868
+        },
+        {
+          "word": "son,",
+          "start": 117.983,
+          "end": 118.304,
+          "score": 0.92
+        },
+        {
+          "word": "you've",
+          "start": 118.324,
+          "end": 118.864,
+          "score": 0.338
+        },
+        {
+          "word": "finally",
+          "start": 118.984,
+          "end": 119.445,
+          "score": 0.865
+        },
+        {
+          "word": "come",
+          "start": 119.545,
+          "end": 119.725,
+          "score": 0.659
+        },
+        {
+          "word": "home.",
+          "start": 119.805,
+          "end": 120.145,
+          "score": 0.806
+        }
+      ]
+    },
+    {
+      "start": 120.205,
+      "end": 125.19,
+      "text": "But Malin was ashamed of his poor mother's ragged clothes.",
+      "words": [
+        {
+          "word": "But",
+          "start": 120.205,
+          "end": 121.346,
+          "score": 0.763
+        },
+        {
+          "word": "Malin",
+          "start": 121.467,
+          "end": 121.887,
+          "score": 0.812
+        },
+        {
+          "word": "was",
+          "start": 121.967,
+          "end": 122.107,
+          "score": 0.69
+        },
+        {
+          "word": "ashamed",
+          "start": 122.187,
+          "end": 122.748,
+          "score": 0.675
+        },
+        {
+          "word": "of",
+          "start": 122.788,
+          "end": 122.888,
+          "score": 0.66
+        },
+        {
+          "word": "his",
+          "start": 122.928,
+          "end": 123.108,
+          "score": 0.704
+        },
+        {
+          "word": "poor",
+          "start": 123.228,
+          "end": 123.528,
+          "score": 0.88
+        },
+        {
+          "word": "mother's",
+          "start": 123.649,
+          "end": 124.009,
+          "score": 0.846
+        },
+        {
+          "word": "ragged",
+          "start": 124.169,
+          "end": 124.549,
+          "score": 0.902
+        },
+        {
+          "word": "clothes.",
+          "start": 124.649,
+          "end": 125.19,
+          "score": 0.81
+        }
+      ]
+    },
+    {
+      "start": 125.791,
+      "end": 128.153,
+      "text": "He denied her in front of everyone.",
+      "words": [
+        {
+          "word": "He",
+          "start": 125.791,
+          "end": 125.931,
+          "score": 0.68
+        },
+        {
+          "word": "denied",
+          "start": 126.011,
+          "end": 126.511,
+          "score": 0.874
+        },
+        {
+          "word": "her",
+          "start": 126.591,
+          "end": 126.731,
+          "score": 0.753
+        },
+        {
+          "word": "in",
+          "start": 126.771,
+          "end": 126.992,
+          "score": 0.782
+        },
+        {
+          "word": "front",
+          "start": 127.072,
+          "end": 127.332,
+          "score": 0.85
+        },
+        {
+          "word": "of",
+          "start": 127.412,
+          "end": 127.452,
+          "score": 1.0
+        },
+        {
+          "word": "everyone.",
+          "start": 127.472,
+          "end": 128.153,
+          "score": 0.788
+        }
+      ]
+    },
+    {
+      "start": 128.193,
+      "end": 133.137,
+      "text": "This old woman is not my mother, he shouted angrily.",
+      "words": [
+        {
+          "word": "This",
+          "start": 128.193,
+          "end": 129.134,
+          "score": 0.898
+        },
+        {
+          "word": "old",
+          "start": 129.174,
+          "end": 129.614,
+          "score": 0.72
+        },
+        {
+          "word": "woman",
+          "start": 129.754,
+          "end": 130.055,
+          "score": 0.917
+        },
+        {
+          "word": "is",
+          "start": 130.075,
+          "end": 130.355,
+          "score": 0.606
+        },
+        {
+          "word": "not",
+          "start": 130.495,
+          "end": 130.695,
+          "score": 0.678
+        },
+        {
+          "word": "my",
+          "start": 130.815,
+          "end": 131.015,
+          "score": 0.927
+        },
+        {
+          "word": "mother,",
+          "start": 131.156,
+          "end": 131.496,
+          "score": 0.892
+        },
+        {
+          "word": "he",
+          "start": 131.536,
+          "end": 131.996,
+          "score": 0.762
+        },
+        {
+          "word": "shouted",
+          "start": 132.117,
+          "end": 132.517,
+          "score": 0.727
+        },
+        {
+          "word": "angrily.",
+          "start": 132.537,
+          "end": 133.137,
+          "score": 0.82
+        }
+      ]
+    },
+    {
+      "start": 133.178,
+      "end": 136.421,
+      "text": "His mother froze in disbelief.",
+      "words": [
+        {
+          "word": "His",
+          "start": 133.178,
+          "end": 134.198,
+          "score": 0.646
+        },
+        {
+          "word": "mother",
+          "start": 134.339,
+          "end": 134.619,
+          "score": 0.784
+        },
+        {
+          "word": "froze",
+          "start": 134.819,
+          "end": 135.279,
+          "score": 0.941
+        },
+        {
+          "word": "in",
+          "start": 135.3,
+          "end": 135.54,
+          "score": 0.738
+        },
+        {
+          "word": "disbelief.",
+          "start": 135.64,
+          "end": 136.421,
+          "score": 0.874
+        }
+      ]
+    },
+    {
+      "start": 137.261,
+      "end": 139.403,
+      "text": "Malin, I am your mother.",
+      "words": [
+        {
+          "word": "Malin,",
+          "start": 137.261,
+          "end": 137.742,
+          "score": 0.869
+        },
+        {
+          "word": "I",
+          "start": 138.282,
+          "end": 138.342,
+          "score": 0.982
+        },
+        {
+          "word": "am",
+          "start": 138.643,
+          "end": 138.763,
+          "score": 0.618
+        },
+        {
+          "word": "your",
+          "start": 138.783,
+          "end": 139.023,
+          "score": 0.533
+        },
+        {
+          "word": "mother.",
+          "start": 139.083,
+          "end": 139.403,
+          "score": 0.849
+        }
+      ]
+    },
+    {
+      "start": 139.443,
+      "end": 141.005,
+      "text": "Don't you remember me?",
+      "words": [
+        {
+          "word": "Don't",
+          "start": 139.443,
+          "end": 139.984,
+          "score": 0.588
+        },
+        {
+          "word": "you",
+          "start": 140.024,
+          "end": 140.164,
+          "score": 0.774
+        },
+        {
+          "word": "remember",
+          "start": 140.244,
+          "end": 140.745,
+          "score": 0.797
+        },
+        {
+          "word": "me?",
+          "start": 140.805,
+          "end": 141.005,
+          "score": 0.914
+        }
+      ]
+    },
+    {
+      "start": 141.025,
+      "end": 142.226,
+      "text": "she pleaded.",
+      "words": [
+        {
+          "word": "she",
+          "start": 141.025,
+          "end": 141.565,
+          "score": 0.845
+        },
+        {
+          "word": "pleaded.",
+          "start": 141.665,
+          "end": 142.226,
+          "score": 0.73
+        }
+      ]
+    },
+    {
+      "start": 142.914,
+      "end": 145.296,
+      "text": " Still, Malin pushed her away.",
+      "words": [
+        {
+          "word": "Still,",
+          "start": 142.914,
+          "end": 143.415,
+          "score": 0.878
+        },
+        {
+          "word": "Malin",
+          "start": 143.835,
+          "end": 144.235,
+          "score": 0.881
+        },
+        {
+          "word": "pushed",
+          "start": 144.376,
+          "end": 144.676,
+          "score": 0.74
+        },
+        {
+          "word": "her",
+          "start": 144.736,
+          "end": 144.856,
+          "score": 0.697
+        },
+        {
+          "word": "away.",
+          "start": 144.956,
+          "end": 145.296,
+          "score": 0.803
+        }
+      ]
+    },
+    {
+      "start": 145.336,
+      "end": 148.96,
+      "text": "His heart was blinded by pride and wealth.",
+      "words": [
+        {
+          "word": "His",
+          "start": 145.336,
+          "end": 146.157,
+          "score": 0.817
+        },
+        {
+          "word": "heart",
+          "start": 146.237,
+          "end": 146.538,
+          "score": 0.71
+        },
+        {
+          "word": "was",
+          "start": 146.638,
+          "end": 146.778,
+          "score": 0.723
+        },
+        {
+          "word": "blinded",
+          "start": 146.918,
+          "end": 147.479,
+          "score": 0.855
+        },
+        {
+          "word": "by",
+          "start": 147.579,
+          "end": 147.719,
+          "score": 0.914
+        },
+        {
+          "word": "pride",
+          "start": 147.859,
+          "end": 148.3,
+          "score": 0.856
+        },
+        {
+          "word": "and",
+          "start": 148.4,
+          "end": 148.48,
+          "score": 0.865
+        },
+        {
+          "word": "wealth.",
+          "start": 148.6,
+          "end": 148.96,
+          "score": 0.784
+        }
+      ]
+    },
+    {
+      "start": 149.741,
+      "end": 151.403,
+      "text": "His mother's heart broke.",
+      "words": [
+        {
+          "word": "His",
+          "start": 149.741,
+          "end": 149.901,
+          "score": 0.522
+        },
+        {
+          "word": "mother's",
+          "start": 150.021,
+          "end": 150.402,
+          "score": 0.748
+        },
+        {
+          "word": "heart",
+          "start": 150.502,
+          "end": 150.802,
+          "score": 0.685
+        },
+        {
+          "word": "broke.",
+          "start": 151.042,
+          "end": 151.403,
+          "score": 0.923
+        }
+      ]
+    },
+    {
+      "start": 152.224,
+      "end": 162.915,
+      "text": "Trembling, she lifted her hands to the sky and prayed, O God, if he truly is my son, let him be punished for his cruelty.",
+      "words": [
+        {
+          "word": "Trembling,",
+          "start": 152.224,
+          "end": 152.744,
+          "score": 0.862
+        },
+        {
+          "word": "she",
+          "start": 153.084,
+          "end": 153.225,
+          "score": 0.721
+        },
+        {
+          "word": "lifted",
+          "start": 153.345,
+          "end": 153.705,
+          "score": 0.91
+        },
+        {
+          "word": "her",
+          "start": 153.765,
+          "end": 153.885,
+          "score": 0.804
+        },
+        {
+          "word": "hands",
+          "start": 153.945,
+          "end": 154.286,
+          "score": 0.83
+        },
+        {
+          "word": "to",
+          "start": 154.386,
+          "end": 154.486,
+          "score": 0.932
+        },
+        {
+          "word": "the",
+          "start": 154.546,
+          "end": 154.606,
+          "score": 0.674
+        },
+        {
+          "word": "sky",
+          "start": 154.706,
+          "end": 155.167,
+          "score": 0.894
+        },
+        {
+          "word": "and",
+          "start": 155.307,
+          "end": 155.387,
+          "score": 0.928
+        },
+        {
+          "word": "prayed,",
+          "start": 155.507,
+          "end": 155.927,
+          "score": 0.707
+        },
+        {
+          "word": "O",
+          "start": 156.688,
+          "end": 156.788,
+          "score": 0.777
+        },
+        {
+          "word": "God,",
+          "start": 156.908,
+          "end": 157.309,
+          "score": 0.968
+        },
+        {
+          "word": "if",
+          "start": 157.789,
+          "end": 157.849,
+          "score": 0.953
+        },
+        {
+          "word": "he",
+          "start": 157.949,
+          "end": 158.11,
+          "score": 0.89
+        },
+        {
+          "word": "truly",
+          "start": 158.27,
+          "end": 158.81,
+          "score": 0.879
+        },
+        {
+          "word": "is",
+          "start": 158.83,
+          "end": 159.171,
+          "score": 0.609
+        },
+        {
+          "word": "my",
+          "start": 159.291,
+          "end": 159.491,
+          "score": 0.99
+        },
+        {
+          "word": "son,",
+          "start": 159.611,
+          "end": 159.911,
+          "score": 0.923
+        },
+        {
+          "word": "let",
+          "start": 159.972,
+          "end": 160.632,
+          "score": 0.91
+        },
+        {
+          "word": "him",
+          "start": 160.672,
+          "end": 160.832,
+          "score": 0.805
+        },
+        {
+          "word": "be",
+          "start": 160.933,
+          "end": 161.053,
+          "score": 0.826
+        },
+        {
+          "word": "punished",
+          "start": 161.233,
+          "end": 161.673,
+          "score": 0.799
+        },
+        {
+          "word": "for",
+          "start": 161.773,
+          "end": 161.934,
+          "score": 0.798
+        },
+        {
+          "word": "his",
+          "start": 161.994,
+          "end": 162.174,
+          "score": 0.595
+        },
+        {
+          "word": "cruelty.",
+          "start": 162.314,
+          "end": 162.915,
+          "score": 0.888
+        }
+      ]
+    },
+    {
+      "start": 164.316,
+      "end": 166.899,
+      "text": "Soon after, dark clouds gathered.",
+      "words": [
+        {
+          "word": "Soon",
+          "start": 164.316,
+          "end": 164.596,
+          "score": 0.838
+        },
+        {
+          "word": "after,",
+          "start": 164.736,
+          "end": 164.997,
+          "score": 0.9
+        },
+        {
+          "word": "dark",
+          "start": 165.057,
+          "end": 165.697,
+          "score": 0.812
+        },
+        {
+          "word": "clouds",
+          "start": 165.818,
+          "end": 166.338,
+          "score": 0.799
+        },
+        {
+          "word": "gathered.",
+          "start": 166.458,
+          "end": 166.899,
+          "score": 0.912
+        }
+      ]
+    },
+    {
+      "start": 167.639,
+      "end": 170.162,
+      "text": "A violent storm struck the sea.",
+      "words": [
+        {
+          "word": "A",
+          "start": 167.639,
+          "end": 167.679,
+          "score": 0.998
+        },
+        {
+          "word": "violent",
+          "start": 167.78,
+          "end": 168.32,
+          "score": 0.829
+        },
+        {
+          "word": "storm",
+          "start": 168.44,
+          "end": 168.921,
+          "score": 0.877
+        },
+        {
+          "word": "struck",
+          "start": 169.041,
+          "end": 169.421,
+          "score": 0.821
+        },
+        {
+          "word": "the",
+          "start": 169.521,
+          "end": 169.601,
+          "score": 0.823
+        },
+        {
+          "word": "sea.",
+          "start": 169.682,
+          "end": 170.162,
+          "score": 0.815
+        }
+      ]
+    },
+    {
+      "start": 170.626,
+      "end": 173.17,
+      "text": " Thunder roared and lightning flashed.",
+      "words": [
+        {
+          "word": "Thunder",
+          "start": 170.626,
+          "end": 171.067,
+          "score": 0.718
+        },
+        {
+          "word": "roared",
+          "start": 171.207,
+          "end": 171.688,
+          "score": 0.733
+        },
+        {
+          "word": "and",
+          "start": 171.728,
+          "end": 171.888,
+          "score": 0.587
+        },
+        {
+          "word": "lightning",
+          "start": 171.908,
+          "end": 172.469,
+          "score": 0.756
+        },
+        {
+          "word": "flashed.",
+          "start": 172.609,
+          "end": 173.17,
+          "score": 0.76
+        }
+      ]
+    },
+    {
+      "start": 173.912,
+      "end": 177.358,
+      "text": "Malin's magnificent ship was shattered by the waves.",
+      "words": [
+        {
+          "word": "Malin's",
+          "start": 173.912,
+          "end": 174.352,
+          "score": 0.663
+        },
+        {
+          "word": "magnificent",
+          "start": 174.473,
+          "end": 175.294,
+          "score": 0.955
+        },
+        {
+          "word": "ship",
+          "start": 175.374,
+          "end": 175.655,
+          "score": 0.78
+        },
+        {
+          "word": "was",
+          "start": 175.735,
+          "end": 175.895,
+          "score": 0.808
+        },
+        {
+          "word": "shattered",
+          "start": 176.035,
+          "end": 176.496,
+          "score": 0.855
+        },
+        {
+          "word": "by",
+          "start": 176.556,
+          "end": 176.696,
+          "score": 1.0
+        },
+        {
+          "word": "the",
+          "start": 176.756,
+          "end": 176.837,
+          "score": 0.833
+        },
+        {
+          "word": "waves.",
+          "start": 176.897,
+          "end": 177.358,
+          "score": 0.834
+        }
+      ]
+    },
+    {
+      "start": 178.279,
+      "end": 183.208,
+      "text": "When the storm finally ended, the villagers found a large rock on the beach.",
+      "words": [
+        {
+          "word": "When",
+          "start": 178.279,
+          "end": 178.419,
+          "score": 0.916
+        },
+        {
+          "word": "the",
+          "start": 178.459,
+          "end": 178.54,
+          "score": 0.823
+        },
+        {
+          "word": "storm",
+          "start": 178.62,
+          "end": 179.0,
+          "score": 0.79
+        },
+        {
+          "word": "finally",
+          "start": 179.161,
+          "end": 179.601,
+          "score": 0.887
+        },
+        {
+          "word": "ended,",
+          "start": 179.742,
+          "end": 180.002,
+          "score": 0.944
+        },
+        {
+          "word": "the",
+          "start": 180.022,
+          "end": 180.463,
+          "score": 0.876
+        },
+        {
+          "word": "villagers",
+          "start": 180.523,
+          "end": 181.024,
+          "score": 0.815
+        },
+        {
+          "word": "found",
+          "start": 181.164,
+          "end": 181.485,
+          "score": 0.74
+        },
+        {
+          "word": "a",
+          "start": 181.565,
+          "end": 181.585,
+          "score": 1.0
+        },
+        {
+          "word": "large",
+          "start": 181.685,
+          "end": 182.086,
+          "score": 0.715
+        },
+        {
+          "word": "rock",
+          "start": 182.226,
+          "end": 182.546,
+          "score": 0.964
+        },
+        {
+          "word": "on",
+          "start": 182.667,
+          "end": 182.707,
+          "score": 0.926
+        },
+        {
+          "word": "the",
+          "start": 182.767,
+          "end": 182.827,
+          "score": 0.751
+        },
+        {
+          "word": "beach.",
+          "start": 182.887,
+          "end": 183.208,
+          "score": 0.806
+        }
+      ]
+    },
+    {
+      "start": 183.768,
+      "end": 188.096,
+      "text": "Shaped like a man kneeling, his face turned toward the shore.",
+      "words": [
+        {
+          "word": "Shaped",
+          "start": 183.768,
+          "end": 184.109,
+          "score": 0.814
+        },
+        {
+          "word": "like",
+          "start": 184.229,
+          "end": 184.41,
+          "score": 0.564
+        },
+        {
+          "word": "a",
+          "start": 184.47,
+          "end": 184.49,
+          "score": 1.0
+        },
+        {
+          "word": "man",
+          "start": 184.57,
+          "end": 184.89,
+          "score": 0.829
+        },
+        {
+          "word": "kneeling,",
+          "start": 185.051,
+          "end": 185.511,
+          "score": 0.747
+        },
+        {
+          "word": "his",
+          "start": 185.972,
+          "end": 186.133,
+          "score": 0.573
+        },
+        {
+          "word": "face",
+          "start": 186.253,
+          "end": 186.593,
+          "score": 0.84
+        },
+        {
+          "word": "turned",
+          "start": 186.734,
+          "end": 187.134,
+          "score": 0.805
+        },
+        {
+          "word": "toward",
+          "start": 187.254,
+          "end": 187.555,
+          "score": 0.831
+        },
+        {
+          "word": "the",
+          "start": 187.595,
+          "end": 187.695,
+          "score": 0.666
+        },
+        {
+          "word": "shore.",
+          "start": 187.755,
+          "end": 188.096,
+          "score": 0.702
+        }
+      ]
+    },
+    {
+      "start": 189.138,
+      "end": 196.37,
+      "text": "People believed it was Malin Kundan turned to stone for disobeying and shaming his mother.",
+      "words": [
+        {
+          "word": "People",
+          "start": 189.138,
+          "end": 189.458,
+          "score": 0.986
+        },
+        {
+          "word": "believed",
+          "start": 189.518,
+          "end": 190.019,
+          "score": 0.853
+        },
+        {
+          "word": "it",
+          "start": 190.059,
+          "end": 190.3,
+          "score": 0.7
+        },
+        {
+          "word": "was",
+          "start": 190.36,
+          "end": 190.5,
+          "score": 0.828
+        },
+        {
+          "word": "Malin",
+          "start": 190.52,
+          "end": 190.981,
+          "score": 0.83
+        },
+        {
+          "word": "Kundan",
+          "start": 191.041,
+          "end": 191.682,
+          "score": 0.931
+        },
+        {
+          "word": "turned",
+          "start": 191.722,
+          "end": 192.503,
+          "score": 0.811
+        },
+        {
+          "word": "to",
+          "start": 192.584,
+          "end": 192.684,
+          "score": 0.931
+        },
+        {
+          "word": "stone",
+          "start": 192.784,
+          "end": 193.245,
+          "score": 0.903
+        },
+        {
+          "word": "for",
+          "start": 193.265,
+          "end": 193.625,
+          "score": 0.773
+        },
+        {
+          "word": "disobeying",
+          "start": 193.746,
+          "end": 194.507,
+          "score": 0.822
+        },
+        {
+          "word": "and",
+          "start": 194.867,
+          "end": 194.948,
+          "score": 0.765
+        },
+        {
+          "word": "shaming",
+          "start": 195.108,
+          "end": 195.549,
+          "score": 0.735
+        },
+        {
+          "word": "his",
+          "start": 195.589,
+          "end": 195.849,
+          "score": 0.721
+        },
+        {
+          "word": "mother.",
+          "start": 195.929,
+          "end": 196.37,
+          "score": 0.763
+        }
+      ]
+    },
+    {
+      "start": 197.218,
+      "end": 210.706,
+      "text": " Since then, the story of Malin Kundan has been told across generations, reminding everyone that wealth and success mean nothing if we forget our parents and our roots.",
+      "words": [
+        {
+          "word": "Since",
+          "start": 197.218,
+          "end": 197.599,
+          "score": 0.795
+        },
+        {
+          "word": "then,",
+          "start": 197.679,
+          "end": 197.879,
+          "score": 0.88
+        },
+        {
+          "word": "the",
+          "start": 197.939,
+          "end": 198.421,
+          "score": 0.576
+        },
+        {
+          "word": "story",
+          "start": 198.461,
+          "end": 198.901,
+          "score": 0.839
+        },
+        {
+          "word": "of",
+          "start": 198.942,
+          "end": 198.982,
+          "score": 0.961
+        },
+        {
+          "word": "Malin",
+          "start": 199.022,
+          "end": 199.443,
+          "score": 0.725
+        },
+        {
+          "word": "Kundan",
+          "start": 199.483,
+          "end": 200.044,
+          "score": 0.945
+        },
+        {
+          "word": "has",
+          "start": 200.124,
+          "end": 200.264,
+          "score": 0.901
+        },
+        {
+          "word": "been",
+          "start": 200.324,
+          "end": 200.505,
+          "score": 0.911
+        },
+        {
+          "word": "told",
+          "start": 200.585,
+          "end": 200.886,
+          "score": 0.749
+        },
+        {
+          "word": "across",
+          "start": 200.906,
+          "end": 201.567,
+          "score": 0.691
+        },
+        {
+          "word": "generations,",
+          "start": 201.667,
+          "end": 202.449,
+          "score": 0.852
+        },
+        {
+          "word": "reminding",
+          "start": 202.97,
+          "end": 203.531,
+          "score": 0.852
+        },
+        {
+          "word": "everyone",
+          "start": 203.551,
+          "end": 204.253,
+          "score": 0.804
+        },
+        {
+          "word": "that",
+          "start": 204.293,
+          "end": 204.754,
+          "score": 0.95
+        },
+        {
+          "word": "wealth",
+          "start": 204.854,
+          "end": 205.175,
+          "score": 0.651
+        },
+        {
+          "word": "and",
+          "start": 205.395,
+          "end": 205.475,
+          "score": 0.808
+        },
+        {
+          "word": "success",
+          "start": 205.555,
+          "end": 206.137,
+          "score": 0.69
+        },
+        {
+          "word": "mean",
+          "start": 206.297,
+          "end": 206.517,
+          "score": 0.775
+        },
+        {
+          "word": "nothing",
+          "start": 206.638,
+          "end": 207.018,
+          "score": 0.796
+        },
+        {
+          "word": "if",
+          "start": 207.439,
+          "end": 207.519,
+          "score": 0.98
+        },
+        {
+          "word": "we",
+          "start": 207.58,
+          "end": 207.72,
+          "score": 0.804
+        },
+        {
+          "word": "forget",
+          "start": 207.8,
+          "end": 208.201,
+          "score": 0.953
+        },
+        {
+          "word": "our",
+          "start": 208.241,
+          "end": 208.542,
+          "score": 0.863
+        },
+        {
+          "word": "parents",
+          "start": 208.642,
+          "end": 209.103,
+          "score": 0.904
+        },
+        {
+          "word": "and",
+          "start": 209.624,
+          "end": 209.744,
+          "score": 0.725
+        },
+        {
+          "word": "our",
+          "start": 209.764,
+          "end": 210.045,
+          "score": 0.51
+        },
+        {
+          "word": "roots.",
+          "start": 210.125,
+          "end": 210.706,
+          "score": 0.825
+        }
+      ]
+    }
+  ],
+  "word_segments": [
+    {
+      "word": "Malin",
+      "start": 0.226,
+      "end": 0.887,
+      "score": 0.822
+    },
+    {
+      "word": "Kundan,",
+      "start": 1.007,
+      "end": 1.728,
+      "score": 0.921
+    },
+    {
+      "word": "the",
+      "start": 1.789,
+      "end": 2.49,
+      "score": 0.957
+    },
+    {
+      "word": "ungrateful",
+      "start": 2.73,
+      "end": 3.551,
+      "score": 0.95
+    },
+    {
+      "word": "son.",
+      "start": 3.712,
+      "end": 4.032,
+      "score": 0.879
+    },
+    {
+      "word": "Long",
+      "start": 5.595,
+      "end": 5.855,
+      "score": 0.605
+    },
+    {
+      "word": "ago",
+      "start": 5.935,
+      "end": 6.216,
+      "score": 0.844
+    },
+    {
+      "word": "in",
+      "start": 6.236,
+      "end": 6.276,
+      "score": 0.5
+    },
+    {
+      "word": "a",
+      "start": 6.797,
+      "end": 6.817,
+      "score": 0.897
+    },
+    {
+      "word": "small",
+      "start": 6.937,
+      "end": 7.318,
+      "score": 0.938
+    },
+    {
+      "word": "fishing",
+      "start": 7.438,
+      "end": 7.819,
+      "score": 0.84
+    },
+    {
+      "word": "village",
+      "start": 7.879,
+      "end": 8.279,
+      "score": 0.805
+    },
+    {
+      "word": "on",
+      "start": 8.379,
+      "end": 8.44,
+      "score": 1.0
+    },
+    {
+      "word": "the",
+      "start": 8.48,
+      "end": 8.56,
+      "score": 0.998
+    },
+    {
+      "word": "coast",
+      "start": 8.64,
+      "end": 8.98,
+      "score": 0.711
+    },
+    {
+      "word": "of",
+      "start": 9.061,
+      "end": 9.101,
+      "score": 1.0
+    },
+    {
+      "word": "West",
+      "start": 9.121,
+      "end": 9.501,
+      "score": 0.582
+    },
+    {
+      "word": "Sumatra",
+      "start": 9.601,
+      "end": 10.222,
+      "score": 0.901
+    },
+    {
+      "word": "lived",
+      "start": 10.643,
+      "end": 10.964,
+      "score": 0.775
+    },
+    {
+      "word": "a",
+      "start": 11.004,
+      "end": 11.064,
+      "score": 0.323
+    },
+    {
+      "word": "poor",
+      "start": 11.184,
+      "end": 11.525,
+      "score": 0.844
+    },
+    {
+      "word": "widow",
+      "start": 11.645,
+      "end": 11.985,
+      "score": 0.785
+    },
+    {
+      "word": "and",
+      "start": 12.286,
+      "end": 12.366,
+      "score": 0.9
+    },
+    {
+      "word": "her",
+      "start": 12.426,
+      "end": 12.546,
+      "score": 0.839
+    },
+    {
+      "word": "only",
+      "start": 12.707,
+      "end": 12.967,
+      "score": 0.886
+    },
+    {
+      "word": "son",
+      "start": 13.087,
+      "end": 13.408,
+      "score": 0.84
+    },
+    {
+      "word": "Malin",
+      "start": 13.428,
+      "end": 14.289,
+      "score": 0.708
+    },
+    {
+      "word": "Kundan.",
+      "start": 14.369,
+      "end": 14.99,
+      "score": 0.936
+    },
+    {
+      "word": "Her",
+      "start": 15.992,
+      "end": 16.092,
+      "score": 0.785
+    },
+    {
+      "word": "husband",
+      "start": 16.152,
+      "end": 16.633,
+      "score": 0.777
+    },
+    {
+      "word": "had",
+      "start": 16.693,
+      "end": 16.813,
+      "score": 0.637
+    },
+    {
+      "word": "gone",
+      "start": 16.893,
+      "end": 17.154,
+      "score": 0.75
+    },
+    {
+      "word": "to",
+      "start": 17.234,
+      "end": 17.334,
+      "score": 0.758
+    },
+    {
+      "word": "sea",
+      "start": 17.454,
+      "end": 17.715,
+      "score": 0.986
+    },
+    {
+      "word": "years",
+      "start": 17.755,
+      "end": 18.256,
+      "score": 0.48
+    },
+    {
+      "word": "before",
+      "start": 18.356,
+      "end": 18.817,
+      "score": 0.781
+    },
+    {
+      "word": "and",
+      "start": 19.057,
+      "end": 19.157,
+      "score": 0.667
+    },
+    {
+      "word": "never",
+      "start": 19.277,
+      "end": 19.518,
+      "score": 0.773
+    },
+    {
+      "word": "returned",
+      "start": 19.618,
+      "end": 20.199,
+      "score": 0.914
+    },
+    {
+      "word": "so",
+      "start": 20.74,
+      "end": 20.88,
+      "score": 0.864
+    },
+    {
+      "word": "Malin",
+      "start": 20.96,
+      "end": 21.361,
+      "score": 0.735
+    },
+    {
+      "word": "grew",
+      "start": 21.461,
+      "end": 21.701,
+      "score": 0.852
+    },
+    {
+      "word": "up",
+      "start": 21.842,
+      "end": 21.922,
+      "score": 0.894
+    },
+    {
+      "word": "with",
+      "start": 22.042,
+      "end": 22.182,
+      "score": 0.702
+    },
+    {
+      "word": "only",
+      "start": 22.423,
+      "end": 22.703,
+      "score": 0.863
+    },
+    {
+      "word": "his",
+      "start": 22.723,
+      "end": 22.923,
+      "score": 0.669
+    },
+    {
+      "word": "mother's",
+      "start": 23.064,
+      "end": 23.444,
+      "score": 0.804
+    },
+    {
+      "word": "love",
+      "start": 23.585,
+      "end": 23.905,
+      "score": 0.982
+    },
+    {
+      "word": "and",
+      "start": 23.985,
+      "end": 24.045,
+      "score": 0.668
+    },
+    {
+      "word": "care.",
+      "start": 24.165,
+      "end": 24.526,
+      "score": 0.834
+    },
+    {
+      "word": "As",
+      "start": 25.828,
+      "end": 25.928,
+      "score": 0.972
+    },
+    {
+      "word": "he",
+      "start": 26.009,
+      "end": 26.109,
+      "score": 0.992
+    },
+    {
+      "word": "grew",
+      "start": 26.169,
+      "end": 26.389,
+      "score": 0.668
+    },
+    {
+      "word": "older",
+      "start": 26.529,
+      "end": 26.93,
+      "score": 0.673
+    },
+    {
+      "word": "Malin",
+      "start": 27.074,
+      "end": 27.535,
+      "score": 0.817
+    },
+    {
+      "word": "became",
+      "start": 27.595,
+      "end": 27.975,
+      "score": 0.811
+    },
+    {
+      "word": "a",
+      "start": 28.015,
+      "end": 28.035,
+      "score": 1.0
+    },
+    {
+      "word": "diligent",
+      "start": 28.235,
+      "end": 28.776,
+      "score": 0.876
+    },
+    {
+      "word": "and",
+      "start": 28.896,
+      "end": 28.976,
+      "score": 0.975
+    },
+    {
+      "word": "clever",
+      "start": 29.097,
+      "end": 29.477,
+      "score": 0.796
+    },
+    {
+      "word": "young",
+      "start": 29.557,
+      "end": 29.757,
+      "score": 0.833
+    },
+    {
+      "word": "man.",
+      "start": 29.817,
+      "end": 30.098,
+      "score": 0.909
+    },
+    {
+      "word": "Every",
+      "start": 30.158,
+      "end": 31.199,
+      "score": 0.659
+    },
+    {
+      "word": "morning,",
+      "start": 31.259,
+      "end": 31.62,
+      "score": 0.873
+    },
+    {
+      "word": "he",
+      "start": 31.88,
+      "end": 31.96,
+      "score": 0.727
+    },
+    {
+      "word": "helped",
+      "start": 32.04,
+      "end": 32.301,
+      "score": 0.88
+    },
+    {
+      "word": "his",
+      "start": 32.341,
+      "end": 32.461,
+      "score": 0.71
+    },
+    {
+      "word": "mother",
+      "start": 32.561,
+      "end": 32.841,
+      "score": 0.856
+    },
+    {
+      "word": "sell",
+      "start": 32.881,
+      "end": 33.262,
+      "score": 0.91
+    },
+    {
+      "word": "fish",
+      "start": 33.382,
+      "end": 33.662,
+      "score": 0.78
+    },
+    {
+      "word": "at",
+      "start": 33.762,
+      "end": 33.802,
+      "score": 0.996
+    },
+    {
+      "word": "the",
+      "start": 33.842,
+      "end": 33.923,
+      "score": 0.824
+    },
+    {
+      "word": "market.",
+      "start": 33.983,
+      "end": 34.383,
+      "score": 0.919
+    },
+    {
+      "word": "Yet",
+      "start": 35.144,
+      "end": 35.384,
+      "score": 0.978
+    },
+    {
+      "word": "deep",
+      "start": 35.424,
+      "end": 35.905,
+      "score": 0.878
+    },
+    {
+      "word": "inside,",
+      "start": 36.025,
+      "end": 36.666,
+      "score": 0.921
+    },
+    {
+      "word": "Malin",
+      "start": 37.046,
+      "end": 37.487,
+      "score": 0.79
+    },
+    {
+      "word": "dreamed",
+      "start": 37.607,
+      "end": 38.128,
+      "score": 0.723
+    },
+    {
+      "word": "of",
+      "start": 38.148,
+      "end": 38.248,
+      "score": 0.756
+    },
+    {
+      "word": "becoming",
+      "start": 38.328,
+      "end": 38.789,
+      "score": 0.796
+    },
+    {
+      "word": "a",
+      "start": 38.809,
+      "end": 38.829,
+      "score": 1.0
+    },
+    {
+      "word": "rich",
+      "start": 39.169,
+      "end": 39.429,
+      "score": 0.733
+    },
+    {
+      "word": "man.",
+      "start": 39.53,
+      "end": 39.85,
+      "score": 0.808
+    },
+    {
+      "word": "He",
+      "start": 39.91,
+      "end": 40.631,
+      "score": 0.696
+    },
+    {
+      "word": "wanted",
+      "start": 40.711,
+      "end": 41.071,
+      "score": 0.848
+    },
+    {
+      "word": "to",
+      "start": 41.132,
+      "end": 41.252,
+      "score": 0.704
+    },
+    {
+      "word": "lift",
+      "start": 41.372,
+      "end": 41.652,
+      "score": 0.957
+    },
+    {
+      "word": "his",
+      "start": 41.712,
+      "end": 41.832,
+      "score": 0.695
+    },
+    {
+      "word": "mother",
+      "start": 41.913,
+      "end": 42.193,
+      "score": 0.766
+    },
+    {
+      "word": "out",
+      "start": 42.413,
+      "end": 42.533,
+      "score": 0.594
+    },
+    {
+      "word": "of",
+      "start": 42.593,
+      "end": 42.633,
+      "score": 0.908
+    },
+    {
+      "word": "poverty",
+      "start": 42.674,
+      "end": 43.254,
+      "score": 0.876
+    },
+    {
+      "word": "and",
+      "start": 43.294,
+      "end": 43.735,
+      "score": 0.914
+    },
+    {
+      "word": "give",
+      "start": 43.835,
+      "end": 44.035,
+      "score": 0.991
+    },
+    {
+      "word": "her",
+      "start": 44.095,
+      "end": 44.255,
+      "score": 0.859
+    },
+    {
+      "word": "a",
+      "start": 44.276,
+      "end": 44.296,
+      "score": 1.0
+    },
+    {
+      "word": "better",
+      "start": 44.636,
+      "end": 44.916,
+      "score": 0.843
+    },
+    {
+      "word": "life.",
+      "start": 44.996,
+      "end": 45.297,
+      "score": 0.899
+    },
+    {
+      "word": "One",
+      "start": 46.538,
+      "end": 46.658,
+      "score": 0.582
+    },
+    {
+      "word": "day,",
+      "start": 46.719,
+      "end": 46.939,
+      "score": 0.962
+    },
+    {
+      "word": "a",
+      "start": 46.959,
+      "end": 46.979,
+      "score": 1.0
+    },
+    {
+      "word": "large",
+      "start": 47.5,
+      "end": 47.9,
+      "score": 0.698
+    },
+    {
+      "word": "merchant",
+      "start": 48.04,
+      "end": 48.501,
+      "score": 0.868
+    },
+    {
+      "word": "ship",
+      "start": 48.541,
+      "end": 48.781,
+      "score": 0.785
+    },
+    {
+      "word": "anchored",
+      "start": 49.041,
+      "end": 49.402,
+      "score": 0.735
+    },
+    {
+      "word": "near",
+      "start": 49.462,
+      "end": 49.642,
+      "score": 0.698
+    },
+    {
+      "word": "their",
+      "start": 49.702,
+      "end": 49.842,
+      "score": 0.889
+    },
+    {
+      "word": "village.",
+      "start": 49.903,
+      "end": 50.283,
+      "score": 0.756
+    },
+    {
+      "word": "The",
+      "start": 50.984,
+      "end": 51.084,
+      "score": 0.622
+    },
+    {
+      "word": "ship",
+      "start": 51.164,
+      "end": 51.444,
+      "score": 0.742
+    },
+    {
+      "word": "belonged",
+      "start": 51.585,
+      "end": 52.085,
+      "score": 0.776
+    },
+    {
+      "word": "to",
+      "start": 52.105,
+      "end": 52.286,
+      "score": 0.567
+    },
+    {
+      "word": "a",
+      "start": 52.306,
+      "end": 52.326,
+      "score": 1.0
+    },
+    {
+      "word": "wealthy",
+      "start": 52.526,
+      "end": 52.906,
+      "score": 0.73
+    },
+    {
+      "word": "trader",
+      "start": 53.026,
+      "end": 53.427,
+      "score": 0.915
+    },
+    {
+      "word": "who",
+      "start": 53.707,
+      "end": 53.807,
+      "score": 0.835
+    },
+    {
+      "word": "was",
+      "start": 53.847,
+      "end": 53.968,
+      "score": 0.715
+    },
+    {
+      "word": "looking",
+      "start": 54.048,
+      "end": 54.388,
+      "score": 0.825
+    },
+    {
+      "word": "for",
+      "start": 54.408,
+      "end": 54.588,
+      "score": 0.875
+    },
+    {
+      "word": "new",
+      "start": 54.628,
+      "end": 54.889,
+      "score": 0.875
+    },
+    {
+      "word": "crew",
+      "start": 55.029,
+      "end": 55.249,
+      "score": 0.895
+    },
+    {
+      "word": "members.",
+      "start": 55.289,
+      "end": 55.89,
+      "score": 0.944
+    },
+    {
+      "word": "Seeing",
+      "start": 56.45,
+      "end": 56.911,
+      "score": 0.731
+    },
+    {
+      "word": "this",
+      "start": 56.971,
+      "end": 57.171,
+      "score": 0.904
+    },
+    {
+      "word": "as",
+      "start": 57.311,
+      "end": 57.371,
+      "score": 1.0
+    },
+    {
+      "word": "his",
+      "start": 57.452,
+      "end": 57.592,
+      "score": 0.82
+    },
+    {
+      "word": "chance,",
+      "start": 57.692,
+      "end": 58.133,
+      "score": 0.89
+    },
+    {
+      "word": "Malin",
+      "start": 58.473,
+      "end": 58.874,
+      "score": 0.845
+    },
+    {
+      "word": "begged",
+      "start": 59.014,
+      "end": 59.335,
+      "score": 0.838
+    },
+    {
+      "word": "his",
+      "start": 59.375,
+      "end": 59.515,
+      "score": 0.75
+    },
+    {
+      "word": "mother",
+      "start": 59.595,
+      "end": 59.855,
+      "score": 0.811
+    },
+    {
+      "word": "to",
+      "start": 59.875,
+      "end": 60.076,
+      "score": 0.566
+    },
+    {
+      "word": "let",
+      "start": 60.156,
+      "end": 60.356,
+      "score": 0.888
+    },
+    {
+      "word": "him",
+      "start": 60.396,
+      "end": 60.516,
+      "score": 0.894
+    },
+    {
+      "word": "go",
+      "start": 60.637,
+      "end": 60.877,
+      "score": 0.931
+    },
+    {
+      "word": "and",
+      "start": 60.917,
+      "end": 61.117,
+      "score": 0.512
+    },
+    {
+      "word": "work",
+      "start": 61.137,
+      "end": 61.458,
+      "score": 0.84
+    },
+    {
+      "word": "on",
+      "start": 61.538,
+      "end": 61.598,
+      "score": 1.0
+    },
+    {
+      "word": "the",
+      "start": 61.638,
+      "end": 61.718,
+      "score": 0.998
+    },
+    {
+      "word": "ship.",
+      "start": 61.778,
+      "end": 62.079,
+      "score": 0.891
+    },
+    {
+      "word": "Mother,",
+      "start": 62.94,
+      "end": 63.281,
+      "score": 0.793
+    },
+    {
+      "word": "please",
+      "start": 63.621,
+      "end": 63.962,
+      "score": 0.702
+    },
+    {
+      "word": "let",
+      "start": 64.042,
+      "end": 64.182,
+      "score": 0.825
+    },
+    {
+      "word": "me",
+      "start": 64.222,
+      "end": 64.323,
+      "score": 0.823
+    },
+    {
+      "word": "go.",
+      "start": 64.403,
+      "end": 64.603,
+      "score": 0.99
+    },
+    {
+      "word": "If",
+      "start": 64.663,
+      "end": 65.204,
+      "score": 0.921
+    },
+    {
+      "word": "I",
+      "start": 65.344,
+      "end": 65.404,
+      "score": 0.997
+    },
+    {
+      "word": "become",
+      "start": 65.464,
+      "end": 65.825,
+      "score": 0.922
+    },
+    {
+      "word": "successful,",
+      "start": 65.905,
+      "end": 66.546,
+      "score": 0.922
+    },
+    {
+      "word": "I'll",
+      "start": 66.967,
+      "end": 67.147,
+      "score": 0.962
+    },
+    {
+      "word": "come",
+      "start": 67.187,
+      "end": 67.387,
+      "score": 0.867
+    },
+    {
+      "word": "back",
+      "start": 67.427,
+      "end": 67.708,
+      "score": 0.668
+    },
+    {
+      "word": "and",
+      "start": 67.808,
+      "end": 67.888,
+      "score": 0.962
+    },
+    {
+      "word": "make",
+      "start": 67.988,
+      "end": 68.209,
+      "score": 0.588
+    },
+    {
+      "word": "you",
+      "start": 68.249,
+      "end": 68.389,
+      "score": 0.896
+    },
+    {
+      "word": "happy.",
+      "start": 68.429,
+      "end": 68.85,
+      "score": 0.911
+    },
+    {
+      "word": "With",
+      "start": 68.89,
+      "end": 70.152,
+      "score": 0.615
+    },
+    {
+      "word": "a",
+      "start": 70.252,
+      "end": 70.272,
+      "score": 1.0
+    },
+    {
+      "word": "heavy",
+      "start": 70.352,
+      "end": 70.633,
+      "score": 0.881
+    },
+    {
+      "word": "heart,",
+      "start": 70.713,
+      "end": 70.993,
+      "score": 0.776
+    },
+    {
+      "word": "his",
+      "start": 71.334,
+      "end": 71.474,
+      "score": 0.87
+    },
+    {
+      "word": "mother",
+      "start": 71.554,
+      "end": 71.834,
+      "score": 0.759
+    },
+    {
+      "word": "agreed",
+      "start": 71.855,
+      "end": 72.496,
+      "score": 0.713
+    },
+    {
+      "word": "and",
+      "start": 72.536,
+      "end": 72.916,
+      "score": 0.772
+    },
+    {
+      "word": "said",
+      "start": 73.036,
+      "end": 73.277,
+      "score": 0.948
+    },
+    {
+      "word": "softly,",
+      "start": 73.297,
+      "end": 73.918,
+      "score": 0.925
+    },
+    {
+      "word": "Go",
+      "start": 74.679,
+      "end": 74.859,
+      "score": 0.822
+    },
+    {
+      "word": "then,",
+      "start": 74.979,
+      "end": 75.16,
+      "score": 0.989
+    },
+    {
+      "word": "my",
+      "start": 75.24,
+      "end": 75.38,
+      "score": 0.992
+    },
+    {
+      "word": "son,",
+      "start": 75.48,
+      "end": 75.721,
+      "score": 0.997
+    },
+    {
+      "word": "but",
+      "start": 75.781,
+      "end": 76.322,
+      "score": 0.919
+    },
+    {
+      "word": "never",
+      "start": 76.342,
+      "end": 76.782,
+      "score": 0.653
+    },
+    {
+      "word": "forget",
+      "start": 76.903,
+      "end": 77.283,
+      "score": 0.875
+    },
+    {
+      "word": "your",
+      "start": 77.343,
+      "end": 77.524,
+      "score": 0.773
+    },
+    {
+      "word": "mother",
+      "start": 77.604,
+      "end": 77.884,
+      "score": 0.791
+    },
+    {
+      "word": "or",
+      "start": 77.924,
+      "end": 78.525,
+      "score": 0.766
+    },
+    {
+      "word": "where",
+      "start": 78.545,
+      "end": 78.946,
+      "score": 0.853
+    },
+    {
+      "word": "you",
+      "start": 79.006,
+      "end": 79.126,
+      "score": 0.986
+    },
+    {
+      "word": "come",
+      "start": 79.226,
+      "end": 79.427,
+      "score": 0.88
+    },
+    {
+      "word": "from.",
+      "start": 79.527,
+      "end": 79.727,
+      "score": 0.906
+    },
+    {
+      "word": "Years",
+      "start": 79.787,
+      "end": 81.43,
+      "score": 0.606
+    },
+    {
+      "word": "passed.",
+      "start": 81.57,
+      "end": 82.051,
+      "score": 0.972
+    },
+    {
+      "word": "Malin",
+      "start": 82.491,
+      "end": 82.912,
+      "score": 0.847
+    },
+    {
+      "word": "never",
+      "start": 83.072,
+      "end": 83.333,
+      "score": 0.754
+    },
+    {
+      "word": "returned.",
+      "start": 83.433,
+      "end": 84.114,
+      "score": 0.893
+    },
+    {
+      "word": "His",
+      "start": 84.674,
+      "end": 84.874,
+      "score": 0.547
+    },
+    {
+      "word": "mother",
+      "start": 84.974,
+      "end": 85.255,
+      "score": 0.837
+    },
+    {
+      "word": "waited",
+      "start": 85.395,
+      "end": 85.776,
+      "score": 0.842
+    },
+    {
+      "word": "every",
+      "start": 85.816,
+      "end": 86.377,
+      "score": 0.658
+    },
+    {
+      "word": "day",
+      "start": 86.477,
+      "end": 86.717,
+      "score": 0.93
+    },
+    {
+      "word": "by",
+      "start": 86.838,
+      "end": 86.978,
+      "score": 0.992
+    },
+    {
+      "word": "the",
+      "start": 86.998,
+      "end": 87.118,
+      "score": 0.789
+    },
+    {
+      "word": "beach,",
+      "start": 87.158,
+      "end": 87.479,
+      "score": 0.691
+    },
+    {
+      "word": "hoping",
+      "start": 87.879,
+      "end": 88.26,
+      "score": 0.793
+    },
+    {
+      "word": "to",
+      "start": 88.36,
+      "end": 88.46,
+      "score": 0.893
+    },
+    {
+      "word": "see",
+      "start": 88.58,
+      "end": 88.821,
+      "score": 0.948
+    },
+    {
+      "word": "her",
+      "start": 88.901,
+      "end": 89.021,
+      "score": 0.799
+    },
+    {
+      "word": "son",
+      "start": 89.101,
+      "end": 89.342,
+      "score": 0.847
+    },
+    {
+      "word": "again.",
+      "start": 89.402,
+      "end": 89.722,
+      "score": 0.856
+    },
+    {
+      "word": "Until",
+      "start": 89.782,
+      "end": 91.085,
+      "score": 0.769
+    },
+    {
+      "word": "one",
+      "start": 91.105,
+      "end": 91.565,
+      "score": 0.67
+    },
+    {
+      "word": "bright",
+      "start": 91.726,
+      "end": 92.066,
+      "score": 0.691
+    },
+    {
+      "word": "morning,",
+      "start": 92.186,
+      "end": 92.547,
+      "score": 0.889
+    },
+    {
+      "word": "a",
+      "start": 92.948,
+      "end": 92.988,
+      "score": 0.994
+    },
+    {
+      "word": "grand",
+      "start": 93.108,
+      "end": 93.509,
+      "score": 0.915
+    },
+    {
+      "word": "ship",
+      "start": 93.669,
+      "end": 93.929,
+      "score": 0.942
+    },
+    {
+      "word": "arrived",
+      "start": 94.049,
+      "end": 94.53,
+      "score": 0.871
+    },
+    {
+      "word": "at",
+      "start": 94.59,
+      "end": 94.65,
+      "score": 0.771
+    },
+    {
+      "word": "the",
+      "start": 94.67,
+      "end": 94.771,
+      "score": 0.832
+    },
+    {
+      "word": "shore.",
+      "start": 94.831,
+      "end": 95.191,
+      "score": 0.711
+    },
+    {
+      "word": "From",
+      "start": 96.033,
+      "end": 96.233,
+      "score": 0.756
+    },
+    {
+      "word": "it",
+      "start": 96.333,
+      "end": 96.393,
+      "score": 0.989
+    },
+    {
+      "word": "stepped",
+      "start": 96.674,
+      "end": 96.994,
+      "score": 0.919
+    },
+    {
+      "word": "a",
+      "start": 97.195,
+      "end": 97.215,
+      "score": 0.716
+    },
+    {
+      "word": "handsome",
+      "start": 97.295,
+      "end": 97.796,
+      "score": 0.894
+    },
+    {
+      "word": "man,",
+      "start": 97.876,
+      "end": 98.216,
+      "score": 0.863
+    },
+    {
+      "word": "dressed",
+      "start": 98.256,
+      "end": 98.998,
+      "score": 0.93
+    },
+    {
+      "word": "in",
+      "start": 99.078,
+      "end": 99.138,
+      "score": 0.763
+    },
+    {
+      "word": "fine",
+      "start": 99.318,
+      "end": 99.699,
+      "score": 0.79
+    },
+    {
+      "word": "clothes,",
+      "start": 99.859,
+      "end": 100.4,
+      "score": 0.798
+    },
+    {
+      "word": "holding",
+      "start": 100.761,
+      "end": 101.121,
+      "score": 0.75
+    },
+    {
+      "word": "the",
+      "start": 101.181,
+      "end": 101.261,
+      "score": 0.978
+    },
+    {
+      "word": "hand",
+      "start": 101.321,
+      "end": 101.662,
+      "score": 0.693
+    },
+    {
+      "word": "of",
+      "start": 101.702,
+      "end": 101.902,
+      "score": 0.794
+    },
+    {
+      "word": "a",
+      "start": 102.003,
+      "end": 102.023,
+      "score": 1.0
+    },
+    {
+      "word": "beautiful",
+      "start": 102.083,
+      "end": 102.604,
+      "score": 0.741
+    },
+    {
+      "word": "woman.",
+      "start": 102.684,
+      "end": 103.004,
+      "score": 0.958
+    },
+    {
+      "word": "The",
+      "start": 103.906,
+      "end": 104.006,
+      "score": 0.992
+    },
+    {
+      "word": "villagers",
+      "start": 104.066,
+      "end": 104.567,
+      "score": 0.781
+    },
+    {
+      "word": "whispered,",
+      "start": 104.687,
+      "end": 105.168,
+      "score": 0.732
+    },
+    {
+      "word": "that's",
+      "start": 105.649,
+      "end": 105.989,
+      "score": 0.844
+    },
+    {
+      "word": "Malin",
+      "start": 106.089,
+      "end": 106.51,
+      "score": 0.803
+    },
+    {
+      "word": "Kundan,",
+      "start": 106.53,
+      "end": 107.211,
+      "score": 0.979
+    },
+    {
+      "word": "the",
+      "start": 107.672,
+      "end": 107.772,
+      "score": 0.995
+    },
+    {
+      "word": "poor",
+      "start": 107.852,
+      "end": 108.153,
+      "score": 0.891
+    },
+    {
+      "word": "boy",
+      "start": 108.273,
+      "end": 108.613,
+      "score": 0.771
+    },
+    {
+      "word": "who",
+      "start": 108.634,
+      "end": 108.814,
+      "score": 0.769
+    },
+    {
+      "word": "went",
+      "start": 108.894,
+      "end": 109.094,
+      "score": 0.788
+    },
+    {
+      "word": "to",
+      "start": 109.154,
+      "end": 109.255,
+      "score": 0.872
+    },
+    {
+      "word": "sea.",
+      "start": 109.355,
+      "end": 109.695,
+      "score": 0.933
+    },
+    {
+      "word": "He's",
+      "start": 109.735,
+      "end": 110.356,
+      "score": 0.811
+    },
+    {
+      "word": "rich",
+      "start": 110.537,
+      "end": 110.817,
+      "score": 0.834
+    },
+    {
+      "word": "now.",
+      "start": 110.937,
+      "end": 111.378,
+      "score": 0.836
+    },
+    {
+      "word": "Overjoyed,",
+      "start": 112.418,
+      "end": 113.339,
+      "score": 0.845
+    },
+    {
+      "word": "Malin's",
+      "start": 113.719,
+      "end": 114.16,
+      "score": 0.722
+    },
+    {
+      "word": "mother",
+      "start": 114.24,
+      "end": 114.54,
+      "score": 0.719
+    },
+    {
+      "word": "rushed",
+      "start": 114.72,
+      "end": 115.0,
+      "score": 0.793
+    },
+    {
+      "word": "toward",
+      "start": 115.081,
+      "end": 115.401,
+      "score": 0.893
+    },
+    {
+      "word": "him",
+      "start": 115.441,
+      "end": 115.581,
+      "score": 0.885
+    },
+    {
+      "word": "and",
+      "start": 115.761,
+      "end": 115.841,
+      "score": 0.902
+    },
+    {
+      "word": "cried,",
+      "start": 115.961,
+      "end": 116.362,
+      "score": 0.694
+    },
+    {
+      "word": "Malin,",
+      "start": 116.902,
+      "end": 117.343,
+      "score": 0.799
+    },
+    {
+      "word": "my",
+      "start": 117.683,
+      "end": 117.823,
+      "score": 0.868
+    },
+    {
+      "word": "son,",
+      "start": 117.983,
+      "end": 118.304,
+      "score": 0.92
+    },
+    {
+      "word": "you've",
+      "start": 118.324,
+      "end": 118.864,
+      "score": 0.338
+    },
+    {
+      "word": "finally",
+      "start": 118.984,
+      "end": 119.445,
+      "score": 0.865
+    },
+    {
+      "word": "come",
+      "start": 119.545,
+      "end": 119.725,
+      "score": 0.659
+    },
+    {
+      "word": "home.",
+      "start": 119.805,
+      "end": 120.145,
+      "score": 0.806
+    },
+    {
+      "word": "But",
+      "start": 120.205,
+      "end": 121.346,
+      "score": 0.763
+    },
+    {
+      "word": "Malin",
+      "start": 121.467,
+      "end": 121.887,
+      "score": 0.812
+    },
+    {
+      "word": "was",
+      "start": 121.967,
+      "end": 122.107,
+      "score": 0.69
+    },
+    {
+      "word": "ashamed",
+      "start": 122.187,
+      "end": 122.748,
+      "score": 0.675
+    },
+    {
+      "word": "of",
+      "start": 122.788,
+      "end": 122.888,
+      "score": 0.66
+    },
+    {
+      "word": "his",
+      "start": 122.928,
+      "end": 123.108,
+      "score": 0.704
+    },
+    {
+      "word": "poor",
+      "start": 123.228,
+      "end": 123.528,
+      "score": 0.88
+    },
+    {
+      "word": "mother's",
+      "start": 123.649,
+      "end": 124.009,
+      "score": 0.846
+    },
+    {
+      "word": "ragged",
+      "start": 124.169,
+      "end": 124.549,
+      "score": 0.902
+    },
+    {
+      "word": "clothes.",
+      "start": 124.649,
+      "end": 125.19,
+      "score": 0.81
+    },
+    {
+      "word": "He",
+      "start": 125.791,
+      "end": 125.931,
+      "score": 0.68
+    },
+    {
+      "word": "denied",
+      "start": 126.011,
+      "end": 126.511,
+      "score": 0.874
+    },
+    {
+      "word": "her",
+      "start": 126.591,
+      "end": 126.731,
+      "score": 0.753
+    },
+    {
+      "word": "in",
+      "start": 126.771,
+      "end": 126.992,
+      "score": 0.782
+    },
+    {
+      "word": "front",
+      "start": 127.072,
+      "end": 127.332,
+      "score": 0.85
+    },
+    {
+      "word": "of",
+      "start": 127.412,
+      "end": 127.452,
+      "score": 1.0
+    },
+    {
+      "word": "everyone.",
+      "start": 127.472,
+      "end": 128.153,
+      "score": 0.788
+    },
+    {
+      "word": "This",
+      "start": 128.193,
+      "end": 129.134,
+      "score": 0.898
+    },
+    {
+      "word": "old",
+      "start": 129.174,
+      "end": 129.614,
+      "score": 0.72
+    },
+    {
+      "word": "woman",
+      "start": 129.754,
+      "end": 130.055,
+      "score": 0.917
+    },
+    {
+      "word": "is",
+      "start": 130.075,
+      "end": 130.355,
+      "score": 0.606
+    },
+    {
+      "word": "not",
+      "start": 130.495,
+      "end": 130.695,
+      "score": 0.678
+    },
+    {
+      "word": "my",
+      "start": 130.815,
+      "end": 131.015,
+      "score": 0.927
+    },
+    {
+      "word": "mother,",
+      "start": 131.156,
+      "end": 131.496,
+      "score": 0.892
+    },
+    {
+      "word": "he",
+      "start": 131.536,
+      "end": 131.996,
+      "score": 0.762
+    },
+    {
+      "word": "shouted",
+      "start": 132.117,
+      "end": 132.517,
+      "score": 0.727
+    },
+    {
+      "word": "angrily.",
+      "start": 132.537,
+      "end": 133.137,
+      "score": 0.82
+    },
+    {
+      "word": "His",
+      "start": 133.178,
+      "end": 134.198,
+      "score": 0.646
+    },
+    {
+      "word": "mother",
+      "start": 134.339,
+      "end": 134.619,
+      "score": 0.784
+    },
+    {
+      "word": "froze",
+      "start": 134.819,
+      "end": 135.279,
+      "score": 0.941
+    },
+    {
+      "word": "in",
+      "start": 135.3,
+      "end": 135.54,
+      "score": 0.738
+    },
+    {
+      "word": "disbelief.",
+      "start": 135.64,
+      "end": 136.421,
+      "score": 0.874
+    },
+    {
+      "word": "Malin,",
+      "start": 137.261,
+      "end": 137.742,
+      "score": 0.869
+    },
+    {
+      "word": "I",
+      "start": 138.282,
+      "end": 138.342,
+      "score": 0.982
+    },
+    {
+      "word": "am",
+      "start": 138.643,
+      "end": 138.763,
+      "score": 0.618
+    },
+    {
+      "word": "your",
+      "start": 138.783,
+      "end": 139.023,
+      "score": 0.533
+    },
+    {
+      "word": "mother.",
+      "start": 139.083,
+      "end": 139.403,
+      "score": 0.849
+    },
+    {
+      "word": "Don't",
+      "start": 139.443,
+      "end": 139.984,
+      "score": 0.588
+    },
+    {
+      "word": "you",
+      "start": 140.024,
+      "end": 140.164,
+      "score": 0.774
+    },
+    {
+      "word": "remember",
+      "start": 140.244,
+      "end": 140.745,
+      "score": 0.797
+    },
+    {
+      "word": "me?",
+      "start": 140.805,
+      "end": 141.005,
+      "score": 0.914
+    },
+    {
+      "word": "she",
+      "start": 141.025,
+      "end": 141.565,
+      "score": 0.845
+    },
+    {
+      "word": "pleaded.",
+      "start": 141.665,
+      "end": 142.226,
+      "score": 0.73
+    },
+    {
+      "word": "Still,",
+      "start": 142.914,
+      "end": 143.415,
+      "score": 0.878
+    },
+    {
+      "word": "Malin",
+      "start": 143.835,
+      "end": 144.235,
+      "score": 0.881
+    },
+    {
+      "word": "pushed",
+      "start": 144.376,
+      "end": 144.676,
+      "score": 0.74
+    },
+    {
+      "word": "her",
+      "start": 144.736,
+      "end": 144.856,
+      "score": 0.697
+    },
+    {
+      "word": "away.",
+      "start": 144.956,
+      "end": 145.296,
+      "score": 0.803
+    },
+    {
+      "word": "His",
+      "start": 145.336,
+      "end": 146.157,
+      "score": 0.817
+    },
+    {
+      "word": "heart",
+      "start": 146.237,
+      "end": 146.538,
+      "score": 0.71
+    },
+    {
+      "word": "was",
+      "start": 146.638,
+      "end": 146.778,
+      "score": 0.723
+    },
+    {
+      "word": "blinded",
+      "start": 146.918,
+      "end": 147.479,
+      "score": 0.855
+    },
+    {
+      "word": "by",
+      "start": 147.579,
+      "end": 147.719,
+      "score": 0.914
+    },
+    {
+      "word": "pride",
+      "start": 147.859,
+      "end": 148.3,
+      "score": 0.856
+    },
+    {
+      "word": "and",
+      "start": 148.4,
+      "end": 148.48,
+      "score": 0.865
+    },
+    {
+      "word": "wealth.",
+      "start": 148.6,
+      "end": 148.96,
+      "score": 0.784
+    },
+    {
+      "word": "His",
+      "start": 149.741,
+      "end": 149.901,
+      "score": 0.522
+    },
+    {
+      "word": "mother's",
+      "start": 150.021,
+      "end": 150.402,
+      "score": 0.748
+    },
+    {
+      "word": "heart",
+      "start": 150.502,
+      "end": 150.802,
+      "score": 0.685
+    },
+    {
+      "word": "broke.",
+      "start": 151.042,
+      "end": 151.403,
+      "score": 0.923
+    },
+    {
+      "word": "Trembling,",
+      "start": 152.224,
+      "end": 152.744,
+      "score": 0.862
+    },
+    {
+      "word": "she",
+      "start": 153.084,
+      "end": 153.225,
+      "score": 0.721
+    },
+    {
+      "word": "lifted",
+      "start": 153.345,
+      "end": 153.705,
+      "score": 0.91
+    },
+    {
+      "word": "her",
+      "start": 153.765,
+      "end": 153.885,
+      "score": 0.804
+    },
+    {
+      "word": "hands",
+      "start": 153.945,
+      "end": 154.286,
+      "score": 0.83
+    },
+    {
+      "word": "to",
+      "start": 154.386,
+      "end": 154.486,
+      "score": 0.932
+    },
+    {
+      "word": "the",
+      "start": 154.546,
+      "end": 154.606,
+      "score": 0.674
+    },
+    {
+      "word": "sky",
+      "start": 154.706,
+      "end": 155.167,
+      "score": 0.894
+    },
+    {
+      "word": "and",
+      "start": 155.307,
+      "end": 155.387,
+      "score": 0.928
+    },
+    {
+      "word": "prayed,",
+      "start": 155.507,
+      "end": 155.927,
+      "score": 0.707
+    },
+    {
+      "word": "O",
+      "start": 156.688,
+      "end": 156.788,
+      "score": 0.777
+    },
+    {
+      "word": "God,",
+      "start": 156.908,
+      "end": 157.309,
+      "score": 0.968
+    },
+    {
+      "word": "if",
+      "start": 157.789,
+      "end": 157.849,
+      "score": 0.953
+    },
+    {
+      "word": "he",
+      "start": 157.949,
+      "end": 158.11,
+      "score": 0.89
+    },
+    {
+      "word": "truly",
+      "start": 158.27,
+      "end": 158.81,
+      "score": 0.879
+    },
+    {
+      "word": "is",
+      "start": 158.83,
+      "end": 159.171,
+      "score": 0.609
+    },
+    {
+      "word": "my",
+      "start": 159.291,
+      "end": 159.491,
+      "score": 0.99
+    },
+    {
+      "word": "son,",
+      "start": 159.611,
+      "end": 159.911,
+      "score": 0.923
+    },
+    {
+      "word": "let",
+      "start": 159.972,
+      "end": 160.632,
+      "score": 0.91
+    },
+    {
+      "word": "him",
+      "start": 160.672,
+      "end": 160.832,
+      "score": 0.805
+    },
+    {
+      "word": "be",
+      "start": 160.933,
+      "end": 161.053,
+      "score": 0.826
+    },
+    {
+      "word": "punished",
+      "start": 161.233,
+      "end": 161.673,
+      "score": 0.799
+    },
+    {
+      "word": "for",
+      "start": 161.773,
+      "end": 161.934,
+      "score": 0.798
+    },
+    {
+      "word": "his",
+      "start": 161.994,
+      "end": 162.174,
+      "score": 0.595
+    },
+    {
+      "word": "cruelty.",
+      "start": 162.314,
+      "end": 162.915,
+      "score": 0.888
+    },
+    {
+      "word": "Soon",
+      "start": 164.316,
+      "end": 164.596,
+      "score": 0.838
+    },
+    {
+      "word": "after,",
+      "start": 164.736,
+      "end": 164.997,
+      "score": 0.9
+    },
+    {
+      "word": "dark",
+      "start": 165.057,
+      "end": 165.697,
+      "score": 0.812
+    },
+    {
+      "word": "clouds",
+      "start": 165.818,
+      "end": 166.338,
+      "score": 0.799
+    },
+    {
+      "word": "gathered.",
+      "start": 166.458,
+      "end": 166.899,
+      "score": 0.912
+    },
+    {
+      "word": "A",
+      "start": 167.639,
+      "end": 167.679,
+      "score": 0.998
+    },
+    {
+      "word": "violent",
+      "start": 167.78,
+      "end": 168.32,
+      "score": 0.829
+    },
+    {
+      "word": "storm",
+      "start": 168.44,
+      "end": 168.921,
+      "score": 0.877
+    },
+    {
+      "word": "struck",
+      "start": 169.041,
+      "end": 169.421,
+      "score": 0.821
+    },
+    {
+      "word": "the",
+      "start": 169.521,
+      "end": 169.601,
+      "score": 0.823
+    },
+    {
+      "word": "sea.",
+      "start": 169.682,
+      "end": 170.162,
+      "score": 0.815
+    },
+    {
+      "word": "Thunder",
+      "start": 170.626,
+      "end": 171.067,
+      "score": 0.718
+    },
+    {
+      "word": "roared",
+      "start": 171.207,
+      "end": 171.688,
+      "score": 0.733
+    },
+    {
+      "word": "and",
+      "start": 171.728,
+      "end": 171.888,
+      "score": 0.587
+    },
+    {
+      "word": "lightning",
+      "start": 171.908,
+      "end": 172.469,
+      "score": 0.756
+    },
+    {
+      "word": "flashed.",
+      "start": 172.609,
+      "end": 173.17,
+      "score": 0.76
+    },
+    {
+      "word": "Malin's",
+      "start": 173.912,
+      "end": 174.352,
+      "score": 0.663
+    },
+    {
+      "word": "magnificent",
+      "start": 174.473,
+      "end": 175.294,
+      "score": 0.955
+    },
+    {
+      "word": "ship",
+      "start": 175.374,
+      "end": 175.655,
+      "score": 0.78
+    },
+    {
+      "word": "was",
+      "start": 175.735,
+      "end": 175.895,
+      "score": 0.808
+    },
+    {
+      "word": "shattered",
+      "start": 176.035,
+      "end": 176.496,
+      "score": 0.855
+    },
+    {
+      "word": "by",
+      "start": 176.556,
+      "end": 176.696,
+      "score": 1.0
+    },
+    {
+      "word": "the",
+      "start": 176.756,
+      "end": 176.837,
+      "score": 0.833
+    },
+    {
+      "word": "waves.",
+      "start": 176.897,
+      "end": 177.358,
+      "score": 0.834
+    },
+    {
+      "word": "When",
+      "start": 178.279,
+      "end": 178.419,
+      "score": 0.916
+    },
+    {
+      "word": "the",
+      "start": 178.459,
+      "end": 178.54,
+      "score": 0.823
+    },
+    {
+      "word": "storm",
+      "start": 178.62,
+      "end": 179.0,
+      "score": 0.79
+    },
+    {
+      "word": "finally",
+      "start": 179.161,
+      "end": 179.601,
+      "score": 0.887
+    },
+    {
+      "word": "ended,",
+      "start": 179.742,
+      "end": 180.002,
+      "score": 0.944
+    },
+    {
+      "word": "the",
+      "start": 180.022,
+      "end": 180.463,
+      "score": 0.876
+    },
+    {
+      "word": "villagers",
+      "start": 180.523,
+      "end": 181.024,
+      "score": 0.815
+    },
+    {
+      "word": "found",
+      "start": 181.164,
+      "end": 181.485,
+      "score": 0.74
+    },
+    {
+      "word": "a",
+      "start": 181.565,
+      "end": 181.585,
+      "score": 1.0
+    },
+    {
+      "word": "large",
+      "start": 181.685,
+      "end": 182.086,
+      "score": 0.715
+    },
+    {
+      "word": "rock",
+      "start": 182.226,
+      "end": 182.546,
+      "score": 0.964
+    },
+    {
+      "word": "on",
+      "start": 182.667,
+      "end": 182.707,
+      "score": 0.926
+    },
+    {
+      "word": "the",
+      "start": 182.767,
+      "end": 182.827,
+      "score": 0.751
+    },
+    {
+      "word": "beach.",
+      "start": 182.887,
+      "end": 183.208,
+      "score": 0.806
+    },
+    {
+      "word": "Shaped",
+      "start": 183.768,
+      "end": 184.109,
+      "score": 0.814
+    },
+    {
+      "word": "like",
+      "start": 184.229,
+      "end": 184.41,
+      "score": 0.564
+    },
+    {
+      "word": "a",
+      "start": 184.47,
+      "end": 184.49,
+      "score": 1.0
+    },
+    {
+      "word": "man",
+      "start": 184.57,
+      "end": 184.89,
+      "score": 0.829
+    },
+    {
+      "word": "kneeling,",
+      "start": 185.051,
+      "end": 185.511,
+      "score": 0.747
+    },
+    {
+      "word": "his",
+      "start": 185.972,
+      "end": 186.133,
+      "score": 0.573
+    },
+    {
+      "word": "face",
+      "start": 186.253,
+      "end": 186.593,
+      "score": 0.84
+    },
+    {
+      "word": "turned",
+      "start": 186.734,
+      "end": 187.134,
+      "score": 0.805
+    },
+    {
+      "word": "toward",
+      "start": 187.254,
+      "end": 187.555,
+      "score": 0.831
+    },
+    {
+      "word": "the",
+      "start": 187.595,
+      "end": 187.695,
+      "score": 0.666
+    },
+    {
+      "word": "shore.",
+      "start": 187.755,
+      "end": 188.096,
+      "score": 0.702
+    },
+    {
+      "word": "People",
+      "start": 189.138,
+      "end": 189.458,
+      "score": 0.986
+    },
+    {
+      "word": "believed",
+      "start": 189.518,
+      "end": 190.019,
+      "score": 0.853
+    },
+    {
+      "word": "it",
+      "start": 190.059,
+      "end": 190.3,
+      "score": 0.7
+    },
+    {
+      "word": "was",
+      "start": 190.36,
+      "end": 190.5,
+      "score": 0.828
+    },
+    {
+      "word": "Malin",
+      "start": 190.52,
+      "end": 190.981,
+      "score": 0.83
+    },
+    {
+      "word": "Kundan",
+      "start": 191.041,
+      "end": 191.682,
+      "score": 0.931
+    },
+    {
+      "word": "turned",
+      "start": 191.722,
+      "end": 192.503,
+      "score": 0.811
+    },
+    {
+      "word": "to",
+      "start": 192.584,
+      "end": 192.684,
+      "score": 0.931
+    },
+    {
+      "word": "stone",
+      "start": 192.784,
+      "end": 193.245,
+      "score": 0.903
+    },
+    {
+      "word": "for",
+      "start": 193.265,
+      "end": 193.625,
+      "score": 0.773
+    },
+    {
+      "word": "disobeying",
+      "start": 193.746,
+      "end": 194.507,
+      "score": 0.822
+    },
+    {
+      "word": "and",
+      "start": 194.867,
+      "end": 194.948,
+      "score": 0.765
+    },
+    {
+      "word": "shaming",
+      "start": 195.108,
+      "end": 195.549,
+      "score": 0.735
+    },
+    {
+      "word": "his",
+      "start": 195.589,
+      "end": 195.849,
+      "score": 0.721
+    },
+    {
+      "word": "mother.",
+      "start": 195.929,
+      "end": 196.37,
+      "score": 0.763
+    },
+    {
+      "word": "Since",
+      "start": 197.218,
+      "end": 197.599,
+      "score": 0.795
+    },
+    {
+      "word": "then,",
+      "start": 197.679,
+      "end": 197.879,
+      "score": 0.88
+    },
+    {
+      "word": "the",
+      "start": 197.939,
+      "end": 198.421,
+      "score": 0.576
+    },
+    {
+      "word": "story",
+      "start": 198.461,
+      "end": 198.901,
+      "score": 0.839
+    },
+    {
+      "word": "of",
+      "start": 198.942,
+      "end": 198.982,
+      "score": 0.961
+    },
+    {
+      "word": "Malin",
+      "start": 199.022,
+      "end": 199.443,
+      "score": 0.725
+    },
+    {
+      "word": "Kundan",
+      "start": 199.483,
+      "end": 200.044,
+      "score": 0.945
+    },
+    {
+      "word": "has",
+      "start": 200.124,
+      "end": 200.264,
+      "score": 0.901
+    },
+    {
+      "word": "been",
+      "start": 200.324,
+      "end": 200.505,
+      "score": 0.911
+    },
+    {
+      "word": "told",
+      "start": 200.585,
+      "end": 200.886,
+      "score": 0.749
+    },
+    {
+      "word": "across",
+      "start": 200.906,
+      "end": 201.567,
+      "score": 0.691
+    },
+    {
+      "word": "generations,",
+      "start": 201.667,
+      "end": 202.449,
+      "score": 0.852
+    },
+    {
+      "word": "reminding",
+      "start": 202.97,
+      "end": 203.531,
+      "score": 0.852
+    },
+    {
+      "word": "everyone",
+      "start": 203.551,
+      "end": 204.253,
+      "score": 0.804
+    },
+    {
+      "word": "that",
+      "start": 204.293,
+      "end": 204.754,
+      "score": 0.95
+    },
+    {
+      "word": "wealth",
+      "start": 204.854,
+      "end": 205.175,
+      "score": 0.651
+    },
+    {
+      "word": "and",
+      "start": 205.395,
+      "end": 205.475,
+      "score": 0.808
+    },
+    {
+      "word": "success",
+      "start": 205.555,
+      "end": 206.137,
+      "score": 0.69
+    },
+    {
+      "word": "mean",
+      "start": 206.297,
+      "end": 206.517,
+      "score": 0.775
+    },
+    {
+      "word": "nothing",
+      "start": 206.638,
+      "end": 207.018,
+      "score": 0.796
+    },
+    {
+      "word": "if",
+      "start": 207.439,
+      "end": 207.519,
+      "score": 0.98
+    },
+    {
+      "word": "we",
+      "start": 207.58,
+      "end": 207.72,
+      "score": 0.804
+    },
+    {
+      "word": "forget",
+      "start": 207.8,
+      "end": 208.201,
+      "score": 0.953
+    },
+    {
+      "word": "our",
+      "start": 208.241,
+      "end": 208.542,
+      "score": 0.863
+    },
+    {
+      "word": "parents",
+      "start": 208.642,
+      "end": 209.103,
+      "score": 0.904
+    },
+    {
+      "word": "and",
+      "start": 209.624,
+      "end": 209.744,
+      "score": 0.725
+    },
+    {
+      "word": "our",
+      "start": 209.764,
+      "end": 210.045,
+      "score": 0.51
+    },
+    {
+      "word": "roots.",
+      "start": 210.125,
+      "end": 210.706,
+      "score": 0.825
+    }
+  ]
+}

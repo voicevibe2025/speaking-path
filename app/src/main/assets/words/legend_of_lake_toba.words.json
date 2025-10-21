@@ -1,0 +1,4585 @@
+{
+  "segments": [
+    {
+      "start": 0.258,
+      "end": 10.308,
+      "text": " The Legend of Lake Toba High in the cool hills of North Sumatra, there lived a humble fisherman named Toba.",
+      "words": [
+        {
+          "word": "The",
+          "start": 0.258,
+          "end": 0.438,
+          "score": 0.643
+        },
+        {
+          "word": "Legend",
+          "start": 0.538,
+          "end": 1.039,
+          "score": 0.843
+        },
+        {
+          "word": "of",
+          "start": 1.079,
+          "end": 1.379,
+          "score": 0.922
+        },
+        {
+          "word": "Lake",
+          "start": 1.399,
+          "end": 1.74,
+          "score": 0.524
+        },
+        {
+          "word": "Toba",
+          "start": 1.84,
+          "end": 2.36,
+          "score": 0.946
+        },
+        {
+          "word": "High",
+          "start": 2.38,
+          "end": 4.102,
+          "score": 0.514
+        },
+        {
+          "word": "in",
+          "start": 4.142,
+          "end": 4.282,
+          "score": 0.792
+        },
+        {
+          "word": "the",
+          "start": 4.322,
+          "end": 4.402,
+          "score": 0.833
+        },
+        {
+          "word": "cool",
+          "start": 4.502,
+          "end": 4.883,
+          "score": 0.942
+        },
+        {
+          "word": "hills",
+          "start": 4.983,
+          "end": 5.403,
+          "score": 0.823
+        },
+        {
+          "word": "of",
+          "start": 5.503,
+          "end": 5.563,
+          "score": 0.97
+        },
+        {
+          "word": "North",
+          "start": 5.603,
+          "end": 5.964,
+          "score": 0.882
+        },
+        {
+          "word": "Sumatra,",
+          "start": 6.064,
+          "end": 6.785,
+          "score": 0.968
+        },
+        {
+          "word": "there",
+          "start": 7.145,
+          "end": 7.325,
+          "score": 0.847
+        },
+        {
+          "word": "lived",
+          "start": 7.385,
+          "end": 7.686,
+          "score": 0.75
+        },
+        {
+          "word": "a",
+          "start": 7.706,
+          "end": 7.866,
+          "score": 0.729
+        },
+        {
+          "word": "humble",
+          "start": 7.966,
+          "end": 8.346,
+          "score": 0.81
+        },
+        {
+          "word": "fisherman",
+          "start": 8.466,
+          "end": 9.007,
+          "score": 0.822
+        },
+        {
+          "word": "named",
+          "start": 9.047,
+          "end": 9.608,
+          "score": 0.71
+        },
+        {
+          "word": "Toba.",
+          "start": 9.808,
+          "end": 10.308,
+          "score": 0.963
+        }
+      ]
+    },
+    {
+      "start": 10.348,
+      "end": 14.452,
+      "text": "Every day he went down to the river to catch fish.",
+      "words": [
+        {
+          "word": "Every",
+          "start": 10.348,
+          "end": 11.449,
+          "score": 0.639
+        },
+        {
+          "word": "day",
+          "start": 11.509,
+          "end": 11.75,
+          "score": 0.653
+        },
+        {
+          "word": "he",
+          "start": 11.77,
+          "end": 11.81,
+          "score": 0.5
+        },
+        {
+          "word": "went",
+          "start": 12.25,
+          "end": 12.41,
+          "score": 0.829
+        },
+        {
+          "word": "down",
+          "start": 12.49,
+          "end": 12.771,
+          "score": 0.848
+        },
+        {
+          "word": "to",
+          "start": 12.851,
+          "end": 12.931,
+          "score": 0.928
+        },
+        {
+          "word": "the",
+          "start": 12.991,
+          "end": 13.071,
+          "score": 0.997
+        },
+        {
+          "word": "river",
+          "start": 13.151,
+          "end": 13.411,
+          "score": 0.72
+        },
+        {
+          "word": "to",
+          "start": 13.451,
+          "end": 13.652,
+          "score": 0.834
+        },
+        {
+          "word": "catch",
+          "start": 13.732,
+          "end": 14.012,
+          "score": 0.838
+        },
+        {
+          "word": "fish.",
+          "start": 14.132,
+          "end": 14.452,
+          "score": 0.766
+        }
+      ]
+    },
+    {
+      "start": 15.213,
+      "end": 19.317,
+      "text": "He lived alone in a small hut and worked hard to survive.",
+      "words": [
+        {
+          "word": "He",
+          "start": 15.213,
+          "end": 15.313,
+          "score": 0.583
+        },
+        {
+          "word": "lived",
+          "start": 15.413,
+          "end": 15.654,
+          "score": 0.667
+        },
+        {
+          "word": "alone",
+          "start": 15.734,
+          "end": 16.134,
+          "score": 0.816
+        },
+        {
+          "word": "in",
+          "start": 16.154,
+          "end": 16.314,
+          "score": 0.6
+        },
+        {
+          "word": "a",
+          "start": 16.374,
+          "end": 16.394,
+          "score": 0.978
+        },
+        {
+          "word": "small",
+          "start": 16.495,
+          "end": 16.855,
+          "score": 0.927
+        },
+        {
+          "word": "hut",
+          "start": 16.935,
+          "end": 17.195,
+          "score": 0.835
+        },
+        {
+          "word": "and",
+          "start": 17.536,
+          "end": 17.616,
+          "score": 0.558
+        },
+        {
+          "word": "worked",
+          "start": 17.716,
+          "end": 17.996,
+          "score": 0.833
+        },
+        {
+          "word": "hard",
+          "start": 18.096,
+          "end": 18.456,
+          "score": 0.813
+        },
+        {
+          "word": "to",
+          "start": 18.537,
+          "end": 18.637,
+          "score": 0.588
+        },
+        {
+          "word": "survive.",
+          "start": 18.717,
+          "end": 19.317,
+          "score": 0.87
+        }
+      ]
+    },
+    {
+      "start": 20.459,
+      "end": 27.826,
+      "text": "One day, while fishing, Toba caught something he had never seen before, a beautiful golden fish.",
+      "words": [
+        {
+          "word": "One",
+          "start": 20.459,
+          "end": 20.579,
+          "score": 0.796
+        },
+        {
+          "word": "day,",
+          "start": 20.639,
+          "end": 20.879,
+          "score": 0.955
+        },
+        {
+          "word": "while",
+          "start": 20.899,
+          "end": 21.42,
+          "score": 0.875
+        },
+        {
+          "word": "fishing,",
+          "start": 21.5,
+          "end": 21.88,
+          "score": 0.85
+        },
+        {
+          "word": "Toba",
+          "start": 21.92,
+          "end": 22.581,
+          "score": 0.892
+        },
+        {
+          "word": "caught",
+          "start": 22.681,
+          "end": 22.921,
+          "score": 0.817
+        },
+        {
+          "word": "something",
+          "start": 23.021,
+          "end": 23.382,
+          "score": 0.877
+        },
+        {
+          "word": "he",
+          "start": 23.402,
+          "end": 23.562,
+          "score": 0.721
+        },
+        {
+          "word": "had",
+          "start": 23.622,
+          "end": 23.742,
+          "score": 0.88
+        },
+        {
+          "word": "never",
+          "start": 23.862,
+          "end": 24.102,
+          "score": 0.681
+        },
+        {
+          "word": "seen",
+          "start": 24.262,
+          "end": 24.523,
+          "score": 0.814
+        },
+        {
+          "word": "before,",
+          "start": 24.623,
+          "end": 25.103,
+          "score": 0.722
+        },
+        {
+          "word": "a",
+          "start": 25.664,
+          "end": 25.684,
+          "score": 0.999
+        },
+        {
+          "word": "beautiful",
+          "start": 25.804,
+          "end": 26.465,
+          "score": 0.814
+        },
+        {
+          "word": "golden",
+          "start": 26.665,
+          "end": 27.145,
+          "score": 0.724
+        },
+        {
+          "word": "fish.",
+          "start": 27.285,
+          "end": 27.826,
+          "score": 0.757
+        }
+      ]
+    },
+    {
+      "start": 28.45,
+      "end": 31.615,
+      "text": " As he took it out of the water, it suddenly spoke.",
+      "words": [
+        {
+          "word": "As",
+          "start": 28.45,
+          "end": 28.61,
+          "score": 0.908
+        },
+        {
+          "word": "he",
+          "start": 28.67,
+          "end": 28.75,
+          "score": 0.737
+        },
+        {
+          "word": "took",
+          "start": 28.851,
+          "end": 29.031,
+          "score": 0.976
+        },
+        {
+          "word": "it",
+          "start": 29.091,
+          "end": 29.151,
+          "score": 0.745
+        },
+        {
+          "word": "out",
+          "start": 29.251,
+          "end": 29.371,
+          "score": 0.665
+        },
+        {
+          "word": "of",
+          "start": 29.451,
+          "end": 29.492,
+          "score": 1.0
+        },
+        {
+          "word": "the",
+          "start": 29.512,
+          "end": 29.612,
+          "score": 0.776
+        },
+        {
+          "word": "water,",
+          "start": 29.672,
+          "end": 30.032,
+          "score": 0.857
+        },
+        {
+          "word": "it",
+          "start": 30.052,
+          "end": 30.453,
+          "score": 0.704
+        },
+        {
+          "word": "suddenly",
+          "start": 30.593,
+          "end": 31.054,
+          "score": 0.928
+        },
+        {
+          "word": "spoke.",
+          "start": 31.194,
+          "end": 31.615,
+          "score": 0.88
+        }
+      ]
+    },
+    {
+      "start": 32.536,
+      "end": 36.322,
+      "text": "Please, kind fisherman, said the fish, let me go.",
+      "words": [
+        {
+          "word": "Please,",
+          "start": 32.536,
+          "end": 33.037,
+          "score": 0.558
+        },
+        {
+          "word": "kind",
+          "start": 33.237,
+          "end": 33.598,
+          "score": 0.871
+        },
+        {
+          "word": "fisherman,",
+          "start": 33.698,
+          "end": 34.178,
+          "score": 0.903
+        },
+        {
+          "word": "said",
+          "start": 34.519,
+          "end": 34.679,
+          "score": 0.802
+        },
+        {
+          "word": "the",
+          "start": 34.719,
+          "end": 34.839,
+          "score": 0.733
+        },
+        {
+          "word": "fish,",
+          "start": 34.9,
+          "end": 35.16,
+          "score": 0.722
+        },
+        {
+          "word": "let",
+          "start": 35.581,
+          "end": 35.761,
+          "score": 0.911
+        },
+        {
+          "word": "me",
+          "start": 35.841,
+          "end": 35.941,
+          "score": 0.978
+        },
+        {
+          "word": "go.",
+          "start": 36.041,
+          "end": 36.322,
+          "score": 0.866
+        }
+      ]
+    },
+    {
+      "start": 36.342,
+      "end": 38.745,
+      "text": "I am not an ordinary fish.",
+      "words": [
+        {
+          "word": "I",
+          "start": 36.342,
+          "end": 36.362,
+          "score": 1.0
+        },
+        {
+          "word": "am",
+          "start": 36.402,
+          "end": 37.163,
+          "score": 0.754
+        },
+        {
+          "word": "not",
+          "start": 37.263,
+          "end": 37.463,
+          "score": 0.792
+        },
+        {
+          "word": "an",
+          "start": 37.543,
+          "end": 37.583,
+          "score": 1.0
+        },
+        {
+          "word": "ordinary",
+          "start": 37.804,
+          "end": 38.305,
+          "score": 0.857
+        },
+        {
+          "word": "fish.",
+          "start": 38.405,
+          "end": 38.745,
+          "score": 0.827
+        }
+      ]
+    },
+    {
+      "start": 39.286,
+      "end": 41.549,
+      "text": "I was once a cursed princess.",
+      "words": [
+        {
+          "word": "I",
+          "start": 39.286,
+          "end": 39.346,
+          "score": 0.995
+        },
+        {
+          "word": "was",
+          "start": 39.386,
+          "end": 39.546,
+          "score": 0.808
+        },
+        {
+          "word": "once",
+          "start": 39.586,
+          "end": 39.987,
+          "score": 0.928
+        },
+        {
+          "word": "a",
+          "start": 40.007,
+          "end": 40.027,
+          "score": 1.0
+        },
+        {
+          "word": "cursed",
+          "start": 40.328,
+          "end": 40.748,
+          "score": 0.853
+        },
+        {
+          "word": "princess.",
+          "start": 40.908,
+          "end": 41.549,
+          "score": 0.846
+        }
+      ]
+    },
+    {
+      "start": 42.591,
+      "end": 43.793,
+      "text": "Toba was shocked.",
+      "words": [
+        {
+          "word": "Toba",
+          "start": 42.591,
+          "end": 42.971,
+          "score": 0.927
+        },
+        {
+          "word": "was",
+          "start": 43.032,
+          "end": 43.172,
+          "score": 0.843
+        },
+        {
+          "word": "shocked.",
+          "start": 43.312,
+          "end": 43.793,
+          "score": 0.79
+        }
+      ]
+    },
+    {
+      "start": 44.253,
+      "end": 49.461,
+      "text": "But before he could respond, the fish transformed into a beautiful woman.",
+      "words": [
+        {
+          "word": "But",
+          "start": 44.253,
+          "end": 44.374,
+          "score": 0.985
+        },
+        {
+          "word": "before",
+          "start": 44.434,
+          "end": 44.854,
+          "score": 0.871
+        },
+        {
+          "word": "he",
+          "start": 44.934,
+          "end": 45.014,
+          "score": 0.75
+        },
+        {
+          "word": "could",
+          "start": 45.075,
+          "end": 45.235,
+          "score": 0.889
+        },
+        {
+          "word": "respond,",
+          "start": 45.295,
+          "end": 45.836,
+          "score": 0.82
+        },
+        {
+          "word": "the",
+          "start": 46.176,
+          "end": 46.276,
+          "score": 0.81
+        },
+        {
+          "word": "fish",
+          "start": 46.376,
+          "end": 46.657,
+          "score": 0.794
+        },
+        {
+          "word": "transformed",
+          "start": 46.817,
+          "end": 47.678,
+          "score": 0.821
+        },
+        {
+          "word": "into",
+          "start": 47.718,
+          "end": 48.119,
+          "score": 0.83
+        },
+        {
+          "word": "a",
+          "start": 48.139,
+          "end": 48.159,
+          "score": 1.0
+        },
+        {
+          "word": "beautiful",
+          "start": 48.379,
+          "end": 49.02,
+          "score": 0.75
+        },
+        {
+          "word": "woman.",
+          "start": 49.121,
+          "end": 49.461,
+          "score": 0.881
+        }
+      ]
+    },
+    {
+      "start": 49.501,
+      "end": 55.57,
+      "text": "The woman smiled and said, I will become your wife, but you must",
+      "words": [
+        {
+          "word": "The",
+          "start": 49.501,
+          "end": 50.442,
+          "score": 0.927
+        },
+        {
+          "word": "woman",
+          "start": 50.503,
+          "end": 50.843,
+          "score": 0.768
+        },
+        {
+          "word": "smiled",
+          "start": 50.963,
+          "end": 51.584,
+          "score": 0.637
+        },
+        {
+          "word": "and",
+          "start": 51.604,
+          "end": 51.784,
+          "score": 0.616
+        },
+        {
+          "word": "said,",
+          "start": 51.885,
+          "end": 52.165,
+          "score": 0.944
+        },
+        {
+          "word": "I",
+          "start": 52.185,
+          "end": 52.205,
+          "score": 1.0
+        },
+        {
+          "word": "will",
+          "start": 53.267,
+          "end": 53.447,
+          "score": 0.855
+        },
+        {
+          "word": "become",
+          "start": 53.487,
+          "end": 53.868,
+          "score": 0.892
+        },
+        {
+          "word": "your",
+          "start": 53.908,
+          "end": 54.128,
+          "score": 0.685
+        },
+        {
+          "word": "wife,",
+          "start": 54.248,
+          "end": 54.569,
+          "score": 0.859
+        },
+        {
+          "word": "but",
+          "start": 54.989,
+          "end": 55.109,
+          "score": 0.996
+        },
+        {
+          "word": "you",
+          "start": 55.169,
+          "end": 55.29,
+          "score": 0.88
+        },
+        {
+          "word": "must",
+          "start": 55.35,
+          "end": 55.57,
+          "score": 0.705
+        }
+      ]
+    },
+    {
+      "start": 55.65,
+      "end": 59.815,
+      "text": " promise never to tell anyone that I was once a fish.",
+      "words": [
+        {
+          "word": "promise",
+          "start": 55.65,
+          "end": 56.09,
+          "score": 0.87
+        },
+        {
+          "word": "never",
+          "start": 56.291,
+          "end": 56.571,
+          "score": 0.788
+        },
+        {
+          "word": "to",
+          "start": 56.651,
+          "end": 56.751,
+          "score": 0.837
+        },
+        {
+          "word": "tell",
+          "start": 56.831,
+          "end": 57.032,
+          "score": 0.902
+        },
+        {
+          "word": "anyone",
+          "start": 57.052,
+          "end": 57.692,
+          "score": 0.912
+        },
+        {
+          "word": "that",
+          "start": 57.712,
+          "end": 58.113,
+          "score": 0.876
+        },
+        {
+          "word": "I",
+          "start": 58.453,
+          "end": 58.513,
+          "score": 1.0
+        },
+        {
+          "word": "was",
+          "start": 58.593,
+          "end": 58.733,
+          "score": 0.73
+        },
+        {
+          "word": "once",
+          "start": 58.773,
+          "end": 59.174,
+          "score": 0.917
+        },
+        {
+          "word": "a",
+          "start": 59.194,
+          "end": 59.214,
+          "score": 1.0
+        },
+        {
+          "word": "fish.",
+          "start": 59.494,
+          "end": 59.815,
+          "score": 0.825
+        }
+      ]
+    },
+    {
+      "start": 60.796,
+      "end": 64.14,
+      "text": "Toba agreed happily and soon they were married.",
+      "words": [
+        {
+          "word": "Toba",
+          "start": 60.796,
+          "end": 61.196,
+          "score": 0.942
+        },
+        {
+          "word": "agreed",
+          "start": 61.316,
+          "end": 61.757,
+          "score": 0.677
+        },
+        {
+          "word": "happily",
+          "start": 61.857,
+          "end": 62.277,
+          "score": 0.913
+        },
+        {
+          "word": "and",
+          "start": 62.317,
+          "end": 62.778,
+          "score": 0.516
+        },
+        {
+          "word": "soon",
+          "start": 62.898,
+          "end": 63.198,
+          "score": 0.752
+        },
+        {
+          "word": "they",
+          "start": 63.239,
+          "end": 63.479,
+          "score": 0.619
+        },
+        {
+          "word": "were",
+          "start": 63.519,
+          "end": 63.659,
+          "score": 0.76
+        },
+        {
+          "word": "married.",
+          "start": 63.719,
+          "end": 64.14,
+          "score": 0.78
+        }
+      ]
+    },
+    {
+      "start": 64.78,
+      "end": 69.265,
+      "text": "They lived peacefully and were blessed with a son named Samosir.",
+      "words": [
+        {
+          "word": "They",
+          "start": 64.78,
+          "end": 64.92,
+          "score": 0.799
+        },
+        {
+          "word": "lived",
+          "start": 64.98,
+          "end": 65.261,
+          "score": 0.86
+        },
+        {
+          "word": "peacefully",
+          "start": 65.381,
+          "end": 65.942,
+          "score": 0.756
+        },
+        {
+          "word": "and",
+          "start": 65.962,
+          "end": 66.342,
+          "score": 0.643
+        },
+        {
+          "word": "were",
+          "start": 66.402,
+          "end": 66.562,
+          "score": 0.588
+        },
+        {
+          "word": "blessed",
+          "start": 66.622,
+          "end": 67.023,
+          "score": 0.936
+        },
+        {
+          "word": "with",
+          "start": 67.083,
+          "end": 67.223,
+          "score": 0.94
+        },
+        {
+          "word": "a",
+          "start": 67.283,
+          "end": 67.303,
+          "score": 0.953
+        },
+        {
+          "word": "son",
+          "start": 67.423,
+          "end": 67.724,
+          "score": 0.92
+        },
+        {
+          "word": "named",
+          "start": 67.744,
+          "end": 68.244,
+          "score": 0.743
+        },
+        {
+          "word": "Samosir.",
+          "start": 68.424,
+          "end": 69.265,
+          "score": 0.922
+        }
+      ]
+    },
+    {
+      "start": 70.607,
+      "end": 74.531,
+      "text": "Samosir grew up strong but lazy and mischievous.",
+      "words": [
+        {
+          "word": "Samosir",
+          "start": 70.607,
+          "end": 71.328,
+          "score": 0.808
+        },
+        {
+          "word": "grew",
+          "start": 71.428,
+          "end": 71.668,
+          "score": 0.93
+        },
+        {
+          "word": "up",
+          "start": 71.748,
+          "end": 71.828,
+          "score": 0.868
+        },
+        {
+          "word": "strong",
+          "start": 71.928,
+          "end": 72.469,
+          "score": 0.836
+        },
+        {
+          "word": "but",
+          "start": 72.509,
+          "end": 72.949,
+          "score": 0.88
+        },
+        {
+          "word": "lazy",
+          "start": 73.09,
+          "end": 73.59,
+          "score": 0.824
+        },
+        {
+          "word": "and",
+          "start": 73.63,
+          "end": 73.83,
+          "score": 0.694
+        },
+        {
+          "word": "mischievous.",
+          "start": 73.951,
+          "end": 74.531,
+          "score": 0.901
+        }
+      ]
+    },
+    {
+      "start": 75.192,
+      "end": 80.658,
+      "text": "He loved eating and often helped himself to food before his father came home.",
+      "words": [
+        {
+          "word": "He",
+          "start": 75.192,
+          "end": 75.312,
+          "score": 0.68
+        },
+        {
+          "word": "loved",
+          "start": 75.472,
+          "end": 75.813,
+          "score": 0.706
+        },
+        {
+          "word": "eating",
+          "start": 75.833,
+          "end": 76.293,
+          "score": 0.669
+        },
+        {
+          "word": "and",
+          "start": 76.333,
+          "end": 76.714,
+          "score": 0.795
+        },
+        {
+          "word": "often",
+          "start": 76.734,
+          "end": 77.174,
+          "score": 0.887
+        },
+        {
+          "word": "helped",
+          "start": 77.254,
+          "end": 77.535,
+          "score": 0.777
+        },
+        {
+          "word": "himself",
+          "start": 77.575,
+          "end": 77.975,
+          "score": 0.753
+        },
+        {
+          "word": "to",
+          "start": 78.075,
+          "end": 78.175,
+          "score": 0.63
+        },
+        {
+          "word": "food",
+          "start": 78.275,
+          "end": 78.596,
+          "score": 0.864
+        },
+        {
+          "word": "before",
+          "start": 78.736,
+          "end": 79.136,
+          "score": 0.874
+        },
+        {
+          "word": "his",
+          "start": 79.216,
+          "end": 79.337,
+          "score": 0.776
+        },
+        {
+          "word": "father",
+          "start": 79.397,
+          "end": 79.757,
+          "score": 0.764
+        },
+        {
+          "word": "came",
+          "start": 79.857,
+          "end": 80.077,
+          "score": 0.69
+        },
+        {
+          "word": "home.",
+          "start": 80.157,
+          "end": 80.658,
+          "score": 0.824
+        }
+      ]
+    },
+    {
+      "start": 81.346,
+      "end": 86.874,
+      "text": " One day, Toba went fishing and told Samosir to bring him lunch by the river.",
+      "words": [
+        {
+          "word": "One",
+          "start": 81.346,
+          "end": 81.626,
+          "score": 0.602
+        },
+        {
+          "word": "day,",
+          "start": 81.687,
+          "end": 81.867,
+          "score": 0.992
+        },
+        {
+          "word": "Toba",
+          "start": 81.927,
+          "end": 82.628,
+          "score": 0.843
+        },
+        {
+          "word": "went",
+          "start": 82.688,
+          "end": 82.868,
+          "score": 0.73
+        },
+        {
+          "word": "fishing",
+          "start": 82.968,
+          "end": 83.349,
+          "score": 0.711
+        },
+        {
+          "word": "and",
+          "start": 83.389,
+          "end": 83.77,
+          "score": 0.493
+        },
+        {
+          "word": "told",
+          "start": 83.89,
+          "end": 84.15,
+          "score": 0.776
+        },
+        {
+          "word": "Samosir",
+          "start": 84.25,
+          "end": 84.951,
+          "score": 0.886
+        },
+        {
+          "word": "to",
+          "start": 85.051,
+          "end": 85.152,
+          "score": 0.865
+        },
+        {
+          "word": "bring",
+          "start": 85.232,
+          "end": 85.452,
+          "score": 0.873
+        },
+        {
+          "word": "him",
+          "start": 85.512,
+          "end": 85.632,
+          "score": 0.719
+        },
+        {
+          "word": "lunch",
+          "start": 85.672,
+          "end": 86.093,
+          "score": 0.754
+        },
+        {
+          "word": "by",
+          "start": 86.213,
+          "end": 86.373,
+          "score": 0.99
+        },
+        {
+          "word": "the",
+          "start": 86.434,
+          "end": 86.534,
+          "score": 0.667
+        },
+        {
+          "word": "river.",
+          "start": 86.594,
+          "end": 86.874,
+          "score": 0.863
+        }
+      ]
+    },
+    {
+      "start": 86.914,
+      "end": 90.72,
+      "text": "The boy took his time, playing along the way.",
+      "words": [
+        {
+          "word": "The",
+          "start": 86.914,
+          "end": 87.715,
+          "score": 0.976
+        },
+        {
+          "word": "boy",
+          "start": 87.796,
+          "end": 88.096,
+          "score": 0.78
+        },
+        {
+          "word": "took",
+          "start": 88.116,
+          "end": 88.396,
+          "score": 0.799
+        },
+        {
+          "word": "his",
+          "start": 88.477,
+          "end": 88.617,
+          "score": 0.533
+        },
+        {
+          "word": "time,",
+          "start": 88.717,
+          "end": 89.118,
+          "score": 0.894
+        },
+        {
+          "word": "playing",
+          "start": 89.458,
+          "end": 89.859,
+          "score": 0.774
+        },
+        {
+          "word": "along",
+          "start": 89.939,
+          "end": 90.239,
+          "score": 0.757
+        },
+        {
+          "word": "the",
+          "start": 90.299,
+          "end": 90.379,
+          "score": 0.9
+        },
+        {
+          "word": "way.",
+          "start": 90.459,
+          "end": 90.72,
+          "score": 0.8
+        }
+      ]
+    },
+    {
+      "start": 91.521,
+      "end": 95.487,
+      "text": "By the time he arrived, his father was already starving.",
+      "words": [
+        {
+          "word": "By",
+          "start": 91.521,
+          "end": 91.661,
+          "score": 0.639
+        },
+        {
+          "word": "the",
+          "start": 91.721,
+          "end": 91.801,
+          "score": 0.817
+        },
+        {
+          "word": "time",
+          "start": 91.862,
+          "end": 92.182,
+          "score": 0.618
+        },
+        {
+          "word": "he",
+          "start": 92.202,
+          "end": 92.342,
+          "score": 0.364
+        },
+        {
+          "word": "arrived,",
+          "start": 92.402,
+          "end": 92.943,
+          "score": 0.826
+        },
+        {
+          "word": "his",
+          "start": 93.224,
+          "end": 93.364,
+          "score": 0.541
+        },
+        {
+          "word": "father",
+          "start": 93.484,
+          "end": 93.885,
+          "score": 0.66
+        },
+        {
+          "word": "was",
+          "start": 93.905,
+          "end": 94.085,
+          "score": 0.727
+        },
+        {
+          "word": "already",
+          "start": 94.325,
+          "end": 94.766,
+          "score": 0.699
+        },
+        {
+          "word": "starving.",
+          "start": 94.886,
+          "end": 95.487,
+          "score": 0.835
+        }
+      ]
+    },
+    {
+      "start": 95.547,
+      "end": 100.715,
+      "text": "When Toba opened the basket, he found only a little rice left.",
+      "words": [
+        {
+          "word": "When",
+          "start": 95.547,
+          "end": 96.448,
+          "score": 0.783
+        },
+        {
+          "word": "Toba",
+          "start": 96.569,
+          "end": 96.929,
+          "score": 0.91
+        },
+        {
+          "word": "opened",
+          "start": 97.089,
+          "end": 97.37,
+          "score": 0.804
+        },
+        {
+          "word": "the",
+          "start": 97.43,
+          "end": 97.49,
+          "score": 0.99
+        },
+        {
+          "word": "basket,",
+          "start": 97.55,
+          "end": 98.011,
+          "score": 0.902
+        },
+        {
+          "word": "he",
+          "start": 98.271,
+          "end": 98.371,
+          "score": 0.85
+        },
+        {
+          "word": "found",
+          "start": 98.471,
+          "end": 98.812,
+          "score": 0.743
+        },
+        {
+          "word": "only",
+          "start": 98.852,
+          "end": 99.353,
+          "score": 0.786
+        },
+        {
+          "word": "a",
+          "start": 99.373,
+          "end": 99.393,
+          "score": 1.0
+        },
+        {
+          "word": "little",
+          "start": 99.553,
+          "end": 99.833,
+          "score": 0.791
+        },
+        {
+          "word": "rice",
+          "start": 99.934,
+          "end": 100.274,
+          "score": 0.853
+        },
+        {
+          "word": "left.",
+          "start": 100.374,
+          "end": 100.715,
+          "score": 0.791
+        }
+      ]
+    },
+    {
+      "start": 101.195,
+      "end": 103.419,
+      "text": "Samosir had eaten most of it.",
+      "words": [
+        {
+          "word": "Samosir",
+          "start": 101.195,
+          "end": 101.936,
+          "score": 0.881
+        },
+        {
+          "word": "had",
+          "start": 102.037,
+          "end": 102.157,
+          "score": 0.805
+        },
+        {
+          "word": "eaten",
+          "start": 102.417,
+          "end": 102.678,
+          "score": 0.825
+        },
+        {
+          "word": "most",
+          "start": 102.818,
+          "end": 103.098,
+          "score": 0.729
+        },
+        {
+          "word": "of",
+          "start": 103.178,
+          "end": 103.218,
+          "score": 0.99
+        },
+        {
+          "word": "it.",
+          "start": 103.319,
+          "end": 103.419,
+          "score": 0.967
+        }
+      ]
+    },
+    {
+      "start": 104.42,
+      "end": 109.007,
+      "text": "Angry and disappointed, Toba shouted, You greedy boy!",
+      "words": [
+        {
+          "word": "Angry",
+          "start": 104.42,
+          "end": 104.761,
+          "score": 0.856
+        },
+        {
+          "word": "and",
+          "start": 104.881,
+          "end": 104.961,
+          "score": 0.982
+        },
+        {
+          "word": "disappointed,",
+          "start": 105.081,
+          "end": 105.842,
+          "score": 0.873
+        },
+        {
+          "word": "Toba",
+          "start": 105.862,
+          "end": 106.543,
+          "score": 0.886
+        },
+        {
+          "word": "shouted,",
+          "start": 106.643,
+          "end": 107.064,
+          "score": 0.839
+        },
+        {
+          "word": "You",
+          "start": 107.104,
+          "end": 107.825,
+          "score": 0.541
+        },
+        {
+          "word": "greedy",
+          "start": 108.025,
+          "end": 108.486,
+          "score": 0.812
+        },
+        {
+          "word": "boy!",
+          "start": 108.646,
+          "end": 109.007,
+          "score": 0.938
+        }
+      ]
+    },
+    {
+      "start": 109.027,
+      "end": 111.09,
+      "text": "You're just like your mother!",
+      "words": [
+        {
+          "word": "You're",
+          "start": 109.027,
+          "end": 109.548,
+          "score": 0.546
+        },
+        {
+          "word": "just",
+          "start": 109.728,
+          "end": 109.988,
+          "score": 0.905
+        },
+        {
+          "word": "like",
+          "start": 110.069,
+          "end": 110.269,
+          "score": 0.604
+        },
+        {
+          "word": "your",
+          "start": 110.289,
+          "end": 110.489,
+          "score": 0.791
+        },
+        {
+          "word": "mother!",
+          "start": 110.649,
+          "end": 111.09,
+          "score": 0.772
+        }
+      ]
+    },
+    {
+      "start": 111.266,
+      "end": 111.947,
+      "text": " A fish!",
+      "words": [
+        {
+          "word": "A",
+          "start": 111.266,
+          "end": 111.566,
+          "score": 0.798
+        },
+        {
+          "word": "fish!",
+          "start": 111.586,
+          "end": 111.947,
+          "score": 0.893
+        }
+      ]
+    },
+    {
+      "start": 112.888,
+      "end": 118.756,
+      "text": "The moment he said those words, Samosir dropped the basket and ran home crying.",
+      "words": [
+        {
+          "word": "The",
+          "start": 112.888,
+          "end": 112.988,
+          "score": 0.995
+        },
+        {
+          "word": "moment",
+          "start": 113.128,
+          "end": 113.509,
+          "score": 0.929
+        },
+        {
+          "word": "he",
+          "start": 113.569,
+          "end": 113.669,
+          "score": 0.994
+        },
+        {
+          "word": "said",
+          "start": 113.789,
+          "end": 113.99,
+          "score": 0.696
+        },
+        {
+          "word": "those",
+          "start": 114.03,
+          "end": 114.29,
+          "score": 0.722
+        },
+        {
+          "word": "words,",
+          "start": 114.31,
+          "end": 114.751,
+          "score": 0.82
+        },
+        {
+          "word": "Samosir",
+          "start": 115.111,
+          "end": 115.812,
+          "score": 0.871
+        },
+        {
+          "word": "dropped",
+          "start": 115.912,
+          "end": 116.293,
+          "score": 0.918
+        },
+        {
+          "word": "the",
+          "start": 116.313,
+          "end": 116.413,
+          "score": 0.83
+        },
+        {
+          "word": "basket",
+          "start": 116.493,
+          "end": 116.934,
+          "score": 0.972
+        },
+        {
+          "word": "and",
+          "start": 117.194,
+          "end": 117.274,
+          "score": 0.565
+        },
+        {
+          "word": "ran",
+          "start": 117.314,
+          "end": 117.735,
+          "score": 0.765
+        },
+        {
+          "word": "home",
+          "start": 117.835,
+          "end": 118.095,
+          "score": 0.622
+        },
+        {
+          "word": "crying.",
+          "start": 118.275,
+          "end": 118.756,
+          "score": 0.809
+        }
+      ]
+    },
+    {
+      "start": 119.437,
+      "end": 123.703,
+      "text": "When he told his mother what his father had said, she turned pale.",
+      "words": [
+        {
+          "word": "When",
+          "start": 119.437,
+          "end": 119.577,
+          "score": 0.705
+        },
+        {
+          "word": "he",
+          "start": 119.617,
+          "end": 119.717,
+          "score": 0.636
+        },
+        {
+          "word": "told",
+          "start": 119.837,
+          "end": 120.098,
+          "score": 0.705
+        },
+        {
+          "word": "his",
+          "start": 120.158,
+          "end": 120.298,
+          "score": 0.72
+        },
+        {
+          "word": "mother",
+          "start": 120.398,
+          "end": 120.679,
+          "score": 0.724
+        },
+        {
+          "word": "what",
+          "start": 120.739,
+          "end": 120.879,
+          "score": 0.848
+        },
+        {
+          "word": "his",
+          "start": 120.919,
+          "end": 121.039,
+          "score": 0.719
+        },
+        {
+          "word": "father",
+          "start": 121.119,
+          "end": 121.44,
+          "score": 0.7
+        },
+        {
+          "word": "had",
+          "start": 121.5,
+          "end": 121.64,
+          "score": 0.639
+        },
+        {
+          "word": "said,",
+          "start": 121.72,
+          "end": 122.02,
+          "score": 0.902
+        },
+        {
+          "word": "she",
+          "start": 122.081,
+          "end": 122.581,
+          "score": 0.874
+        },
+        {
+          "word": "turned",
+          "start": 122.601,
+          "end": 123.102,
+          "score": 0.731
+        },
+        {
+          "word": "pale.",
+          "start": 123.242,
+          "end": 123.703,
+          "score": 0.832
+        }
+      ]
+    },
+    {
+      "start": 124.564,
+      "end": 127.608,
+      "text": "He broke his promise, she whispered sadly.",
+      "words": [
+        {
+          "word": "He",
+          "start": 124.564,
+          "end": 124.664,
+          "score": 0.846
+        },
+        {
+          "word": "broke",
+          "start": 124.824,
+          "end": 125.125,
+          "score": 0.849
+        },
+        {
+          "word": "his",
+          "start": 125.205,
+          "end": 125.365,
+          "score": 0.534
+        },
+        {
+          "word": "promise,",
+          "start": 125.485,
+          "end": 126.006,
+          "score": 0.857
+        },
+        {
+          "word": "she",
+          "start": 126.386,
+          "end": 126.506,
+          "score": 0.706
+        },
+        {
+          "word": "whispered",
+          "start": 126.607,
+          "end": 127.047,
+          "score": 0.563
+        },
+        {
+          "word": "sadly.",
+          "start": 127.147,
+          "end": 127.608,
+          "score": 0.92
+        }
+      ]
+    },
+    {
+      "start": 128.409,
+      "end": 131.333,
+      "text": "She ran outside and called upon the heavens.",
+      "words": [
+        {
+          "word": "She",
+          "start": 128.409,
+          "end": 128.549,
+          "score": 0.738
+        },
+        {
+          "word": "ran",
+          "start": 128.689,
+          "end": 128.97,
+          "score": 0.874
+        },
+        {
+          "word": "outside",
+          "start": 129.09,
+          "end": 129.671,
+          "score": 0.835
+        },
+        {
+          "word": "and",
+          "start": 129.711,
+          "end": 129.851,
+          "score": 0.426
+        },
+        {
+          "word": "called",
+          "start": 130.011,
+          "end": 130.352,
+          "score": 0.694
+        },
+        {
+          "word": "upon",
+          "start": 130.432,
+          "end": 130.692,
+          "score": 0.685
+        },
+        {
+          "word": "the",
+          "start": 130.732,
+          "end": 130.852,
+          "score": 0.629
+        },
+        {
+          "word": "heavens.",
+          "start": 130.892,
+          "end": 131.333,
+          "score": 0.877
+        }
+      ]
+    },
+    {
+      "start": 131.954,
+      "end": 137.221,
+      "text": "The sky darkened, thunder roared, and heavy rain began to fall.",
+      "words": [
+        {
+          "word": "The",
+          "start": 131.954,
+          "end": 132.074,
+          "score": 0.814
+        },
+        {
+          "word": "sky",
+          "start": 132.134,
+          "end": 132.595,
+          "score": 0.943
+        },
+        {
+          "word": "darkened,",
+          "start": 132.635,
+          "end": 133.296,
+          "score": 0.861
+        },
+        {
+          "word": "thunder",
+          "start": 133.356,
+          "end": 134.137,
+          "score": 0.835
+        },
+        {
+          "word": "roared,",
+          "start": 134.237,
+          "end": 134.697,
+          "score": 0.852
+        },
+        {
+          "word": "and",
+          "start": 134.737,
+          "end": 135.098,
+          "score": 0.768
+        },
+        {
+          "word": "heavy",
+          "start": 135.138,
+          "end": 135.539,
+          "score": 0.679
+        },
+        {
+          "word": "rain",
+          "start": 135.659,
+          "end": 136.019,
+          "score": 0.816
+        },
+        {
+          "word": "began",
+          "start": 136.119,
+          "end": 136.52,
+          "score": 0.843
+        },
+        {
+          "word": "to",
+          "start": 136.6,
+          "end": 136.7,
+          "score": 0.849
+        },
+        {
+          "word": "fall.",
+          "start": 136.8,
+          "end": 137.221,
+          "score": 0.682
+        }
+      ]
+    },
+    {
+      "start": 138.042,
+      "end": 141.106,
+      "text": "The house shook as the ground split open.",
+      "words": [
+        {
+          "word": "The",
+          "start": 138.042,
+          "end": 138.162,
+          "score": 0.811
+        },
+        {
+          "word": "house",
+          "start": 138.222,
+          "end": 138.563,
+          "score": 0.972
+        },
+        {
+          "word": "shook",
+          "start": 138.683,
+          "end": 138.983,
+          "score": 0.877
+        },
+        {
+          "word": "as",
+          "start": 139.304,
+          "end": 139.364,
+          "score": 0.744
+        },
+        {
+          "word": "the",
+          "start": 139.404,
+          "end": 139.544,
+          "score": 0.738
+        },
+        {
+          "word": "ground",
+          "start": 139.644,
+          "end": 140.085,
+          "score": 0.882
+        },
+        {
+          "word": "split",
+          "start": 140.205,
+          "end": 140.565,
+          "score": 0.702
+        },
+        {
+          "word": "open.",
+          "start": 140.605,
+          "end": 141.106,
+          "score": 0.751
+        }
+      ]
+    },
+    {
+      "start": 141.41,
+      "end": 144.153,
+      "text": " Water poured out, flooding the valley.",
+      "words": [
+        {
+          "word": "Water",
+          "start": 141.41,
+          "end": 141.91,
+          "score": 0.713
+        },
+        {
+          "word": "poured",
+          "start": 142.071,
+          "end": 142.471,
+          "score": 0.874
+        },
+        {
+          "word": "out,",
+          "start": 142.631,
+          "end": 142.771,
+          "score": 0.988
+        },
+        {
+          "word": "flooding",
+          "start": 143.132,
+          "end": 143.572,
+          "score": 0.795
+        },
+        {
+          "word": "the",
+          "start": 143.632,
+          "end": 143.692,
+          "score": 0.998
+        },
+        {
+          "word": "valley.",
+          "start": 143.772,
+          "end": 144.153,
+          "score": 0.915
+        }
+      ]
+    },
+    {
+      "start": 144.193,
+      "end": 151.64,
+      "text": "The flood grew and grew until it formed a vast lake which swallowed the entire village.",
+      "words": [
+        {
+          "word": "The",
+          "start": 144.193,
+          "end": 144.893,
+          "score": 0.869
+        },
+        {
+          "word": "flood",
+          "start": 144.994,
+          "end": 145.314,
+          "score": 0.693
+        },
+        {
+          "word": "grew",
+          "start": 145.454,
+          "end": 145.874,
+          "score": 0.832
+        },
+        {
+          "word": "and",
+          "start": 145.914,
+          "end": 146.075,
+          "score": 0.613
+        },
+        {
+          "word": "grew",
+          "start": 146.215,
+          "end": 146.535,
+          "score": 0.964
+        },
+        {
+          "word": "until",
+          "start": 146.575,
+          "end": 147.256,
+          "score": 0.387
+        },
+        {
+          "word": "it",
+          "start": 147.336,
+          "end": 147.376,
+          "score": 0.856
+        },
+        {
+          "word": "formed",
+          "start": 147.496,
+          "end": 147.896,
+          "score": 0.689
+        },
+        {
+          "word": "a",
+          "start": 147.916,
+          "end": 147.936,
+          "score": 1.0
+        },
+        {
+          "word": "vast",
+          "start": 148.197,
+          "end": 148.617,
+          "score": 0.862
+        },
+        {
+          "word": "lake",
+          "start": 148.777,
+          "end": 149.098,
+          "score": 0.813
+        },
+        {
+          "word": "which",
+          "start": 149.418,
+          "end": 149.578,
+          "score": 0.835
+        },
+        {
+          "word": "swallowed",
+          "start": 149.698,
+          "end": 150.259,
+          "score": 0.82
+        },
+        {
+          "word": "the",
+          "start": 150.279,
+          "end": 150.419,
+          "score": 0.661
+        },
+        {
+          "word": "entire",
+          "start": 150.499,
+          "end": 151.08,
+          "score": 0.722
+        },
+        {
+          "word": "village.",
+          "start": 151.2,
+          "end": 151.64,
+          "score": 0.875
+        }
+      ]
+    },
+    {
+      "start": 152.401,
+      "end": 154.323,
+      "text": "Toba was never seen again.",
+      "words": [
+        {
+          "word": "Toba",
+          "start": 152.401,
+          "end": 152.801,
+          "score": 0.923
+        },
+        {
+          "word": "was",
+          "start": 152.881,
+          "end": 153.022,
+          "score": 0.817
+        },
+        {
+          "word": "never",
+          "start": 153.042,
+          "end": 153.502,
+          "score": 0.748
+        },
+        {
+          "word": "seen",
+          "start": 153.642,
+          "end": 153.902,
+          "score": 0.894
+        },
+        {
+          "word": "again.",
+          "start": 154.003,
+          "end": 154.323,
+          "score": 0.943
+        }
+      ]
+    },
+    {
+      "start": 154.383,
+      "end": 161.37,
+      "text": "In the middle of the lake, an island rose, Samosir Island, named after their son.",
+      "words": [
+        {
+          "word": "In",
+          "start": 154.383,
+          "end": 155.284,
+          "score": 0.95
+        },
+        {
+          "word": "the",
+          "start": 155.324,
+          "end": 155.424,
+          "score": 0.666
+        },
+        {
+          "word": "middle",
+          "start": 155.504,
+          "end": 155.784,
+          "score": 0.785
+        },
+        {
+          "word": "of",
+          "start": 155.844,
+          "end": 155.884,
+          "score": 0.998
+        },
+        {
+          "word": "the",
+          "start": 155.924,
+          "end": 156.045,
+          "score": 0.531
+        },
+        {
+          "word": "lake,",
+          "start": 156.085,
+          "end": 156.345,
+          "score": 0.792
+        },
+        {
+          "word": "an",
+          "start": 156.685,
+          "end": 156.745,
+          "score": 0.901
+        },
+        {
+          "word": "island",
+          "start": 157.026,
+          "end": 157.386,
+          "score": 0.65
+        },
+        {
+          "word": "rose,",
+          "start": 157.486,
+          "end": 157.886,
+          "score": 0.745
+        },
+        {
+          "word": "Samosir",
+          "start": 158.327,
+          "end": 159.128,
+          "score": 0.793
+        },
+        {
+          "word": "Island,",
+          "start": 159.328,
+          "end": 159.648,
+          "score": 0.74
+        },
+        {
+          "word": "named",
+          "start": 160.028,
+          "end": 160.389,
+          "score": 0.68
+        },
+        {
+          "word": "after",
+          "start": 160.529,
+          "end": 160.749,
+          "score": 0.888
+        },
+        {
+          "word": "their",
+          "start": 160.809,
+          "end": 160.989,
+          "score": 0.853
+        },
+        {
+          "word": "son.",
+          "start": 161.09,
+          "end": 161.37,
+          "score": 0.906
+        }
+      ]
+    },
+    {
+      "start": 161.43,
+      "end": 166.655,
+      "text": "And that is how Lake Toba, Danao Toba, came to be.",
+      "words": [
+        {
+          "word": "And",
+          "start": 161.43,
+          "end": 162.291,
+          "score": 0.647
+        },
+        {
+          "word": "that",
+          "start": 162.311,
+          "end": 162.691,
+          "score": 0.895
+        },
+        {
+          "word": "is",
+          "start": 162.931,
+          "end": 162.991,
+          "score": 0.996
+        },
+        {
+          "word": "how",
+          "start": 163.051,
+          "end": 163.212,
+          "score": 0.971
+        },
+        {
+          "word": "Lake",
+          "start": 163.352,
+          "end": 163.592,
+          "score": 0.691
+        },
+        {
+          "word": "Toba,",
+          "start": 163.712,
+          "end": 164.173,
+          "score": 0.915
+        },
+        {
+          "word": "Danao",
+          "start": 164.553,
+          "end": 164.993,
+          "score": 0.735
+        },
+        {
+          "word": "Toba,",
+          "start": 165.094,
+          "end": 165.494,
+          "score": 0.936
+        },
+        {
+          "word": "came",
+          "start": 165.834,
+          "end": 166.115,
+          "score": 0.867
+        },
+        {
+          "word": "to",
+          "start": 166.235,
+          "end": 166.315,
+          "score": 0.895
+        },
+        {
+          "word": "be.",
+          "start": 166.395,
+          "end": 166.655,
+          "score": 0.996
+        }
+      ]
+    },
+    {
+      "start": 167.356,
+      "end": 169.618,
+      "text": "Born from love, anger,",
+      "words": [
+        {
+          "word": "Born",
+          "start": 167.356,
+          "end": 167.736,
+          "score": 0.82
+        },
+        {
+          "word": "from",
+          "start": 167.776,
+          "end": 168.056,
+          "score": 0.806
+        },
+        {
+          "word": "love,",
+          "start": 168.197,
+          "end": 168.517,
+          "score": 0.801
+        },
+        {
+          "word": "anger,",
+          "start": 168.577,
+          "end": 169.618,
+          "score": 0.84
+        }
+      ]
+    },
+    {
+      "start": 169.826,
+      "end": 171.666,
+      "text": " and a broken promise.",
+      "words": [
+        {
+          "word": "and",
+          "start": 169.826,
+          "end": 170.051,
+          "score": 0.833
+        },
+        {
+          "word": "a",
+          "start": 170.092,
+          "end": 170.153,
+          "score": 0.321
+        },
+        {
+          "word": "broken",
+          "start": 170.296,
+          "end": 170.726,
+          "score": 0.926
+        },
+        {
+          "word": "promise.",
+          "start": 170.767,
+          "end": 171.666,
+          "score": 0.881
+        }
+      ]
+    }
+  ],
+  "word_segments": [
+    {
+      "word": "The",
+      "start": 0.258,
+      "end": 0.438,
+      "score": 0.643
+    },
+    {
+      "word": "Legend",
+      "start": 0.538,
+      "end": 1.039,
+      "score": 0.843
+    },
+    {
+      "word": "of",
+      "start": 1.079,
+      "end": 1.379,
+      "score": 0.922
+    },
+    {
+      "word": "Lake",
+      "start": 1.399,
+      "end": 1.74,
+      "score": 0.524
+    },
+    {
+      "word": "Toba",
+      "start": 1.84,
+      "end": 2.36,
+      "score": 0.946
+    },
+    {
+      "word": "High",
+      "start": 2.38,
+      "end": 4.102,
+      "score": 0.514
+    },
+    {
+      "word": "in",
+      "start": 4.142,
+      "end": 4.282,
+      "score": 0.792
+    },
+    {
+      "word": "the",
+      "start": 4.322,
+      "end": 4.402,
+      "score": 0.833
+    },
+    {
+      "word": "cool",
+      "start": 4.502,
+      "end": 4.883,
+      "score": 0.942
+    },
+    {
+      "word": "hills",
+      "start": 4.983,
+      "end": 5.403,
+      "score": 0.823
+    },
+    {
+      "word": "of",
+      "start": 5.503,
+      "end": 5.563,
+      "score": 0.97
+    },
+    {
+      "word": "North",
+      "start": 5.603,
+      "end": 5.964,
+      "score": 0.882
+    },
+    {
+      "word": "Sumatra,",
+      "start": 6.064,
+      "end": 6.785,
+      "score": 0.968
+    },
+    {
+      "word": "there",
+      "start": 7.145,
+      "end": 7.325,
+      "score": 0.847
+    },
+    {
+      "word": "lived",
+      "start": 7.385,
+      "end": 7.686,
+      "score": 0.75
+    },
+    {
+      "word": "a",
+      "start": 7.706,
+      "end": 7.866,
+      "score": 0.729
+    },
+    {
+      "word": "humble",
+      "start": 7.966,
+      "end": 8.346,
+      "score": 0.81
+    },
+    {
+      "word": "fisherman",
+      "start": 8.466,
+      "end": 9.007,
+      "score": 0.822
+    },
+    {
+      "word": "named",
+      "start": 9.047,
+      "end": 9.608,
+      "score": 0.71
+    },
+    {
+      "word": "Toba.",
+      "start": 9.808,
+      "end": 10.308,
+      "score": 0.963
+    },
+    {
+      "word": "Every",
+      "start": 10.348,
+      "end": 11.449,
+      "score": 0.639
+    },
+    {
+      "word": "day",
+      "start": 11.509,
+      "end": 11.75,
+      "score": 0.653
+    },
+    {
+      "word": "he",
+      "start": 11.77,
+      "end": 11.81,
+      "score": 0.5
+    },
+    {
+      "word": "went",
+      "start": 12.25,
+      "end": 12.41,
+      "score": 0.829
+    },
+    {
+      "word": "down",
+      "start": 12.49,
+      "end": 12.771,
+      "score": 0.848
+    },
+    {
+      "word": "to",
+      "start": 12.851,
+      "end": 12.931,
+      "score": 0.928
+    },
+    {
+      "word": "the",
+      "start": 12.991,
+      "end": 13.071,
+      "score": 0.997
+    },
+    {
+      "word": "river",
+      "start": 13.151,
+      "end": 13.411,
+      "score": 0.72
+    },
+    {
+      "word": "to",
+      "start": 13.451,
+      "end": 13.652,
+      "score": 0.834
+    },
+    {
+      "word": "catch",
+      "start": 13.732,
+      "end": 14.012,
+      "score": 0.838
+    },
+    {
+      "word": "fish.",
+      "start": 14.132,
+      "end": 14.452,
+      "score": 0.766
+    },
+    {
+      "word": "He",
+      "start": 15.213,
+      "end": 15.313,
+      "score": 0.583
+    },
+    {
+      "word": "lived",
+      "start": 15.413,
+      "end": 15.654,
+      "score": 0.667
+    },
+    {
+      "word": "alone",
+      "start": 15.734,
+      "end": 16.134,
+      "score": 0.816
+    },
+    {
+      "word": "in",
+      "start": 16.154,
+      "end": 16.314,
+      "score": 0.6
+    },
+    {
+      "word": "a",
+      "start": 16.374,
+      "end": 16.394,
+      "score": 0.978
+    },
+    {
+      "word": "small",
+      "start": 16.495,
+      "end": 16.855,
+      "score": 0.927
+    },
+    {
+      "word": "hut",
+      "start": 16.935,
+      "end": 17.195,
+      "score": 0.835
+    },
+    {
+      "word": "and",
+      "start": 17.536,
+      "end": 17.616,
+      "score": 0.558
+    },
+    {
+      "word": "worked",
+      "start": 17.716,
+      "end": 17.996,
+      "score": 0.833
+    },
+    {
+      "word": "hard",
+      "start": 18.096,
+      "end": 18.456,
+      "score": 0.813
+    },
+    {
+      "word": "to",
+      "start": 18.537,
+      "end": 18.637,
+      "score": 0.588
+    },
+    {
+      "word": "survive.",
+      "start": 18.717,
+      "end": 19.317,
+      "score": 0.87
+    },
+    {
+      "word": "One",
+      "start": 20.459,
+      "end": 20.579,
+      "score": 0.796
+    },
+    {
+      "word": "day,",
+      "start": 20.639,
+      "end": 20.879,
+      "score": 0.955
+    },
+    {
+      "word": "while",
+      "start": 20.899,
+      "end": 21.42,
+      "score": 0.875
+    },
+    {
+      "word": "fishing,",
+      "start": 21.5,
+      "end": 21.88,
+      "score": 0.85
+    },
+    {
+      "word": "Toba",
+      "start": 21.92,
+      "end": 22.581,
+      "score": 0.892
+    },
+    {
+      "word": "caught",
+      "start": 22.681,
+      "end": 22.921,
+      "score": 0.817
+    },
+    {
+      "word": "something",
+      "start": 23.021,
+      "end": 23.382,
+      "score": 0.877
+    },
+    {
+      "word": "he",
+      "start": 23.402,
+      "end": 23.562,
+      "score": 0.721
+    },
+    {
+      "word": "had",
+      "start": 23.622,
+      "end": 23.742,
+      "score": 0.88
+    },
+    {
+      "word": "never",
+      "start": 23.862,
+      "end": 24.102,
+      "score": 0.681
+    },
+    {
+      "word": "seen",
+      "start": 24.262,
+      "end": 24.523,
+      "score": 0.814
+    },
+    {
+      "word": "before,",
+      "start": 24.623,
+      "end": 25.103,
+      "score": 0.722
+    },
+    {
+      "word": "a",
+      "start": 25.664,
+      "end": 25.684,
+      "score": 0.999
+    },
+    {
+      "word": "beautiful",
+      "start": 25.804,
+      "end": 26.465,
+      "score": 0.814
+    },
+    {
+      "word": "golden",
+      "start": 26.665,
+      "end": 27.145,
+      "score": 0.724
+    },
+    {
+      "word": "fish.",
+      "start": 27.285,
+      "end": 27.826,
+      "score": 0.757
+    },
+    {
+      "word": "As",
+      "start": 28.45,
+      "end": 28.61,
+      "score": 0.908
+    },
+    {
+      "word": "he",
+      "start": 28.67,
+      "end": 28.75,
+      "score": 0.737
+    },
+    {
+      "word": "took",
+      "start": 28.851,
+      "end": 29.031,
+      "score": 0.976
+    },
+    {
+      "word": "it",
+      "start": 29.091,
+      "end": 29.151,
+      "score": 0.745
+    },
+    {
+      "word": "out",
+      "start": 29.251,
+      "end": 29.371,
+      "score": 0.665
+    },
+    {
+      "word": "of",
+      "start": 29.451,
+      "end": 29.492,
+      "score": 1.0
+    },
+    {
+      "word": "the",
+      "start": 29.512,
+      "end": 29.612,
+      "score": 0.776
+    },
+    {
+      "word": "water,",
+      "start": 29.672,
+      "end": 30.032,
+      "score": 0.857
+    },
+    {
+      "word": "it",
+      "start": 30.052,
+      "end": 30.453,
+      "score": 0.704
+    },
+    {
+      "word": "suddenly",
+      "start": 30.593,
+      "end": 31.054,
+      "score": 0.928
+    },
+    {
+      "word": "spoke.",
+      "start": 31.194,
+      "end": 31.615,
+      "score": 0.88
+    },
+    {
+      "word": "Please,",
+      "start": 32.536,
+      "end": 33.037,
+      "score": 0.558
+    },
+    {
+      "word": "kind",
+      "start": 33.237,
+      "end": 33.598,
+      "score": 0.871
+    },
+    {
+      "word": "fisherman,",
+      "start": 33.698,
+      "end": 34.178,
+      "score": 0.903
+    },
+    {
+      "word": "said",
+      "start": 34.519,
+      "end": 34.679,
+      "score": 0.802
+    },
+    {
+      "word": "the",
+      "start": 34.719,
+      "end": 34.839,
+      "score": 0.733
+    },
+    {
+      "word": "fish,",
+      "start": 34.9,
+      "end": 35.16,
+      "score": 0.722
+    },
+    {
+      "word": "let",
+      "start": 35.581,
+      "end": 35.761,
+      "score": 0.911
+    },
+    {
+      "word": "me",
+      "start": 35.841,
+      "end": 35.941,
+      "score": 0.978
+    },
+    {
+      "word": "go.",
+      "start": 36.041,
+      "end": 36.322,
+      "score": 0.866
+    },
+    {
+      "word": "I",
+      "start": 36.342,
+      "end": 36.362,
+      "score": 1.0
+    },
+    {
+      "word": "am",
+      "start": 36.402,
+      "end": 37.163,
+      "score": 0.754
+    },
+    {
+      "word": "not",
+      "start": 37.263,
+      "end": 37.463,
+      "score": 0.792
+    },
+    {
+      "word": "an",
+      "start": 37.543,
+      "end": 37.583,
+      "score": 1.0
+    },
+    {
+      "word": "ordinary",
+      "start": 37.804,
+      "end": 38.305,
+      "score": 0.857
+    },
+    {
+      "word": "fish.",
+      "start": 38.405,
+      "end": 38.745,
+      "score": 0.827
+    },
+    {
+      "word": "I",
+      "start": 39.286,
+      "end": 39.346,
+      "score": 0.995
+    },
+    {
+      "word": "was",
+      "start": 39.386,
+      "end": 39.546,
+      "score": 0.808
+    },
+    {
+      "word": "once",
+      "start": 39.586,
+      "end": 39.987,
+      "score": 0.928
+    },
+    {
+      "word": "a",
+      "start": 40.007,
+      "end": 40.027,
+      "score": 1.0
+    },
+    {
+      "word": "cursed",
+      "start": 40.328,
+      "end": 40.748,
+      "score": 0.853
+    },
+    {
+      "word": "princess.",
+      "start": 40.908,
+      "end": 41.549,
+      "score": 0.846
+    },
+    {
+      "word": "Toba",
+      "start": 42.591,
+      "end": 42.971,
+      "score": 0.927
+    },
+    {
+      "word": "was",
+      "start": 43.032,
+      "end": 43.172,
+      "score": 0.843
+    },
+    {
+      "word": "shocked.",
+      "start": 43.312,
+      "end": 43.793,
+      "score": 0.79
+    },
+    {
+      "word": "But",
+      "start": 44.253,
+      "end": 44.374,
+      "score": 0.985
+    },
+    {
+      "word": "before",
+      "start": 44.434,
+      "end": 44.854,
+      "score": 0.871
+    },
+    {
+      "word": "he",
+      "start": 44.934,
+      "end": 45.014,
+      "score": 0.75
+    },
+    {
+      "word": "could",
+      "start": 45.075,
+      "end": 45.235,
+      "score": 0.889
+    },
+    {
+      "word": "respond,",
+      "start": 45.295,
+      "end": 45.836,
+      "score": 0.82
+    },
+    {
+      "word": "the",
+      "start": 46.176,
+      "end": 46.276,
+      "score": 0.81
+    },
+    {
+      "word": "fish",
+      "start": 46.376,
+      "end": 46.657,
+      "score": 0.794
+    },
+    {
+      "word": "transformed",
+      "start": 46.817,
+      "end": 47.678,
+      "score": 0.821
+    },
+    {
+      "word": "into",
+      "start": 47.718,
+      "end": 48.119,
+      "score": 0.83
+    },
+    {
+      "word": "a",
+      "start": 48.139,
+      "end": 48.159,
+      "score": 1.0
+    },
+    {
+      "word": "beautiful",
+      "start": 48.379,
+      "end": 49.02,
+      "score": 0.75
+    },
+    {
+      "word": "woman.",
+      "start": 49.121,
+      "end": 49.461,
+      "score": 0.881
+    },
+    {
+      "word": "The",
+      "start": 49.501,
+      "end": 50.442,
+      "score": 0.927
+    },
+    {
+      "word": "woman",
+      "start": 50.503,
+      "end": 50.843,
+      "score": 0.768
+    },
+    {
+      "word": "smiled",
+      "start": 50.963,
+      "end": 51.584,
+      "score": 0.637
+    },
+    {
+      "word": "and",
+      "start": 51.604,
+      "end": 51.784,
+      "score": 0.616
+    },
+    {
+      "word": "said,",
+      "start": 51.885,
+      "end": 52.165,
+      "score": 0.944
+    },
+    {
+      "word": "I",
+      "start": 52.185,
+      "end": 52.205,
+      "score": 1.0
+    },
+    {
+      "word": "will",
+      "start": 53.267,
+      "end": 53.447,
+      "score": 0.855
+    },
+    {
+      "word": "become",
+      "start": 53.487,
+      "end": 53.868,
+      "score": 0.892
+    },
+    {
+      "word": "your",
+      "start": 53.908,
+      "end": 54.128,
+      "score": 0.685
+    },
+    {
+      "word": "wife,",
+      "start": 54.248,
+      "end": 54.569,
+      "score": 0.859
+    },
+    {
+      "word": "but",
+      "start": 54.989,
+      "end": 55.109,
+      "score": 0.996
+    },
+    {
+      "word": "you",
+      "start": 55.169,
+      "end": 55.29,
+      "score": 0.88
+    },
+    {
+      "word": "must",
+      "start": 55.35,
+      "end": 55.57,
+      "score": 0.705
+    },
+    {
+      "word": "promise",
+      "start": 55.65,
+      "end": 56.09,
+      "score": 0.87
+    },
+    {
+      "word": "never",
+      "start": 56.291,
+      "end": 56.571,
+      "score": 0.788
+    },
+    {
+      "word": "to",
+      "start": 56.651,
+      "end": 56.751,
+      "score": 0.837
+    },
+    {
+      "word": "tell",
+      "start": 56.831,
+      "end": 57.032,
+      "score": 0.902
+    },
+    {
+      "word": "anyone",
+      "start": 57.052,
+      "end": 57.692,
+      "score": 0.912
+    },
+    {
+      "word": "that",
+      "start": 57.712,
+      "end": 58.113,
+      "score": 0.876
+    },
+    {
+      "word": "I",
+      "start": 58.453,
+      "end": 58.513,
+      "score": 1.0
+    },
+    {
+      "word": "was",
+      "start": 58.593,
+      "end": 58.733,
+      "score": 0.73
+    },
+    {
+      "word": "once",
+      "start": 58.773,
+      "end": 59.174,
+      "score": 0.917
+    },
+    {
+      "word": "a",
+      "start": 59.194,
+      "end": 59.214,
+      "score": 1.0
+    },
+    {
+      "word": "fish.",
+      "start": 59.494,
+      "end": 59.815,
+      "score": 0.825
+    },
+    {
+      "word": "Toba",
+      "start": 60.796,
+      "end": 61.196,
+      "score": 0.942
+    },
+    {
+      "word": "agreed",
+      "start": 61.316,
+      "end": 61.757,
+      "score": 0.677
+    },
+    {
+      "word": "happily",
+      "start": 61.857,
+      "end": 62.277,
+      "score": 0.913
+    },
+    {
+      "word": "and",
+      "start": 62.317,
+      "end": 62.778,
+      "score": 0.516
+    },
+    {
+      "word": "soon",
+      "start": 62.898,
+      "end": 63.198,
+      "score": 0.752
+    },
+    {
+      "word": "they",
+      "start": 63.239,
+      "end": 63.479,
+      "score": 0.619
+    },
+    {
+      "word": "were",
+      "start": 63.519,
+      "end": 63.659,
+      "score": 0.76
+    },
+    {
+      "word": "married.",
+      "start": 63.719,
+      "end": 64.14,
+      "score": 0.78
+    },
+    {
+      "word": "They",
+      "start": 64.78,
+      "end": 64.92,
+      "score": 0.799
+    },
+    {
+      "word": "lived",
+      "start": 64.98,
+      "end": 65.261,
+      "score": 0.86
+    },
+    {
+      "word": "peacefully",
+      "start": 65.381,
+      "end": 65.942,
+      "score": 0.756
+    },
+    {
+      "word": "and",
+      "start": 65.962,
+      "end": 66.342,
+      "score": 0.643
+    },
+    {
+      "word": "were",
+      "start": 66.402,
+      "end": 66.562,
+      "score": 0.588
+    },
+    {
+      "word": "blessed",
+      "start": 66.622,
+      "end": 67.023,
+      "score": 0.936
+    },
+    {
+      "word": "with",
+      "start": 67.083,
+      "end": 67.223,
+      "score": 0.94
+    },
+    {
+      "word": "a",
+      "start": 67.283,
+      "end": 67.303,
+      "score": 0.953
+    },
+    {
+      "word": "son",
+      "start": 67.423,
+      "end": 67.724,
+      "score": 0.92
+    },
+    {
+      "word": "named",
+      "start": 67.744,
+      "end": 68.244,
+      "score": 0.743
+    },
+    {
+      "word": "Samosir.",
+      "start": 68.424,
+      "end": 69.265,
+      "score": 0.922
+    },
+    {
+      "word": "Samosir",
+      "start": 70.607,
+      "end": 71.328,
+      "score": 0.808
+    },
+    {
+      "word": "grew",
+      "start": 71.428,
+      "end": 71.668,
+      "score": 0.93
+    },
+    {
+      "word": "up",
+      "start": 71.748,
+      "end": 71.828,
+      "score": 0.868
+    },
+    {
+      "word": "strong",
+      "start": 71.928,
+      "end": 72.469,
+      "score": 0.836
+    },
+    {
+      "word": "but",
+      "start": 72.509,
+      "end": 72.949,
+      "score": 0.88
+    },
+    {
+      "word": "lazy",
+      "start": 73.09,
+      "end": 73.59,
+      "score": 0.824
+    },
+    {
+      "word": "and",
+      "start": 73.63,
+      "end": 73.83,
+      "score": 0.694
+    },
+    {
+      "word": "mischievous.",
+      "start": 73.951,
+      "end": 74.531,
+      "score": 0.901
+    },
+    {
+      "word": "He",
+      "start": 75.192,
+      "end": 75.312,
+      "score": 0.68
+    },
+    {
+      "word": "loved",
+      "start": 75.472,
+      "end": 75.813,
+      "score": 0.706
+    },
+    {
+      "word": "eating",
+      "start": 75.833,
+      "end": 76.293,
+      "score": 0.669
+    },
+    {
+      "word": "and",
+      "start": 76.333,
+      "end": 76.714,
+      "score": 0.795
+    },
+    {
+      "word": "often",
+      "start": 76.734,
+      "end": 77.174,
+      "score": 0.887
+    },
+    {
+      "word": "helped",
+      "start": 77.254,
+      "end": 77.535,
+      "score": 0.777
+    },
+    {
+      "word": "himself",
+      "start": 77.575,
+      "end": 77.975,
+      "score": 0.753
+    },
+    {
+      "word": "to",
+      "start": 78.075,
+      "end": 78.175,
+      "score": 0.63
+    },
+    {
+      "word": "food",
+      "start": 78.275,
+      "end": 78.596,
+      "score": 0.864
+    },
+    {
+      "word": "before",
+      "start": 78.736,
+      "end": 79.136,
+      "score": 0.874
+    },
+    {
+      "word": "his",
+      "start": 79.216,
+      "end": 79.337,
+      "score": 0.776
+    },
+    {
+      "word": "father",
+      "start": 79.397,
+      "end": 79.757,
+      "score": 0.764
+    },
+    {
+      "word": "came",
+      "start": 79.857,
+      "end": 80.077,
+      "score": 0.69
+    },
+    {
+      "word": "home.",
+      "start": 80.157,
+      "end": 80.658,
+      "score": 0.824
+    },
+    {
+      "word": "One",
+      "start": 81.346,
+      "end": 81.626,
+      "score": 0.602
+    },
+    {
+      "word": "day,",
+      "start": 81.687,
+      "end": 81.867,
+      "score": 0.992
+    },
+    {
+      "word": "Toba",
+      "start": 81.927,
+      "end": 82.628,
+      "score": 0.843
+    },
+    {
+      "word": "went",
+      "start": 82.688,
+      "end": 82.868,
+      "score": 0.73
+    },
+    {
+      "word": "fishing",
+      "start": 82.968,
+      "end": 83.349,
+      "score": 0.711
+    },
+    {
+      "word": "and",
+      "start": 83.389,
+      "end": 83.77,
+      "score": 0.493
+    },
+    {
+      "word": "told",
+      "start": 83.89,
+      "end": 84.15,
+      "score": 0.776
+    },
+    {
+      "word": "Samosir",
+      "start": 84.25,
+      "end": 84.951,
+      "score": 0.886
+    },
+    {
+      "word": "to",
+      "start": 85.051,
+      "end": 85.152,
+      "score": 0.865
+    },
+    {
+      "word": "bring",
+      "start": 85.232,
+      "end": 85.452,
+      "score": 0.873
+    },
+    {
+      "word": "him",
+      "start": 85.512,
+      "end": 85.632,
+      "score": 0.719
+    },
+    {
+      "word": "lunch",
+      "start": 85.672,
+      "end": 86.093,
+      "score": 0.754
+    },
+    {
+      "word": "by",
+      "start": 86.213,
+      "end": 86.373,
+      "score": 0.99
+    },
+    {
+      "word": "the",
+      "start": 86.434,
+      "end": 86.534,
+      "score": 0.667
+    },
+    {
+      "word": "river.",
+      "start": 86.594,
+      "end": 86.874,
+      "score": 0.863
+    },
+    {
+      "word": "The",
+      "start": 86.914,
+      "end": 87.715,
+      "score": 0.976
+    },
+    {
+      "word": "boy",
+      "start": 87.796,
+      "end": 88.096,
+      "score": 0.78
+    },
+    {
+      "word": "took",
+      "start": 88.116,
+      "end": 88.396,
+      "score": 0.799
+    },
+    {
+      "word": "his",
+      "start": 88.477,
+      "end": 88.617,
+      "score": 0.533
+    },
+    {
+      "word": "time,",
+      "start": 88.717,
+      "end": 89.118,
+      "score": 0.894
+    },
+    {
+      "word": "playing",
+      "start": 89.458,
+      "end": 89.859,
+      "score": 0.774
+    },
+    {
+      "word": "along",
+      "start": 89.939,
+      "end": 90.239,
+      "score": 0.757
+    },
+    {
+      "word": "the",
+      "start": 90.299,
+      "end": 90.379,
+      "score": 0.9
+    },
+    {
+      "word": "way.",
+      "start": 90.459,
+      "end": 90.72,
+      "score": 0.8
+    },
+    {
+      "word": "By",
+      "start": 91.521,
+      "end": 91.661,
+      "score": 0.639
+    },
+    {
+      "word": "the",
+      "start": 91.721,
+      "end": 91.801,
+      "score": 0.817
+    },
+    {
+      "word": "time",
+      "start": 91.862,
+      "end": 92.182,
+      "score": 0.618
+    },
+    {
+      "word": "he",
+      "start": 92.202,
+      "end": 92.342,
+      "score": 0.364
+    },
+    {
+      "word": "arrived,",
+      "start": 92.402,
+      "end": 92.943,
+      "score": 0.826
+    },
+    {
+      "word": "his",
+      "start": 93.224,
+      "end": 93.364,
+      "score": 0.541
+    },
+    {
+      "word": "father",
+      "start": 93.484,
+      "end": 93.885,
+      "score": 0.66
+    },
+    {
+      "word": "was",
+      "start": 93.905,
+      "end": 94.085,
+      "score": 0.727
+    },
+    {
+      "word": "already",
+      "start": 94.325,
+      "end": 94.766,
+      "score": 0.699
+    },
+    {
+      "word": "starving.",
+      "start": 94.886,
+      "end": 95.487,
+      "score": 0.835
+    },
+    {
+      "word": "When",
+      "start": 95.547,
+      "end": 96.448,
+      "score": 0.783
+    },
+    {
+      "word": "Toba",
+      "start": 96.569,
+      "end": 96.929,
+      "score": 0.91
+    },
+    {
+      "word": "opened",
+      "start": 97.089,
+      "end": 97.37,
+      "score": 0.804
+    },
+    {
+      "word": "the",
+      "start": 97.43,
+      "end": 97.49,
+      "score": 0.99
+    },
+    {
+      "word": "basket,",
+      "start": 97.55,
+      "end": 98.011,
+      "score": 0.902
+    },
+    {
+      "word": "he",
+      "start": 98.271,
+      "end": 98.371,
+      "score": 0.85
+    },
+    {
+      "word": "found",
+      "start": 98.471,
+      "end": 98.812,
+      "score": 0.743
+    },
+    {
+      "word": "only",
+      "start": 98.852,
+      "end": 99.353,
+      "score": 0.786
+    },
+    {
+      "word": "a",
+      "start": 99.373,
+      "end": 99.393,
+      "score": 1.0
+    },
+    {
+      "word": "little",
+      "start": 99.553,
+      "end": 99.833,
+      "score": 0.791
+    },
+    {
+      "word": "rice",
+      "start": 99.934,
+      "end": 100.274,
+      "score": 0.853
+    },
+    {
+      "word": "left.",
+      "start": 100.374,
+      "end": 100.715,
+      "score": 0.791
+    },
+    {
+      "word": "Samosir",
+      "start": 101.195,
+      "end": 101.936,
+      "score": 0.881
+    },
+    {
+      "word": "had",
+      "start": 102.037,
+      "end": 102.157,
+      "score": 0.805
+    },
+    {
+      "word": "eaten",
+      "start": 102.417,
+      "end": 102.678,
+      "score": 0.825
+    },
+    {
+      "word": "most",
+      "start": 102.818,
+      "end": 103.098,
+      "score": 0.729
+    },
+    {
+      "word": "of",
+      "start": 103.178,
+      "end": 103.218,
+      "score": 0.99
+    },
+    {
+      "word": "it.",
+      "start": 103.319,
+      "end": 103.419,
+      "score": 0.967
+    },
+    {
+      "word": "Angry",
+      "start": 104.42,
+      "end": 104.761,
+      "score": 0.856
+    },
+    {
+      "word": "and",
+      "start": 104.881,
+      "end": 104.961,
+      "score": 0.982
+    },
+    {
+      "word": "disappointed,",
+      "start": 105.081,
+      "end": 105.842,
+      "score": 0.873
+    },
+    {
+      "word": "Toba",
+      "start": 105.862,
+      "end": 106.543,
+      "score": 0.886
+    },
+    {
+      "word": "shouted,",
+      "start": 106.643,
+      "end": 107.064,
+      "score": 0.839
+    },
+    {
+      "word": "You",
+      "start": 107.104,
+      "end": 107.825,
+      "score": 0.541
+    },
+    {
+      "word": "greedy",
+      "start": 108.025,
+      "end": 108.486,
+      "score": 0.812
+    },
+    {
+      "word": "boy!",
+      "start": 108.646,
+      "end": 109.007,
+      "score": 0.938
+    },
+    {
+      "word": "You're",
+      "start": 109.027,
+      "end": 109.548,
+      "score": 0.546
+    },
+    {
+      "word": "just",
+      "start": 109.728,
+      "end": 109.988,
+      "score": 0.905
+    },
+    {
+      "word": "like",
+      "start": 110.069,
+      "end": 110.269,
+      "score": 0.604
+    },
+    {
+      "word": "your",
+      "start": 110.289,
+      "end": 110.489,
+      "score": 0.791
+    },
+    {
+      "word": "mother!",
+      "start": 110.649,
+      "end": 111.09,
+      "score": 0.772
+    },
+    {
+      "word": "A",
+      "start": 111.266,
+      "end": 111.566,
+      "score": 0.798
+    },
+    {
+      "word": "fish!",
+      "start": 111.586,
+      "end": 111.947,
+      "score": 0.893
+    },
+    {
+      "word": "The",
+      "start": 112.888,
+      "end": 112.988,
+      "score": 0.995
+    },
+    {
+      "word": "moment",
+      "start": 113.128,
+      "end": 113.509,
+      "score": 0.929
+    },
+    {
+      "word": "he",
+      "start": 113.569,
+      "end": 113.669,
+      "score": 0.994
+    },
+    {
+      "word": "said",
+      "start": 113.789,
+      "end": 113.99,
+      "score": 0.696
+    },
+    {
+      "word": "those",
+      "start": 114.03,
+      "end": 114.29,
+      "score": 0.722
+    },
+    {
+      "word": "words,",
+      "start": 114.31,
+      "end": 114.751,
+      "score": 0.82
+    },
+    {
+      "word": "Samosir",
+      "start": 115.111,
+      "end": 115.812,
+      "score": 0.871
+    },
+    {
+      "word": "dropped",
+      "start": 115.912,
+      "end": 116.293,
+      "score": 0.918
+    },
+    {
+      "word": "the",
+      "start": 116.313,
+      "end": 116.413,
+      "score": 0.83
+    },
+    {
+      "word": "basket",
+      "start": 116.493,
+      "end": 116.934,
+      "score": 0.972
+    },
+    {
+      "word": "and",
+      "start": 117.194,
+      "end": 117.274,
+      "score": 0.565
+    },
+    {
+      "word": "ran",
+      "start": 117.314,
+      "end": 117.735,
+      "score": 0.765
+    },
+    {
+      "word": "home",
+      "start": 117.835,
+      "end": 118.095,
+      "score": 0.622
+    },
+    {
+      "word": "crying.",
+      "start": 118.275,
+      "end": 118.756,
+      "score": 0.809
+    },
+    {
+      "word": "When",
+      "start": 119.437,
+      "end": 119.577,
+      "score": 0.705
+    },
+    {
+      "word": "he",
+      "start": 119.617,
+      "end": 119.717,
+      "score": 0.636
+    },
+    {
+      "word": "told",
+      "start": 119.837,
+      "end": 120.098,
+      "score": 0.705
+    },
+    {
+      "word": "his",
+      "start": 120.158,
+      "end": 120.298,
+      "score": 0.72
+    },
+    {
+      "word": "mother",
+      "start": 120.398,
+      "end": 120.679,
+      "score": 0.724
+    },
+    {
+      "word": "what",
+      "start": 120.739,
+      "end": 120.879,
+      "score": 0.848
+    },
+    {
+      "word": "his",
+      "start": 120.919,
+      "end": 121.039,
+      "score": 0.719
+    },
+    {
+      "word": "father",
+      "start": 121.119,
+      "end": 121.44,
+      "score": 0.7
+    },
+    {
+      "word": "had",
+      "start": 121.5,
+      "end": 121.64,
+      "score": 0.639
+    },
+    {
+      "word": "said,",
+      "start": 121.72,
+      "end": 122.02,
+      "score": 0.902
+    },
+    {
+      "word": "she",
+      "start": 122.081,
+      "end": 122.581,
+      "score": 0.874
+    },
+    {
+      "word": "turned",
+      "start": 122.601,
+      "end": 123.102,
+      "score": 0.731
+    },
+    {
+      "word": "pale.",
+      "start": 123.242,
+      "end": 123.703,
+      "score": 0.832
+    },
+    {
+      "word": "He",
+      "start": 124.564,
+      "end": 124.664,
+      "score": 0.846
+    },
+    {
+      "word": "broke",
+      "start": 124.824,
+      "end": 125.125,
+      "score": 0.849
+    },
+    {
+      "word": "his",
+      "start": 125.205,
+      "end": 125.365,
+      "score": 0.534
+    },
+    {
+      "word": "promise,",
+      "start": 125.485,
+      "end": 126.006,
+      "score": 0.857
+    },
+    {
+      "word": "she",
+      "start": 126.386,
+      "end": 126.506,
+      "score": 0.706
+    },
+    {
+      "word": "whispered",
+      "start": 126.607,
+      "end": 127.047,
+      "score": 0.563
+    },
+    {
+      "word": "sadly.",
+      "start": 127.147,
+      "end": 127.608,
+      "score": 0.92
+    },
+    {
+      "word": "She",
+      "start": 128.409,
+      "end": 128.549,
+      "score": 0.738
+    },
+    {
+      "word": "ran",
+      "start": 128.689,
+      "end": 128.97,
+      "score": 0.874
+    },
+    {
+      "word": "outside",
+      "start": 129.09,
+      "end": 129.671,
+      "score": 0.835
+    },
+    {
+      "word": "and",
+      "start": 129.711,
+      "end": 129.851,
+      "score": 0.426
+    },
+    {
+      "word": "called",
+      "start": 130.011,
+      "end": 130.352,
+      "score": 0.694
+    },
+    {
+      "word": "upon",
+      "start": 130.432,
+      "end": 130.692,
+      "score": 0.685
+    },
+    {
+      "word": "the",
+      "start": 130.732,
+      "end": 130.852,
+      "score": 0.629
+    },
+    {
+      "word": "heavens.",
+      "start": 130.892,
+      "end": 131.333,
+      "score": 0.877
+    },
+    {
+      "word": "The",
+      "start": 131.954,
+      "end": 132.074,
+      "score": 0.814
+    },
+    {
+      "word": "sky",
+      "start": 132.134,
+      "end": 132.595,
+      "score": 0.943
+    },
+    {
+      "word": "darkened,",
+      "start": 132.635,
+      "end": 133.296,
+      "score": 0.861
+    },
+    {
+      "word": "thunder",
+      "start": 133.356,
+      "end": 134.137,
+      "score": 0.835
+    },
+    {
+      "word": "roared,",
+      "start": 134.237,
+      "end": 134.697,
+      "score": 0.852
+    },
+    {
+      "word": "and",
+      "start": 134.737,
+      "end": 135.098,
+      "score": 0.768
+    },
+    {
+      "word": "heavy",
+      "start": 135.138,
+      "end": 135.539,
+      "score": 0.679
+    },
+    {
+      "word": "rain",
+      "start": 135.659,
+      "end": 136.019,
+      "score": 0.816
+    },
+    {
+      "word": "began",
+      "start": 136.119,
+      "end": 136.52,
+      "score": 0.843
+    },
+    {
+      "word": "to",
+      "start": 136.6,
+      "end": 136.7,
+      "score": 0.849
+    },
+    {
+      "word": "fall.",
+      "start": 136.8,
+      "end": 137.221,
+      "score": 0.682
+    },
+    {
+      "word": "The",
+      "start": 138.042,
+      "end": 138.162,
+      "score": 0.811
+    },
+    {
+      "word": "house",
+      "start": 138.222,
+      "end": 138.563,
+      "score": 0.972
+    },
+    {
+      "word": "shook",
+      "start": 138.683,
+      "end": 138.983,
+      "score": 0.877
+    },
+    {
+      "word": "as",
+      "start": 139.304,
+      "end": 139.364,
+      "score": 0.744
+    },
+    {
+      "word": "the",
+      "start": 139.404,
+      "end": 139.544,
+      "score": 0.738
+    },
+    {
+      "word": "ground",
+      "start": 139.644,
+      "end": 140.085,
+      "score": 0.882
+    },
+    {
+      "word": "split",
+      "start": 140.205,
+      "end": 140.565,
+      "score": 0.702
+    },
+    {
+      "word": "open.",
+      "start": 140.605,
+      "end": 141.106,
+      "score": 0.751
+    },
+    {
+      "word": "Water",
+      "start": 141.41,
+      "end": 141.91,
+      "score": 0.713
+    },
+    {
+      "word": "poured",
+      "start": 142.071,
+      "end": 142.471,
+      "score": 0.874
+    },
+    {
+      "word": "out,",
+      "start": 142.631,
+      "end": 142.771,
+      "score": 0.988
+    },
+    {
+      "word": "flooding",
+      "start": 143.132,
+      "end": 143.572,
+      "score": 0.795
+    },
+    {
+      "word": "the",
+      "start": 143.632,
+      "end": 143.692,
+      "score": 0.998
+    },
+    {
+      "word": "valley.",
+      "start": 143.772,
+      "end": 144.153,
+      "score": 0.915
+    },
+    {
+      "word": "The",
+      "start": 144.193,
+      "end": 144.893,
+      "score": 0.869
+    },
+    {
+      "word": "flood",
+      "start": 144.994,
+      "end": 145.314,
+      "score": 0.693
+    },
+    {
+      "word": "grew",
+      "start": 145.454,
+      "end": 145.874,
+      "score": 0.832
+    },
+    {
+      "word": "and",
+      "start": 145.914,
+      "end": 146.075,
+      "score": 0.613
+    },
+    {
+      "word": "grew",
+      "start": 146.215,
+      "end": 146.535,
+      "score": 0.964
+    },
+    {
+      "word": "until",
+      "start": 146.575,
+      "end": 147.256,
+      "score": 0.387
+    },
+    {
+      "word": "it",
+      "start": 147.336,
+      "end": 147.376,
+      "score": 0.856
+    },
+    {
+      "word": "formed",
+      "start": 147.496,
+      "end": 147.896,
+      "score": 0.689
+    },
+    {
+      "word": "a",
+      "start": 147.916,
+      "end": 147.936,
+      "score": 1.0
+    },
+    {
+      "word": "vast",
+      "start": 148.197,
+      "end": 148.617,
+      "score": 0.862
+    },
+    {
+      "word": "lake",
+      "start": 148.777,
+      "end": 149.098,
+      "score": 0.813
+    },
+    {
+      "word": "which",
+      "start": 149.418,
+      "end": 149.578,
+      "score": 0.835
+    },
+    {
+      "word": "swallowed",
+      "start": 149.698,
+      "end": 150.259,
+      "score": 0.82
+    },
+    {
+      "word": "the",
+      "start": 150.279,
+      "end": 150.419,
+      "score": 0.661
+    },
+    {
+      "word": "entire",
+      "start": 150.499,
+      "end": 151.08,
+      "score": 0.722
+    },
+    {
+      "word": "village.",
+      "start": 151.2,
+      "end": 151.64,
+      "score": 0.875
+    },
+    {
+      "word": "Toba",
+      "start": 152.401,
+      "end": 152.801,
+      "score": 0.923
+    },
+    {
+      "word": "was",
+      "start": 152.881,
+      "end": 153.022,
+      "score": 0.817
+    },
+    {
+      "word": "never",
+      "start": 153.042,
+      "end": 153.502,
+      "score": 0.748
+    },
+    {
+      "word": "seen",
+      "start": 153.642,
+      "end": 153.902,
+      "score": 0.894
+    },
+    {
+      "word": "again.",
+      "start": 154.003,
+      "end": 154.323,
+      "score": 0.943
+    },
+    {
+      "word": "In",
+      "start": 154.383,
+      "end": 155.284,
+      "score": 0.95
+    },
+    {
+      "word": "the",
+      "start": 155.324,
+      "end": 155.424,
+      "score": 0.666
+    },
+    {
+      "word": "middle",
+      "start": 155.504,
+      "end": 155.784,
+      "score": 0.785
+    },
+    {
+      "word": "of",
+      "start": 155.844,
+      "end": 155.884,
+      "score": 0.998
+    },
+    {
+      "word": "the",
+      "start": 155.924,
+      "end": 156.045,
+      "score": 0.531
+    },
+    {
+      "word": "lake,",
+      "start": 156.085,
+      "end": 156.345,
+      "score": 0.792
+    },
+    {
+      "word": "an",
+      "start": 156.685,
+      "end": 156.745,
+      "score": 0.901
+    },
+    {
+      "word": "island",
+      "start": 157.026,
+      "end": 157.386,
+      "score": 0.65
+    },
+    {
+      "word": "rose,",
+      "start": 157.486,
+      "end": 157.886,
+      "score": 0.745
+    },
+    {
+      "word": "Samosir",
+      "start": 158.327,
+      "end": 159.128,
+      "score": 0.793
+    },
+    {
+      "word": "Island,",
+      "start": 159.328,
+      "end": 159.648,
+      "score": 0.74
+    },
+    {
+      "word": "named",
+      "start": 160.028,
+      "end": 160.389,
+      "score": 0.68
+    },
+    {
+      "word": "after",
+      "start": 160.529,
+      "end": 160.749,
+      "score": 0.888
+    },
+    {
+      "word": "their",
+      "start": 160.809,
+      "end": 160.989,
+      "score": 0.853
+    },
+    {
+      "word": "son.",
+      "start": 161.09,
+      "end": 161.37,
+      "score": 0.906
+    },
+    {
+      "word": "And",
+      "start": 161.43,
+      "end": 162.291,
+      "score": 0.647
+    },
+    {
+      "word": "that",
+      "start": 162.311,
+      "end": 162.691,
+      "score": 0.895
+    },
+    {
+      "word": "is",
+      "start": 162.931,
+      "end": 162.991,
+      "score": 0.996
+    },
+    {
+      "word": "how",
+      "start": 163.051,
+      "end": 163.212,
+      "score": 0.971
+    },
+    {
+      "word": "Lake",
+      "start": 163.352,
+      "end": 163.592,
+      "score": 0.691
+    },
+    {
+      "word": "Toba,",
+      "start": 163.712,
+      "end": 164.173,
+      "score": 0.915
+    },
+    {
+      "word": "Danao",
+      "start": 164.553,
+      "end": 164.993,
+      "score": 0.735
+    },
+    {
+      "word": "Toba,",
+      "start": 165.094,
+      "end": 165.494,
+      "score": 0.936
+    },
+    {
+      "word": "came",
+      "start": 165.834,
+      "end": 166.115,
+      "score": 0.867
+    },
+    {
+      "word": "to",
+      "start": 166.235,
+      "end": 166.315,
+      "score": 0.895
+    },
+    {
+      "word": "be.",
+      "start": 166.395,
+      "end": 166.655,
+      "score": 0.996
+    },
+    {
+      "word": "Born",
+      "start": 167.356,
+      "end": 167.736,
+      "score": 0.82
+    },
+    {
+      "word": "from",
+      "start": 167.776,
+      "end": 168.056,
+      "score": 0.806
+    },
+    {
+      "word": "love,",
+      "start": 168.197,
+      "end": 168.517,
+      "score": 0.801
+    },
+    {
+      "word": "anger,",
+      "start": 168.577,
+      "end": 169.618,
+      "score": 0.84
+    },
+    {
+      "word": "and",
+      "start": 169.826,
+      "end": 170.051,
+      "score": 0.833
+    },
+    {
+      "word": "a",
+      "start": 170.092,
+      "end": 170.153,
+      "score": 0.321
+    },
+    {
+      "word": "broken",
+      "start": 170.296,
+      "end": 170.726,
+      "score": 0.926
+    },
+    {
+      "word": "promise.",
+      "start": 170.767,
+      "end": 171.666,
+      "score": 0.881
+    }
+  ]
+}

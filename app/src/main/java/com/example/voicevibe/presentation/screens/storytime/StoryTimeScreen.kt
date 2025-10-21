@@ -4,6 +4,9 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -17,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -26,6 +31,26 @@ import com.example.voicevibe.utils.Constants
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import com.google.gson.Gson
+
+data class WordAlignment(
+    val word: String,
+    val start: Double,
+    val end: Double,
+    val score: Double? = null
+)
+
+data class SegmentAlignment(
+    val start: Double,
+    val end: Double,
+    val text: String,
+    val words: List<WordAlignment>? = null
+)
+
+data class AlignmentFile(
+    val segments: List<SegmentAlignment>? = null
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +67,11 @@ fun StoryTimeScreen(
     var error by remember { mutableStateOf<String?>(null) }
     var textError by remember { mutableStateOf<String?>(null) }
     var storyText by remember { mutableStateOf<String?>(null) }
+    var alignment by remember { mutableStateOf<AlignmentFile?>(null) }
+    var alignmentError by remember { mutableStateOf<String?>(null) }
+    val gson = remember { Gson() }
+    val listState = rememberLazyListState()
+    var playbackPositionMs by remember { mutableStateOf(0L) }
 
     val story = remember(storySlug) { StoryCatalog.bySlug(storySlug) }
     val audioUrl = remember(story) {
@@ -59,6 +89,20 @@ fun StoryTimeScreen(
             storyText = text
         } catch (t: Throwable) {
             textError = "Story text not found for '${storySlug}'. Please add assets/stories/${storySlug}.txt"
+        }
+    }
+
+    LaunchedEffect(storySlug) {
+        alignmentError = null
+        alignment = null
+        try {
+            val json = withContext(Dispatchers.IO) {
+                val path = "words/${storySlug}.words.json"
+                context.assets.open(path).bufferedReader().use { it.readText() }
+            }
+            alignment = gson.fromJson(json, AlignmentFile::class.java)
+        } catch (t: Throwable) {
+            alignmentError = "Alignment not found for '${storySlug}'. Add assets/words/${storySlug}.words.json"
         }
     }
 
@@ -149,6 +193,13 @@ fun StoryTimeScreen(
         }
     }
 
+    LaunchedEffect(isPlaying, mediaPlayer) {
+        while (isPlaying) {
+            playbackPositionMs = mediaPlayer?.currentPosition?.toLong() ?: 0L
+            delay(80)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -178,8 +229,7 @@ fun StoryTimeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
-                    .verticalScroll(scrollState),
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Moral and summary
@@ -230,24 +280,120 @@ fun StoryTimeScreen(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
-
-                // Story content
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f))
-                ) {
+                if (alignmentError != null) {
                     Text(
-                        text = storyText ?: "",
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
-                        color = Color.White.copy(alpha = 0.9f),
-                        textAlign = TextAlign.Start
+                        text = alignmentError!!,
+                        color = BrandFuchsia,
+                        style = MaterialTheme.typography.bodyMedium
                     )
+                }
+
+                // Story content (highlighted if alignment available)
+                val segments = alignment?.segments
+                if (!segments.isNullOrEmpty()) {
+                    val timeSec = playbackPositionMs.toDouble() / 1000.0
+                    val activeSegmentIndex = segments.indexOfFirst { timeSec >= it.start && timeSec < it.end }
+                    val activeWordIndex = if (activeSegmentIndex >= 0) {
+                        val ws = segments[activeSegmentIndex].words
+                        ws?.indexOfFirst { timeSec >= it.start && timeSec < it.end } ?: -1
+                    } else -1
+
+                    LaunchedEffect(activeSegmentIndex) {
+                        if (activeSegmentIndex >= 0) {
+                            // bring active segment into view
+                            listState.animateScrollToItem(activeSegmentIndex)
+                        }
+                    }
+
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        itemsIndexed(segments) { index, seg ->
+                            val annotated = remember(seg.text, index == activeSegmentIndex, activeWordIndex) {
+                                val ranges = buildWordRanges(seg.text, seg.words ?: emptyList())
+                                buildAnnotatedSegment(seg.text, ranges, if (index == activeSegmentIndex && activeWordIndex >= 0) activeWordIndex else null)
+                            }
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = if (index == activeSegmentIndex) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.08f))
+                            ) {
+                                Text(
+                                    text = annotated,
+                                    modifier = Modifier.padding(16.dp),
+                                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                                    color = Color.White.copy(alpha = 0.95f),
+                                    textAlign = TextAlign.Start
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(scrollState),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f))
+                    ) {
+                        Text(
+                            text = storyText ?: "",
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                            color = Color.White.copy(alpha = 0.9f),
+                            textAlign = TextAlign.Start
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
+}
+
+private fun buildWordRanges(text: String, words: List<WordAlignment>): List<Pair<Int, Int>> {
+    val lower = text.lowercase()
+    var cursor = 0
+    val ranges = mutableListOf<Pair<Int, Int>>()
+    for (w in words) {
+        val token = w.word.trim().lowercase()
+        if (token.isEmpty()) { ranges.add(0 to 0); continue }
+        val idx = lower.indexOf(token, cursor)
+        if (idx >= 0) {
+            ranges.add(idx to (idx + token.length))
+            cursor = idx + token.length
+        } else {
+            // Fallback: try from beginning to handle wrap or punctuation spacing
+            val idx2 = lower.indexOf(token)
+            if (idx2 >= 0) {
+                ranges.add(idx2 to (idx2 + token.length))
+                cursor = idx2 + token.length
+            } else {
+                // No match; add empty range
+                ranges.add(0 to 0)
+            }
+        }
+    }
+    return ranges
+}
+
+private fun buildAnnotatedSegment(
+    text: String,
+    ranges: List<Pair<Int, Int>>,
+    activeWordIndex: Int?
+): AnnotatedString {
+    if (activeWordIndex == null || activeWordIndex !in ranges.indices) return AnnotatedString(text)
+    val (start, end) = ranges[activeWordIndex]
+    if (start >= end || start < 0 || end > text.length) return AnnotatedString(text)
+    val builder = AnnotatedString.Builder()
+    builder.append(text.substring(0, start))
+    builder.pushStyle(SpanStyle(background = BrandCyan.copy(alpha = 0.35f), color = Color.White))
+    builder.append(text.substring(start, end))
+    builder.pop()
+    builder.append(text.substring(end))
+    return builder.toAnnotatedString()
 }

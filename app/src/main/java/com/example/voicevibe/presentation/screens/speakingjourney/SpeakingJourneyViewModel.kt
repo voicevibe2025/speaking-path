@@ -15,6 +15,7 @@ import com.example.voicevibe.data.repository.GamificationRepository
 import com.example.voicevibe.data.repository.ProfileRepository
 import com.example.voicevibe.data.repository.SpeakingJourneyRepository
 import com.example.voicevibe.data.local.TokenManager
+import com.example.voicevibe.utils.Constants
 import com.google.ai.client.generativeai.GenerativeModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -847,14 +848,50 @@ class SpeakingJourneyViewModel @Inject constructor(
         onError: ((String) -> Unit)? = null
     ) {
         try {
-            // Release any existing player before starting a new one
             try { mediaPlayer?.release() } catch (_: Throwable) {}
 
-            // Build asset path: conversation_audios/<topic-slug>/turn_<n>.wav
-            val slug = topicKey.trim().lowercase(Locale.US).replace(Regex("[^a-z0-9]+"), "_").trim('_')
+            val sanitizedTopicKey = topicKey
+                .replace(Regex("[’']"), "")
+                .trim()
+                .lowercase(Locale.US)
+            val slug = sanitizedTopicKey.replace(Regex("[^a-z0-9]+"), "_").trim('_')
             val turnNumber = (turnIndex + 1).coerceAtLeast(1)
-            val assetPath = "conversation_audios/$slug/turn_${turnNumber}.wav"
+            val remoteUrlOgg = "${Constants.SUPABASE_PUBLIC_AUDIO_BASE_URL}/$slug/turn_${turnNumber}.ogg"
 
+            // Remote OGG (Supabase) first
+            try {
+                val mpRemote = MediaPlayer().apply {
+                    setDataSource(remoteUrlOgg)
+                    setOnPreparedListener {
+                        it.start()
+                        onStart?.invoke()
+                    }
+                    setOnCompletionListener {
+                        try { it.release() } catch (_: Throwable) {}
+                        if (mediaPlayer === it) mediaPlayer = null
+                        onDone?.invoke()
+                    }
+                    setOnErrorListener { player, _, _ ->
+                        try { player.release() } catch (_: Throwable) {}
+                        if (mediaPlayer === player) mediaPlayer = null
+                        // Remote failed -> immediate TTS fallback (server-side cached)
+                        speakWithBackendTts(
+                            text = text,
+                            voiceName = voiceName,
+                            onStart = onStart,
+                            onDone = onDone,
+                            onError = onError
+                        )
+                        true
+                    }
+                }
+                mediaPlayer = mpRemote
+                mpRemote.prepareAsync()
+                return
+            } catch (_: Throwable) { }
+
+            // Local asset (.wav)
+            val assetPath = "conversation_audios/$slug/turn_${turnNumber}.wav"
             try {
                 val afd = context.assets.openFd(assetPath)
                 afd.use { desc ->
@@ -869,10 +906,9 @@ class SpeakingJourneyViewModel @Inject constructor(
                             if (mediaPlayer === it) mediaPlayer = null
                             onDone?.invoke()
                         }
-                        setOnErrorListener { player, what, extra ->
+                        setOnErrorListener { player, _, _ ->
                             try { player.release() } catch (_: Throwable) {}
                             if (mediaPlayer === player) mediaPlayer = null
-                            // If local asset playback fails at runtime, fallback to TTS
                             speakWithBackendTts(
                                 text = text,
                                 voiceName = voiceName,
@@ -888,14 +924,11 @@ class SpeakingJourneyViewModel @Inject constructor(
                     return
                 }
             } catch (_: Throwable) {
-                // Asset not found or compressed; try stream -> cache file fallback
+                // Asset could be compressed; copy to cache and play from file
                 try {
-                    val ins = context.assets.open(assetPath)
-                    ins.use { input ->
+                    context.assets.open(assetPath).use { input ->
                         val outFile = File(context.cacheDir, "conv_${slug}_turn_${turnNumber}.wav")
-                        outFile.outputStream().use { out ->
-                            input.copyTo(out)
-                        }
+                        outFile.outputStream().use { out -> input.copyTo(out) }
                         val mp = MediaPlayer().apply {
                             setDataSource(outFile.absolutePath)
                             setOnPreparedListener {
@@ -907,10 +940,9 @@ class SpeakingJourneyViewModel @Inject constructor(
                                 if (mediaPlayer === it) mediaPlayer = null
                                 onDone?.invoke()
                             }
-                            setOnErrorListener { player, what, extra ->
+                            setOnErrorListener { player, _, _ ->
                                 try { player.release() } catch (_: Throwable) {}
                                 if (mediaPlayer === player) mediaPlayer = null
-                                // If local playback fails at runtime, fallback to TTS
                                 speakWithBackendTts(
                                     text = text,
                                     voiceName = voiceName,
@@ -925,12 +957,10 @@ class SpeakingJourneyViewModel @Inject constructor(
                         mp.prepareAsync()
                         return
                     }
-                } catch (_: Throwable) {
-                    // proceed to res/raw fallback next
-                }
+                } catch (_: Throwable) { }
             }
 
-            // Try res/raw fallback with common naming patterns
+            // res/raw fallback
             val candidates = listOf(
                 "conv_${slug}_turn_${turnNumber}",
                 "${slug}_turn_${turnNumber}",
@@ -951,7 +981,7 @@ class SpeakingJourneyViewModel @Inject constructor(
                             if (mediaPlayer === it) mediaPlayer = null
                             onDone?.invoke()
                         }
-                        mp.setOnErrorListener { player, what, extra ->
+                        mp.setOnErrorListener { player, _, _ ->
                             try { player.release() } catch (_: Throwable) {}
                             if (mediaPlayer === player) mediaPlayer = null
                             speakWithBackendTts(
@@ -966,12 +996,10 @@ class SpeakingJourneyViewModel @Inject constructor(
                         mp.start()
                         return
                     }
-                } catch (_: Throwable) {
-                    // fall through to TTS
-                }
+                } catch (_: Throwable) { }
             }
 
-            // Finally, TTS fallback
+            // TTS fallback
             speakWithBackendTts(
                 text = text,
                 voiceName = voiceName,
@@ -980,7 +1008,6 @@ class SpeakingJourneyViewModel @Inject constructor(
                 onError = onError
             )
         } catch (t: Throwable) {
-            // As a last resort, try TTS and report error
             Log.e("SpeakingJourney", "Local audio playback failed, using TTS", t)
             speakWithBackendTts(
                 text = text,

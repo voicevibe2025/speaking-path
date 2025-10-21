@@ -918,17 +918,15 @@ private fun VerticalTopicCard(
                     if (topic.unlocked) {
                         Spacer(modifier = Modifier.height(6.dp))
                         // Compact progress indicator (4 required practices: Pronunciation, Fluency, Vocabulary, Grammar)
+                        // Progress is based on actual scores: each practice contributes (score/100) * 25%
                         val scores = topic.practiceScores
-                        val completedPractices = listOf(
-                            (topic.phraseProgress?.isAllPhrasesCompleted == true) || 
-                            ((scores?.pronunciation ?: 0) > 0),
-                            (topic.fluencyProgress?.completed == true) || 
-                            ((scores?.fluency ?: 0) > 0),
-                            (scores?.vocabulary ?: 0) > 0,
-                            (scores?.grammar ?: 0) > 0
-                        ).count { it }
+                        val pronScore = (scores?.pronunciation ?: 0).coerceIn(0, 100)
+                        val fluScore = (scores?.fluency ?: 0).coerceIn(0, 100)
+                        val vocabScore = (scores?.vocabulary ?: 0).coerceIn(0, 100)
+                        val gramScore = (scores?.grammar ?: 0).coerceIn(0, 100)
                         
-                        val progress = completedPractices / 4f
+                        // Total progress: sum of all 4 practice scores divided by 400 (max possible)
+                        val progress = (pronScore + fluScore + vocabScore + gramScore) / 400f
                         
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -960,8 +958,9 @@ private fun VerticalTopicCard(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Completion checkmark
-                    if (topic.completed) {
+                    // Completion checkmark - mirror backend pass: completed OR meetsRequirement
+                    val backendPass = topic.completed || (topic.practiceScores?.meetsRequirement == true)
+                    if (backendPass) {
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = "Completed",

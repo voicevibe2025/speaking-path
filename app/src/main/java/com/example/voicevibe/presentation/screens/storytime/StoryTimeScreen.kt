@@ -1,9 +1,14 @@
 package com.example.voicevibe.presentation.screens.storytime
 
-import android.media.AudioAttributes
-import android.media.MediaPlayer
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.PlaybackException
+import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.audio.AudioAttributes as ExoAudioAttributes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -22,6 +27,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -61,9 +67,17 @@ fun StoryTimeScreen(
     val scrollState = rememberScrollState()
     val context = LocalContext.current
 
-    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-    var isPreparing by remember { mutableStateOf(false) }
+    val player = remember {
+        ExoPlayer.Builder(context).build().apply {
+            val attrs = ExoAudioAttributes.Builder()
+                .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
+                .setUsage(C.USAGE_MEDIA)
+                .build()
+            setAudioAttributes(attrs, true)
+        }
+    }
     var isPlaying by remember { mutableStateOf(false) }
+    var isBuffering by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var textError by remember { mutableStateOf<String?>(null) }
     var storyText by remember { mutableStateOf<String?>(null) }
@@ -72,10 +86,49 @@ fun StoryTimeScreen(
     val gson = remember { Gson() }
     val listState = rememberLazyListState()
     var playbackPositionMs by remember { mutableStateOf(0L) }
+    var pendingSeekMs by remember { mutableStateOf<Long?>(null) }
 
     val story = remember(storySlug) { StoryCatalog.bySlug(storySlug) }
     val audioUrl = remember(story) {
         story?.let { Constants.SUPABASE_PUBLIC_STORY_AUDIO_BASE_URL + "/" + it.audioFile }
+    }
+
+    // Load media when URL changes
+    LaunchedEffect(audioUrl) {
+        error = null
+        if (audioUrl != null) {
+            player.setMediaItem(MediaItem.fromUri(audioUrl))
+            player.prepare()
+        }
+    }
+
+    // Observe player state
+    DisposableEffect(player) {
+        val listener = object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                isBuffering = playbackState == Player.STATE_BUFFERING
+                if (playbackState == Player.STATE_READY) {
+                    pendingSeekMs?.let {
+                        try { player.seekTo(it) } catch (_: Throwable) {}
+                        pendingSeekMs = null
+                    }
+                }
+            }
+
+            override fun onIsPlayingChanged(isPlayingNow: Boolean) {
+                isPlaying = isPlayingNow
+            }
+
+            override fun onPlayerError(errorEx: PlaybackException) {
+                error = "Failed to play audio: ${'$'}{errorEx.errorCodeName}"
+                isPlaying = false
+            }
+        }
+        player.addListener(listener)
+        onDispose {
+            player.removeListener(listener)
+            try { player.release() } catch (_: Throwable) {}
+        }
     }
 
     LaunchedEffect(storySlug) {
@@ -140,62 +193,39 @@ fun StoryTimeScreen(
         return
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            try {
-                mediaPlayer?.release()
-            } catch (_: Throwable) {}
-            mediaPlayer = null
-        }
-    }
-
     fun startPlayback() {
-        if (isPreparing || isPlaying) return
-        isPreparing = true
         error = null
+        if (audioUrl == null) return
         try {
-            // Release previous instance if any
-            try { mediaPlayer?.release() } catch (_: Throwable) {}
-
-            val mp = MediaPlayer().apply {
-                setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                        .build()
-                )
-                audioUrl?.let { setDataSource(it) }
-                setOnPreparedListener {
-                    it.start()
-                    isPreparing = false
-                    isPlaying = true
-                }
-                setOnCompletionListener {
-                    try { it.release() } catch (_: Throwable) {}
-                    if (mediaPlayer === it) mediaPlayer = null
-                    isPlaying = false
-                }
-                setOnErrorListener { mpErr, what, extra ->
-                    try { mpErr.release() } catch (_: Throwable) {}
-                    if (mediaPlayer === mpErr) mediaPlayer = null
-                    isPreparing = false
-                    isPlaying = false
-                    error = "Failed to play audio ($what/$extra)"
-                    true
-                }
-                prepareAsync()
-            }
-            mediaPlayer = mp
+            pendingSeekMs?.let { player.seekTo(it) ; pendingSeekMs = null }
+            player.playWhenReady = true
+            player.play()
         } catch (e: Exception) {
-            isPreparing = false
-            isPlaying = false
             error = "Unable to start playback"
         }
     }
 
-    LaunchedEffect(isPlaying, mediaPlayer) {
+    fun pausePlayback() {
+        try { player.pause() } catch (_: Throwable) {}
+    }
+
+    fun resumePlayback() {
+        try { player.play() } catch (_: Throwable) { startPlayback() }
+    }
+
+    fun seekToMs(targetMs: Long) {
+        try {
+            player.seekTo(targetMs)
+            playbackPositionMs = targetMs
+        } catch (_: Throwable) {
+            pendingSeekMs = targetMs
+            startPlayback()
+        }
+    }
+
+    LaunchedEffect(isPlaying, player) {
         while (isPlaying) {
-            playbackPositionMs = mediaPlayer?.currentPosition?.toLong() ?: 0L
+            playbackPositionMs = player.currentPosition
             delay(80)
         }
     }
@@ -236,33 +266,44 @@ fun StoryTimeScreen(
                 Text(story.moral, style = MaterialTheme.typography.titleMedium, color = BrandCyan)
                 Text(story.summary, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f))
 
-                // Listen CTA
-                Button(
-                    onClick = { startPlayback() },
-                    enabled = !isPreparing && !isPlaying && audioUrl != null,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BrandCyan,
-                        contentColor = BrandNavyDark
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    if (isPreparing) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = BrandNavyDark,
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text("Preparing...")
-                    } else if (isPlaying) {
-                        Icon(Icons.Default.Headphones, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("Playing...")
-                    } else {
-                        Icon(Icons.Default.Headphones, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("Listen")
+                // Playback controls
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    val hasStarted = playbackPositionMs > 0
+                    Button(
+                        onClick = { resumePlayback() },
+                        enabled = !isPlaying && audioUrl != null,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BrandCyan,
+                            contentColor = BrandNavyDark
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        if (isBuffering) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                color = BrandNavyDark,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text("Preparing...")
+                        } else {
+                            Icon(Icons.Default.Headphones, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text(if (hasStarted) "Resume" else "Play")
+                        }
+                    }
+
+                    OutlinedButton(
+                        onClick = { pausePlayback() },
+                        enabled = isPlaying,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Pause")
                     }
                 }
 
@@ -312,21 +353,40 @@ fun StoryTimeScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         itemsIndexed(segments) { index, seg ->
-                            val annotated = remember(seg.text, index == activeSegmentIndex, activeWordIndex) {
-                                val ranges = buildWordRanges(seg.text, seg.words ?: emptyList())
+                            val ranges = remember(seg.text, seg.words) {
+                                buildWordRanges(seg.text, seg.words ?: emptyList())
+                            }
+                            val annotated = remember(seg.text, ranges, index == activeSegmentIndex, activeWordIndex) {
                                 buildAnnotatedSegment(seg.text, ranges, if (index == activeSegmentIndex && activeWordIndex >= 0) activeWordIndex else null)
                             }
                             Card(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        val targetMs = (seg.start * 1000).toLong()
+                                        seekToMs(targetMs)
+                                        // also bring into view
+                                        try { /* best effort */
+                                            // fire and forget
+                                        } catch (_: Throwable) {}
+                                    },
                                 shape = RoundedCornerShape(16.dp),
                                 colors = CardDefaults.cardColors(containerColor = if (index == activeSegmentIndex) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.08f))
                             ) {
-                                Text(
+                                ClickableText(
                                     text = annotated,
                                     modifier = Modifier.padding(16.dp),
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
-                                    color = Color.White.copy(alpha = 0.95f),
-                                    textAlign = TextAlign.Start
+                                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp, color = Color.White.copy(alpha = 0.95f)),
+                                    onClick = { offset ->
+                                        // find clicked word
+                                        val idx = ranges.indexOfFirst { r -> offset >= r.first && offset < r.second }
+                                        if (idx >= 0) {
+                                            val target = seg.words?.getOrNull(idx)?.start
+                                            if (target != null) {
+                                                seekToMs((target * 1000).toLong())
+                                            }
+                                        }
+                                    }
                                 )
                             }
                         }

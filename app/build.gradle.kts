@@ -175,6 +175,9 @@ dependencies {
     implementation(libs.ffmpeg.audio)
     implementation(libs.wave.recorder)
 
+    // ExoPlayer for robust HTTP audio playback & seeking
+    implementation(libs.exoplayer.core)
+
     // Permissions
     implementation(libs.accompanist.permissions)
 

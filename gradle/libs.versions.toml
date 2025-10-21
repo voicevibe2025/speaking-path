@@ -40,6 +40,7 @@ ffmpegKit = "6.0-2"
 vico = "2.1.3"
 lottie = "6.6.7"
 waveRecorder = "1.0.0"
+exoplayer = "2.19.1"
 
 # Images
 coil = "2.7.0"
@@ -132,6 +133,9 @@ datastore-preferences = { group = "androidx.datastore", name = "datastore-prefer
 # Audio Recording
 ffmpeg-audio = { group = "com.arthenica", name = "ffmpeg-kit-audio", version.ref = "ffmpegKit" }
 wave-recorder = { group = "com.github.squti", name = "Android-Wave-Recorder", version.ref = "waveRecorder" }
+
+# ExoPlayer
+exoplayer-core = { group = "com.google.android.exoplayer", name = "exoplayer", version.ref = "exoplayer" }
 
 # Permissions
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanistPermissions" }

@@ -1,0 +1,10 @@
+{
+  "scenes": [
+    { "id": "fisherman", "title": "The Fisherman and the Fish", "start": 0.0, "end": 34.333, "image": "story_images/legend_of_lake_toba/01_fisherman.jpg" },
+    { "id": "family", "title": "A Happy Family", "start": 34.333, "end": 68.666, "image": "story_images/legend_of_lake_toba/02_family.jpg" },
+    { "id": "broken_promise", "title": "The Broken Promise", "start": 68.666, "end": 103.0, "image": "story_images/legend_of_lake_toba/03_broken_promise.jpg" },
+    { "id": "storm_flood", "title": "The Storm and the Flood", "start": 103.0, "end": 137.333, "image": "story_images/legend_of_lake_toba/04_storm_flood.jpg" },
+    { "id": "lake_island", "title": "Lake Toba and Samosir Island", "start": 137.333, "end": 171.666, "image": "story_images/legend_of_lake_toba/05_lake_island.jpg" }
+  ],
+  "meta": { "slug": "legend_of_lake_toba", "duration": 171.666, "version": 1 }
+}

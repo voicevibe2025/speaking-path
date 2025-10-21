@@ -1,0 +1,10 @@
+{
+  "scenes": [
+    { "id": "prambanan", "title": "The Kingdom of Prambanan", "start": 0.0, "end": 39.773, "image": "story_images/roro_jonggrang/01_prambanan.jpg" },
+    { "id": "challenge", "title": "Bandung Bondowoso's Challenge", "start": 39.773, "end": 79.546, "image": "story_images/roro_jonggrang/02_challenge.jpg" },
+    { "id": "temples", "title": "A Thousand Temples in One Night", "start": 79.546, "end": 119.32, "image": "story_images/roro_jonggrang/03_thousand_temples.jpg" },
+    { "id": "trick", "title": "Roro Jonggrang's Trick", "start": 119.32, "end": 159.093, "image": "story_images/roro_jonggrang/04_trick.jpg" },
+    { "id": "stone_princess", "title": "The Stone Princess", "start": 159.093, "end": 198.866, "image": "story_images/roro_jonggrang/05_stone_princess.jpg" }
+  ],
+  "meta": { "slug": "roro_jonggrang", "duration": 198.866, "version": 1 }
+}

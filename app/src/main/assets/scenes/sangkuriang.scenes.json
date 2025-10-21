@@ -1,0 +1,10 @@
+{
+  "scenes": [
+    { "id": "sumbi_tumang", "title": "Dayang Sumbi and Tumang", "start": 0.0, "end": 39.088, "image": "story_images/sangkuriang/01_sumbi_tumang.jpg" },
+    { "id": "hunter", "title": "Sangkuriang the Hunter", "start": 39.088, "end": 78.177, "image": "story_images/sangkuriang/02_hunter.jpg" },
+    { "id": "task", "title": "The Impossible Task", "start": 78.177, "end": 117.265, "image": "story_images/sangkuriang/03_task.jpg" },
+    { "id": "rooster_trick", "title": "The Rooster Trick", "start": 117.265, "end": 156.354, "image": "story_images/sangkuriang/04_rooster_trick.jpg" },
+    { "id": "boat_mountain", "title": "The Upside-Down Boat", "start": 156.354, "end": 195.442, "image": "story_images/sangkuriang/05_boat_mountain.jpg" }
+  ],
+  "meta": { "slug": "sangkuriang", "duration": 195.442, "version": 1 }
+}

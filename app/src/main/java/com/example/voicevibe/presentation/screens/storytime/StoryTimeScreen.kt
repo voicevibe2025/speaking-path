@@ -35,6 +35,9 @@ import androidx.compose.ui.unit.sp
 import com.example.voicevibe.ui.theme.*
 import com.example.voicevibe.utils.Constants
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.delay
@@ -56,6 +59,25 @@ data class SegmentAlignment(
 
 data class AlignmentFile(
     val segments: List<SegmentAlignment>? = null
+)
+
+data class SceneDef(
+    val id: String? = null,
+    val title: String? = null,
+    val start: Double,
+    val end: Double,
+    val image: String
+)
+
+data class ScenesMeta(
+    val slug: String? = null,
+    val duration: Double? = null,
+    val version: Int? = null
+)
+
+data class ScenesFile(
+    val scenes: List<SceneDef>? = null,
+    val meta: ScenesMeta? = null
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,6 +105,8 @@ fun StoryTimeScreen(
     var storyText by remember { mutableStateOf<String?>(null) }
     var alignment by remember { mutableStateOf<AlignmentFile?>(null) }
     var alignmentError by remember { mutableStateOf<String?>(null) }
+    var scenes by remember { mutableStateOf<ScenesFile?>(null) }
+    var scenesError by remember { mutableStateOf<String?>(null) }
     val gson = remember { Gson() }
     val listState = rememberLazyListState()
     var playbackPositionMs by remember { mutableStateOf(0L) }
@@ -93,7 +117,6 @@ fun StoryTimeScreen(
         story?.let { Constants.SUPABASE_PUBLIC_STORY_AUDIO_BASE_URL + "/" + it.audioFile }
     }
 
-    // Load media when URL changes
     LaunchedEffect(audioUrl) {
         error = null
         if (audioUrl != null) {
@@ -102,7 +125,6 @@ fun StoryTimeScreen(
         }
     }
 
-    // Observe player state
     DisposableEffect(player) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: Int) {
@@ -156,6 +178,20 @@ fun StoryTimeScreen(
             alignment = gson.fromJson(json, AlignmentFile::class.java)
         } catch (t: Throwable) {
             alignmentError = "Alignment not found for '${storySlug}'. Add assets/words/${storySlug}.words.json"
+        }
+    }
+
+    LaunchedEffect(storySlug) {
+        scenesError = null
+        scenes = null
+        try {
+            val json = withContext(Dispatchers.IO) {
+                val path = "scenes/${storySlug}.scenes.json"
+                context.assets.open(path).bufferedReader().use { it.readText() }
+            }
+            scenes = gson.fromJson(json, ScenesFile::class.java)
+        } catch (_: Throwable) {
+            scenesError = null
         }
     }
 
@@ -327,6 +363,30 @@ fun StoryTimeScreen(
                         color = BrandFuchsia,
                         style = MaterialTheme.typography.bodyMedium
                     )
+                }
+
+                val currentTimeSec = playbackPositionMs.toDouble() / 1000.0
+                val activeScene = scenes?.scenes?.firstOrNull { s -> currentTimeSec >= s.start && currentTimeSec < s.end }
+                    ?: scenes?.scenes?.firstOrNull()
+                if (activeScene != null) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.06f))
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data("file:///android_asset/${activeScene.image}")
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = activeScene.title ?: "Scene",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                        )
+                    }
                 }
 
                 // Story content (highlighted if alignment available)

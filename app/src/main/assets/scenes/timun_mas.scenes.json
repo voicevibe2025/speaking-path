@@ -1,0 +1,10 @@
+{
+  "scenes": [
+    { "id": "golden_cucumber", "title": "The Golden Cucumber", "start": 0.0, "end": 44.292, "image": "story_images/timun_mas/01_golden_cucumber.jpg" },
+    { "id": "giant_bargain", "title": "The Giant's Bargain", "start": 44.292, "end": 88.584, "image": "story_images/timun_mas/02_giant_bargain.jpg" },
+    { "id": "escape", "title": "The Escape Begins", "start": 88.584, "end": 132.875, "image": "story_images/timun_mas/03_escape.jpg" },
+    { "id": "four_charms", "title": "Four Charms Against the Giant", "start": 132.875, "end": 177.166, "image": "story_images/timun_mas/04_four_charms.jpg" },
+    { "id": "reunion", "title": "Freedom and Reunion", "start": 177.166, "end": 221.458, "image": "story_images/timun_mas/05_reunion.jpg" }
+  ],
+  "meta": { "slug": "timun_mas", "duration": 221.458, "version": 1 }
+}

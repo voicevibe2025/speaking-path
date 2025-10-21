@@ -1,0 +1,10 @@
+{
+  "scenes": [
+    { "id": "village", "title": "Peaceful Village Life", "start": 0.0, "end": 42.141, "image": "story_images/malin_kundang/01_village.webp" },
+    { "id": "departure", "title": "Malin Leaves Home", "start": 42.141, "end": 84.282, "image": "story_images/malin_kundang/02_departure.webp" },
+    { "id": "return_rich", "title": "Malin Returns as a Rich Man", "start": 84.282, "end": 126.424, "image": "story_images/malin_kundang/03_return_rich.webp" },
+    { "id": "denial", "title": "Malin Denies His Mother", "start": 126.424, "end": 168.565, "image": "story_images/malin_kundang/04_denial.webp" },
+    { "id": "curse_stone", "title": "Malin Turned to Stone", "start": 168.565, "end": 210.706, "image": "story_images/malin_kundang/05_curse_stone.webp" }
+  ],
+  "meta": { "slug": "malin_kundang", "duration": 210.706, "version": 1 }
+}

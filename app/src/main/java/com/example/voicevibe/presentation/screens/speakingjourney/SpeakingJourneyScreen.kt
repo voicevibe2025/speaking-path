@@ -1043,7 +1043,7 @@ private fun VerticalTopicCard(
                     // Topic stats
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         // Vocabulary count - Opens TopicVocabularyScreen
                         TopicStatItem(
@@ -1052,7 +1052,8 @@ private fun VerticalTopicCard(
                             icon = Icons.Default.School,
                             onClick = if (topic.unlocked) {
                                 { onVocabularyClick(topic.id) }
-                            } else null
+                            } else null,
+                            modifier = Modifier.weight(1f)
                         )
                         
                         // Phrases count - Opens LearnTopicWithViviScreen
@@ -1062,7 +1063,8 @@ private fun VerticalTopicCard(
                             icon = Icons.Default.RecordVoiceOver,
                             onClick = if (topic.unlocked) {
                                 { onPhrasesClick(topic.id) }
-                            } else null
+                            } else null,
+                            modifier = Modifier.weight(1f)
                         )
                         
                         // Conversation turns - Opens ConversationLesson
@@ -1072,7 +1074,8 @@ private fun VerticalTopicCard(
                             icon = Icons.AutoMirrored.Filled.VolumeUp,
                             onClick = if (topic.unlocked) {
                                 { onDialogueClick(topic.id) }
-                            } else null
+                            } else null,
+                            modifier = Modifier.weight(1f)
                         )
                     }
 
@@ -1254,28 +1257,14 @@ private fun PracticeIconProgressButton(
                 .size(56.dp)
                 .alpha(alphaVal)
         ) {
-            // Track background
-            CircularProgressIndicator(
-                progress = 1f,
-                color = Color.White.copy(alpha = 0.15f),
-                strokeWidth = 4.dp,
-                modifier = Modifier.matchParentSize()
-            )
-            // Foreground progress
-            CircularProgressIndicator(
-                progress = progress.coerceIn(0f, 1f),
-                color = if (showCheck) color else Color(0xFFFFB347), // Warm amber for in-progress, mint/cyan when complete
-                strokeWidth = 4.dp,
-                modifier = Modifier.matchParentSize()
-            )
             // Center icon hit target
             Surface(
                 onClick = { if (enabled) onClick() },
-                shape = CircleShape,
+                shape = RoundedCornerShape(14.dp),
                 color = Color.White.copy(alpha = 0.06f),
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .size(42.dp)
+                    .size(56.dp)
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                     Icon(
@@ -1298,6 +1287,36 @@ private fun PracticeIconProgressButton(
             }
         }
 
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Horizontal progress bar
+        Box(
+            modifier = Modifier
+                .width(56.dp)
+                .height(2.dp)
+        ) {
+            // Background track
+            LinearProgressIndicator(
+                progress = 1f,
+                color = Color.White.copy(alpha = 0.15f),
+                trackColor = Color.Transparent,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .clip(RoundedCornerShape(2.dp))
+            )
+            // Foreground progress
+            LinearProgressIndicator(
+                progress = progress.coerceIn(0f, 1f),
+                color = if (showCheck) color else Color(0xFFFFB347),
+                trackColor = Color.Transparent,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .clip(RoundedCornerShape(2.dp))
+            )
+        }
+
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
@@ -1315,13 +1334,14 @@ private fun TopicStatItem(
     label: String,
     value: String,
     icon: ImageVector,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier
 ) {
     val borderColor = if (onClick != null) BrandCyan.copy(alpha = 0.3f) else Color.Transparent
     
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
+        modifier = modifier
             .background(
                 color = Color.White.copy(alpha = 0.05f),
                 shape = RoundedCornerShape(8.dp)

@@ -1,10 +1,15 @@
 {
   "scenes": [
-    { "id": "village", "title": "Peaceful Village Life", "start": 0.0, "end": 42.141, "image": "story_images/malin_kundang/01_village.webp" },
-    { "id": "departure", "title": "Malin Leaves Home", "start": 42.141, "end": 84.282, "image": "story_images/malin_kundang/02_departure.webp" },
-    { "id": "return_rich", "title": "Malin Returns as a Rich Man", "start": 84.282, "end": 126.424, "image": "story_images/malin_kundang/03_return_rich.webp" },
-    { "id": "denial", "title": "Malin Denies His Mother", "start": 126.424, "end": 168.565, "image": "story_images/malin_kundang/04_denial.webp" },
-    { "id": "curse_stone", "title": "Malin Turned to Stone", "start": 168.565, "end": 210.706, "image": "story_images/malin_kundang/05_curse_stone.webp" }
+    { "id": "village",           "title": "Peaceful Village Life",            "start": 0.0,     "end": 46.538,  "image": "story_images/malin_kundang/01_village.webp" },
+    { "id": "ask_permission",     "title": "Malin Asks to Sail for Work",     "start": 46.538,  "end": 68.89,  "image": "story_images/malin_kundang/02_ask_permission.webp" },
+    { "id": "departure",          "title": "Malin Leaves Home",               "start": 68.89,  "end": 84.674,  "image": "story_images/malin_kundang/03_departure.webp" },
+    { "id": "mother_waits",       "title": "Mother Waits by the Shore",       "start": 84.674,  "end": 96.033,  "image": "story_images/malin_kundang/04_mother_waits.webp" },
+    { "id": "return_rich",        "title": "Malin Returns as a Rich Man",     "start": 96.033,  "end": 112.418, "image": "story_images/malin_kundang/05_return_rich.webp" },
+    { "id": "reunion_approach",   "title": "Mother Approaches, Overjoyed",    "start": 112.418, "end": 125.791, "image": "story_images/malin_kundang/06_reunion_approach.webp" },
+    { "id": "denial",             "title": "Malin Denies His Mother",         "start": 125.791, "end": 149.741, "image": "story_images/malin_kundang/07_denial.webp" },
+    { "id": "mother_prays",       "title": "Mother's Grief and Prayer",       "start": 149.741, "end": 164.316, "image": "story_images/malin_kundang/08_mother_prays.webp" },
+    { "id": "storm",              "title": "Storm at Sea",                    "start": 164.316, "end": 178.279, "image": "story_images/malin_kundang/09_storm.webp" },
+    { "id": "curse_stone",        "title": "Malin Turned to Stone",           "start": 178.279, "end": 210.706, "image": "story_images/malin_kundang/10_curse_stone.webp" }
   ],
-  "meta": { "slug": "malin_kundang", "duration": 210.706, "version": 1 }
+  "meta": { "slug": "malin_kundang", "duration": 210.706, "version": 2 }
 }

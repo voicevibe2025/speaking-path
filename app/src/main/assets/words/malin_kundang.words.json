@@ -3,7 +3,7 @@
     {
       "start": 0.226,
       "end": 4.032,
-      "text": " Malin Kundan, the ungrateful son.",
+      "text": " Malin Kundang, the ungrateful son.",
       "words": [
         {
           "word": "Malin",
@@ -12,7 +12,7 @@
           "score": 0.822
         },
         {
-          "word": "Kundan,",
+          "word": "Kundang,",
           "start": 1.007,
           "end": 1.728,
           "score": 0.921
@@ -40,7 +40,7 @@
     {
       "start": 5.595,
       "end": 14.99,
-      "text": "Long ago in a small fishing village on the coast of West Sumatra lived a poor widow and her only son Malin Kundan.",
+      "text": "Long ago in a small fishing village on the coast of West Sumatra lived a poor widow and her only son Malin Kundang.",
       "words": [
         {
           "word": "Long",
@@ -175,7 +175,7 @@
           "score": 0.708
         },
         {
-          "word": "Kundan.",
+          "word": "Kundang.",
           "start": 14.369,
           "end": 14.99,
           "score": 0.936
@@ -1498,7 +1498,7 @@
     {
       "start": 103.906,
       "end": 109.695,
-      "text": "The villagers whispered, that's Malin Kundan, the poor boy who went to sea.",
+      "text": "The villagers whispered, that's Malin Kundang, the poor boy who went to sea.",
       "words": [
         {
           "word": "The",
@@ -1531,7 +1531,7 @@
           "score": 0.803
         },
         {
-          "word": "Kundan,",
+          "word": "Kundang,",
           "start": 106.53,
           "end": 107.211,
           "score": 0.979
@@ -2628,7 +2628,7 @@
     {
       "start": 189.138,
       "end": 196.37,
-      "text": "People believed it was Malin Kundan turned to stone for disobeying and shaming his mother.",
+      "text": "People believed it was Malin Kundang turned to stone for disobeying and shaming his mother.",
       "words": [
         {
           "word": "People",
@@ -2661,7 +2661,7 @@
           "score": 0.83
         },
         {
-          "word": "Kundan",
+          "word": "Kundang",
           "start": 191.041,
           "end": 191.682,
           "score": 0.931
@@ -2725,7 +2725,7 @@
     {
       "start": 197.218,
       "end": 210.706,
-      "text": " Since then, the story of Malin Kundan has been told across generations, reminding everyone that wealth and success mean nothing if we forget our parents and our roots.",
+      "text": " Since then, the story of Malin Kundang has been told across generations, reminding everyone that wealth and success mean nothing if we forget our parents and our roots.",
       "words": [
         {
           "word": "Since",
@@ -2764,7 +2764,7 @@
           "score": 0.725
         },
         {
-          "word": "Kundan",
+          "word": "Kundang",
           "start": 199.483,
           "end": 200.044,
           "score": 0.945
@@ -2906,7 +2906,7 @@
       "score": 0.822
     },
     {
-      "word": "Kundan,",
+      "word": "Kundangg,",
       "start": 1.007,
       "end": 1.728,
       "score": 0.921
@@ -3062,7 +3062,7 @@
       "score": 0.708
     },
     {
-      "word": "Kundan.",
+      "word": "Kundangg.",
       "start": 14.369,
       "end": 14.99,
       "score": 0.936
@@ -4292,7 +4292,7 @@
       "score": 0.803
     },
     {
-      "word": "Kundan,",
+      "word": "Kundangg,",
       "start": 106.53,
       "end": 107.211,
       "score": 0.979
@@ -5282,7 +5282,7 @@
       "score": 0.83
     },
     {
-      "word": "Kundan",
+      "word": "Kundangg",
       "start": 191.041,
       "end": 191.682,
       "score": 0.931
@@ -5378,7 +5378,7 @@
       "score": 0.725
     },
     {
-      "word": "Kundan",
+      "word": "Kundangg",
       "start": 199.483,
       "end": 200.044,
       "score": 0.945

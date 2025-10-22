@@ -1,10 +1,17 @@
 {
   "scenes": [
-    { "id": "sumbi_tumang", "title": "Dayang Sumbi and Tumang", "start": 0.0, "end": 39.088, "image": "story_images/sangkuriang/01_sumbi_tumang.jpg" },
-    { "id": "hunter", "title": "Sangkuriang the Hunter", "start": 39.088, "end": 78.177, "image": "story_images/sangkuriang/02_hunter.jpg" },
-    { "id": "task", "title": "The Impossible Task", "start": 78.177, "end": 117.265, "image": "story_images/sangkuriang/03_task.jpg" },
-    { "id": "rooster_trick", "title": "The Rooster Trick", "start": 117.265, "end": 156.354, "image": "story_images/sangkuriang/04_rooster_trick.jpg" },
-    { "id": "boat_mountain", "title": "The Upside-Down Boat", "start": 156.354, "end": 195.442, "image": "story_images/sangkuriang/05_boat_mountain.jpg" }
+    { "id": "prologue",             "title": "Prologue: Dayang Sumbi of West Java",                   "start": 0.0,       "end": 33.73,  "image": "story_images/sangkuriang/01_prologue.webp" },
+    { "id": "vow_spool",            "title": "The Fallen Spool and Vow",                              "start": 33.73,    "end": 41.16,   "image": "story_images/sangkuriang/02_spool_vow.webp" },
+    { "id": "tumang_marriage",      "title": "Tumang Retrieves; The Promise Kept",                   "start": 41.16,     "end": 45.266,  "image": "story_images/sangkuriang/03_tumang_marriage.webp" },
+    { "id": "birth_sangkuriang",    "title": "Birth of Sangkuriang",                                  "start": 45.266,    "end": 57.634,  "image": "story_images/sangkuriang/04_birth_sangkuriang.webp" },
+    { "id": "forest_hunt",          "title": "Hunt in the Deep Forest",                               "start": 57.634,    "end": 69.472,  "image": "story_images/sangkuriang/05_forest_hunt.webp" },
+    { "id": "deer_and_betrayal",    "title": "Deer Quest and Betrayal",                               "start": 69.472,    "end": 75.501,  "image": "story_images/sangkuriang/06_deer_betrayal.webp" },
+    { "id": "mother_grief",         "title": "Mother's Shock and Grief",                              "start": 75.501,    "end": 93.228,  "image": "story_images/sangkuriang/07_mother_grief.webp" },
+    { "id": "eternal_youth",        "title": "Dayang Sumbi's Prayer and Eternal Youth",               "start": 93.228,    "end": 116.034, "image": "story_images/sangkuriang/08_eternal_youth.webp" },
+    { "id": "reunion_proposal",     "title": "Unknowing Reunion and Proposal",                        "start": 116.034,   "end": 124.848, "image": "story_images/sangkuriang/09_reunion_proposal.webp" },
+    { "id": "scar_conditions",      "title": "The Scar Revealed and Impossible Conditions",           "start": 124.848,   "end": 149.145, "image": "story_images/sangkuriang/10_scar_conditions.webp" },
+    { "id": "night_work",           "title": "Night of Spirits: Building the Lake and Dam",           "start": 149.145,   "end": 168.93,  "image": "story_images/sangkuriang/11_night_work.webp" },
+    { "id": "dawn_mountain",        "title": "Dawn Trick, Fury, and Tangkuban Parahu",                "start": 168.93,    "end": 195.442, "image": "story_images/sangkuriang/12_dawn_mountain.webp" }
   ],
-  "meta": { "slug": "sangkuriang", "duration": 195.442, "version": 1 }
+  "meta": { "slug": "sangkuriang", "duration": 195.442, "version": 2 }
 }

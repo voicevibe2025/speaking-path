@@ -2,8 +2,8 @@ from PIL import Image
 import os
 
 # Folder paths (edit these as needed)
-input_folder = "malin_kundang"       # folder where your PNG/JPEG files are
-output_folder = "malin_kundang" # folder to save converted files
+input_folder = "at_the_airport"       # folder where your PNG/JPEG files are
+output_folder = "at_the_airport" # folder to save converted files
 
 # Make sure the input folder exists
 if not os.path.exists(input_folder):

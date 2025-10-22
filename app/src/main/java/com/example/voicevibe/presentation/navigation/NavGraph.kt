@@ -1065,7 +1065,13 @@ fun NavGraph(
             val storySlug = backStackEntry.arguments?.getString("storySlug") ?: return@composable
             com.example.voicevibe.presentation.screens.storytime.StoryTimeScreen(
                 storySlug = storySlug,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToStory = { slug ->
+                    navController.navigate(Screen.StoryTime.createRoute(slug)) {
+                        popUpTo(Screen.StoryTime.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
             )
         }
 

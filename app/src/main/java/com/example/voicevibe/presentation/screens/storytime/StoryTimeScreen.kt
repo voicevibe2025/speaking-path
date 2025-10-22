@@ -36,7 +36,10 @@ import com.example.voicevibe.ui.theme.*
 import com.example.voicevibe.utils.Constants
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import kotlinx.coroutines.Dispatchers
@@ -85,10 +88,13 @@ data class ScenesFile(
 @Composable
 fun StoryTimeScreen(
     storySlug: String,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToStory: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
+    val density = LocalDensity.current
+    val swipeThresholdPx = remember(density) { with(density) { 64.dp.toPx() } }
 
     val player = remember {
         ExoPlayer.Builder(context).build().apply {
@@ -292,6 +298,33 @@ fun StoryTimeScreen(
                     )
                 )
                 .padding(top = padding.calculateTopPadding())
+                .pointerInput(storySlug, swipeThresholdPx) {
+                    var dragX = 0f
+                    detectHorizontalDragGestures(
+                        onHorizontalDrag = { _, dragAmount ->
+                            dragX += dragAmount
+                        },
+                        onDragEnd = {
+                            if (dragX <= -swipeThresholdPx) {
+                                val list = StoryCatalog.stories
+                                if (list.isNotEmpty()) {
+                                    val idx = list.indexOfFirst { it.slug == storySlug }
+                                    val next = if (idx >= 0) (idx + 1) % list.size else 0
+                                    onNavigateToStory(list[next].slug)
+                                }
+                            } else if (dragX >= swipeThresholdPx) {
+                                val list = StoryCatalog.stories
+                                if (list.isNotEmpty()) {
+                                    val idx = list.indexOfFirst { it.slug == storySlug }
+                                    val prev = if (idx > 0) idx - 1 else list.size - 1
+                                    onNavigateToStory(list[prev].slug)
+                                }
+                            }
+                            dragX = 0f
+                        },
+                        onDragCancel = { dragX = 0f }
+                    )
+                }
         ) {
             val currentTimeSec = playbackPositionMs.toDouble() / 1000.0
             val activeScene = scenes?.scenes?.firstOrNull { s -> currentTimeSec >= s.start && currentTimeSec < s.end }

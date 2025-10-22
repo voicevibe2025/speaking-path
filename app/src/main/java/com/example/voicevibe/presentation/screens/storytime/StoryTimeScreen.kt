@@ -292,15 +292,59 @@ fun StoryTimeScreen(
                 )
                 .padding(padding)
         ) {
+            val currentTimeSec = playbackPositionMs.toDouble() / 1000.0
+            val activeScene = scenes?.scenes?.firstOrNull { s -> currentTimeSec >= s.start && currentTimeSec < s.end }
+                ?: scenes?.scenes?.firstOrNull()
+
+            if (activeScene != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data("file:///android_asset/${activeScene.image}")
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = activeScene.title ?: "Scene",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.matchParentSize()
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.45f),
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.6f)
+                            )
+                        )
+                    )
+            )
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Moral and summary
-                Text(story.moral, style = MaterialTheme.typography.titleMedium, color = BrandCyan)
-                Text(story.summary, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f))
+                Text(
+                    story.moral,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.Black.copy(alpha = 0.35f))
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = BrandCyan
+                )
+                Text(
+                    story.summary,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.Black.copy(alpha = 0.35f))
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.98f)
+                )
 
                 // Playback controls
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
@@ -365,29 +409,7 @@ fun StoryTimeScreen(
                     )
                 }
 
-                val currentTimeSec = playbackPositionMs.toDouble() / 1000.0
-                val activeScene = scenes?.scenes?.firstOrNull { s -> currentTimeSec >= s.start && currentTimeSec < s.end }
-                    ?: scenes?.scenes?.firstOrNull()
-                if (activeScene != null) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.06f))
-                    ) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(context)
-                                .data("file:///android_asset/${activeScene.image}")
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = activeScene.title ?: "Scene",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                        )
-                    }
-                }
+                
 
                 // Story content (highlighted if alignment available)
                 val segments = alignment?.segments
@@ -431,23 +453,32 @@ fun StoryTimeScreen(
                                         } catch (_: Throwable) {}
                                     },
                                 shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(containerColor = if (index == activeSegmentIndex) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.08f))
+                                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                             ) {
-                                ClickableText(
-                                    text = annotated,
-                                    modifier = Modifier.padding(16.dp),
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp, color = Color.White.copy(alpha = 0.95f)),
-                                    onClick = { offset ->
-                                        // find clicked word
-                                        val idx = ranges.indexOfFirst { r -> offset >= r.first && offset < r.second }
-                                        if (idx >= 0) {
-                                            val target = seg.words?.getOrNull(idx)?.start
-                                            if (target != null) {
-                                                seekToMs((target * 1000).toLong())
+                                Box(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color.Black.copy(alpha = 0.35f))
+                                        .padding(12.dp)
+                                ) {
+                                    ClickableText(
+                                        text = annotated,
+                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                            fontSize = 18.sp,
+                                            color = Color.White.copy(alpha = 0.98f)
+                                        ),
+                                        onClick = { offset ->
+                                            val idx = ranges.indexOfFirst { r -> offset >= r.first && offset < r.second }
+                                            if (idx >= 0) {
+                                                val target = seg.words?.getOrNull(idx)?.start
+                                                if (target != null) {
+                                                    seekToMs((target * 1000).toLong())
+                                                }
                                             }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
                     }
@@ -457,13 +488,19 @@ fun StoryTimeScreen(
                             .fillMaxWidth()
                             .verticalScroll(scrollState),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f))
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                     ) {
                         Text(
                             text = storyText ?: "",
-                            modifier = Modifier.padding(16.dp),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
-                            color = Color.White.copy(alpha = 0.9f),
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color.Black.copy(alpha = 0.35f))
+                                .padding(12.dp),
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontSize = 18.sp
+                            ),
+                            color = Color.White.copy(alpha = 0.98f),
                             textAlign = TextAlign.Start
                         )
                     }

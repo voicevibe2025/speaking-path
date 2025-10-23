@@ -191,6 +191,11 @@ class TokenManager @Inject constructor(
             runCatching { preferences.remove(userEmailKey) }
             runCatching { preferences.remove(userNameKey) }
             runCatching { preferences.remove(isLoggedInKey) }
+            
+            // Remove user-specific preferences to prevent data leakage
+            runCatching { preferences.remove(englishLevelKey) }
+            runCatching { preferences.remove(ttsVoiceIdKey) }
+            runCatching { preferences.remove(voiceAccentKey) }
         }
     }
 

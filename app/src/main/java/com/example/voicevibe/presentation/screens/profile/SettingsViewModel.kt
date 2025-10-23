@@ -178,6 +178,12 @@ class SettingsViewModel @Inject constructor(
 
                 // Set bio
                 _aboutMe.value = userProfile.bio ?: ""
+                
+                // Sync English Level from backend to DataStore
+                // This prevents data leakage when multiple users login on same device
+                userProfile.englishLevel?.let { level ->
+                    tokenManager.setEnglishLevel(level)
+                }
 
             } catch (e: IOException) {
                 _errorMessage.value = "Network error. Please check your connection."

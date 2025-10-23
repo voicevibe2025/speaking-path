@@ -48,7 +48,9 @@ data class UserProfile(
     val groupId: Int? = null,
     val groupName: String? = null,
     val groupDisplayName: String? = null,
-    val hasGroup: Boolean = false
+    val hasGroup: Boolean = false,
+    // Speaking Journey English Level (null = not set yet)
+    val englishLevel: String? = null
 )
 
 /**

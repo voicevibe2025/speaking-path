@@ -55,6 +55,7 @@ class TokenManager @Inject constructor(
     private val lastProficiencyKey = stringPreferencesKey("last_proficiency")
     private val lastLevelKey = intPreferencesKey("last_level")
     private val celebratedTopicsKey = stringPreferencesKey(Constants.CELEBRATED_TOPICS_KEY)
+    private val englishLevelKey = stringPreferencesKey(Constants.ENGLISH_LEVEL_KEY)
     private val vocabularyCacheKey = stringPreferencesKey("vocabulary_content_cache")
     private val learnedVocabularyKey = stringPreferencesKey("learned_vocabulary_words")
     
@@ -251,6 +252,23 @@ class TokenManager @Inject constructor(
                 preferences.remove(ttsVoiceIdKey)
             } else {
                 preferences[ttsVoiceIdKey] = voiceId
+            }
+        }
+    }
+
+    /**
+     * User's English Level preference (BEGINNER, INTERMEDIATE, ADVANCED)
+     */
+    fun englishLevelFlow(): Flow<String?> = dataStore.data.map { preferences ->
+        preferences[englishLevelKey]
+    }
+
+    suspend fun setEnglishLevel(level: String?) {
+        dataStore.edit { preferences ->
+            if (level.isNullOrBlank()) {
+                preferences.remove(englishLevelKey)
+            } else {
+                preferences[englishLevelKey] = level
             }
         }
     }

@@ -158,6 +158,11 @@ fun NavGraph(
                     navController.navigate(Screen.GroupSelection.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
+                },
+                onNavigateToEnglishLevelSelection = {
+                    navController.navigate(Screen.SelectEnglishLevel.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             )
         }
@@ -179,6 +184,11 @@ fun NavGraph(
                     navController.navigate(Screen.GroupSelection.route) {
                         popUpTo(Screen.Register.route) { inclusive = true }
                     }
+                },
+                onNavigateToEnglishLevelSelection = {
+                    navController.navigate(Screen.SelectEnglishLevel.route) {
+                        popUpTo(Screen.Register.route) { inclusive = true }
+                    }
                 }
             )
         }
@@ -190,6 +200,21 @@ fun NavGraph(
                 },
                 onNavigateToLogin = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.SelectEnglishLevel.route) {
+            com.example.voicevibe.presentation.screens.auth.SelectEnglishLevelScreen(
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.SelectEnglishLevel.route) { inclusive = true }
+                    }
+                },
+                onNavigateToGroupSelection = {
+                    navController.navigate(Screen.GroupSelection.route) {
+                        popUpTo(Screen.SelectEnglishLevel.route) { inclusive = true }
+                    }
                 }
             )
         }

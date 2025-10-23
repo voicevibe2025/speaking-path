@@ -106,6 +106,11 @@ fun VoiceVibeNavHost(
                     navController.navigate(Screen.GroupSelection.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
+                },
+                onNavigateToEnglishLevelSelection = {
+                    navController.navigate(Screen.SelectEnglishLevel.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             )
         }
@@ -130,6 +135,12 @@ fun VoiceVibeNavHost(
                         popUpTo(Screen.Register.route) { inclusive = true }
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
+                },
+                onNavigateToEnglishLevelSelection = {
+                    navController.navigate(Screen.SelectEnglishLevel.route) {
+                        popUpTo(Screen.Register.route) { inclusive = true }
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             )
         }
@@ -141,6 +152,22 @@ fun VoiceVibeNavHost(
                 onNavigateToLogin = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // Select English Level Screen
+        composable(route = Screen.SelectEnglishLevel.route) {
+            com.example.voicevibe.presentation.screens.auth.SelectEnglishLevelScreen(
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.SelectEnglishLevel.route) { inclusive = true }
+                    }
+                },
+                onNavigateToGroupSelection = {
+                    navController.navigate(Screen.GroupSelection.route) {
+                        popUpTo(Screen.SelectEnglishLevel.route) { inclusive = true }
                     }
                 }
             )

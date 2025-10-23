@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.voicevibe.data.repository.AuthRepository
 import com.example.voicevibe.data.repository.ProfileRepository
 import com.example.voicevibe.data.repository.UserRepository
+import com.example.voicevibe.data.repository.SpeakingJourneyRepository
 import com.example.voicevibe.data.local.TokenManager
 import com.example.voicevibe.domain.model.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +21,8 @@ class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val profileRepository: ProfileRepository,
     private val tokenManager: TokenManager,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val speakingRepo: SpeakingJourneyRepository
 ) : ViewModel() {
 
     // User profile state for top card
@@ -67,6 +69,10 @@ class SettingsViewModel @Inject constructor(
     // Learning preference: voice accent
     private val _voiceAccent = mutableStateOf<String?>(null)
     val voiceAccent: State<String?> = _voiceAccent
+
+    // Learning preference: English Level (BEGINNER, INTERMEDIATE, ADVANCED)
+    private val _englishLevel = mutableStateOf<String?>(null)
+    val englishLevel: State<String?> = _englishLevel
 
     // Account preferences
     private val _showEmailOnProfile = mutableStateOf(true)
@@ -210,6 +216,12 @@ class SettingsViewModel @Inject constructor(
                 _voiceAccent.value = accent
             }
         }
+        // English Level
+        viewModelScope.launch {
+            tokenManager.englishLevelFlow().collect { level ->
+                _englishLevel.value = level
+            }
+        }
         // Show email on profile/header
         viewModelScope.launch {
             tokenManager.showEmailOnProfileFlow().collect { show ->
@@ -265,6 +277,14 @@ class SettingsViewModel @Inject constructor(
     fun setVoiceAccent(accent: String?) {
         viewModelScope.launch {
             tokenManager.setVoiceAccent(accent)
+        }
+    }
+
+    fun setEnglishLevel(level: String) {
+        viewModelScope.launch {
+            val normalized = level.trim().uppercase()
+            tokenManager.setEnglishLevel(normalized)
+            runCatching { speakingRepo.updateEnglishLevel(normalized) }
         }
     }
 

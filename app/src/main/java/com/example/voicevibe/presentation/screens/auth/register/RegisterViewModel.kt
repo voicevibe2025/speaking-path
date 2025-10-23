@@ -229,7 +229,14 @@ class RegisterViewModel @Inject constructor(
             userRepository.getCurrentUser().collect { resource ->
                 when (resource) {
                     is Resource.Success -> {
-                        val hasGroup = resource.data?.hasGroup ?: false
+                        val user = resource.data
+                        // Check if English level is set (post-update requirement)
+                        if (user?.englishLevel == null) {
+                            _registerEvent.emit(RegisterEvent.NavigateToEnglishLevelSelection)
+                            return@collect
+                        }
+                        // Check group status
+                        val hasGroup = user.hasGroup
                         if (hasGroup) {
                             _registerEvent.emit(RegisterEvent.NavigateToHome)
                         } else {
@@ -287,5 +294,6 @@ sealed class RegisterEvent {
     object Success : RegisterEvent()
     object NavigateToHome : RegisterEvent()
     object NavigateToGroupSelection : RegisterEvent()
+    object NavigateToEnglishLevelSelection : RegisterEvent()
     object NetworkError : RegisterEvent()
 }

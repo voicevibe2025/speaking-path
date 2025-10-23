@@ -14,7 +14,9 @@ import java.time.LocalDateTime
 
 interface SpeakingJourneyApiService {
     @GET("speaking/topics")
-    suspend fun getTopics(): Response<SpeakingTopicsResponse>
+    suspend fun getTopics(
+        @Query("englishLevel") englishLevel: String? = null
+    ): Response<SpeakingTopicsResponse>
 
     @POST("speaking/topics/{topicId}/complete")
     suspend fun completeTopic(
@@ -24,6 +26,12 @@ interface SpeakingJourneyApiService {
     @POST("speaking/topics")
     suspend fun updateLastVisitedTopic(
         @Body request: UpdateLastVisitedTopicRequest
+    ): Response<UpdateLastVisitedTopicResponse>
+
+    // Persist user's English Level preference on the server (optional)
+    @POST("speaking/topics")
+    suspend fun updateEnglishLevel(
+        @Body request: UpdateEnglishLevelRequest
     ): Response<UpdateLastVisitedTopicResponse>
 
     @Multipart
@@ -144,7 +152,8 @@ data class ConversationTurnDto(
 data class UserProfileDto(
     val firstVisit: Boolean,
     val lastVisitedTopicId: String?,
-    val lastVisitedTopicTitle: String?
+    val lastVisitedTopicTitle: String?,
+    val englishLevel: String? = null
 )
 
 data class PhraseProgressDto(
@@ -181,6 +190,7 @@ data class SpeakingTopicDto(
     val fluencyProgress: FluencyProgressDto? = null,
     val phraseProgress: PhraseProgressDto? = null,
     val practiceScores: PracticeScoresDto? = null,
+    val difficulty: String? = null,
     val conversationScore: Int? = null,
     val conversationCompleted: Boolean? = null,
     val unlocked: Boolean,
@@ -200,6 +210,10 @@ data class UpdateLastVisitedTopicRequest(
 
 data class UpdateLastVisitedTopicResponse(
     val success: Boolean
+)
+
+data class UpdateEnglishLevelRequest(
+    val englishLevel: String
 )
 
 data class PhraseSubmissionResultDto(

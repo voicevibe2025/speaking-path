@@ -3,6 +3,7 @@ package com.example.voicevibe.presentation.screens.auth.onboarding
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -70,6 +71,8 @@ fun OnboardingScreen(
     )
 
     val pagerState = rememberPagerState(pageCount = { pages.size })
+    val levelOptions = listOf("BEGINNER", "INTERMEDIATE", "ADVANCED")
+    var selectedLevel by remember { mutableStateOf("INTERMEDIATE") }
 
     Box(
         modifier = Modifier
@@ -120,6 +123,39 @@ fun OnboardingScreen(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // English Level selection on the last page
+                if (pagerState.currentPage == pages.size - 1) {
+                    Text(
+                        text = "Choose your English level",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    levelOptions.forEach { level ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { selectedLevel = level },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedLevel == level,
+                                onClick = { selectedLevel = level }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = when (level) {
+                                    "BEGINNER" -> "Beginner"
+                                    "INTERMEDIATE" -> "Intermediate"
+                                    "ADVANCED" -> "Advanced"
+                                    else -> level
+                                }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
                 // Page indicators
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -154,6 +190,8 @@ fun OnboardingScreen(
                     onClick = {
                         scope.launch {
                             if (pagerState.currentPage == pages.size - 1) {
+                                // Persist English Level and finish
+                                runCatching { tokenManager.setEnglishLevel(selectedLevel) }
                                 tokenManager.setOnboardingCompleted()
                                 onComplete()
                             } else {

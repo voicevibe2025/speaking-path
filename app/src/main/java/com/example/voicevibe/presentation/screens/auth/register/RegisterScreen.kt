@@ -58,6 +58,7 @@ fun RegisterScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToTerms: () -> Unit,
     onNavigateToGroupSelection: () -> Unit,
+    onNavigateToEnglishLevelSelection: () -> Unit,
     viewModel: RegisterViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -90,6 +91,9 @@ fun RegisterScreen(
                         duration = SnackbarDuration.Short
                     )
                     onNavigateToGroupSelection()
+                }
+                is RegisterEvent.NavigateToEnglishLevelSelection -> {
+                    onNavigateToEnglishLevelSelection()
                 }
                 is RegisterEvent.NetworkError -> {
                     snackbarHostState.showSnackbar(

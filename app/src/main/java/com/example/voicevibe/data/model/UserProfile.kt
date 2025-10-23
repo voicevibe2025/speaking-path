@@ -101,5 +101,8 @@ data class UserProfile(
     @SerializedName("groupDisplayName")
     val groupDisplayName: String? = null,
     @SerializedName("hasGroup")
-    val hasGroup: Boolean? = null
+    val hasGroup: Boolean? = null,
+    // Speaking Journey English Level (BEGINNER, INTERMEDIATE, ADVANCED)
+    @SerializedName("englishLevel")
+    val englishLevel: String? = null
 )

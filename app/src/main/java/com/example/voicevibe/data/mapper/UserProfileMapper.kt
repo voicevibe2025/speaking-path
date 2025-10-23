@@ -100,7 +100,9 @@ fun DataUserProfile.toDomain(): DomainUserProfile {
         groupId = this.groupId,
         groupName = this.groupName,
         groupDisplayName = this.groupDisplayName,
-        hasGroup = this.hasGroup ?: false
+        hasGroup = this.hasGroup ?: false,
+        // Speaking Journey English Level
+        englishLevel = this.englishLevel
     )
 }
 

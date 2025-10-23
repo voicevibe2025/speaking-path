@@ -6,13 +6,13 @@ package com.example.voicevibe.utils
 object Constants {
     // API Configuration
     //const val BASE_URL = "http://10.0.2.2:8000/api/v1/" // For Android emulator
-    //const val BASE_URL = "http://10.178.129.136:8000/api/v1/" // For physical device (replace with your IP)
-    const val BASE_URL = "https://speaking-path-server-production.up.railway.app/api/v1/" // Production
+    const val BASE_URL = "http://10.178.129.136:8000/api/v1/" // For physical device (replace with your IP)
+    //const val BASE_URL = "https://speaking-path-server-production.up.railway.app/api/v1/" // Production
 
     // WebSocket Configuration
     //const val WS_BASE_URL = "ws://10.0.2.2:8000/ws/" // For Android emulator
-    //const val WS_BASE_URL = "ws://10.178.129.136:8000/ws/" // For physical device
-    const val WS_BASE_URL = "wss://speaking-path-server-production.up.railway.app/ws/" // Production
+    const val WS_BASE_URL = "ws://10.178.129.136:8000/ws/" // For physical device
+    //const val WS_BASE_URL = "wss://speaking-path-server-production.up.railway.app/ws/" // Production
     const val SUPABASE_PUBLIC_AUDIO_BASE_URL = "https://ghsrluoqcwfbiierjpqk.supabase.co/storage/v1/object/public/conversation-audio"
     const val SUPABASE_PUBLIC_STORY_AUDIO_BASE_URL = "https://ghsrluoqcwfbiierjpqk.supabase.co/storage/v1/object/public/indo-folklore-audio"
 
@@ -30,6 +30,7 @@ object Constants {
     const val VOICE_ACCENT_KEY = "voice_accent"
     const val SHOW_EMAIL_ON_PROFILE_KEY = "show_email_on_profile"
     const val CELEBRATED_TOPICS_KEY = "celebrated_topics"
+    const val ENGLISH_LEVEL_KEY = "english_level"
 
     // Temporary feature flag: lock Speaking-only Journey to ON
     const val LOCK_SPEAKING_ONLY_ON = true
@@ -58,6 +59,7 @@ object Constants {
 
     // Learning Levels
     val PROFICIENCY_LEVELS = listOf("A1", "A2", "B1", "B2", "C1", "C2")
+    val ENGLISH_LEVELS = listOf("BEGINNER", "INTERMEDIATE", "ADVANCED")
 
     // Error Messages
     const val NETWORK_ERROR = "Network error. Please check your connection."

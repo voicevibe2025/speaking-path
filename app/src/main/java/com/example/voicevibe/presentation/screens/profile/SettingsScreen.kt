@@ -58,6 +58,8 @@ fun SettingsScreen(
     var selectedVoiceName: String? by remember { mutableStateOf(null) }
     var showAccentDialog by remember { mutableStateOf(false) }
     var selectedAccent: String? by remember { mutableStateOf(null) }
+    var showEnglishLevelDialog by remember { mutableStateOf(false) }
+    var selectedEnglishLevel: String? by remember { mutableStateOf(null) }
 
     val context = LocalContext.current
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -69,6 +71,55 @@ fun SettingsScreen(
             onNavigateToImageCrop(encodedUri)
         }
     }
+
+    // English Level Dialog
+    if (showEnglishLevelDialog) {
+        val levelOptions: List<String> = listOf("BEGINNER", "INTERMEDIATE", "ADVANCED")
+
+        AlertDialog(
+            onDismissRequest = { showEnglishLevelDialog = false },
+            title = { Text("English Level", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(modifier = Modifier.fillMaxWidth().heightIn(max = 320.dp).verticalScroll(rememberScrollState())) {
+                    levelOptions.forEach { level ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { selectedEnglishLevel = level },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedEnglishLevel == level,
+                                onClick = { selectedEnglishLevel = level }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = when (level) {
+                                    "BEGINNER" -> "Beginner"
+                                    "INTERMEDIATE" -> "Intermediate"
+                                    "ADVANCED" -> "Advanced"
+                                    else -> level
+                                }
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        selectedEnglishLevel?.let { viewModel.setEnglishLevel(it) }
+                        showEnglishLevelDialog = false
+                    }
+                ) { Text("Save") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEnglishLevelDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+    
 
     // Refresh profile when screen resumes (e.g., returning from image crop)
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -186,6 +237,15 @@ fun SettingsScreen(
                     onClick = {
                         selectedAccent = viewModel.voiceAccent.value
                         showAccentDialog = true
+                    }
+                )
+                SettingsItem(
+                    icon = Icons.Default.School,
+                    title = "English Level",
+                    subtitle = viewModel.englishLevel.value ?: "Not set",
+                    onClick = {
+                        selectedEnglishLevel = viewModel.englishLevel.value ?: "INTERMEDIATE"
+                        showEnglishLevelDialog = true
                     }
                 )
             }

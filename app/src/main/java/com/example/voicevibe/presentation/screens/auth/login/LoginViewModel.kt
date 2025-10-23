@@ -140,7 +140,14 @@ class LoginViewModel @Inject constructor(
             userRepository.getCurrentUser().collect { resource ->
                 when (resource) {
                     is Resource.Success -> {
-                        val hasGroup = resource.data?.hasGroup ?: false
+                        val user = resource.data
+                        // Check if English level is set (post-update requirement)
+                        if (user?.englishLevel == null) {
+                            _loginEvent.emit(LoginEvent.NavigateToEnglishLevelSelection)
+                            return@collect
+                        }
+                        // Check group status
+                        val hasGroup = user.hasGroup
                         if (hasGroup) {
                             _loginEvent.emit(LoginEvent.NavigateToHome)
                         } else {
@@ -180,5 +187,6 @@ sealed class LoginEvent {
     object Success : LoginEvent()
     object NavigateToHome : LoginEvent()
     object NavigateToGroupSelection : LoginEvent()
+    object NavigateToEnglishLevelSelection : LoginEvent()
     object NetworkError : LoginEvent()
 }

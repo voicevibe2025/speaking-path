@@ -58,6 +58,7 @@ fun LoginScreen(
     onNavigateToForgotPassword: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToGroupSelection: () -> Unit,
+    onNavigateToEnglishLevelSelection: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -78,6 +79,9 @@ fun LoginScreen(
                 }
                 is LoginEvent.NavigateToGroupSelection -> {
                     onNavigateToGroupSelection()
+                }
+                is LoginEvent.NavigateToEnglishLevelSelection -> {
+                    onNavigateToEnglishLevelSelection()
                 }
                 is LoginEvent.NetworkError -> {
                     snackbarHostState.showSnackbar(

@@ -19,6 +19,7 @@ import com.example.voicevibe.utils.Constants
 import com.google.ai.client.generativeai.GenerativeModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -236,7 +237,8 @@ class SpeakingJourneyViewModel @Inject constructor(
         viewModelScope.launch {
             val prevSelectedId = _uiState.value.topics.getOrNull(_uiState.value.selectedTopicIdx)?.id
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            val result = repo.getTopics()
+            val englishLevel = try { tokenManager.englishLevelFlow().first() } catch (_: Throwable) { null }
+            val result = repo.getTopics(englishLevel)
             result.fold(
                 onSuccess = { response ->
                     val dtos = response.topics
